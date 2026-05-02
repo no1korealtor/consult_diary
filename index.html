@@ -64,13 +64,13 @@
 
             if (error || !data || !data.role) {
                 // If role is null -> redirect to existing ediary main page
-                window.location.href = '../index.html';
+                window.location.href = '../day5/index.html';
             } else if (data.role === 'admin' || data.role === 'consultant') {
                 // Store role locally for convenience
                 localStorage.setItem('userRole', data.role);
                 window.location.href = 'service-select.html';
             } else {
-                window.location.href = '../index.html';
+                window.location.href = '../day5/index.html';
             }
         }
     </script>
