@@ -11,8 +11,8 @@
         <div class="glass-panel text-center">
             <h2 style="text-align: center; margin-bottom: 2rem;">서비스 선택</h2>
             <div class="flex-col" id="menuContainer">
-                <a href="../index.html" class="btn btn-secondary">Go to Ediary</a>
-                <a href="case-list.html" class="btn">Consulting System</a>
+                <a href="../index.html" class="btn btn-secondary">일기 (Ediary)</a>
+                <a href="case-list.html" class="btn">상담 (Consulting System)</a>
             </div>
             
             <button onclick="logout()" class="btn btn-secondary" style="margin-top: 2rem; border: none; color: var(--text-muted);">로그아웃</button>
@@ -35,7 +35,7 @@
             const guideBtn = document.createElement('a');
             guideBtn.href = '#'; // placeholder for guide management
             guideBtn.className = 'btn btn-secondary';
-            guideBtn.textContent = 'Guide Management';
+            guideBtn.textContent = '가이드 관리 (Guide Management)';
             menuContainer.appendChild(guideBtn);
         }
 
