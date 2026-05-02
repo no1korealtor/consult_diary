@@ -62,7 +62,10 @@
                 .eq('id', user.id)
                 .single();
 
-            if (error || !data || !data.role) {
+            if (error) {
+                alert('Role 확인 중 에러가 발생했습니다: ' + error.message);
+                window.location.href = '../day5/index.html';
+            } else if (!data || !data.role) {
                 // If role is null -> redirect to existing ediary main page
                 window.location.href = '../day5/index.html';
             } else if (data.role === 'admin' || data.role === 'consultant') {

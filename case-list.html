@@ -22,6 +22,7 @@
             <div>
                 <a href="service-select.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">뒤로</a>
                 <a href="daily-report.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">일일 보고서</a>
+                <button onclick="logout()" class="btn btn-secondary" style="padding: 0.5rem 1rem;">로그아웃</button>
             </div>
         </div>
 
@@ -32,6 +33,12 @@
 
     <script type="module">
         import { supabase } from './supabase-client.js';
+
+        window.logout = async () => {
+            await supabase.auth.signOut();
+            localStorage.removeItem('userRole');
+            window.location.href = 'index.html';
+        };
 
         async function loadCases() {
             const { data: { session } } = await supabase.auth.getSession();

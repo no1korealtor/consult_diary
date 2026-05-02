@@ -45,7 +45,8 @@
             <h2>일일 보고서</h2>
             <div>
                 <a href="case-list.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">목록으로</a>
-                <button onclick="window.print()" class="print-btn">보고서 인쇄</button>
+                <button onclick="window.print()" class="print-btn" style="margin-right: 0.5rem;">보고서 인쇄</button>
+                <button onclick="logout()" class="btn btn-secondary" style="padding: 0.5rem 1rem;">로그아웃</button>
             </div>
         </div>
 
@@ -77,6 +78,12 @@
 
     <script type="module">
         import { supabase } from './supabase-client.js';
+
+        window.logout = async () => {
+            await supabase.auth.signOut();
+            localStorage.removeItem('userRole');
+            window.location.href = 'index.html';
+        };
 
         let currentUser = null;
 
