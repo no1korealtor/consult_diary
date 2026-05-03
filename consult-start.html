@@ -113,7 +113,10 @@
         <div class="glass-panel text-center">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h2 style="margin: 0;">상담 시작 (Consult Start)</h2>
-                <a href="service-select.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto;">뒤로</a>
+                <div>
+                    <a href="service-select.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto; margin-right: 0.5rem;">뒤로</a>
+                    <button onclick="logout()" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto;">로그아웃</button>
+                </div>
             </div>
             
             <!-- Step 1 -->
@@ -153,6 +156,13 @@
 
     <script type="module">
         import { supabase } from './supabase-client.js';
+
+        // Logout function
+        window.logout = async () => {
+            await supabase.auth.signOut();
+            localStorage.removeItem('userRole');
+            window.location.href = 'index.html';
+        };
 
         // Check auth
         const { data: { session } } = await supabase.auth.getSession();
