@@ -223,21 +223,74 @@
             }
         });
 
-        createCustomerBtn.addEventListener('click', () => {
-            // Get data to pass to create customer page
+        createCustomerBtn.addEventListener('click', async () => {
             const rawPhone = phoneInput.value.trim();
             const normalizedPhone = rawPhone.replace(/-/g, '');
-            const selectedCategory = categorySelect.value;
+            const selectedCategory = categorySelect.value || '기타';
             
-            const queryParams = new URLSearchParams({ phone: normalizedPhone });
-            if (selectedCategory) {
-                queryParams.set('category', selectedCategory);
+            // UI Update: loading state
+            createCustomerBtn.disabled = true;
+            createCustomerBtn.textContent = '생성 중...';
+            resultMsg.textContent = '신규 고객과 사건을 생성 중입니다...';
+            
+            try {
+                // 1. Create Customer
+                // Using a simple prompt to get the name, defaulting to "신규고객"
+                const customerName = prompt("고객 이름을 입력하세요:", "신규고객") || "신규고객";
+                
+                const { data: newCustomer, error: customerError } = await supabase
+                    .from('customers')
+                    .insert([{ name: customerName, phone: normalizedPhone }])
+                    .select()
+                    .single();
+                    
+                if (customerError) throw customerError;
+
+                // 2. Fetch Stage ID based on category
+                let current_stage_id = null;
+                let targetStageName = null;
+                
+                if (selectedCategory === '과태료') targetStageName = '소명';
+                else if (selectedCategory === '행정처분') targetStageName = '조사';
+                
+                if (targetStageName) {
+                    const { data: stageData, error: stageError } = await supabase
+                        .from('stages')
+                        .select('id')
+                        .eq('name', targetStageName)
+                        .maybeSingle(); // maybeSingle so it doesn't throw if 0 rows found
+                        
+                    if (stageData) {
+                        current_stage_id = stageData.id;
+                    } else if (stageError) {
+                        console.warn("Stage fetch error:", stageError);
+                    }
+                }
+                
+                // 3. Create Case
+                const { data: newCase, error: caseError } = await supabase
+                    .from('cases')
+                    .insert([{
+                        customer_id: newCustomer.id,
+                        case_type: selectedCategory,
+                        status: '진행중',
+                        current_stage_id: current_stage_id
+                    }])
+                    .select()
+                    .single();
+                    
+                if (caseError) throw caseError;
+                
+                // 4. Navigate to CaseDetail directly
+                window.location.href = `case-detail.html?id=${newCase.id}`;
+                
+            } catch (err) {
+                console.error("Error creating customer/case:", err);
+                alert("생성 중 오류가 발생했습니다: " + err.message);
+                createCustomerBtn.disabled = false;
+                createCustomerBtn.textContent = 'Create New Customer & Case';
+                resultMsg.textContent = '생성 실패. 다시 시도해주세요.';
             }
-            
-            // Usually you would navigate to a customer creation page,
-            // or show a modal. For now, we will just alert as placeholder or navigate if you have a page.
-            // Let's assume we pass the params to a creation flow
-            alert('신규 고객 등록 기능: ' + normalizedPhone + ' / ' + (selectedCategory || '유형 미지정') + '\n(구현 예정)');
         });
     </script>
 </body>
