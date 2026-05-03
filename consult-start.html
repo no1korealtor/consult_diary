@@ -60,6 +60,52 @@
                 transform: translateY(0);
             }
         }
+        
+        /* Tooltip Styles for Legal Info */
+        .legal-tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+
+        .legal-tooltip .tooltip-text {
+            visibility: hidden;
+            width: 320px;
+            background-color: #1a1a2e;
+            color: var(--text-main);
+            text-align: left;
+            border-radius: 8px;
+            padding: 1rem;
+            position: absolute;
+            z-index: 50;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            white-space: normal;
+        }
+
+        .legal-tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: #1a1a2e transparent transparent transparent;
+        }
+
+        .legal-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -164,8 +210,16 @@
                 appealHtml = `
                     <div style="width: 100%; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.1); text-align: center;">
                         <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">🚨 불복절차</div>
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
-                            <span class="process-step" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444;">이의제기</span>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap; overflow: visible;">
+                            <div class="legal-tooltip">
+                                <span class="process-step" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444; border-bottom: 2px dotted #ef4444;">이의제기</span>
+                                <div class="tooltip-text">
+                                    <strong style="color: #fca5a5;">제20조(이의제기)</strong><br><br>
+                                    <span style="color: #cbd5e1;">① 행정청의 과태료 부과에 불복하는 당사자는 제17조제1항에 따른 과태료 부과 통지를 받은 날부터 60일 이내에 해당 행정청에 서면으로 이의제기를 할 수 있다.<br><br>
+                                    ② 제1항에 따른 이의제기가 있는 경우에는 행정청의 과태료 부과처분은 그 효력을 상실한다.<br><br>
+                                    ③ 당사자는 행정청으로부터 제21조제3항에 따른 통지를 받기 전까지는 행정청에 대하여 서면으로 이의제기를 철회할 수 있다.</span>
+                                </div>
+                            </div>
                             <span class="process-arrow">→</span>
                             <span class="process-step" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444;">법원에의 통보(약식재판)</span>
                             <span class="process-arrow">→</span>
