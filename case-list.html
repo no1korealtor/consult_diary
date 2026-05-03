@@ -51,7 +51,10 @@
             // And we need last log content. Since Supabase PostgREST might not easily do a "latest log" join without a view or rpc, 
             // we will fetch cases with customers and then fetch logs, or fetch them all together if possible.
             // Assuming there's a view or we do it client side. Let's do it client side for simplicity.
-            const { data: cases, error } = await supabase
+            const urlParams = new URLSearchParams(window.location.search);
+            const customerId = urlParams.get('customer_id');
+
+            let query = supabase
                 .from('cases')
                 .select(`
                     id,
@@ -64,15 +67,23 @@
                 `)
                 .order('created_at', { ascending: false });
 
+            // URL에 고객 ID가 있으면 해당 고객의 케이스만 필터링
+            if (customerId) {
+                query = query.eq('customer_id', customerId);
+            }
+
+            const { data: cases, error } = await query;
+
             if (error) {
-                document.getElementById('caseList').innerHTML = `<div style="color:red">데이터를 불러오는 중 오류가 발생했습니다.</div>`;
+                document.getElementById('caseList').innerHTML = `<div style="color:red; text-align:center;">데이터를 불러오는 중 오류가 발생했습니다: ${error.message}</div>`;
                 return;
             }
 
+            const safeCases = cases || [];
             const caseList = document.getElementById('caseList');
             caseList.innerHTML = '';
 
-            for (const c of cases) {
+            for (const c of safeCases) {
                 // Get last log
                 const { data: logs } = await supabase
                     .from('logs')
@@ -97,7 +108,7 @@
                 caseList.appendChild(card);
             }
             
-            if (cases.length === 0) {
+            if (safeCases.length === 0) {
                 caseList.innerHTML = `<div style="text-align: center; color: var(--text-muted);">등록된 케이스가 없습니다.</div>`;
             }
         }
