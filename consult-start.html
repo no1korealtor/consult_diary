@@ -434,25 +434,82 @@
                     </div>
                 `;
             } else if (val === '행정처분') {
-                basisHtml = `
-                    <div style="width: 100%; margin-bottom: 1rem; padding: 0.6rem 1rem; background: rgba(139, 92, 246, 0.1); border-left: 3px solid var(--accent-color); border-radius: 4px; text-align: left;">
-                        <span style="font-size: 0.85rem; color: var(--text-muted);">⚖️ 근거법: <strong style="color: var(--accent-color);">행정절차법</strong></span>
-                    </div>
-                `;
+                basisHtml = '';
+                appealHtml = '';
                 flowHtml = `
-                    <span class="process-step">조사</span>
-                    <span class="process-arrow">→</span>
-                    <span class="process-step">사전통지(의견청취)</span>
-                    <span class="process-arrow">→</span>
-                    <span class="process-step">처분</span>
-                `;
-                appealHtml = `
-                    <div style="width: 100%; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.1); text-align: center;">
-                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">🚨 불복절차</div>
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
-                            <span class="process-step" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444;">행정심판</span>
-                            <span style="color: var(--text-muted); font-size: 1rem;">/</span>
-                            <span class="process-step" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444;">행정소송</span>
+                    <div class="timeline-container">
+                        <!-- 행정 절차 -->
+                        <div class="phase-header phase-admin">
+                            ⚖️ 근거법: 행정절차법 (행정 절차)
+                        </div>
+                        <div class="timeline-wrapper wrapper-admin">
+                            <div class="timeline-item expanded active" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>1. 조사</span>
+                                        <span class="toggle-icon">▼</span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>위반 사실에 대한 현장 조사 및 관련 자료 수집 단계입니다.</p>
+                                        <div class="tip-box">
+                                            <strong>💡 Tip:</strong> 조사 과정에서 작성되는 확인서나 문답서의 내용이 향후 처분의 핵심 근거가 되므로 신중히 답변해야 합니다.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>2. 사전통지 (의견청취)</span>
+                                        <span class="toggle-icon">▼</span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>처분을 내리기 전 당사자에게 미리 알리고, 의견이나 소명을 듣는 과정(청문 등)입니다.</p>
+                                        <div class="tip-box">
+                                            <strong>📝 주의:</strong> 이 단계에서 적극적으로 유리한 증거와 의견서를 제출하여 처분 수위를 낮추는 것이 가장 효과적입니다.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>3. 처분</span>
+                                        <span class="toggle-icon">▼</span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>행정청이 최종적으로 행정처분(영업정지, 자격취소, 시정명령 등)을 내리는 단계입니다.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 불복 절차 -->
+                        <div class="phase-header phase-appeal">
+                            🚨 불복 절차 (사법 및 심판 절차)
+                        </div>
+                        <div class="timeline-wrapper wrapper-appeal">
+                            <div class="timeline-item phase-appeal-item" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>4. 행정심판 및 행정소송</span>
+                                        <span class="toggle-icon">▼</span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>처분에 불복하여 상급 기관(행정심판위원회)에 심판을 청구하거나, 관할 법원에 소송을 제기합니다.</p>
+                                        <div class="tip-box">
+                                            <strong>⏰ 제기 기한:</strong> 처분이 있음을 <b>안 날부터 90일</b>, 있은 날부터 <b>180일(소송은 1년) 이내</b>에 제기해야 합니다.<br><br>
+                                            <strong>🛡️ 실무 전략:</strong> 처분의 효력을 일시적으로 멈추기 위해 반드시 <b>'집행정지 신청'</b>을 병행하는 것이 일반적입니다.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
