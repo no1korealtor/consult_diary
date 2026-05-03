@@ -146,6 +146,7 @@
 
             let flowHtml = '';
             let basisHtml = '';
+            let appealHtml = '';
             
             if (val === '과태료') {
                 basisHtml = `
@@ -160,6 +161,20 @@
                     <span class="process-arrow">→</span>
                     <span class="process-step">과태료부과</span>
                 `;
+                appealHtml = `
+                    <div style="width: 100%; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.1); text-align: center;">
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">🚨 불복절차</div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="process-step" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444;">이의제기</span>
+                            <span class="process-arrow">→</span>
+                            <span class="process-step" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444;">법원에의 통보(약식재판)</span>
+                            <span class="process-arrow">→</span>
+                            <span class="process-step" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444;">재판</span>
+                            <span class="process-arrow">→</span>
+                            <span class="process-step" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444;">항고</span>
+                        </div>
+                    </div>
+                `;
             } else if (val === '행정처분') {
                 basisHtml = `
                     <div style="width: 100%; margin-bottom: 1rem; padding: 0.6rem 1rem; background: rgba(139, 92, 246, 0.1); border-left: 3px solid var(--accent-color); border-radius: 4px; text-align: left;">
@@ -173,11 +188,21 @@
                     <span class="process-arrow">→</span>
                     <span class="process-step">처분</span>
                 `;
+                appealHtml = `
+                    <div style="width: 100%; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.1); text-align: center;">
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">🚨 불복절차</div>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="process-step" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444;">행정심판</span>
+                            <span style="color: var(--text-muted); font-size: 1rem;">/</span>
+                            <span class="process-step" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444;">행정소송</span>
+                        </div>
+                    </div>
+                `;
             } else if (val === '기타') {
                 flowHtml = `<span style="color: var(--text-muted); font-size: 0.9rem;">별도 지정 프로세스 없음</span>`;
             }
 
-            processFlowBox.innerHTML = basisHtml + flowHtml;
+            processFlowBox.innerHTML = basisHtml + flowHtml + appealHtml;
             
             // Trigger reflow for animation
             processFlowArea.style.display = 'none';
