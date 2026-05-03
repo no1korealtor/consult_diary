@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 감정 일기</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --primary-color: #6366f1;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+    }
+    body {
+      font-family: 'Pretendard', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .app-container {
+      background-color: var(--card-bg);
+      width: 100%;
+      max-width: 480px;
+      padding: 35px;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+      box-sizing: border-box;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      margin-top: 0;
+      margin-bottom: 25px;
+      text-align: center;
+      color: var(--text-main);
+    }
+    textarea {
+      width: 100%;
+      height: 140px;
+      padding: 18px;
+      border: 2px solid #e2e8f0;
+      border-radius: 16px;
+      resize: none;
+      font-size: 16px;
+      font-family: inherit;
+      box-sizing: border-box;
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+      background-color: #f8fafc;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+    textarea::placeholder {
+      color: #94a3b8;
+    }
+    .button-group {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 35px;
+    }
+    button {
+      flex: 1;
+      padding: 14px 0;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+    .btn-voice {
+      background-color: #eef2ff;
+      color: var(--primary-color);
+    }
+    .btn-voice:hover {
+      background-color: #e0e7ff;
+    }
+    .btn-analyze {
+      background-color: var(--primary-color);
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    .btn-analyze:hover {
+      background-color: #4f46e5;
+      box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+    }
+    .ai-response-section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--text-main);
+    }
+    .ai-response-box {
+      background-color: #f1f5f9;
+      padding: 24px;
+      border-radius: 16px;
+      color: var(--text-muted);
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.6;
+      font-size: 15px;
+      border: 1px solid #e2e8f0;
+    }
+    .history-section {
+      margin-top: 40px;
+      border-top: 2px dashed #e2e8f0;
+      padding-top: 20px;
+    }
+    .history-section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: var(--text-main);
+      text-align: center;
+    }
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .history-card {
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      text-align: left;
+    }
+    .history-date {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 5px;
+    }
+    .history-user {
+      font-size: 14px;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+    .history-ai {
+      font-size: 14px;
+      color: var(--primary-color);
+      background-color: #eef2ff;
+      padding: 12px;
+      border-radius: 12px;
+      line-height: 1.5;
+    }
+    .empty-history {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 14px;
+      padding: 20px 0;
+    }
+    .user-info-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .btn-logout {
+      background-color: transparent;
+      color: #ef4444;
+      border: 1px solid #fee2e2;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      flex: none;
+    }
+    .btn-logout:hover {
+      background-color: #fee2e2;
+    }
+    
+    .chat-section {
+      margin-top: 40px;
+      border-top: 2px dashed #e2e8f0;
+      padding-top: 20px;
+    }
+    .chat-section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--text-main);
+    }
+    .chat-box {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      height: 250px;
+      overflow-y: auto;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .chat-message {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .chat-message.user {
+      align-self: flex-end;
+      background-color: var(--primary-color);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .chat-message.ai {
+      align-self: flex-start;
+      background-color: #ffffff;
+      color: var(--text-main);
+      border: 1px solid #e2e8f0;
+      border-bottom-left-radius: 4px;
+    }
+    .chat-input-area {
+      display: flex;
+      gap: 10px;
+    }
+    .chat-input-area input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+    .chat-input-area input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+    .chat-input-area button {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 0 20px;
+      font-weight: 600;
+      cursor: pointer;
+      flex: none;
+      width: auto;
+    }
+    .chat-input-area button:hover {
+      background-color: #4f46e5;
+    }
+
+    /* Login Screen Styles */
+    .login-container {
+      background-color: var(--card-bg);
+      width: 100%;
+      max-width: 400px;
+      padding: 40px 35px;
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .login-container h1 {
+      font-size: 28px;
+      margin-bottom: 30px;
+      color: var(--primary-color);
+      font-weight: 800;
+    }
+    .auth-input {
+      width: 100%;
+      height: 50px;
+      padding: 0 18px;
+      margin-bottom: 15px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      box-sizing: border-box;
+      transition: all 0.3s;
+      background-color: #f8fafc;
+    }
+    .auth-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+    .auth-input::placeholder {
+      color: #94a3b8;
+    }
+    .auth-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      margin-bottom: 25px;
+    }
+    .btn-login {
+      background-color: var(--primary-color);
+      color: white;
+      flex: 2;
+    }
+    .btn-login:hover {
+      background-color: #4f46e5;
+    }
+    .btn-signup {
+      background-color: #eef2ff;
+      color: var(--primary-color);
+      flex: 1;
+    }
+    .btn-signup:hover {
+      background-color: #e0e7ff;
+    }
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 25px;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .divider span {
+      padding: 0 15px;
+    }
+    .btn-kakao {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background-color: #FEE500;
+      color: rgba(0, 0, 0, 0.85);
+      border: none;
+      border-radius: 12px;
+      width: 100%;
+      padding: 14px 0;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    .btn-kakao:hover {
+      background-color: #e6cf00;
+    }
+  </style>
+</head>
+<body>
+  <!-- 로그인 화면 -->
+  <div class="login-container" id="loginContainer">
+    <h1>AI 감정일기</h1>
+    <div class="login-form">
+      <input type="email" id="emailInput" placeholder="이메일" class="auth-input">
+      <input type="password" id="passwordInput" placeholder="비밀번호" class="auth-input">
+      
+      <div class="auth-buttons">
+        <button class="btn-login" id="loginBtn">로그인</button>
+        <button class="btn-signup" id="signupBtn">회원가입</button>
+      </div>
+      
+      <div class="divider">
+        <span>또는</span>
+      </div>
+      
+      <button class="btn-kakao" id="kakaoLoginBtn">
+        <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 3C6.477 3 2 6.545 2 10.916c0 2.84 1.838 5.334 4.61 6.81l-1.07 3.99c-.11.41.34.75.69.54l4.64-3.1c.37.03.74.05 1.13.05 5.523 0 10-3.545 10-7.916S17.523 3 12 3z" fill="#000000"/>
+        </svg>
+        kakao_Log_In
+      </button>
+    </div>
+  </div>
+
+  <!-- 메인 일기장 화면 (초기엔 숨김 처리) -->
+  <div class="app-container" id="appContainer" style="display: none;">
+    <div class="user-info-bar">
+      <span id="userEmailDisplay"></span>
+      <button class="btn-logout" id="logoutBtn">Log_out</button>
+    </div>
+    <h1>오늘 하루는 어땠나요?</h1>
+    <textarea id="diaryInput" autocomplete="off" placeholder="이곳에 오늘 있었던 일이나 느낀 감정을 편하게 적어주세요..."></textarea>
+    
+    <div class="button-group">
+      <button class="btn-voice" id="voiceBtn">🎤 음성으로 입력하기</button>
+      <button class="btn-analyze" id="analyzeBtn">✨ 분석 요청하기</button>
+    </div>
+
+    <div class="ai-response-section">
+      <h2>AI의 답변</h2>
+      <div class="ai-response-box" id="aiResponse">
+        여기에 AI의 답변이 표시됩니다.
+      </div>
+    </div>
+
+    <div class="chat-section">
+      <h2>실시간 채팅 💬</h2>
+      <div class="chat-box" id="chatBox">
+        <!-- 메시지가 여기에 동적으로 추가됩니다 -->
+      </div>
+      <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="메시지를 입력하세요...">
+        <button id="chatSendBtn">전송</button>
+      </div>
+    </div>
+
+    <div class="history-section">
+      <h2>나의 일기 히스토리 📚</h2>
+      <div class="history-list" id="historyList">
+        <div class="empty-history">불러오는 중...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Supabase 클라이언트 초기화 설정
+    let supabaseClient;
+
+    // 페이지 로드 시 환경변수 설정용 API 호출하여 Supabase 초기화
+    async function initSupabase() {
+      try {
+        const res = await fetch('/api/config');
+        if (!res.ok) {
+            console.warn('로컬 Live Server 환경이므로 서버 API를 불러올 수 없습니다.');
+            return;
+        }
+        
+        // 올바른 JSON 응답인지 확인 (HTML 에러 페이지 방어)
+        const contentType = res.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          const config = await res.json();
+          if (config.url && config.key) {
+            supabaseClient = window.supabase.createClient(config.url, config.key);
+            
+            // 초기 로그인 상태 확인
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user) {
+              performLogin(session.user);
+            }
+          }
+        } else {
+            console.warn('API 응답이 JSON 형식이 아닙니다 (URL 에러 가능성)');
+        }
+      } catch (e) {
+        console.warn("Supabase 환경 변수를 가져오는데 실패했습니다.", e);
+      }
+    }
+    
+    // 즉시 인스턴스 초기화 실행
+    initSupabase();
+
+    let chatSubscription = null; // 실시간 구독 객체를 저장할 변수
+
+    // 혹시라도 남아있는 구버전 공용 임시 저장소(글로벌 localStorage) 찌꺼기 완전 삭제
+    localStorage.removeItem('diaryText');
+    localStorage.removeItem('aiResponse');
+
+    // 메인 앱 DOM 요소를 위로 끌어올림 (로그인 전에도 참조될 수 있도록)
+    const diaryInput = document.getElementById('diaryInput');
+    const voiceBtn = document.getElementById('voiceBtn');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const aiResponse = document.getElementById('aiResponse');
+
+    // 현재 로그인된 사용자의 이메일을 저장하는 전역 변수
+    let currentUserEmail = null;
+
+    // 로그인 관련 DOM 요소
+    const loginContainer = document.getElementById('loginContainer');
+    const appContainer = document.getElementById('appContainer');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+    const kakaoLoginBtn = document.getElementById('kakaoLoginBtn');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+
+    // 로그인 성공 시 메인 화면으로 이동하는 함수
+    async function performLogin(user) {
+      if (!supabaseClient) return;
+
+      // 관리자 승인 여부 체크 (profiles 테이블 조회)
+      try {
+        const { data: profile, error } = await supabaseClient
+          .from('profiles')
+          .select('is_approved')
+          .eq('id', user.id)
+          .single();
+
+        if (error || !profile || profile.is_approved !== true) {
+          alert('가입 승인 대기중입니다. 관리자의 승인 후 이용 가능합니다.');
+          await supabaseClient.auth.signOut(); // 강제 로그아웃 처리
+          return; // 메인 화면으로 이동하지 않고 중단
+        }
+      } catch (err) {
+        console.error('승인 상태 확인 중 에러:', err);
+        return;
+      }
+
+      // 사용자의 role 확인 및 명시적 일기 페이지 접근인지 확인
+      const urlParams = new URLSearchParams(window.location.search);
+      const isExplicitEdiary = urlParams.get('service') === 'ediary';
+
+      if (!isExplicitEdiary) {
+          try {
+            const { data: userData, error: userError } = await supabaseClient
+                .from('users')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            if (userError) {
+                alert('Role 확인 에러 (DB 문제): ' + userError.message);
+                console.error('Role 에러 상세:', userError);
+            } else if (userData && (userData.role === 'admin' || userData.role === 'consultant')) {
+                localStorage.setItem('userRole', userData.role);
+                window.location.href = '../service-select.html';
+                return;
+            } else {
+                console.log('Role이 admin/consultant가 아니거나 데이터가 없습니다.', userData);
+            }
+          } catch (err) {
+            alert('Role 확인 중 예기치 않은 에러: ' + err.message);
+            console.error('Role 확인 중 에러:', err);
+          }
+      }
+
+      const email = user.email;
+      currentUserEmail = email; // 글로벌 상태 저장
+      
+      loginContainer.style.display = 'none';
+      appContainer.style.display = 'block';
+      if (email) {
+        document.getElementById('userEmailDisplay').innerText = email;
+      }
+      
+      // 계정별로 저장된 작성중인 일기 불러오기
+      if (email) {
+        const savedDiary = localStorage.getItem('diaryText_' + email);
+        const savedResponse = localStorage.getItem('aiResponse_' + email);
+        
+        if (savedDiary) {
+          diaryInput.value = savedDiary;
+          if (savedResponse) {
+            aiResponse.innerHTML = savedResponse;
+          } else {
+            aiResponse.innerHTML = '여기에 AI의 답변이 표시됩니다.';
+          }
+        } else {
+          diaryInput.value = '';
+          aiResponse.innerHTML = '여기에 AI의 답변이 표시됩니다.';
+          // 브라우저가 뒤늦게 폼 전송 기록을 복원하는 것을 방어
+          setTimeout(() => { diaryInput.value = ''; }, 50);
+        }
+      }
+
+      fetchHistory(); // 화면이 전환되면 히스토리를 불러옴
+      initChat(); // 실시간 채팅 데이터 초기화 및 구독
+    }
+
+    loginBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if (email && password) {
+        if (!supabaseClient) {
+          alert('Supabase 연결 설정이 진행중입니다. 잠시 후 다시 시도해주세요.');
+          return;
+        }
+
+        const originalText = loginBtn.innerHTML;
+        loginBtn.innerHTML = '로그인 중...';
+        loginBtn.disabled = true;
+
+        try {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password,
+          });
+
+          if (error) throw error;
+          
+          // alert('로그인 성공!'); (승인 체크 후 넘어가도록 팝업 생략)
+          performLogin(data.user);
+
+        } catch (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            alert('이메일 또는 비밀번호가 틀렸습니다.');
+          } else if (error.message.includes('Email not confirmed')) {
+            alert('이메일 인증이 완료되지 않았습니다. 가입하신 이메일의 메일함을 확인해주세요.');
+          } else {
+            alert('로그인 실패: ' + error.message);
+          }
+        } finally {
+          loginBtn.innerHTML = originalText;
+          loginBtn.disabled = false;
+        }
+
+      } else {
+        alert('이메일과 비밀번호를 모두 입력해주세요.');
+      }
+    });
+
+    kakaoLoginBtn.addEventListener('click', async () => {
+      try {
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'kakao',
+        });
+        if (error) throw error;
+      } catch (error) {
+        alert('카카오 로그인 페이지 이동 실패: ' + error.message);
+      }
+    });
+
+    // 로그아웃 버튼 이벤트
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      if (chatSubscription && supabaseClient) {
+        supabaseClient.removeChannel(chatSubscription);
+        chatSubscription = null;
+      }
+
+      if (supabaseClient) {
+        await supabaseClient.auth.signOut();
+      }
+      
+      // 사용자 보안을 위해 로그아웃 시 브라우저 임시 저장(Local Storage) 초기화
+      if (currentUserEmail) {
+        localStorage.removeItem('diaryText_' + currentUserEmail);
+        localStorage.removeItem('aiResponse_' + currentUserEmail);
+      }
+      currentUserEmail = null; // 상태 초기화
+      
+      document.getElementById('diaryInput').value = '';
+      document.getElementById('aiResponse').innerHTML = '여기에 AI의 답변이 표시됩니다.';
+
+      appContainer.style.display = 'none';
+      loginContainer.style.display = 'block';
+      document.getElementById('passwordInput').value = ''; // 비밀번호 필드 초기화
+    });
+
+    // 회원가입 버튼 로직 (Supabase auth.signUp 호출)
+    signupBtn.addEventListener('click', async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if (!email || !password) {
+        alert('회원가입을 위해 이메일과 비밀번호를 모두 입력해주세요.');
+        return;
+      }
+      
+      if (!supabaseClient) {
+        alert('Supabase 연결 설정이 완료되지 않았습니다.');
+        return;
+      }
+
+      // UI 텍스트 변경
+      const originalText = signupBtn.innerHTML;
+      signupBtn.innerHTML = '진행 중...';
+      signupBtn.disabled = true;
+
+      try {
+        const { data, error } = await supabaseClient.auth.signUp({
+          email: email,
+          password: password
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        alert('가입확인 이메일을 확인해주세요!');
+      } catch (error) {
+        alert('회원가입 실패: ' + error.message);
+      } finally {
+        signupBtn.innerHTML = originalText;
+        signupBtn.disabled = false;
+      }
+    });
+
+    // 저장된 데이터 불러오기 (페이지 로드 완료 시점의 기존 로직 제거 - performLogin에서 계정별로 처리함)
+    window.addEventListener('DOMContentLoaded', () => {
+      // 이제 히스토리는 로그인 완료 후에만 불러옵니다.
+    });
+
+    // 히스토리 데이터를 가져와 화면에 렌더링하는 함수
+    async function fetchHistory() {
+      const historyList = document.getElementById('historyList');
+      try {
+        let url = '/api/history';
+        if (supabaseClient) {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session && session.user) {
+            url += `?user_id=${session.user.id}`;
+          }
+        }
+        
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('히스토리 로드 실패');
+        
+        const data = await res.json();
+        const items = data.result;
+
+        if (!items || items.length === 0) {
+          historyList.innerHTML = '<div class="empty-history">아직 저장된 일기가 없습니다.</div>';
+          return;
+        }
+
+        historyList.innerHTML = ''; // 초기화
+        
+        items.forEach(item => {
+          // 날짜 포맷팅
+          const dateObj = new Date(item.timestamp);
+          const dateStr = dateObj.toLocaleString('ko-KR', { 
+            year: 'numeric', month: 'long', day: 'numeric', 
+            hour: '2-digit', minute: '2-digit' 
+          });
+
+          const formattedAi = item.aiResponse ? item.aiResponse.replace(/\n/g, '<br>') : '답변 없음';
+
+          const card = document.createElement('div');
+          card.className = 'history-card';
+          card.innerHTML = `
+            <div class="history-date">📅 ${dateStr}</div>
+            <div class="history-user">${item.userText}</div>
+            <div class="history-ai"><strong>AI:</strong><br>${formattedAi}</div>
+          `;
+          historyList.appendChild(card);
+        });
+
+      } catch (e) {
+        console.error(e);
+        historyList.innerHTML = '<div class="empty-history">히스토리를 불러올 수 없습니다.</div>';
+      }
+    }
+
+    // 사용자가 직접 타이핑할 때 일기 내용 저장
+    diaryInput.addEventListener('input', () => {
+      if (currentUserEmail) {
+        localStorage.setItem('diaryText_' + currentUserEmail, diaryInput.value);
+        
+        // 일기 내용이 모두 지워지면 AI 답변도 초기화
+        if (diaryInput.value.trim() === '') {
+          localStorage.removeItem('aiResponse_' + currentUserEmail);
+          aiResponse.innerHTML = '여기에 AI의 답변이 표시됩니다.';
+        }
+      }
+    });
+
+    // Web Speech API 지원 여부 확인
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = true; // 계속 들을지 여부
+      recognition.interimResults = true; // 중간 결과를 보여줄지 여부
+      recognition.lang = 'ko-KR'; // 한국어 설정
+      
+      let isRecording = false;
+
+      // 음성 인식 시작 이벤트
+      recognition.onstart = function() {
+        isRecording = true;
+        voiceBtn.innerHTML = '🔴 녹음 중지하기';
+        voiceBtn.style.backgroundColor = '#fee2e2'; // 부드러운 붉은색
+        voiceBtn.style.color = '#ef4444';
+      };
+
+      // 음성 인식 결과 이벤트
+      recognition.onresult = function(event) {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+           if (event.results[i].isFinal) {
+             finalTranscript += event.results[i][0].transcript;
+           } else {
+             interimTranscript += event.results[i][0].transcript;
+           }
+        }
+        
+        // 최종 변환된 텍스트를 textarea에 추가
+        if (finalTranscript) {
+          diaryInput.value += finalTranscript + ' ';
+          if (currentUserEmail) {
+            localStorage.setItem('diaryText_' + currentUserEmail, diaryInput.value);
+          }
+        }
+      };
+
+      // 음성 인식 종료 이벤트
+      recognition.onend = function() {
+        // 만약 버튼을 직접 누르지 않았는데 끝났다면(예: 말이 길게 멈춘 경우) 버튼 상태 원상복구
+        if (isRecording) {
+          isRecording = false;
+          voiceBtn.innerHTML = '🎤 음성으로 입력하기';
+          voiceBtn.style.backgroundColor = '#eef2ff';
+          voiceBtn.style.color = 'var(--primary-color)';
+        }
+      };
+
+      recognition.onerror = function(event) {
+        console.error('음성 인식 에러:', event.error);
+        if(event.error === 'not-allowed') {
+          alert('마이크 접근 권한을 허용해주세요.');
+        }
+      };
+
+      // 버튼 클릭 이벤트 리스너
+      voiceBtn.addEventListener('click', function() {
+        if (!isRecording) {
+          recognition.start();
+        } else {
+          recognition.stop();
+          isRecording = false;
+          voiceBtn.innerHTML = '🎤 음성으로 입력하기';
+          voiceBtn.style.backgroundColor = '#eef2ff';
+          voiceBtn.style.color = 'var(--primary-color)';
+        }
+      });
+    } else {
+      voiceBtn.addEventListener('click', function() {
+        alert('이 브라우저는 음성 인식 기능을 지원하지 않습니다. Chrome 브라우저를 이용해주세요.');
+      });
+    }
+
+    // Gemini API 분석 요청 로직
+    analyzeBtn.addEventListener('click', async function() {
+      const text = diaryInput.value.trim();
+      if (!text) {
+        alert('먼저 일기 내용을 입력해주세요.');
+        return;
+      }
+
+      // UI 상태 변경: 로딩 중
+      analyzeBtn.disabled = true;
+      analyzeBtn.innerHTML = '⏳ 분석 중...';
+      aiResponse.innerHTML = 'AI가 일기를 읽고 분석하고 있습니다. 잠시만 기다려주세요...';
+
+      try {
+        let userId = null;
+        if (supabaseClient) {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session && session.user) {
+            userId = session.user.id;
+          }
+        }
+
+        // Vercel Serverless Function 호출
+        const response = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: text, user_id: userId })
+        });
+
+        if (!response.ok) {
+          let errDetail = '';
+          try {
+            const errJson = await response.json();
+            errDetail = errJson.message || JSON.stringify(errJson);
+          } catch(e) {
+            errDetail = await response.text();
+          }
+          throw new Error(`서버 오류 (${response.status}): ${errDetail}`);
+        }
+
+        const data = await response.json();
+        const aiText = data.result;
+        
+        // 데이터베이스 저장 실패 경고가 있으면 알림
+        if (data.warning) {
+           alert("AI 응답은 성공적이지만 DB 저장에 문제가 있습니다: " + data.warning);
+        }
+        
+        // 결과 표시 (줄바꿈 처리)
+        const formattedResponse = aiText.replace(/\n/g, '<br>');
+        aiResponse.innerHTML = formattedResponse;
+        
+        // AI 답변을 로컬 스토리지에 저장
+        if (currentUserEmail) {
+          localStorage.setItem('aiResponse_' + currentUserEmail, formattedResponse);
+        }
+
+      } catch (error) {
+        console.error('API 요청 에러:', error);
+        aiResponse.innerHTML = '⚠️ 오류 발생: ' + error.message;
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.innerHTML = '✨ 분석 요청하기';
+        
+        // 분석 완료 후, 히스토리 목록 새로고침 (새로 저장된 내용 반영 목적)
+        fetchHistory();
+      }
+    });
+
+    // 실시간 채팅 로직
+    const chatBox = document.getElementById('chatBox');
+    const chatInput = document.getElementById('chatInput');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+
+    function appendChatMessage(text, sender, email) {
+      const wrapper = document.createElement('div');
+      wrapper.style.display = 'flex';
+      wrapper.style.flexDirection = 'column';
+      wrapper.style.alignItems = sender === 'user' ? 'flex-end' : 'flex-start';
+      wrapper.style.marginBottom = '10px';
+
+      const emailDiv = document.createElement('div');
+      emailDiv.style.fontSize = '12px';
+      emailDiv.style.color = '#94a3b8';
+      emailDiv.style.marginBottom = '4px';
+      emailDiv.innerText = email || 'Unknown';
+
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `chat-message ${sender}`;
+      msgDiv.innerText = text;
+
+      wrapper.appendChild(emailDiv);
+      wrapper.appendChild(msgDiv);
+      
+      chatBox.appendChild(wrapper);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function initChat() {
+      chatBox.innerHTML = ''; // 초기화
+      if (!supabaseClient) return;
+
+      try {
+        // 1. 기존 메시지 모두 불러오기 (오래된 순)
+        const { data, error } = await supabaseClient
+          .from('messages')
+          .select('*')
+          .order('created_at', { ascending: true });
+          
+        if (error) throw error;
+        
+        if (data) {
+          data.forEach(msg => {
+            const senderType = msg.user_email === currentUserEmail ? 'user' : 'ai';
+            appendChatMessage(msg.content, senderType, msg.user_email);
+          });
+        }
+      } catch (e) {
+        console.error('기존 메시지 불러오기 실패:', e);
+      }
+
+      // 2. 실시간 구독 설정
+      if (chatSubscription) {
+        supabaseClient.removeChannel(chatSubscription);
+      }
+
+      chatSubscription = supabaseClient
+        .channel('public:messages')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
+          const newMsg = payload.new;
+          const senderType = newMsg.user_email === currentUserEmail ? 'user' : 'ai';
+          appendChatMessage(newMsg.content, senderType, newMsg.user_email);
+        })
+        .subscribe();
+    }
+
+    chatSendBtn.addEventListener('click', async () => {
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      chatInput.value = ''; // 입력창 비우기
+
+      // Supabase 테이블에 데이터 추가
+      // (성공적으로 추가되면 실시간 구독을 통해 화면에 나타납니다)
+      if (supabaseClient) {
+        try {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          
+          if (session && session.user) {
+            const { error } = await supabaseClient
+              .from('messages')
+              .insert([
+                { 
+                  content: text, 
+                  user_email: session.user.email,
+                  user_id: session.user.id
+                }
+              ]);
+            
+            if (error) {
+              console.error('메시지 저장 에러:', error);
+              alert('메시지 저장 실패: ' + error.message);
+            }
+          } else {
+            console.warn('로그인되어 있지 않아 데이터베이스에 저장할 수 없습니다.');
+          }
+        } catch (error) {
+          console.error('채팅 저장 중 오류 발생:', error);
+        }
+      }
+    });
+
+    chatInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        chatSendBtn.click();
+      }
+    });
+  </script>
+</body>
+</html>

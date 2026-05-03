@@ -1,0 +1,72 @@
+import { createClient } from '@supabase/supabase-js';
+
+export const config = {
+  runtime: 'edge', 
+};
+
+export default async function handler(req) {
+  if (req.method !== 'GET') {
+    return new Response(JSON.stringify({ message: 'GET 요청만 허용됩니다.' }), { status: 405 });
+  }
+
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.ediary_SUPABASE_URL || process.env.NEXT_PUBLIC_ediary_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.ediary_SUPABASE_SERVICE_ROLE_KEY || process.env.ediary_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_ediary_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    // Supabase 환경변수가 없으면 빈 배열과 상태 메시지 반환
+    return new Response(JSON.stringify({ result: [], debug_status: "ENV_MISSING" }), { 
+      status: 200, 
+      headers: { 'Content-Type': 'application/json' } 
+    });
+  }
+
+  try {
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // URL에서 user_id 파라미터 가져오기
+    const url = new URL(req.url);
+    const userId = url.searchParams.get('user_id');
+
+    // userId가 없으면 타인의 일기가 모두 보일 수 있으므로 빈 배열을 반환하도록 예외 처리
+    if (!userId) {
+      return new Response(JSON.stringify({ result: [], message: '사용자 인증이 필요합니다.' }), { 
+        status: 200, 
+        headers: { 'Content-Type': 'application/json' } 
+      });
+    }
+
+    let query = supabase.from('diaries').select('*').eq('user_id', userId);
+
+    // diaries 테이블에서 최신 데이터 100개를 가져옴
+    const { data, error } = await query
+      .order('created_at', { ascending: false })
+      .limit(100);
+      
+    if (error) {
+      throw new Error(`Supabase 조회 실패: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      return new Response(JSON.stringify({ result: [], debug_status: "NO_KEYS_FOUND" }), { 
+        status: 200, 
+        headers: { 'Content-Type': 'application/json' } 
+      });
+    }
+
+    // 기존 프론트엔드 코드와의 호환성을 위해 속성명 매핑
+    const parsedValues = data.map(item => ({
+      userText: item.user_text,
+      aiResponse: item.ai_response,
+      timestamp: item.created_at
+    }));
+
+    return new Response(JSON.stringify({ result: parsedValues }), { 
+      status: 200, 
+      headers: { 'Content-Type': 'application/json' } 
+    });
+
+  } catch (error) {
+    console.error("Supabase history fetch error:", error);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+  }
+}

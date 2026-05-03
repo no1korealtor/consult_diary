@@ -5,23 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consult Start</title>
     <link rel="stylesheet" href="app.css">
+    <style>
+        .process-step {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid var(--accent-color);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+        .process-arrow {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+        .form-label {
+            display: block; 
+            margin-bottom: 0.5rem; 
+            color: var(--text-muted); 
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: left;
+        }
+        .form-input {
+            width: 100%; 
+            padding: 0.8rem; 
+            border-radius: 8px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            background: rgba(0,0,0,0.2); 
+            color: var(--text-main);
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+        .form-input option {
+            background-color: #1a1a2e;
+            color: var(--text-main);
+        }
+        .step-container {
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInStep 0.4s ease forwards;
+        }
+        @keyframes fadeInStep {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container" style="max-width: 500px; margin-top: 10vh;">
+    <div class="container" style="max-width: 500px; margin-top: 10vh; margin-bottom: 10vh;">
         <div class="glass-panel text-center">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h2 style="margin: 0;">고객 검색 (Consult Start)</h2>
+                <h2 style="margin: 0;">상담 시작 (Consult Start)</h2>
                 <a href="service-select.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto;">뒤로</a>
             </div>
             
-            <form id="searchForm" style="display: flex; flex-direction: column; gap: 1rem;">
-                <input type="tel" id="phoneInput" placeholder="전화번호 입력 (하이픈 없이 또는 포함하여 입력)" required>
-                <button type="submit" class="btn">검색</button>
+            <!-- Step 1 -->
+            <div class="step-container" style="animation-delay: 0s;">
+                <label for="categorySelect" class="form-label">1. 상담 유형 (Category)</label>
+                <select id="categorySelect" class="form-input">
+                    <option value="">유형을 선택하세요</option>
+                    <option value="과태료">과태료</option>
+                    <option value="행정처분">행정처분</option>
+                    <option value="기타">기타</option>
+                </select>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="processFlowArea" class="step-container" style="display: none; animation-delay: 0.1s;">
+                <label class="form-label">2. 진행 프로세스 (Process Flow)</label>
+                <div id="processFlowBox" style="padding: 1.5rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <!-- Process items injected here -->
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <form id="searchForm" class="step-container" style="display: flex; flex-direction: column; gap: 1rem; text-align: left; animation-delay: 0.2s;">
+                <div>
+                    <label for="phoneInput" class="form-label">3. 고객 검색 (Phone Number)</label>
+                    <input type="tel" id="phoneInput" class="form-input" placeholder="010-0000-0000 (하이픈 포함 권장)" required>
+                </div>
+                <button type="submit" class="btn" style="margin-top: 0.5rem;">고객 검색</button>
             </form>
 
-            <div id="resultArea" style="margin-top: 2rem; display: none;">
+            <div id="resultArea" class="step-container" style="margin-top: 1rem; display: none; animation-delay: 0s;">
                 <p id="resultMsg" style="margin-bottom: 1rem;"></p>
-                <button id="createCustomerBtn" class="btn btn-secondary" style="display: none; width: 100%;">Create New Customer</button>
+                <button id="createCustomerBtn" class="btn btn-secondary" style="display: none; width: 100%;">Create New Customer & Case</button>
             </div>
         </div>
     </div>
@@ -35,16 +113,69 @@
             window.location.href = 'index.html';
         }
 
+        const categorySelect = document.getElementById('categorySelect');
+        const processFlowArea = document.getElementById('processFlowArea');
+        const processFlowBox = document.getElementById('processFlowBox');
+        
         const searchForm = document.getElementById('searchForm');
         const phoneInput = document.getElementById('phoneInput');
         const resultArea = document.getElementById('resultArea');
         const resultMsg = document.getElementById('resultMsg');
         const createCustomerBtn = document.getElementById('createCustomerBtn');
 
+        // Phone input auto-hyphenation formatting
+        phoneInput.addEventListener('input', function(e) {
+            let val = this.value.replace(/[^0-9]/g, '');
+            if (val.length > 3 && val.length <= 7) {
+                val = val.slice(0,3) + '-' + val.slice(3);
+            } else if (val.length > 7) {
+                val = val.slice(0,3) + '-' + val.slice(3,7) + '-' + val.slice(7,11);
+            }
+            this.value = val;
+        });
+
+        // Category selection handler
+        categorySelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            
+            if (!val) {
+                processFlowArea.style.display = 'none';
+                return;
+            }
+
+            let flowHtml = '';
+            if (val === '과태료') {
+                flowHtml = `
+                    <span class="process-step">소명</span>
+                    <span class="process-arrow">→</span>
+                    <span class="process-step">사전통지(의견청취)</span>
+                    <span class="process-arrow">→</span>
+                    <span class="process-step">과태료부과</span>
+                `;
+            } else if (val === '행정처분') {
+                flowHtml = `
+                    <span class="process-step">조사</span>
+                    <span class="process-arrow">→</span>
+                    <span class="process-step">사전통지(의견청취)</span>
+                    <span class="process-arrow">→</span>
+                    <span class="process-step">처분</span>
+                `;
+            } else if (val === '기타') {
+                flowHtml = `<span style="color: var(--text-muted); font-size: 0.9rem;">별도 지정 프로세스 없음</span>`;
+            }
+
+            processFlowBox.innerHTML = flowHtml;
+            
+            // Trigger reflow for animation
+            processFlowArea.style.display = 'none';
+            processFlowArea.offsetHeight; // force reflow
+            processFlowArea.style.display = 'block';
+        });
+
         searchForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Normalize phone number (remove hyphens)
+            // Normalize phone number (remove hyphens for DB matching)
             const rawPhone = phoneInput.value.trim();
             const normalizedPhone = rawPhone.replace(/-/g, '');
             
@@ -70,15 +201,22 @@
             }
 
             if (customers && customers.length > 0) {
-                // If found: navigate to CaseList
+                // If found: navigate to CaseList (or optionally CaseDetail if we have a specific case logic)
                 resultMsg.textContent = '고객이 확인되었습니다. 이동합니다...';
                 resultMsg.style.color = 'var(--accent-color)';
                 
+                // Get selected category to potentially pass as parameter
+                const selectedCategory = categorySelect.value;
+                const queryParams = new URLSearchParams({ customer_id: customers[0].id });
+                if (selectedCategory) {
+                    queryParams.set('category', selectedCategory);
+                }
+                
                 setTimeout(() => {
-                    window.location.href = `case-list.html?customer_id=${customers[0].id}`;
+                    window.location.href = `case-list.html?${queryParams.toString()}`;
                 }, 500);
             } else {
-                // If not found: show "Create New Customer" button
+                // If not found: show "Create New Customer & Case" button
                 resultMsg.textContent = '등록된 고객이 없습니다.';
                 resultMsg.style.color = 'var(--text-muted)';
                 createCustomerBtn.style.display = 'block';
@@ -86,8 +224,20 @@
         });
 
         createCustomerBtn.addEventListener('click', () => {
-            // Navigation or modal for new customer
-            alert('신규 고객 등록 기능 구현 예정');
+            // Get data to pass to create customer page
+            const rawPhone = phoneInput.value.trim();
+            const normalizedPhone = rawPhone.replace(/-/g, '');
+            const selectedCategory = categorySelect.value;
+            
+            const queryParams = new URLSearchParams({ phone: normalizedPhone });
+            if (selectedCategory) {
+                queryParams.set('category', selectedCategory);
+            }
+            
+            // Usually you would navigate to a customer creation page,
+            // or show a modal. For now, we will just alert as placeholder or navigate if you have a page.
+            // Let's assume we pass the params to a creation flow
+            alert('신규 고객 등록 기능: ' + normalizedPhone + ' / ' + (selectedCategory || '유형 미지정') + '\n(구현 예정)');
         });
     </script>
 </body>

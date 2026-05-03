@@ -1,0 +1,11 @@
+{
+  "name": "antigravity-day5",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}
