@@ -145,7 +145,14 @@
             }
 
             let flowHtml = '';
+            let basisHtml = '';
+            
             if (val === '과태료') {
+                basisHtml = `
+                    <div style="width: 100%; margin-bottom: 1rem; padding: 0.6rem 1rem; background: rgba(139, 92, 246, 0.1); border-left: 3px solid var(--accent-color); border-radius: 4px; text-align: left;">
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">⚖️ 근거법: <strong style="color: var(--accent-color);">질서위반행위규제법</strong></span>
+                    </div>
+                `;
                 flowHtml = `
                     <span class="process-step">소명</span>
                     <span class="process-arrow">→</span>
@@ -154,6 +161,11 @@
                     <span class="process-step">과태료부과</span>
                 `;
             } else if (val === '행정처분') {
+                basisHtml = `
+                    <div style="width: 100%; margin-bottom: 1rem; padding: 0.6rem 1rem; background: rgba(139, 92, 246, 0.1); border-left: 3px solid var(--accent-color); border-radius: 4px; text-align: left;">
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">⚖️ 근거법: <strong style="color: var(--accent-color);">행정절차법</strong></span>
+                    </div>
+                `;
                 flowHtml = `
                     <span class="process-step">조사</span>
                     <span class="process-arrow">→</span>
@@ -165,7 +177,7 @@
                 flowHtml = `<span style="color: var(--text-muted); font-size: 0.9rem;">별도 지정 프로세스 없음</span>`;
             }
 
-            processFlowBox.innerHTML = flowHtml;
+            processFlowBox.innerHTML = basisHtml + flowHtml;
             
             // Trigger reflow for animation
             processFlowArea.style.display = 'none';
