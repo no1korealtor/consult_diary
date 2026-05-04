@@ -57,25 +57,30 @@
         }
 
         async function init() {
-            await requireAuth();
-            
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            if (session) {
-                // Get current user name
-                const { data: userData } = await supabase
-                    .from('users')
-                    .select('name')
-                    .eq('id', session.user.id)
-                    .single();
+            try {
+                await requireAuth();
                 
-                currentUser = userData ? userData.name : session.user.email;
-            } else {
-                currentUser = "데모 방문자"; // Fallback for demo mode
-            }
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session) {
+                    // Get current user name
+                    const { data: userData } = await supabase
+                        .from('users')
+                        .select('name')
+                        .eq('id', session.user.id)
+                        .single();
+                    
+                    currentUser = userData ? userData.name : session.user.email;
+                } else {
+                    currentUser = "데모 방문자"; // Fallback for demo mode
+                }
 
-            await loadStagesAndCase();
-            await loadLogs();
+                await loadStagesAndCase();
+                await loadLogs();
+            } catch (err) {
+                console.error("Initialization error:", err);
+                document.getElementById('timeline').innerHTML = `<div style="color:red; text-align:center;">오류가 발생했습니다:<br>${err.message}</div>`;
+            }
         }
 
         async function loadStagesAndCase() {
