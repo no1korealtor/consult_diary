@@ -164,3 +164,45 @@ input:focus, select:focus {
 @media (min-width: 768px) {
     .btn { width: auto; }
 }
+
+/* Footer */
+.site-footer {
+    margin-top: auto;
+    background-color: rgba(15, 23, 42, 0.9);
+    border-top: 1px solid var(--border-color);
+    padding: 2rem 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+.site-footer-inner {
+    max-width: 800px;
+    margin: 0 auto;
+}
+.footer-links {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.footer-links a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+.footer-links a:hover {
+    text-decoration: underline;
+}
+.footer-info {
+    line-height: 1.8;
+}
+.footer-info span {
+    margin-right: 1.5rem;
+    display: inline-block;
+}
+.footer-strong {
+    color: var(--text-color);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.95rem;
+}
