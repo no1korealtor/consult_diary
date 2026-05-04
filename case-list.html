@@ -41,71 +41,77 @@
         };
 
         async function loadCases() {
-            await requireAuth();
+            try {
+                await requireAuth();
 
-            // Fetch cases joined with customers
-            // And we need last log content. Since Supabase PostgREST might not easily do a "latest log" join without a view or rpc, 
-            // we will fetch cases with customers and then fetch logs, or fetch them all together if possible.
-            // Assuming there's a view or we do it client side. Let's do it client side for simplicity.
-            const urlParams = new URLSearchParams(window.location.search);
-            const customerId = urlParams.get('customer_id');
+                const urlParams = new URLSearchParams(window.location.search);
+                const customerId = urlParams.get('customer_id');
 
-            let query = supabase
-                .from('cases')
-                .select(`
-                    id,
-                    case_type,
-                    status,
-                    customers (
-                        name,
-                        phone
-                    )
-                `)
-                .order('created_at', { ascending: false });
+                let query = supabase
+                    .from('cases')
+                    .select(`
+                        id,
+                        case_type,
+                        status,
+                        customers (
+                            name,
+                            phone
+                        )
+                    `)
+                    .order('created_at', { ascending: false });
 
-            // URL에 고객 ID가 있으면 해당 고객의 케이스만 필터링
-            if (customerId) {
-                query = query.eq('customer_id', customerId);
-            }
+                // URL에 고객 ID가 있으면 해당 고객의 케이스만 필터링
+                if (customerId) {
+                    query = query.eq('customer_id', customerId);
+                }
 
-            const { data: cases, error } = await query;
+                const { data: cases, error } = await query;
 
-            if (error) {
-                document.getElementById('caseList').innerHTML = `<div style="color:red; text-align:center;">데이터를 불러오는 중 오류가 발생했습니다: ${error.message}</div>`;
-                return;
-            }
+                if (error) {
+                    document.getElementById('caseList').innerHTML = `<div style="color:red; text-align:center;">데이터를 불러오는 중 오류가 발생했습니다: ${error.message}</div>`;
+                    return;
+                }
 
-            const safeCases = cases || [];
-            const caseList = document.getElementById('caseList');
-            caseList.innerHTML = '';
+                const safeCases = cases || [];
+                const caseList = document.getElementById('caseList');
+                caseList.innerHTML = '';
 
-            for (const c of safeCases) {
-                // Get last log
-                const { data: logs } = await supabase
-                    .from('logs')
-                    .select('content')
-                    .eq('case_id', c.id)
-                    .order('created_at', { ascending: false })
-                    .limit(1);
+                for (const c of safeCases) {
+                    // Get last log
+                    const { data: logs } = await supabase
+                        .from('logs')
+                        .select('content')
+                        .eq('case_id', c.id)
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+                    
+                    const lastLog = logs && logs.length > 0 ? logs[0].content : '로그 없음';
+
+                    const card = document.createElement('div');
+                    card.className = 'case-card';
+                    card.onclick = () => window.location.href = `case-detail.html?id=${c.id}`;
+                    card.innerHTML = `
+                        <div class="case-header">
+                            <strong style="font-size: 1.1rem;">${c.customers?.name || '알 수 없음'} (${c.customers?.phone || '번호 없음'})</strong>
+                            <span class="badge" style="background-color: var(--primary);">${c.status || '진행중'}</span>
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">유형: ${c.case_type || '-'}</div>
+                        <div class="text-sm">최근 내용: ${lastLog}</div>
+                    `;
+                    caseList.appendChild(card);
+                }
                 
-                const lastLog = logs && logs.length > 0 ? logs[0].content : '로그 없음';
-
-                const card = document.createElement('div');
-                card.className = 'case-card';
-                card.onclick = () => window.location.href = `case-detail.html?id=${c.id}`;
-                card.innerHTML = `
-                    <div class="case-header">
-                        <strong style="font-size: 1.1rem;">${c.customers?.name || '알 수 없음'} (${c.customers?.phone || '번호 없음'})</strong>
-                        <span class="badge" style="background-color: var(--primary);">${c.status || '진행중'}</span>
-                    </div>
-                    <div style="margin-bottom: 0.5rem;">유형: ${c.case_type || '-'}</div>
-                    <div class="text-sm">최근 내용: ${lastLog}</div>
-                `;
-                caseList.appendChild(card);
-            }
-            
-            if (safeCases.length === 0) {
-                caseList.innerHTML = `<div style="text-align: center; color: var(--text-muted);">등록된 케이스가 없습니다.</div>`;
+                if (safeCases.length === 0) {
+                    // IF no cases found for this customer, show a button to create one!
+                    caseList.innerHTML = `
+                        <div style="text-align: center; color: var(--text-muted); margin-bottom: 1rem;">등록된 케이스가 없습니다.</div>
+                        <div style="text-align: center;">
+                            <button onclick="window.history.back()" class="btn btn-secondary">뒤로 가기</button>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                document.getElementById('caseList').innerHTML = `<div style="color:red; text-align:center;">예기치 않은 오류가 발생했습니다:<br>${err.message}</div>`;
             }
         }
 

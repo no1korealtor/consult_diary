@@ -270,7 +270,11 @@
 
             <div id="resultArea" class="step-container" style="margin-top: 1rem; display: none; animation-delay: 0s;">
                 <p id="resultMsg" style="margin-bottom: 1rem;"></p>
-                <button id="createCustomerBtn" class="btn btn-secondary" style="display: none; width: 100%;">Create New Customer & Case</button>
+                <div id="existingCustomerActions" style="display: none; gap: 0.5rem; flex-direction: column;">
+                    <button id="viewListBtn" class="btn btn-secondary" style="width: 100%;">기존 상담 내역 보기</button>
+                    <button id="createNewCaseBtn" class="btn" style="width: 100%;">이 고객으로 새 상담(사건) 시작</button>
+                </div>
+                <button id="createCustomerBtn" class="btn btn-secondary" style="display: none; width: 100%;">신규 고객 등록 및 상담 시작</button>
             </div>
         </div>
     </div>
@@ -302,6 +306,11 @@
         const resultArea = document.getElementById('resultArea');
         const resultMsg = document.getElementById('resultMsg');
         const createCustomerBtn = document.getElementById('createCustomerBtn');
+        const existingCustomerActions = document.getElementById('existingCustomerActions');
+        const viewListBtn = document.getElementById('viewListBtn');
+        const createNewCaseBtn = document.getElementById('createNewCaseBtn');
+        
+        let currentFoundCustomer = null;
 
         // Hide search form if DEMO_MODE is true
         if (DEMO_MODE) {
@@ -515,7 +524,7 @@
                                         <span class="toggle-icon">▼</span>
                                     </div>
                                     <div class="timeline-content">
-                                        <p>처분을 내리기 전 당사자에게 미리 알리고, 의견이나 소명을 듣는 과정(청문 등)입니다.</p>
+                                        <p>처분을 내리기 전 당사자에게 미리 알리고, 의견이나 소명을 듣는 절차로 등록취소 또는 자격취소의 경우 청문으로 업무정지의 경우 의견제출로서 의견청취를 하게 된다.</p>
                                         <div class="tip-box">
                                             <strong>📝 주의:</strong> 이 단계에서 적극적으로 유리한 증거와 의견서를 제출하여 처분 수위를 낮추는 것이 가장 효과적입니다.
                                         </div>
@@ -531,7 +540,7 @@
                                         <span class="toggle-icon">▼</span>
                                     </div>
                                     <div class="timeline-content">
-                                        <p>행정청이 최종적으로 행정처분(영업정지, 자격취소, 시정명령 등)을 내리는 단계입니다.</p>
+                                        <p>행정처분의 효력은 도달로서 효력이 발생하고 비로서 행정심판이나 행정소송의 청구가 가능하며 효력정지를 집행정지시키기 위해서는 1주정도의 시간이 소요된다.</p>
                                     </div>
                                 </div>
                             </div>
@@ -587,6 +596,8 @@
             resultMsg.textContent = '검색 중...';
             resultMsg.style.color = 'var(--text-main)';
             createCustomerBtn.style.display = 'none';
+            existingCustomerActions.style.display = 'none';
+            currentFoundCustomer = null;
 
             // Query customers table by phone
             const { data: customers, error } = await supabase
@@ -602,27 +613,11 @@
             }
 
             if (customers && customers.length > 0) {
-                // If found: navigate to CaseList (or optionally CaseDetail if we have a specific case logic)
-                resultMsg.textContent = '고객이 확인되었습니다. 이동합니다...';
+                currentFoundCustomer = customers[0];
+                resultMsg.textContent = `${currentFoundCustomer.name} 고객님이 확인되었습니다.`;
                 resultMsg.style.color = 'var(--accent-color)';
                 
-                // Get selected category to potentially pass as parameter
-                const selectedCategory = categorySelect.value;
-                const subCategoryArea = document.getElementById('subCategoryArea');
-                const subCategorySelect = document.getElementById('subCategorySelect');
-                let finalCategory = selectedCategory;
-                if (subCategoryArea.style.display !== 'none' && subCategorySelect.value) {
-                    finalCategory = `${selectedCategory} (${subCategorySelect.value})`;
-                }
-
-                const queryParams = new URLSearchParams({ customer_id: customers[0].id });
-                if (finalCategory) {
-                    queryParams.set('category', finalCategory);
-                }
-                
-                setTimeout(() => {
-                    window.location.href = `case-list.html?${queryParams.toString()}`;
-                }, 500);
+                existingCustomerActions.style.display = 'flex';
             } else {
                 // If not found: show "Create New Customer & Case" button
                 resultMsg.textContent = '등록된 고객이 없습니다.';
@@ -631,9 +626,29 @@
             }
         });
 
-        createCustomerBtn.addEventListener('click', async () => {
-            const rawPhone = phoneInput.value.trim();
-            const normalizedPhone = rawPhone.replace(/-/g, '');
+        viewListBtn.addEventListener('click', () => {
+            if (!currentFoundCustomer) return;
+            const selectedCategory = categorySelect.value;
+            const subCategoryArea = document.getElementById('subCategoryArea');
+            const subCategorySelect = document.getElementById('subCategorySelect');
+            let finalCategory = selectedCategory;
+            if (subCategoryArea.style.display !== 'none' && subCategorySelect.value) {
+                finalCategory = `${selectedCategory} (${subCategorySelect.value})`;
+            }
+
+            const queryParams = new URLSearchParams({ customer_id: currentFoundCustomer.id });
+            if (finalCategory) {
+                queryParams.set('category', finalCategory);
+            }
+            window.location.href = `case-list.html?${queryParams.toString()}`;
+        });
+
+        createNewCaseBtn.addEventListener('click', async () => {
+            if (!currentFoundCustomer) return;
+            await createCaseForCustomer(currentFoundCustomer);
+        });
+
+        async function createCaseForCustomer(customer) {
             const selectedCategory = categorySelect.value || '기타';
             const subCategoryArea = document.getElementById('subCategoryArea');
             const subCategorySelect = document.getElementById('subCategorySelect');
@@ -643,25 +658,12 @@
                 finalCategory = `${selectedCategory} (${subCategorySelect.value})`;
             }
             
-            // UI Update: loading state
-            createCustomerBtn.disabled = true;
-            createCustomerBtn.textContent = '생성 중...';
-            resultMsg.textContent = '신규 고객과 사건을 생성 중입니다...';
-            
-            try {
-                // 1. Create Customer
-                // Using a simple prompt to get the name, defaulting to "신규고객"
-                const customerName = prompt("고객 이름을 입력하세요:", "신규고객") || "신규고객";
-                
-                const { data: newCustomer, error: customerError } = await supabase
-                    .from('customers')
-                    .insert([{ name: customerName, phone: normalizedPhone }])
-                    .select()
-                    .single();
-                    
-                if (customerError) throw customerError;
+            resultMsg.textContent = '새 사건을 생성 중입니다...';
+            resultMsg.style.color = 'var(--text-main)';
+            existingCustomerActions.style.display = 'none';
+            createCustomerBtn.style.display = 'none';
 
-                // 2. Fetch Stage ID based on category
+            try {
                 let current_stage_id = null;
                 let targetStageName = null;
                 
@@ -673,20 +675,17 @@
                         .from('stages')
                         .select('id')
                         .eq('name', targetStageName)
-                        .maybeSingle(); // maybeSingle so it doesn't throw if 0 rows found
+                        .maybeSingle(); 
                         
                     if (stageData) {
                         current_stage_id = stageData.id;
-                    } else if (stageError) {
-                        console.warn("Stage fetch error:", stageError);
                     }
                 }
                 
-                // 3. Create Case
                 const { data: newCase, error: caseError } = await supabase
                     .from('cases')
                     .insert([{
-                        customer_id: newCustomer.id,
+                        customer_id: customer.id,
                         case_type: finalCategory,
                         status: '진행중',
                         current_stage_id: current_stage_id
@@ -696,21 +695,48 @@
                     
                 if (caseError) throw caseError;
                 
-                // 4. Create initial log
                 await supabase.from('logs').insert([{
                     case_id: newCase.id,
                     content: `[시스템] 신규 케이스 생성 - 유형: ${finalCategory}`,
                     created_by: '시스템'
                 }]);
                 
-                // 4. Navigate to CaseDetail directly
                 window.location.href = `case-detail.html?id=${newCase.id}`;
+                
+            } catch (err) {
+                console.error("Error creating case:", err);
+                alert("생성 중 오류가 발생했습니다: " + err.message);
+                resultMsg.textContent = '생성 실패. 다시 시도해주세요.';
+                existingCustomerActions.style.display = 'flex';
+            }
+        }
+
+        createCustomerBtn.addEventListener('click', async () => {
+            const rawPhone = phoneInput.value.trim();
+            const normalizedPhone = rawPhone.replace(/-/g, '');
+            
+            createCustomerBtn.disabled = true;
+            createCustomerBtn.textContent = '생성 중...';
+            resultMsg.textContent = '신규 고객을 생성 중입니다...';
+            
+            try {
+                const customerName = prompt("고객 이름을 입력하세요:", "신규고객") || "신규고객";
+                
+                const { data: newCustomer, error: customerError } = await supabase
+                    .from('customers')
+                    .insert([{ name: customerName, phone: normalizedPhone }])
+                    .select()
+                    .single();
+                    
+                if (customerError) throw customerError;
+
+                await createCaseForCustomer(newCustomer);
                 
             } catch (err) {
                 console.error("Error creating customer/case:", err);
                 alert("생성 중 오류가 발생했습니다: " + err.message);
                 createCustomerBtn.disabled = false;
-                createCustomerBtn.textContent = 'Create New Customer & Case';
+                createCustomerBtn.textContent = '신규 고객 등록 및 상담 시작';
                 resultMsg.textContent = '생성 실패. 다시 시도해주세요.';
             }
         });
