@@ -10,7 +10,8 @@
 <body>
     <div class="container" style="max-width: 400px; margin-top: 10vh;">
         <div class="glass-panel text-center">
-            <h2 style="text-align: center; margin-bottom: 2rem;">시스템 로그인</h2>
+            <h2 id="loginTitle" style="text-align: center; margin-bottom: 0.5rem;">시스템 로그인</h2>
+            <p id="loginDesc" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; display: none;">전문가 전용 상담 관리 CRM</p>
             <form id="loginForm" class="flex-col">
                 <input type="email" id="email" placeholder="이메일" required>
                 <input type="password" id="password" placeholder="비밀번호" required>
@@ -23,8 +24,16 @@
     <script type="module">
         import { supabase, DEMO_MODE } from './supabase-client.js';
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const isProLogin = urlParams.get('pro') === 'true';
+
+        if (isProLogin) {
+            document.getElementById('loginTitle').textContent = '공인중개사 / 전문 상담사 로그인';
+            document.getElementById('loginDesc').style.display = 'block';
+        }
+
         // Check if already logged in or DEMO_MODE is on
-        if (DEMO_MODE) {
+        if (DEMO_MODE && !isProLogin) {
             window.location.href = 'consult-start.html';
         } else {
             const { data: { session } } = await supabase.auth.getSession();
