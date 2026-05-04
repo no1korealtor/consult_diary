@@ -520,7 +520,7 @@
                                 <div class="timeline-dot"></div>
                                 <div class="timeline-card">
                                     <div class="timeline-card-header">
-                                        <span>1. 조사</span>
+                                        <span>1. 조사단계</span>
                                         <span class="toggle-icon">▼</span>
                                     </div>
                                     <div class="timeline-content">
@@ -684,7 +684,7 @@
                 let targetStageName = null;
                 
                 if (selectedCategory === '과태료') targetStageName = '소명';
-                else if (selectedCategory === '행정처분') targetStageName = '조사';
+                else if (selectedCategory === '행정처분') targetStageName = '조사단계';
                 
                 if (targetStageName) {
                     const { data: stageData, error: stageError } = await supabase

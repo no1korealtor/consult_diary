@@ -79,25 +79,47 @@
         }
 
         async function loadStagesAndCase() {
-            // Load all stages for dropdown
-            const { data: stages } = await supabase.from('stages').select('*').order('id');
-            const stageSelect = document.getElementById('stageSelect');
-            
-            if (stages) {
-                stages.forEach(stage => {
-                    const opt = document.createElement('option');
-                    opt.value = stage.id;
-                    opt.textContent = stage.name;
-                    stageSelect.appendChild(opt);
-                });
-            }
-
-            // Load case details to set current stage
+            // 1. Get case details first to know the case type
             const { data: caseData } = await supabase
                 .from('cases')
-                .select('current_stage_id')
+                .select('current_stage_id, case_type')
                 .eq('id', caseId)
                 .single();
+
+            const isPenalty = caseData?.case_type && caseData.case_type.includes('과태료');
+            const isAdmin = caseData?.case_type && caseData.case_type.includes('행정처분');
+
+            // 2. Define expected stages based on case_type
+            let expectedStages = [];
+            if (isPenalty) {
+                expectedStages = ['소명', '사전통지', '과태료 부과', '이의제기'];
+            } else if (isAdmin) {
+                expectedStages = ['조사단계', '사전통지', '행정처분', '불복절차'];
+            }
+
+            // 3. Ensure expected stages exist in DB
+            for (const stageName of expectedStages) {
+                const { data: existing } = await supabase.from('stages').select('id').eq('name', stageName).maybeSingle();
+                if (!existing) {
+                    await supabase.from('stages').insert([{ name: stageName }]);
+                }
+            }
+
+            // 4. Load stages for dropdown (Filtered by expected stages if applicable)
+            const { data: allStages } = await supabase.from('stages').select('*').order('id');
+            const stageSelect = document.getElementById('stageSelect');
+            
+            if (allStages) {
+                allStages.forEach(stage => {
+                    // Only add to dropdown if it's in the expected stages, OR if it's '기타' and no expected stages
+                    if (expectedStages.length === 0 || expectedStages.includes(stage.name)) {
+                        const opt = document.createElement('option');
+                        opt.value = stage.id;
+                        opt.textContent = stage.name;
+                        stageSelect.appendChild(opt);
+                    }
+                });
+            }
 
             if (caseData && caseData.current_stage_id) {
                 stageSelect.value = caseData.current_stage_id;
