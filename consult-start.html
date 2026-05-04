@@ -243,6 +243,14 @@
                 </select>
             </div>
 
+            <!-- Step 1-2 (Sub Category) -->
+            <div id="subCategoryArea" class="step-container" style="display: none; animation-delay: 0.05s;">
+                <label for="subCategorySelect" class="form-label">상세 유형 (Sub Category)</label>
+                <select id="subCategorySelect" class="form-input">
+                </select>
+            </div>
+
+
             <!-- Step 2 -->
             <div id="processFlowArea" class="step-container" style="display: none; animation-delay: 0.1s;">
                 <label class="form-label">진행 프로세스 (Process Flow)</label>
@@ -314,7 +322,30 @@
         // Category selection handler
         categorySelect.addEventListener('change', (e) => {
             const val = e.target.value;
+            const subCategoryArea = document.getElementById('subCategoryArea');
+            const subCategorySelect = document.getElementById('subCategorySelect');
             
+            subCategorySelect.innerHTML = '';
+            
+            if (val === '과태료') {
+                subCategorySelect.innerHTML = `
+                    <option value="표시광고위반">표시광고위반</option>
+                    <option value="부동산거래신고위반">부동산거래신고위반</option>
+                    <option value="기타">기타</option>
+                `;
+                subCategoryArea.style.display = 'block';
+            } else if (val === '행정처분') {
+                subCategorySelect.innerHTML = `
+                    <option value="업무정지">업무정지</option>
+                    <option value="등록취소">등록취소</option>
+                    <option value="자격취소">자격취소</option>
+                    <option value="기타">기타</option>
+                `;
+                subCategoryArea.style.display = 'block';
+            } else {
+                subCategoryArea.style.display = 'none';
+            }
+
             if (!val) {
                 processFlowArea.style.display = 'none';
                 return;
@@ -577,9 +608,16 @@
                 
                 // Get selected category to potentially pass as parameter
                 const selectedCategory = categorySelect.value;
+                const subCategoryArea = document.getElementById('subCategoryArea');
+                const subCategorySelect = document.getElementById('subCategorySelect');
+                let finalCategory = selectedCategory;
+                if (subCategoryArea.style.display !== 'none' && subCategorySelect.value) {
+                    finalCategory = `${selectedCategory} (${subCategorySelect.value})`;
+                }
+
                 const queryParams = new URLSearchParams({ customer_id: customers[0].id });
-                if (selectedCategory) {
-                    queryParams.set('category', selectedCategory);
+                if (finalCategory) {
+                    queryParams.set('category', finalCategory);
                 }
                 
                 setTimeout(() => {
@@ -597,6 +635,13 @@
             const rawPhone = phoneInput.value.trim();
             const normalizedPhone = rawPhone.replace(/-/g, '');
             const selectedCategory = categorySelect.value || '기타';
+            const subCategoryArea = document.getElementById('subCategoryArea');
+            const subCategorySelect = document.getElementById('subCategorySelect');
+            
+            let finalCategory = selectedCategory;
+            if (subCategoryArea.style.display !== 'none' && subCategorySelect.value) {
+                finalCategory = `${selectedCategory} (${subCategorySelect.value})`;
+            }
             
             // UI Update: loading state
             createCustomerBtn.disabled = true;
@@ -642,7 +687,7 @@
                     .from('cases')
                     .insert([{
                         customer_id: newCustomer.id,
-                        case_type: selectedCategory,
+                        case_type: finalCategory,
                         status: '진행중',
                         current_stage_id: current_stage_id
                     }])
@@ -650,6 +695,13 @@
                     .single();
                     
                 if (caseError) throw caseError;
+                
+                // 4. Create initial log
+                await supabase.from('logs').insert([{
+                    case_id: newCase.id,
+                    content: `[시스템] 신규 케이스 생성 - 유형: ${finalCategory}`,
+                    created_by: '시스템'
+                }]);
                 
                 // 4. Navigate to CaseDetail directly
                 window.location.href = `case-detail.html?id=${newCase.id}`;
