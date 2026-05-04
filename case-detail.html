@@ -46,7 +46,7 @@
     </div>
 
     <script type="module">
-        import { supabase } from './supabase-client.js';
+        import { supabase, requireAuth, DEMO_MODE } from './supabase-client.js';
 
         const urlParams = new URLSearchParams(window.location.search);
         const caseId = urlParams.get('id');
@@ -57,20 +57,22 @@
         }
 
         async function init() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                window.location.href = 'index.html';
-                return;
-            }
-
-            // Get current user name
-            const { data: userData } = await supabase
-                .from('users')
-                .select('name')
-                .eq('id', session.user.id)
-                .single();
+            await requireAuth();
             
-            currentUser = userData ? userData.name : session.user.email;
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session) {
+                // Get current user name
+                const { data: userData } = await supabase
+                    .from('users')
+                    .select('name')
+                    .eq('id', session.user.id)
+                    .single();
+                
+                currentUser = userData ? userData.name : session.user.email;
+            } else {
+                currentUser = "데모 방문자"; // Fallback for demo mode
+            }
 
             await loadStagesAndCase();
             await loadLogs();

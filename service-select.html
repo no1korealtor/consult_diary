@@ -20,13 +20,10 @@
     </div>
 
     <script type="module">
-        import { supabase } from './supabase-client.js';
+        import { supabase, requireAuth } from './supabase-client.js';
 
         // Check auth and role
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-            window.location.href = 'index.html';
-        }
+        await requireAuth();
 
         const role = localStorage.getItem('userRole');
         

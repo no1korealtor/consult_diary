@@ -32,7 +32,7 @@
     </div>
 
     <script type="module">
-        import { supabase } from './supabase-client.js';
+        import { supabase, requireAuth } from './supabase-client.js';
 
         window.logout = async () => {
             await supabase.auth.signOut();
@@ -41,11 +41,7 @@
         };
 
         async function loadCases() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                window.location.href = 'index.html';
-                return;
-            }
+            await requireAuth();
 
             // Fetch cases joined with customers
             // And we need last log content. Since Supabase PostgREST might not easily do a "latest log" join without a view or rpc, 

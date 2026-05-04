@@ -21,12 +21,16 @@
     </div>
 
     <script type="module">
-        import { supabase } from './supabase-client.js';
+        import { supabase, DEMO_MODE } from './supabase-client.js';
 
-        // Check if already logged in
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-            handleLoginSuccess(session.user);
+        // Check if already logged in or DEMO_MODE is on
+        if (DEMO_MODE) {
+            window.location.href = 'service-select.html';
+        } else {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                handleLoginSuccess(session.user);
+            }
         }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
