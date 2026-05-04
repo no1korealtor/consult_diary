@@ -268,7 +268,7 @@
     </div>
 
     <script type="module">
-        import { supabase, requireAuth } from './supabase-client.js';
+        import { supabase, requireAuth, DEMO_MODE } from './supabase-client.js';
 
         // Timeline toggle function
         window.toggleTimeline = (element) => {
@@ -294,6 +294,11 @@
         const resultArea = document.getElementById('resultArea');
         const resultMsg = document.getElementById('resultMsg');
         const createCustomerBtn = document.getElementById('createCustomerBtn');
+
+        // Hide search form if DEMO_MODE is true
+        if (DEMO_MODE) {
+            searchForm.style.display = 'none';
+        }
 
         // Phone input auto-hyphenation formatting
         phoneInput.addEventListener('input', function(e) {
