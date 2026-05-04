@@ -226,7 +226,7 @@
         <div class="glass-panel text-center">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h2 style="margin: 0;">상담 시작 (Consult Start)</h2>
-                <div>
+                <div id="topActionButtons">
                     <a href="service-select.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto; margin-right: 0.5rem;">뒤로</a>
                     <button onclick="logout()" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto;">로그아웃</button>
                 </div>
@@ -312,9 +312,11 @@
         
         let currentFoundCustomer = null;
 
-        // Hide search form if DEMO_MODE is true
+        // Hide search form and top action buttons if DEMO_MODE is true
         if (DEMO_MODE) {
             searchForm.style.display = 'none';
+            const topActionButtons = document.getElementById('topActionButtons');
+            if (topActionButtons) topActionButtons.style.display = 'none';
         }
 
         // Phone input auto-hyphenation formatting
