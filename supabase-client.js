@@ -7,14 +7,18 @@ export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
 
 // 로컬(개발 환경)에서는 정상 작동(false), 외부 배포 환경(Vercel)에서는 데모 모드(true)
-export const DEMO_MODE = isLocal ? false : true;
+export let DEMO_MODE = isLocal ? false : true;
 
 export async function requireAuth() {
-    if (DEMO_MODE) return;
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-        window.location.href = 'index.html';
+    if (session) {
+        DEMO_MODE = false;
+        return true;
     }
+    if (DEMO_MODE) return false;
+    
+    window.location.href = 'index.html';
+    return false;
 }
 
 // Auth state listener
