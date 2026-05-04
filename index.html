@@ -25,7 +25,7 @@
 
         // Check if already logged in or DEMO_MODE is on
         if (DEMO_MODE) {
-            window.location.href = 'service-select.html';
+            window.location.href = 'consult-start.html';
         } else {
             const { data: { session } } = await supabase.auth.getSession();
             if (session) {
