@@ -618,13 +618,70 @@
             processFlowBox.innerHTML = stepperHtml + selectHtml + guideHtml;
         }
 
+        function renderAccordionInfo(category) {
+            const stages = STAGE_CONFIG[category];
+            let html = '<div class="timeline-container">';
+            
+            let currentPhase = '';
+
+            stages.forEach((s, i) => {
+                let phaseType = (i >= 3) ? 'appeal' : 'admin';
+                let newPhase = (i >= 3) ? '🚨 불복 절차' : '⚖️ 행정 절차';
+                
+                if (currentPhase !== newPhase) {
+                    if (currentPhase !== '') {
+                        html += `</div>`; // close previous wrapper
+                    }
+                    currentPhase = newPhase;
+                    
+                    let headerClass = (phaseType === 'appeal') ? 'phase-appeal' : 'phase-admin';
+                    let wrapperClass = (phaseType === 'appeal') ? 'wrapper-appeal' : 'wrapper-admin';
+                    let title = newPhase + (phaseType === 'admin' && s.basis ? ` (근거법: ${s.basis})` : '');
+                    
+                    html += `<div class="phase-header ${headerClass}">${title}</div>`;
+                    html += `<div class="timeline-wrapper ${wrapperClass}">`;
+                }
+                
+                let itemClass = (phaseType === 'appeal') ? 'phase-appeal-item' : '';
+                let activeClass = (i === 0) ? 'expanded active' : '';
+                
+                html += `
+                    <div class="timeline-item ${itemClass} ${activeClass}" onclick="toggleTimeline(this)">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-card">
+                            <div class="timeline-card-header">
+                                <span>${i + 1}. ${s.name}</span>
+                                <span class="toggle-icon">▼</span>
+                            </div>
+                            <div class="timeline-content">
+                                <p>${s.desc}</p>
+                                ${s.tip ? `<div class="tip-box" style="margin-bottom: 0.8rem; white-space: pre-wrap;">${s.tip}</div>` : ''}
+                                ${s.lawText ? `<div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; font-size: 0.8rem; border-left: 3px solid ${(phaseType === 'appeal') ? '#fca5a5' : '#60a5fa'}; margin-top: 0.5rem;"><strong style="color: ${(phaseType === 'appeal') ? '#fca5a5' : '#60a5fa'};">📖 ${s.lawTitle || '관련 법령'}</strong><br><br><span style="color: #cbd5e1; line-height: 1.6;">${s.lawText}</span></div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            if (currentPhase !== '') {
+                html += `</div>`; // close last wrapper
+            }
+            html += `</div>`;
+            
+            processFlowBox.innerHTML = html;
+        }
+
         function updateProcessFlow(val) {
             if (!STAGE_CONFIG[val]) {
                 processFlowBox.innerHTML = `<span style="color: var(--text-muted); font-size: 0.9rem;">별도 지정 프로세스 없음</span>`;
                 return;
             }
 
-            renderStageInfo(val, 0);
+            if (DEMO_MODE) {
+                renderAccordionInfo(val);
+            } else {
+                renderStageInfo(val, 0);
+            }
 
             // Trigger reflow for animation
             processFlowArea.style.display = 'none';
