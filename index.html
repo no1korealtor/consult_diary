@@ -19,6 +19,12 @@
             </form>
             <div id="errorMsg" style="color: #ef4444; margin-top: 1rem; text-align: center; display: none;"></div>
         </div>
+        
+        <!-- 일반 사용자 유입을 위한 CTA (버튼) -->
+        <div id="publicCtaSection" style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(145deg, rgba(37,99,235,0.1), rgba(15,23,42,0.6)); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem; line-height: 1.5; word-break: keep-all;">갑작스러운 과태료나 행정처분으로 막막하신가요?<br>내 상황에 딱 맞는 전문가의 대응 가이드를 확인해 보세요.</p>
+            <a href="public-consult.html" class="btn" style="background: linear-gradient(to right, #3b82f6, #8b5cf6); border: none; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); text-decoration: none; display: inline-block; width: 100%; font-weight: bold; font-size: 1.05rem;">무료 자가진단 및 상담 예약하기</a>
+        </div>
     </div>
 
     <script type="module">
@@ -32,14 +38,11 @@
             document.getElementById('loginDesc').style.display = 'block';
         }
 
-        // Check if already logged in or DEMO_MODE is on
-        if (DEMO_MODE && !isProLogin) {
-            window.location.href = 'consult-start.html';
-        } else {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                handleLoginSuccess(session.user);
-            }
+        // Check if already logged in
+        // (DEMO_MODE 강제 리다이렉트를 제거하여 첫 화면에서 하단 버튼을 누르도록 유도)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            handleLoginSuccess(session.user);
         }
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
