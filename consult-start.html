@@ -227,8 +227,9 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h2 style="margin: 0;">상담 시작 (Consult Start)</h2>
                 <div id="topActionButtons">
-                    <a href="service-select.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto; margin-right: 0.5rem;">뒤로</a>
-                    <button onclick="logout()" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto;">로그아웃</button>
+                    <a href="index.html?pro=true" id="expertLoginBtn" class="btn" style="padding: 0.5rem 1rem; width: auto; background: var(--accent-color); display: none;">전문가 로그인</a>
+                    <a href="service-select.html" id="backBtn" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto; margin-right: 0.5rem;">뒤로</a>
+                    <button onclick="logout()" id="logoutBtn" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto;">로그아웃</button>
                 </div>
             </div>
             
@@ -239,29 +240,9 @@
                     <option value="">유형을 선택하세요</option>
                     <option value="과태료">과태료</option>
                     <option value="행정처분">행정처분</option>
-                    <option value="기타">기타</option>
                 </select>
             </div>
 
-            <!-- Step 1-2 (Sub Category) -->
-            <div id="subCategoryArea" class="step-container" style="display: none; animation-delay: 0.05s;">
-                <label for="subCategorySelect" class="form-label">상세 유형 (Sub Category)</label>
-                <select id="subCategorySelect" class="form-input">
-                </select>
-            </div>
-
-            <!-- Step 1-3 (Detail & Penalty) -->
-            <div id="detailSelectArea" class="step-container" style="display: none; animation-delay: 0.07s;">
-                <label for="detailSelect" class="form-label">위반 세부 내용</label>
-                <select id="detailSelect" class="form-input">
-                </select>
-                
-                <div id="penaltyInfoCard" style="display: none; margin-top: 1rem; padding: 1.2rem; background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 8px;">
-                    <div style="color: #ef4444; font-weight: bold; margin-bottom: 0.5rem; font-size: 1.1rem;">🚨 예상 최대 과태료: <span id="penaltyAmount"></span>만원</div>
-                    <div style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.3rem;"><strong>근거 법령:</strong> 공인중개사법 제<span id="penaltyLaw"></span></div>
-                    <div style="font-size: 0.85rem; color: #94a3b8;">*주의: 행정청 조사 결과 및 소명 여부에 따라 실제 부과 금액은 달라질 수 있습니다.</div>
-                </div>
-            </div>
 
 
             <!-- Step 2 -->
@@ -296,16 +277,6 @@
     <script type="module">
         import { supabase, requireAuth, DEMO_MODE } from './supabase-client.js';
 
-        // Penalty Constants
-        const PENALTY_DATA = {
-            '표시광고위반': [
-                { id: 1, law_code: '18조의2-4', detail: '존재하지 않는 매물 광고', max_fine: 500 },
-                { id: 2, law_code: '18조의2-4', detail: '거짓/과장 광고', max_fine: 300 },
-                { id: 3, law_code: '18조의2-4', detail: '중개 불가능 매물 광고', max_fine: 400 },
-                { id: 4, law_code: '18조의2-4', detail: '중개 의사 없음', max_fine: 250 },
-                { id: 5, law_code: '18조의2-4', detail: '중요사항 은폐', max_fine: 300 }
-            ]
-        };
 
         // Timeline toggle function
         window.toggleTimeline = (element) => {
@@ -337,11 +308,12 @@
         
         let currentFoundCustomer = null;
 
-        // Hide search form and top action buttons if DEMO_MODE is true
+        // Hide search form and adjust top action buttons if DEMO_MODE is true
         if (DEMO_MODE) {
             searchForm.style.display = 'none';
-            const topActionButtons = document.getElementById('topActionButtons');
-            if (topActionButtons) topActionButtons.style.display = 'none';
+            document.getElementById('backBtn').style.display = 'none';
+            document.getElementById('logoutBtn').style.display = 'none';
+            document.getElementById('expertLoginBtn').style.display = 'inline-block';
         }
 
         // Phone input auto-hyphenation formatting
@@ -358,35 +330,6 @@
         // Category selection handler
         categorySelect.addEventListener('change', (e) => {
             const val = e.target.value;
-            const subCategoryArea = document.getElementById('subCategoryArea');
-            const subCategorySelect = document.getElementById('subCategorySelect');
-            const detailSelectArea = document.getElementById('detailSelectArea');
-            const penaltyInfoCard = document.getElementById('penaltyInfoCard');
-            
-            subCategorySelect.innerHTML = '';
-            detailSelectArea.style.display = 'none';
-            penaltyInfoCard.style.display = 'none';
-            
-            if (val === '과태료') {
-                subCategorySelect.innerHTML = `
-                    <option value="">상세 유형 선택</option>
-                    <option value="표시광고위반">표시광고위반</option>
-                    <option value="부동산거래신고위반">부동산거래신고위반</option>
-                    <option value="기타">기타</option>
-                `;
-                subCategoryArea.style.display = 'block';
-            } else if (val === '행정처분') {
-                subCategorySelect.innerHTML = `
-                    <option value="">상세 유형 선택</option>
-                    <option value="업무정지">업무정지</option>
-                    <option value="등록취소">등록취소</option>
-                    <option value="자격취소">자격취소</option>
-                    <option value="기타">기타</option>
-                `;
-                subCategoryArea.style.display = 'block';
-            } else {
-                subCategoryArea.style.display = 'none';
-            }
 
             if (!val) {
                 processFlowArea.style.display = 'none';
@@ -396,43 +339,6 @@
             updateProcessFlow(val);
         });
 
-        // Sub Category selection handler
-        document.getElementById('subCategorySelect').addEventListener('change', (e) => {
-            const val = e.target.value;
-            const detailSelectArea = document.getElementById('detailSelectArea');
-            const detailSelect = document.getElementById('detailSelect');
-            const penaltyInfoCard = document.getElementById('penaltyInfoCard');
-            
-            detailSelect.innerHTML = '<option value="">세부 내용을 선택하세요</option>';
-            penaltyInfoCard.style.display = 'none';
-
-            if (PENALTY_DATA[val]) {
-                PENALTY_DATA[val].forEach(item => {
-                    detailSelect.innerHTML += `<option value="${item.id}">${item.detail} (최고 ${item.max_fine}만원)</option>`;
-                });
-                detailSelectArea.style.display = 'block';
-            } else {
-                detailSelectArea.style.display = 'none';
-            }
-        });
-
-        // Detail selection handler
-        document.getElementById('detailSelect').addEventListener('change', (e) => {
-            const val = e.target.value;
-            const subCategoryVal = document.getElementById('subCategorySelect').value;
-            const penaltyInfoCard = document.getElementById('penaltyInfoCard');
-            
-            if (val && PENALTY_DATA[subCategoryVal]) {
-                const item = PENALTY_DATA[subCategoryVal].find(i => i.id == val);
-                if (item) {
-                    document.getElementById('penaltyAmount').textContent = item.max_fine;
-                    document.getElementById('penaltyLaw').textContent = item.law_code;
-                    penaltyInfoCard.style.display = 'block';
-                }
-            } else {
-                penaltyInfoCard.style.display = 'none';
-            }
-        });
 
         function updateProcessFlow(val) {
             
@@ -715,20 +621,7 @@
 
         viewListBtn.addEventListener('click', () => {
             if (!currentFoundCustomer) return;
-            const selectedCategory = categorySelect.value;
-            const subCategoryArea = document.getElementById('subCategoryArea');
-            const subCategorySelect = document.getElementById('subCategorySelect');
-            const detailSelectArea = document.getElementById('detailSelectArea');
-            const detailSelect = document.getElementById('detailSelect');
-
-            let finalCategory = selectedCategory;
-            if (subCategoryArea.style.display !== 'none' && subCategorySelect.value) {
-                finalCategory = `${selectedCategory} (${subCategorySelect.value})`;
-                if (detailSelectArea.style.display !== 'none' && detailSelect.value) {
-                    const itemText = detailSelect.options[detailSelect.selectedIndex].text.split(' (')[0];
-                    finalCategory = `${selectedCategory} (${subCategorySelect.value} - ${itemText})`;
-                }
-            }
+            const finalCategory = categorySelect.value;
 
             const queryParams = new URLSearchParams({ customer_id: currentFoundCustomer.id });
             if (finalCategory) {
@@ -743,20 +636,7 @@
         });
 
         async function createCaseForCustomer(customer) {
-            const selectedCategory = categorySelect.value || '기타';
-            const subCategoryArea = document.getElementById('subCategoryArea');
-            const subCategorySelect = document.getElementById('subCategorySelect');
-            const detailSelectArea = document.getElementById('detailSelectArea');
-            const detailSelect = document.getElementById('detailSelect');
-            
-            let finalCategory = selectedCategory;
-            if (subCategoryArea.style.display !== 'none' && subCategorySelect.value) {
-                finalCategory = `${selectedCategory} (${subCategorySelect.value})`;
-                if (detailSelectArea.style.display !== 'none' && detailSelect.value) {
-                    const itemText = detailSelect.options[detailSelect.selectedIndex].text.split(' (')[0];
-                    finalCategory = `${selectedCategory} (${subCategorySelect.value} - ${itemText})`;
-                }
-            }
+            const finalCategory = categorySelect.value || '과태료';
             
             resultMsg.textContent = '새 사건을 생성 중입니다...';
             resultMsg.style.color = 'var(--text-main)';
@@ -767,8 +647,8 @@
                 let current_stage_id = null;
                 let targetStageName = null;
                 
-                if (selectedCategory === '과태료') targetStageName = '소명';
-                else if (selectedCategory === '행정처분') targetStageName = '조사단계';
+                if (finalCategory === '과태료') targetStageName = '소명';
+                else if (finalCategory === '행정처분') targetStageName = '조사단계';
                 
                 if (targetStageName) {
                     const { data: stageData, error: stageError } = await supabase
