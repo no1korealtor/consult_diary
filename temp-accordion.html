@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consult Start</title>
+    <link rel="stylesheet" href="app.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .process-step {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid var(--accent-color);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            white-space: nowrap;
+        }
+        .process-arrow {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+        .form-label {
+            display: block; 
+            margin-bottom: 0.5rem; 
+            color: var(--text-muted); 
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: left;
+        }
+        .form-input {
+            width: 100%; 
+            padding: 0.8rem; 
+            border-radius: 8px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            background: rgba(0,0,0,0.2); 
+            color: var(--text-main);
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+        }
+        .form-input option {
+            background-color: #1a1a2e;
+            color: var(--text-main);
+        }
+        .step-container {
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInStep 0.4s ease forwards;
+        }
+        @keyframes fadeInStep {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Tooltip Styles for Legal Info */
+        .legal-tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+
+        .legal-tooltip .tooltip-text {
+            visibility: hidden;
+            width: 320px;
+            background-color: #1a1a2e;
+            color: var(--text-main);
+            text-align: left;
+            border-radius: 8px;
+            padding: 1rem;
+            position: absolute;
+            z-index: 50;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            white-space: normal;
+        }
+
+        .legal-tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -6px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: #1a1a2e transparent transparent transparent;
+        }
+
+        .legal-tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ?섏쭅 ??꾨씪???ㅽ???*/
+        .timeline-container {
+            width: 100%;
+            text-align: left;
+        }
+        .phase-header {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .phase-admin {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .phase-appeal {
+            background-color: rgba(168, 85, 247, 0.15);
+            color: #d8b4fe;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            margin-top: 1.5rem;
+        }
+        .timeline-wrapper {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        .timeline-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 11px;
+            width: 2px;
+        }
+        .wrapper-admin::before { background: #3b82f6; }
+        .wrapper-appeal::before { background: #a855f7; }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -2rem; 
+            top: 1rem;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background-color: #1e293b;
+            border: 3px solid #3b82f6; 
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+        .phase-appeal-item .timeline-dot { border-color: #a855f7; }
+        .timeline-item.active .timeline-dot {
+            background-color: #3b82f6;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+        }
+        .phase-appeal-item.timeline-item.active .timeline-dot {
+            background-color: #a855f7;
+            box-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+        }
+        .timeline-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+        .timeline-card:hover { border-color: #64748b; }
+        .timeline-card-header {
+            padding: 0.8rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+        .timeline-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0 1.2rem;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+        .timeline-item.expanded .timeline-content {
+            max-height: 2000px;
+            padding: 1rem 1.2rem;
+            border-top: 1px solid #334155;
+        }
+        .timeline-item.expanded .toggle-icon { transform: rotate(180deg); }
+        .tip-box {
+            background: rgba(234, 179, 8, 0.1);
+            border-left: 3px solid #eab308;
+            padding: 0.6rem;
+            border-radius: 4px;
+            margin-top: 0.6rem;
+            color: #fef08a;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 500px; margin-top: 10vh; margin-bottom: 10vh;">
+        <div class="glass-panel text-center">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 style="margin: 0;">?곷떞 ?쒖옉 (Consult Start)</h2>
+                <div id="topActionButtons">
+                    <a href="service-select.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto; margin-right: 0.5rem;">?ㅻ줈</a>
+                    <button onclick="logout()" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto;">濡쒓렇?꾩썐</button>
+                </div>
+            </div>
+            
+            <!-- Step 1 -->
+            <div class="step-container" style="animation-delay: 0s;">
+                <label for="categorySelect" class="form-label">1. ?곷떞 ?좏삎 (Category)</label>
+                <select id="categorySelect" class="form-input">
+                    <option value="">?좏삎???좏깮?섏꽭??/option>
+                    <option value="怨쇳깭猷?>怨쇳깭猷?/option>
+                    <option value="?됱젙泥섎텇">?됱젙泥섎텇</option>
+                    <option value="湲고?">湲고?</option>
+                </select>
+            </div>
+
+            <!-- Step 1-2 (Sub Category) -->
+            <div id="subCategoryArea" class="step-container" style="display: none; animation-delay: 0.05s;">
+                <label for="subCategorySelect" class="form-label">?곸꽭 ?좏삎 (Sub Category)</label>
+                <select id="subCategorySelect" class="form-input">
+                </select>
+            </div>
+
+            <!-- Step 1-3 (Detail & Penalty) -->
+            <div id="detailSelectArea" class="step-container" style="display: none; animation-delay: 0.07s;">
+                <label for="detailSelect" class="form-label">?꾨컲 ?몃? ?댁슜</label>
+                <select id="detailSelect" class="form-input">
+                </select>
+                
+                <div id="penaltyInfoCard" style="display: none; margin-top: 1rem; padding: 1.2rem; background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 8px;">
+                    <div style="color: #ef4444; font-weight: bold; margin-bottom: 0.5rem; font-size: 1.1rem;">?슚 ?덉긽 理쒕? 怨쇳깭猷? <span id="penaltyAmount"></span>留뚯썝</div>
+                    <div style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.3rem;"><strong>洹쇨굅 踰뺣졊:</strong> 怨듭씤以묎컻?щ쾿 ??span id="penaltyLaw"></span></div>
+                    <div style="font-size: 0.85rem; color: #94a3b8;">*二쇱쓽: ?됱젙泥?議곗궗 寃곌낵 諛??뚮챸 ?щ????곕씪 ?ㅼ젣 遺怨?湲덉븸? ?щ씪吏????덉뒿?덈떎.</div>
+                </div>
+            </div>
+
+
+            <!-- Step 2 -->
+            <div id="processFlowArea" class="step-container" style="display: none; animation-delay: 0.1s;">
+                <label class="form-label">吏꾪뻾 ?꾨줈?몄뒪 (Process Flow)</label>
+                <div id="processFlowBox" style="padding: 1.5rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <!-- Process items injected here -->
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <form id="searchForm" class="step-container" style="display: flex; flex-direction: column; gap: 1rem; text-align: left; animation-delay: 0.2s;">
+                <div>
+                    <label for="phoneInput" class="form-label">2. 怨좉컼 寃??/label>
+                    <input type="tel" id="phoneInput" class="form-input" placeholder="010-0000-0000 (?섏씠???ы븿 沅뚯옣)" required>
+                </div>
+                <button type="submit" class="btn" style="margin-top: 0.5rem;">怨좉컼 寃??/button>
+            </form>
+
+            <div id="resultArea" class="step-container" style="margin-top: 1rem; display: none; animation-delay: 0s;">
+                <p id="resultMsg" style="margin-bottom: 1rem;"></p>
+                <div id="existingCustomerActions" style="display: none; gap: 0.5rem; flex-direction: column;">
+                    <button id="viewListBtn" class="btn btn-secondary" style="width: 100%;">湲곗〈 ?곷떞 ?댁뿭 蹂닿린</button>
+                    <button id="createNewCaseBtn" class="btn" style="width: 100%;">??怨좉컼?쇰줈 ???곷떞(?ш굔) ?쒖옉</button>
+                </div>
+                <button id="createCustomerBtn" class="btn btn-secondary" style="display: none; width: 100%;">?좉퇋 怨좉컼 ?깅줉 諛??곷떞 ?쒖옉</button>
+            </div>
+        </div>
+        
+    </div>
+
+    <script type="module">
+        import { supabase, requireAuth, DEMO_MODE } from './supabase-client.js';
+
+        // Penalty Constants
+        const PENALTY_DATA = {
+            '?쒖떆愿묎퀬?꾨컲': [
+                { id: 1, law_code: '18議곗쓽2-4', detail: '議댁옱?섏? ?딅뒗 留ㅻЪ 愿묎퀬', max_fine: 500 },
+                { id: 2, law_code: '18議곗쓽2-4', detail: '嫄곗쭞/怨쇱옣 愿묎퀬', max_fine: 300 },
+                { id: 3, law_code: '18議곗쓽2-4', detail: '以묎컻 遺덇???留ㅻЪ 愿묎퀬', max_fine: 400 },
+                { id: 4, law_code: '18議곗쓽2-4', detail: '以묎컻 ?섏궗 ?놁쓬', max_fine: 250 },
+                { id: 5, law_code: '18議곗쓽2-4', detail: '以묒슂?ы빆 ???, max_fine: 300 }
+            ]
+        };
+
+        // Timeline toggle function
+        window.toggleTimeline = (element) => {
+            element.classList.toggle('expanded');
+        };
+
+        // Logout function
+        window.logout = async () => {
+            await supabase.auth.signOut();
+            localStorage.removeItem('userRole');
+            window.location.href = 'login.html';
+        };
+
+        // Check auth
+        await requireAuth();
+
+        const categorySelect = document.getElementById('categorySelect');
+        const processFlowArea = document.getElementById('processFlowArea');
+        const processFlowBox = document.getElementById('processFlowBox');
+        
+        const searchForm = document.getElementById('searchForm');
+        const phoneInput = document.getElementById('phoneInput');
+        const resultArea = document.getElementById('resultArea');
+        const resultMsg = document.getElementById('resultMsg');
+        const createCustomerBtn = document.getElementById('createCustomerBtn');
+        const existingCustomerActions = document.getElementById('existingCustomerActions');
+        const viewListBtn = document.getElementById('viewListBtn');
+        const createNewCaseBtn = document.getElementById('createNewCaseBtn');
+        
+        let currentFoundCustomer = null;
+
+        // Hide search form and top action buttons if DEMO_MODE is true
+        if (DEMO_MODE) {
+            searchForm.style.display = 'none';
+            const topActionButtons = document.getElementById('topActionButtons');
+            if (topActionButtons) topActionButtons.style.display = 'none';
+        }
+
+        // Phone input auto-hyphenation formatting
+        phoneInput.addEventListener('input', function(e) {
+            let val = this.value.replace(/[^0-9]/g, '');
+            if (val.length > 3 && val.length <= 7) {
+                val = val.slice(0,3) + '-' + val.slice(3);
+            } else if (val.length > 7) {
+                val = val.slice(0,3) + '-' + val.slice(3,7) + '-' + val.slice(7,11);
+            }
+            this.value = val;
+        });
+
+        // Category selection handler
+        categorySelect.addEventListener('change', (e) => {
+            const val = e.target.value;
+            const subCategoryArea = document.getElementById('subCategoryArea');
+            const subCategorySelect = document.getElementById('subCategorySelect');
+            const detailSelectArea = document.getElementById('detailSelectArea');
+            const penaltyInfoCard = document.getElementById('penaltyInfoCard');
+            
+            subCategorySelect.innerHTML = '';
+            detailSelectArea.style.display = 'none';
+            penaltyInfoCard.style.display = 'none';
+            
+            if (val === '怨쇳깭猷?) {
+                subCategorySelect.innerHTML = `
+                    <option value="">?곸꽭 ?좏삎 ?좏깮</option>
+                    <option value="?쒖떆愿묎퀬?꾨컲">?쒖떆愿묎퀬?꾨컲</option>
+                    <option value="遺?숈궛嫄곕옒?좉퀬?꾨컲">遺?숈궛嫄곕옒?좉퀬?꾨컲</option>
+                    <option value="湲고?">湲고?</option>
+                `;
+                subCategoryArea.style.display = 'block';
+            } else if (val === '?됱젙泥섎텇') {
+                subCategorySelect.innerHTML = `
+                    <option value="">?곸꽭 ?좏삎 ?좏깮</option>
+                    <option value="?낅Т?뺤?">?낅Т?뺤?</option>
+                    <option value="?깅줉痍⑥냼">?깅줉痍⑥냼</option>
+                    <option value="?먭꺽痍⑥냼">?먭꺽痍⑥냼</option>
+                    <option value="湲고?">湲고?</option>
+                `;
+                subCategoryArea.style.display = 'block';
+            } else {
+                subCategoryArea.style.display = 'none';
+            }
+
+            if (!val) {
+                processFlowArea.style.display = 'none';
+                return;
+            }
+            
+            updateProcessFlow(val);
+        });
+
+        // Sub Category selection handler
+        document.getElementById('subCategorySelect').addEventListener('change', (e) => {
+            const val = e.target.value;
+            const detailSelectArea = document.getElementById('detailSelectArea');
+            const detailSelect = document.getElementById('detailSelect');
+            const penaltyInfoCard = document.getElementById('penaltyInfoCard');
+            
+            detailSelect.innerHTML = '<option value="">?몃? ?댁슜???좏깮?섏꽭??/option>';
+            penaltyInfoCard.style.display = 'none';
+
+            if (PENALTY_DATA[val]) {
+                PENALTY_DATA[val].forEach(item => {
+                    detailSelect.innerHTML += `<option value="${item.id}">${item.detail} (理쒓퀬 ${item.max_fine}留뚯썝)</option>`;
+                });
+                detailSelectArea.style.display = 'block';
+            } else {
+                detailSelectArea.style.display = 'none';
+            }
+        });
+
+        // Detail selection handler
+        document.getElementById('detailSelect').addEventListener('change', (e) => {
+            const val = e.target.value;
+            const subCategoryVal = document.getElementById('subCategorySelect').value;
+            const penaltyInfoCard = document.getElementById('penaltyInfoCard');
+            
+            if (val && PENALTY_DATA[subCategoryVal]) {
+                const item = PENALTY_DATA[subCategoryVal].find(i => i.id == val);
+                if (item) {
+                    document.getElementById('penaltyAmount').textContent = item.max_fine;
+                    document.getElementById('penaltyLaw').textContent = item.law_code;
+                    penaltyInfoCard.style.display = 'block';
+                }
+            } else {
+                penaltyInfoCard.style.display = 'none';
+            }
+        });
+
+        function updateProcessFlow(val) {
+            
+            let flowHtml = '';
+            let basisHtml = '';
+            let appealHtml = '';
+
+            if (val === '怨쇳깭猷?) {
+                basisHtml = ''; // ?섎굹????꾨씪?몄뿉 ?듯빀
+                appealHtml = '';
+                flowHtml = `
+                    <div class="timeline-container">
+                        <!-- ?됱젙 ?덉감 -->
+                        <div class="phase-header phase-admin">
+                            ?뽳툘 洹쇨굅踰? 吏덉꽌?꾨컲?됱쐞洹쒖젣踰?(?됱젙 ?덉감)
+                        </div>
+                        <div class="timeline-wrapper wrapper-admin">
+                            <div class="timeline-item expanded active" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>1. ?뚮챸</span>
+                                        <span class="toggle-icon">??/span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>怨듭씤以묎컻?ъ뿉 ????됱젙泥?쓽 怨쇳깭猷?遺怨쇰뒗 ?쒓뎅遺?숈궛?먯쓽 紐⑤땲?곕떇 寃곌낵 ?듬낫???섑븳 ?됱젙泥?쓽 議곗궗 ?먮뒗 誘쇱썝???섑빐 ?쒖옉?섍퀬 ?듭긽 ??怨쇱젙???뚮챸?붽뎄?④퀎??留먰빀?덈떎. </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>2. ?ъ쟾?듭? (?섍껄泥?랬)</span>
+                                        <span class="toggle-icon">??/span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>?됱젙泥?씠 ?뱀궗?먯뿉寃?誘몃━ ?뚮━怨??섍껄???쒖텧??湲고쉶瑜?以띾땲??</p>
+                                        <div class="tip-box" style="margin-bottom: 0.8rem;">
+                                            <strong>?뮥 ?덈궡:</strong> ?먯쭊 ?⑸? ??理쒕? 20% 怨쇳깭猷?媛먭꼍 媛??
+                                        </div>
+                                        <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; font-size: 0.8rem; border-left: 3px solid #60a5fa; margin-top: 0.5rem;">
+                                            <strong style="color: #60a5fa;">?뱰 吏덉꽌?꾨컲?됱쐞洹쒖젣踰??쒗뻾????議??ъ쟾?듭? 諛??섍껄?쒖텧 ??</strong><br><br>
+                                            <span style="color: #cbd5e1;">??踰???6議곗젣1??뿉 ?곕씪 ?됱젙泥?씠 怨쇳깭猷?遺怨쇱뿉 愿?섏뿬 誘몃━ ?듭??섎뒗 寃쎌슦?먮뒗 ?ㅼ쓬 媛??몄쓽 ?ы빆??紐⑤몢 ?곸? ?쒕㈃?쇰줈 ?섏뿬???쒕떎.<br>
+                                            &nbsp;&nbsp;1. ?뱀궗?먯쓽 ?깅챸怨?二쇱냼<br>
+                                            &nbsp;&nbsp;<u>2. 怨쇳깭猷?遺怨쇱쓽 ?먯씤???섎뒗 ?ъ떎, 怨쇳깭猷?湲덉븸 諛??곸슜 踰뺣졊</u><br>
+                                            &nbsp;&nbsp;3. 怨쇳깭猷뚮? 遺怨쇳븯???됱젙泥?쓽 紐낆묶怨?二쇱냼<br>
+                                            &nbsp;&nbsp;4. ?뱀궗?먭? ?섍껄???쒖텧?????덈떎???ъ떎怨?洹??쒖텧湲고븳<br>
+                                            &nbsp;&nbsp;5. 踰???8議곗뿉 ?곕씪 ?먯쭊 ?⑸??섎뒗 寃쎌슦 怨쇳깭猷뚮? 媛먭꼍諛쏆쓣 ???덈떎???ъ떎<br>
+                                            &nbsp;&nbsp;<u>5??. 媛먭꼍??怨쇳깭猷??⑸? ??怨쇳깭猷?遺怨셋룹쭠?섏젅李④? 醫낅즺?섏뼱 ?섍껄 ?쒖텧 諛??댁쓽?쒓린瑜??????녿떎???ъ떎</u><br>
+                                            &nbsp;&nbsp;6. ??議곗쓽2???곕씪 怨쇳깭猷뚮? 媛먭꼍諛쏆쓣 ???덈떎???ъ떎<br>
+                                            &nbsp;&nbsp;7. 洹?諛뽰뿉 怨쇳깭猷?遺怨쇱뿉 愿?섏뿬 ?꾩슂???ы빆<br><br>
+                                            ???뱀궗?먮뒗 ?섍껄?쒖텧 湲고븳 ?대궡???쒕㈃?대굹 留먮줈 ?섍껄???쒖텧(吏꾩닠)?????덇퀬, 利앷굅?먮즺 ?깆쓣 ?쒖텧?????덈떎.<br><br>
+                                            ???됱젙泥?? ?뱀궗?먭? 留먮줈 ?섍껄??吏꾩닠??寃쎌슦?먮뒗 吏꾩닠?먯? 洹??섍껄???붿?瑜?湲곕줉???먯뼱???쒕떎.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>3. 怨쇳깭猷?遺怨?/span>
+                                        <span class="toggle-icon">??/span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>?뺤떇?쇰줈 怨쇳깭猷??⑸? 怨좎??쒓? 諛쒖넚?⑸땲??</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 遺덈났 ?덉감 -->
+                        <div class="phase-header phase-appeal">
+                            ?슚 遺덈났 ?덉감 (?щ쾿 ?덉감)
+                        </div>
+                        <div class="timeline-wrapper wrapper-appeal">
+                            <div class="timeline-item phase-appeal-item" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>4. ?댁쓽?쒓린</span>
+                                        <span class="toggle-icon">??/span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>怨쇳깭猷?遺怨?泥섎텇??遺덈났?섏뿬 ?댁쓽瑜??쒓린?⑸땲??</p>
+                                        <div class="tip-box" style="margin-bottom: 0.8rem;">
+                                            <strong>?좑툘 二쇱쓽:</strong> 遺怨??듭? 諛쏆? ?좊???<b>60???대궡 ?쒕㈃</b> ?쒖텧. ?댁쓽 ?쒓린 ??怨쇳깭猷?泥섎텇 ?⑤젰 ?곸떎.
+                                        </div>
+                                        <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; font-size: 0.8rem; border-left: 3px solid #fca5a5;">
+                                            <strong style="color: #fca5a5;">?뱰 ??0議??댁쓽?쒓린)</strong><br><br>
+                                            <span style="color: #cbd5e1;">???됱젙泥?쓽 怨쇳깭猷?遺怨쇱뿉 遺덈났?섎뒗 ?뱀궗?먮뒗 ??7議곗젣1??뿉 ?곕Ⅸ 怨쇳깭猷?遺怨??듭?瑜?諛쏆? ?좊???60???대궡???대떦 ?됱젙泥?뿉 ?쒕㈃?쇰줈 ?댁쓽?쒓린瑜??????덈떎.<br><br>
+                                            ??????뿉 ?곕Ⅸ ?댁쓽?쒓린媛 ?덈뒗 寃쎌슦?먮뒗 ?됱젙泥?쓽 怨쇳깭猷?遺怨쇱쿂遺꾩? 洹??⑤젰???곸떎?쒕떎.<br><br>
+                                            ???뱀궗?먮뒗 ?됱젙泥?쑝濡쒕?????1議곗젣3??뿉 ?곕Ⅸ ?듭?瑜?諛쏄린 ?꾧퉴吏???됱젙泥?뿉 ??섏뿬 ?쒕㈃?쇰줈 ?댁쓽?쒓린瑜?泥좏쉶?????덈떎.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item phase-appeal-item" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>5. 踰뺤썝?먯쓽 ?듬낫</span>
+                                        <span class="toggle-icon">??/span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>?됱젙泥?? ?댁쓽?쒓린瑜?諛쏆? ?좊???14???대궡??踰뺤썝???듬낫?⑸땲??</p>
+                                        <div class="tip-box" style="margin-bottom: 0.8rem;">
+                                            <strong>?뮕 ?ㅻТ Tip:</strong> ?ㅻТ???ъ떎??<b>?꾩닔 ?쎌떇?ы뙋</b>?쇰줈 吏꾪뻾?⑸땲??
+                                        </div>
+                                        <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; font-size: 0.8rem; border-left: 3px solid #fca5a5;">
+                                            <strong style="color: #fca5a5;">?뱰 ??1議?踰뺤썝?먯쓽 ?듬낫)</strong><br><br>
+                                            <span style="color: #cbd5e1;">????0議곗젣1??뿉 ?곕Ⅸ ?댁쓽?쒓린瑜?諛쏆? ?됱젙泥?? ?댁쓽?쒓린瑜?諛쏆? ?좊???14???대궡???댁뿉 ????섍껄 諛?利앸튃?쒕쪟瑜?泥⑤??섏뿬 愿??踰뺤썝???듬낫?섏뿬???쒕떎. ?ㅻ쭔, ?ㅼ쓬 媛??몄쓽 ?대뒓 ?섎굹???대떦?섎뒗 寃쎌슦?먮뒗 洹몃윭?섏? ?꾨땲?섎떎.<br>
+                                            &nbsp;&nbsp;1. ?뱀궗?먭? ?댁쓽?쒓린瑜?泥좏쉶??寃쎌슦<br>
+                                            &nbsp;&nbsp;2. ?뱀궗?먯쓽 ?댁쓽?쒓린???댁쑀媛 ?덉뼱 怨쇳깭猷뚮? 遺怨쇳븷 ?꾩슂媛 ?녿뒗 寃껋쑝濡??몄젙?섎뒗 寃쎌슦<br><br>
+                                            ???됱젙泥?? ?ъ떎???먮뒗 踰뺣쪧??媛숈? ?먯씤?쇰줈 留먮??붿븘 ?ㅼ닔?몄뿉寃?怨쇳깭猷뚮? 遺怨쇳븷 ?꾩슂媛 ?덈뒗 寃쎌슦?먮뒗 ?ㅼ닔??媛?대뜲 1?몄뿉 ???愿?좉텒???덈뒗 踰뺤썝??????뿉 ?곕Ⅸ ?댁쓽?쒓린 ?ъ떎???듬낫?????덈떎.<br><br>
+                                            ???됱젙泥?씠 ????諛?????뿉 ?곕씪 愿??踰뺤썝???듬낫瑜??섍굅???듬낫?섏? ?꾨땲?섎뒗 寃쎌슦?먮뒗 洹??ъ떎??利됱떆 ?뱀궗?먯뿉寃??듭??섏뿬???쒕떎.</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item phase-appeal-item" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>6. ?쎌떇?ы뙋 | ?ы뙋</span>
+                                        <span class="toggle-icon">??/span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>?쎌떇?ы뙋? ?щЦ?놁씠 吏꾪뻾?섎ŉ ?댁쓽?좎껌???곷쾿?섎떎 ?몄젙?섎뒗 ??洹??⑤젰???껊뒗??</p>
+                                        <p style="margin-top: 0.5rem;">?쎌떇?ы뙋 寃곌낵??遺덈났??寃쎌슦 ?뺤떇 ?ы뙋/??퀬 媛?ν빀?덈떎.</p>
+                                        <div class="tip-box">
+                                            <strong>??湲고븳:</strong> 寃곗젙 ?듭? 諛쏆? ?좊???<b>7???대궡</b> 利됱떆??퀬.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (val === '?됱젙泥섎텇') {
+                basisHtml = '';
+                appealHtml = '';
+                flowHtml = `
+                    <div class="timeline-container">
+                        <!-- ?됱젙 ?덉감 -->
+                        <div class="phase-header phase-admin">
+                            ?뽳툘 洹쇨굅踰? ?됱젙?덉감踰?(?됱젙 ?덉감)
+                        </div>
+                        <div class="timeline-wrapper wrapper-admin">
+                            <div class="timeline-item expanded active" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>1. 議곗궗?④퀎</span>
+                                        <span class="toggle-icon">??/span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>?꾨컲 ?ъ떎??????꾩옣 議곗궗 諛?愿???먮즺 ?섏쭛 ?④퀎?낅땲??</p>
+                                        <div class="tip-box">
+                                            <strong>?뮕 Tip:</strong> 議곗궗 怨쇱젙?먯꽌 ?묒꽦?섎뒗 ?뺤씤?쒕굹 臾몃떟?쒖쓽 ?댁슜???ν썑 泥섎텇???듭떖 洹쇨굅媛 ?섎?濡??좎쨷???듬??댁빞 ?⑸땲??
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>2. ?ъ쟾?듭? (?섍껄泥?랬)</span>
+                                        <span class="toggle-icon">??/span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>泥섎텇???대━湲????뱀궗?먯뿉寃?誘몃━ ?뚮━怨? ?섍껄?대굹 ?뚮챸???ｋ뒗 ?덉감濡??깅줉痍⑥냼 ?먮뒗 ?먭꺽痍⑥냼??寃쎌슦 泥?Ц?쇰줈 ?낅Т?뺤???寃쎌슦 ?섍껄?쒖텧濡쒖꽌 ?섍껄泥?랬瑜??섍쾶 ?쒕떎.</p>
+                                        <div class="tip-box">
+                                            <strong>?뱷 二쇱쓽:</strong> ???④퀎?먯꽌 ?곴레?곸쑝濡??좊━??利앷굅? ?섍껄?쒕? ?쒖텧?섏뿬 泥섎텇 ?섏쐞瑜???텛??寃껋씠 媛???④낵?곸엯?덈떎.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="timeline-item" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>3. 泥섎텇</span>
+                                        <span class="toggle-icon">??/span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>?됱젙泥섎텇???⑤젰? ?꾨떖濡쒖꽌 ?⑤젰??諛쒖깮?섍퀬 鍮꾨줈???됱젙?ы뙋?대굹 ?됱젙?뚯넚??泥?뎄媛 媛?ν븯硫??⑤젰?뺤?瑜?吏묓뻾?뺤??쒗궎湲??꾪빐?쒕뒗 1二쇱젙?꾩쓽 ?쒓컙???뚯슂?쒕떎.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 遺덈났 ?덉감 -->
+                        <div class="phase-header phase-appeal">
+                            ?슚 遺덈났 ?덉감 (?щ쾿 諛??ы뙋 ?덉감)
+                        </div>
+                        <div class="timeline-wrapper wrapper-appeal">
+                            <div class="timeline-item phase-appeal-item" onclick="toggleTimeline(this)">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-card">
+                                    <div class="timeline-card-header">
+                                        <span>4. ?됱젙?ы뙋 諛??됱젙?뚯넚</span>
+                                        <span class="toggle-icon">??/span>
+                                    </div>
+                                    <div class="timeline-content">
+                                        <p>泥섎텇??遺덈났?섏뿬 ?곴툒 湲곌?(?됱젙?ы뙋?꾩썝?????ы뙋??泥?뎄?섍굅?? 愿??踰뺤썝???뚯넚???쒓린?⑸땲??</p>
+                                        <div class="tip-box">
+                                            <strong>???쒓린 湲고븳:</strong> 泥섎텇???덉쓬??<b>???좊???90??/b>, ?덉? ?좊???<b>180???뚯넚? 1?? ?대궡</b>???쒓린?댁빞 ?⑸땲??<br><br>
+                                            <strong>?썳截??ㅻТ ?꾨왂:</strong> 泥섎텇???⑤젰???쇱떆?곸쑝濡?硫덉텛湲??꾪빐 諛섎뱶??<b>'吏묓뻾?뺤? ?좎껌'</b>??蹂묓뻾?섎뒗 寃껋씠 ?쇰컲?곸엯?덈떎.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (val === '湲고?') {
+                flowHtml = `<span style="color: var(--text-muted); font-size: 0.9rem;">蹂꾨룄 吏???꾨줈?몄뒪 ?놁쓬</span>`;
+            }
+
+            processFlowBox.innerHTML = basisHtml + flowHtml + appealHtml;
+            
+            // Trigger reflow for animation
+            processFlowArea.style.display = 'none';
+            processFlowArea.offsetHeight; // force reflow
+            processFlowArea.style.display = 'block';
+        }
+
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Normalize phone number (remove hyphens for DB matching)
+            const rawPhone = phoneInput.value.trim();
+            const normalizedPhone = rawPhone.replace(/-/g, '');
+            
+            if (!normalizedPhone) return;
+
+            // Show loading state
+            resultArea.style.display = 'block';
+            resultMsg.textContent = '寃??以?..';
+            resultMsg.style.color = 'var(--text-main)';
+            createCustomerBtn.style.display = 'none';
+            existingCustomerActions.style.display = 'none';
+            currentFoundCustomer = null;
+
+            // Query customers table by phone
+            const { data: customers, error } = await supabase
+                .from('customers')
+                .select('*')
+                .eq('phone', normalizedPhone);
+
+            if (error) {
+                console.error('Error fetching customer:', error);
+                resultMsg.textContent = '寃??以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎.';
+                resultMsg.style.color = '#ef4444';
+                return;
+            }
+
+            if (customers && customers.length > 0) {
+                currentFoundCustomer = customers[0];
+                resultMsg.textContent = `${currentFoundCustomer.name} 怨좉컼?섏씠 ?뺤씤?섏뿀?듬땲??`;
+                resultMsg.style.color = 'var(--accent-color)';
+                
+                existingCustomerActions.style.display = 'flex';
+            } else {
+                // If not found: show "Create New Customer & Case" button
+                resultMsg.textContent = '?깅줉??怨좉컼???놁뒿?덈떎.';
+                resultMsg.style.color = 'var(--text-muted)';
+                createCustomerBtn.style.display = 'block';
+            }
+        });
+
+        viewListBtn.addEventListener('click', () => {
+            if (!currentFoundCustomer) return;
+            const selectedCategory = categorySelect.value;
+            const subCategoryArea = document.getElementById('subCategoryArea');
+            const subCategorySelect = document.getElementById('subCategorySelect');
+            const detailSelectArea = document.getElementById('detailSelectArea');
+            const detailSelect = document.getElementById('detailSelect');
+
+            let finalCategory = selectedCategory;
+            if (subCategoryArea.style.display !== 'none' && subCategorySelect.value) {
+                finalCategory = `${selectedCategory} (${subCategorySelect.value})`;
+                if (detailSelectArea.style.display !== 'none' && detailSelect.value) {
+                    const itemText = detailSelect.options[detailSelect.selectedIndex].text.split(' (')[0];
+                    finalCategory = `${selectedCategory} (${subCategorySelect.value} - ${itemText})`;
+                }
+            }
+
+            const queryParams = new URLSearchParams({ customer_id: currentFoundCustomer.id });
+            if (finalCategory) {
+                queryParams.set('category', finalCategory);
+            }
+            window.location.href = `case-list.html?${queryParams.toString()}`;
+        });
+
+        createNewCaseBtn.addEventListener('click', async () => {
+            if (!currentFoundCustomer) return;
+            await createCaseForCustomer(currentFoundCustomer);
+        });
+
+        async function createCaseForCustomer(customer) {
+            const selectedCategory = categorySelect.value || '湲고?';
+            const subCategoryArea = document.getElementById('subCategoryArea');
+            const subCategorySelect = document.getElementById('subCategorySelect');
+            const detailSelectArea = document.getElementById('detailSelectArea');
+            const detailSelect = document.getElementById('detailSelect');
+            
+            let finalCategory = selectedCategory;
+            if (subCategoryArea.style.display !== 'none' && subCategorySelect.value) {
+                finalCategory = `${selectedCategory} (${subCategorySelect.value})`;
+                if (detailSelectArea.style.display !== 'none' && detailSelect.value) {
+                    const itemText = detailSelect.options[detailSelect.selectedIndex].text.split(' (')[0];
+                    finalCategory = `${selectedCategory} (${subCategorySelect.value} - ${itemText})`;
+                }
+            }
+            
+            resultMsg.textContent = '???ш굔???앹꽦 以묒엯?덈떎...';
+            resultMsg.style.color = 'var(--text-main)';
+            existingCustomerActions.style.display = 'none';
+            createCustomerBtn.style.display = 'none';
+
+            try {
+                let current_stage_id = null;
+                let targetStageName = null;
+                
+                if (selectedCategory === '怨쇳깭猷?) targetStageName = '?뚮챸';
+                else if (selectedCategory === '?됱젙泥섎텇') targetStageName = '議곗궗?④퀎';
+                
+                if (targetStageName) {
+                    const { data: stageData, error: stageError } = await supabase
+                        .from('stages')
+                        .select('id')
+                        .eq('name', targetStageName)
+                        .maybeSingle(); 
+                        
+                    if (stageData) {
+                        current_stage_id = stageData.id;
+                    }
+                }
+                
+                const { data: newCase, error: caseError } = await supabase
+                    .from('cases')
+                    .insert([{
+                        customer_id: customer.id,
+                        case_type: finalCategory,
+                        status: '吏꾪뻾以?,
+                        current_stage_id: current_stage_id
+                    }])
+                    .select()
+                    .single();
+                    
+                if (caseError) throw caseError;
+                
+                await supabase.from('logs').insert([{
+                    case_id: newCase.id,
+                    content: `[?쒖뒪?? ?좉퇋 耳?댁뒪 ?앹꽦 - ?좏삎: ${finalCategory}`,
+                    created_by: '?쒖뒪??
+                }]);
+                
+                window.location.href = `case-detail.html?id=${newCase.id}`;
+                
+            } catch (err) {
+                console.error("Error creating case:", err);
+                alert("?앹꽦 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎: " + err.message);
+                resultMsg.textContent = '?앹꽦 ?ㅽ뙣. ?ㅼ떆 ?쒕룄?댁＜?몄슂.';
+                existingCustomerActions.style.display = 'flex';
+            }
+        }
+
+        createCustomerBtn.addEventListener('click', async () => {
+            const rawPhone = phoneInput.value.trim();
+            const normalizedPhone = rawPhone.replace(/-/g, '');
+            
+            createCustomerBtn.disabled = true;
+            createCustomerBtn.textContent = '?앹꽦 以?..';
+            resultMsg.textContent = '?좉퇋 怨좉컼???앹꽦 以묒엯?덈떎...';
+            
+            try {
+                const customerName = prompt("怨좉컼 ?대쫫???낅젰?섏꽭??", "?좉퇋怨좉컼") || "?좉퇋怨좉컼";
+                
+                const { data: newCustomer, error: customerError } = await supabase
+                    .from('customers')
+                    .insert([{ name: customerName, phone: normalizedPhone }])
+                    .select()
+                    .single();
+                    
+                if (customerError) throw customerError;
+
+                await createCaseForCustomer(newCustomer);
+                
+            } catch (err) {
+                console.error("Error creating customer/case:", err);
+                alert("?앹꽦 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎: " + err.message);
+                createCustomerBtn.disabled = false;
+                createCustomerBtn.textContent = '?좉퇋 怨좉컼 ?깅줉 諛??곷떞 ?쒖옉';
+                resultMsg.textContent = '?앹꽦 ?ㅽ뙣. ?ㅼ떆 ?쒕룄?댁＜?몄슂.';
+            }
+        });
+    </script>
+    <footer class="site-footer">
+        <div class="site-footer-inner">
+            <div class="footer-links">
+                <a href="#">?뚯궗?뚭컻</a>
+                <a href="#" style="color: #fca5a5;">媛쒖씤?뺣낫泥섎━諛⑹묠</a>
+                <a href="#">?댁슜?쎄?</a>
+            </div>
+            <div class="footer-info">
+                <strong class="footer-strong">?좊?由쇨났?몄쨷媛쒖궗?щТ??/strong>
+                <span>?ъ뾽?먮벑濡앸쾲?? 219-01-50737</span> <span>?꾪솕踰덊샇: 010-9128-0586</span><br>
+                <span>二쇱냼: ?쒖슱?밸퀎??留덊룷援?紐⑤옒?대줈7湲?52 (?깆궛??</span>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

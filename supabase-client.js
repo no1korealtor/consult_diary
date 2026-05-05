@@ -17,7 +17,7 @@ export async function requireAuth() {
     }
     if (DEMO_MODE) return false;
     
-    window.location.href = 'index.html';
+    window.location.href = 'login.html';
     return false;
 }
 
@@ -25,6 +25,6 @@ export async function requireAuth() {
 supabase.auth.onAuthStateChange((event, session) => {
     if (DEMO_MODE) return;
     if (event === 'SIGNED_OUT') {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
     }
 });

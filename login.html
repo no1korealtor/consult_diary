@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Consulting System</title>
+    <link rel="stylesheet" href="app.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container" style="max-width: 400px; margin-top: 10vh;">
+        <div class="glass-panel text-center">
+            <h2 id="loginTitle" style="text-align: center; margin-bottom: 0.5rem;">시스템 로그인</h2>
+            <p id="loginDesc" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; display: none;">전문가 전용 상담 관리 CRM</p>
+            <form id="loginForm" class="flex-col">
+                <input type="email" id="email" placeholder="이메일" required>
+                <input type="password" id="password" placeholder="비밀번호" required>
+                <button type="submit" class="btn" id="loginBtn">로그인</button>
+            </form>
+            <div id="errorMsg" style="color: #ef4444; margin-top: 1rem; text-align: center; display: none;"></div>
+        </div>
+        
+        <!-- 일반 사용자 유입을 위한 CTA (버튼) -->
+        <div id="publicCtaSection" style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(145deg, rgba(37,99,235,0.1), rgba(15,23,42,0.6)); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem; line-height: 1.5; word-break: keep-all;">갑작스러운 과태료나 행정처분으로 막막하신가요?<br>내 상황에 딱 맞는 전문가의 대응 가이드를 확인해 보세요.</p>
+            <a href="index.html" class="btn" style="background: linear-gradient(to right, #3b82f6, #8b5cf6); border: none; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); text-decoration: none; display: inline-block; width: 100%; font-weight: bold; font-size: 1.05rem;">무료 자가진단 및 상담 예약하기</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase, DEMO_MODE } from './supabase-client.js';
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const isProLogin = urlParams.get('pro') === 'true';
+
+        if (isProLogin) {
+            document.getElementById('loginTitle').textContent = '공인중개사 / 전문 상담사 로그인';
+            document.getElementById('loginDesc').style.display = 'block';
+        }
+
+        // Check if already logged in
+        // (DEMO_MODE 강제 리다이렉트를 제거하여 첫 화면에서 하단 버튼을 누르도록 유도)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            handleLoginSuccess(session.user);
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+            
+            errorMsg.style.display = 'none';
+            document.getElementById('loginBtn').disabled = true;
+            document.getElementById('loginBtn').textContent = '로그인 중...';
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) {
+                errorMsg.textContent = '상담자등록 후 사용가능합니다';
+                errorMsg.style.display = 'block';
+                document.getElementById('loginBtn').disabled = false;
+                document.getElementById('loginBtn').textContent = '로그인';
+            } else {
+                handleLoginSuccess(data.user);
+            }
+        });
+
+        async function handleLoginSuccess(user) {
+            // Get user role
+            const { data, error } = await supabase
+                .from('users')
+                .select('role')
+                .eq('id', user.id)
+                .single();
+
+            if (error) {
+                alert('Role 확인 중 에러가 발생했습니다: ' + error.message);
+                window.location.href = 'ediary/index.html';
+            } else if (!data || !data.role) {
+                // If role is null -> redirect to existing ediary main page
+                window.location.href = 'ediary/index.html';
+            } else if (data.role === 'admin' || data.role === 'consultant') {
+                // Store role locally for convenience
+                localStorage.setItem('userRole', data.role);
+                window.location.href = 'service-select.html';
+            } else {
+                window.location.href = 'ediary/index.html';
+            }
+        }
+    </script>
+    <footer class="site-footer">
+        <div class="site-footer-inner">
+            <div class="footer-links">
+                <a href="#">회사소개</a>
+                <a href="#" style="color: #fca5a5;">개인정보처리방침</a>
+                <a href="#">이용약관</a>
+            </div>
+            <div class="footer-info">
+                <strong class="footer-strong">신대림공인중개사사무소</strong>
+                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 010-9128-0586</span><br>
+                <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

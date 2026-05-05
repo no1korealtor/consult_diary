@@ -37,7 +37,7 @@
         window.logout = async () => {
             await supabase.auth.signOut();
             localStorage.removeItem('userRole');
-            window.location.href = 'index.html';
+            window.location.href = 'login.html';
         };
 
         async function loadCases() {
