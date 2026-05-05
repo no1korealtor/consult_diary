@@ -433,9 +433,7 @@
             }
         };
 
-        document.addEventListener('DOMContentLoaded', () => {
-            window.switchTab('과태료');
-        });
+        // Initialize moved to the bottom of the script to wait for STAGE_CONFIG
 
         const categorySelect = document.getElementById('categorySelect');
         const processFlowArea = document.getElementById('processFlowArea');
@@ -827,6 +825,9 @@
                 bookingSubmitBtn.textContent = '전문 상담 신청하기';
             }
         });
+
+        // Initialize immediately (module scripts run after document is parsed)
+        window.switchTab('과태료');
     </script>
     <footer class="site-footer">
         <div class="site-footer-inner">
