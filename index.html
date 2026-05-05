@@ -612,11 +612,6 @@
                     <div style="color: #60a5fa; font-weight: bold; margin-bottom: 0.5rem; font-size: 0.9rem;">⚖️ 근거법: ${activeStage.basis}</div>
                     <p style="color: #cbd5e1; font-size: 0.95rem; margin-bottom: 1rem; line-height: 1.5;">${activeStage.desc}</p>
                     ${activeStage.tip ? `<div style="background: rgba(234, 179, 8, 0.1); border-left: 3px solid #eab308; padding: 0.8rem; border-radius: 4px; color: #fef08a; font-size: 0.85rem; white-space: pre-wrap; line-height: 1.5;">${activeStage.tip}</div>` : ''}
-                    ${activeStage.lawText ? `
-                    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; font-size: 0.8rem; border-left: 3px solid #60a5fa; margin-top: 0.8rem;">
-                        <strong style="color: #60a5fa;">📖 ${activeStage.lawTitle || '관련 법령'}</strong><br><br>
-                        <span style="color: #cbd5e1; line-height: 1.6;">${activeStage.lawText}</span>
-                    </div>` : ''}
                 </div>
             `;
 
@@ -661,7 +656,6 @@
                             <div class="timeline-content">
                                 <p>${s.desc}</p>
                                 ${s.tip ? `<div class="tip-box" style="margin-bottom: 0.8rem; white-space: pre-wrap;">${s.tip}</div>` : ''}
-                                ${s.lawText ? `<div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; font-size: 0.8rem; border-left: 3px solid ${(phaseType === 'appeal') ? '#fca5a5' : '#60a5fa'}; margin-top: 0.5rem;"><strong style="color: ${(phaseType === 'appeal') ? '#fca5a5' : '#60a5fa'};">📖 ${s.lawTitle || '관련 법령'}</strong><br><br><span style="color: #cbd5e1; line-height: 1.6;">${s.lawText}</span></div>` : ''}
                             </div>
                         </div>
                     </div>
