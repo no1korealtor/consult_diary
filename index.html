@@ -426,11 +426,8 @@
                 tabAdmin.style.background = 'var(--accent-color)';
                 tabFine.style.background = 'rgba(255,255,255,0.1)';
             }
-            if (DEMO_MODE) {
-                renderAccordionInfo(category);
-            } else {
-                renderStageInfo(category, 0);
-            }
+            // On the public page, always show the accordion flow
+            renderAccordionInfo(category);
         };
 
         // Initialize moved to the bottom of the script to wait for STAGE_CONFIG
