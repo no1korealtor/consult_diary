@@ -299,8 +299,27 @@
                 </div>
             </div>
             
+            <!-- 프로세스 가이드 (무조건 노출) -->
+            <div id="processFlowArea" class="step-container" style="animation-delay: 0s;">
+                <label class="form-label" style="font-size: 1.1rem; color: #fff; margin-bottom: 1rem;">대응 프로세스 가이드</label>
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <button class="btn" id="tabFine" style="flex: 1; padding: 0.5rem; background: var(--accent-color);" onclick="window.switchTab('과태료')">과태료</button>
+                    <button class="btn" id="tabAdmin" style="flex: 1; padding: 0.5rem; background: rgba(255,255,255,0.1);" onclick="window.switchTab('행정처분')">행정처분</button>
+                </div>
+                <div id="processFlowBox" style="padding: 1.5rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <!-- Process items injected here -->
+                </div>
+            </div>
+
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 2rem 0;">
+
+            <div style="text-align: left; margin-bottom: 1.5rem;">
+                <h3 style="color: #93c5fd; margin-bottom: 0.5rem; font-size: 1.1rem;">📞 맞춤형 전문가 상담 예약</h3>
+                <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">현재 겪고 계신 상황과 연락처를 남겨주시면, 전문 상담사가 확인 후 빠르게 연락드립니다.</p>
+            </div>
+
             <!-- Step 1 -->
-            <div class="step-container" style="animation-delay: 0s;">
+            <div class="step-container" style="animation-delay: 0.1s;">
                 <label for="categorySelect" class="form-label">1. 상담 유형 (Category)</label>
                 <select id="categorySelect" class="form-input">
                     <option value="">유형을 선택하세요</option>
@@ -327,14 +346,6 @@
                     <div style="color: #ef4444; font-weight: bold; margin-bottom: 0.5rem; font-size: 1.1rem;">🚨 예상 최대 과태료: <span id="penaltyAmount"></span>만원</div>
                     <div style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.3rem;"><strong>근거 법령:</strong> 공인중개사법 제<span id="penaltyLaw"></span></div>
                     <div style="font-size: 0.85rem; color: #94a3b8;">*주의: 행정청 조사 결과 및 소명 여부에 따라 실제 부과 금액은 달라질 수 있습니다.</div>
-                </div>
-            </div>
-
-            <!-- Step 2 -->
-            <div id="processFlowArea" class="step-container" style="display: none; animation-delay: 0.1s;">
-                <label class="form-label">진행 프로세스 (Process Flow)</label>
-                <div id="processFlowBox" style="padding: 1.5rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
-                    <!-- Process items injected here -->
                 </div>
             </div>
 
@@ -405,6 +416,27 @@
             element.classList.toggle('expanded');
         };
 
+        window.switchTab = function(category) {
+            const tabFine = document.getElementById('tabFine');
+            const tabAdmin = document.getElementById('tabAdmin');
+            if (category === '과태료') {
+                tabFine.style.background = 'var(--accent-color)';
+                tabAdmin.style.background = 'rgba(255,255,255,0.1)';
+            } else {
+                tabAdmin.style.background = 'var(--accent-color)';
+                tabFine.style.background = 'rgba(255,255,255,0.1)';
+            }
+            if (DEMO_MODE) {
+                renderAccordionInfo(category);
+            } else {
+                renderStageInfo(category, 0);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            window.switchTab('과태료');
+        });
+
         const categorySelect = document.getElementById('categorySelect');
         const processFlowArea = document.getElementById('processFlowArea');
         const processFlowBox = document.getElementById('processFlowBox');
@@ -444,10 +476,14 @@
             }
 
             if (!val) {
-                processFlowArea.style.display = 'none';
                 return;
             }
-            updateProcessFlow(val);
+            
+            // Switch the top accordion tab to match
+            window.switchTab(val);
+            
+            // Show booking section
+            showBookingSection(val);
         });
 
         // Sub Category selection handler
@@ -647,25 +683,7 @@
             processFlowBox.innerHTML = html;
         }
 
-        function updateProcessFlow(val) {
-            if (!STAGE_CONFIG[val]) {
-                processFlowBox.innerHTML = `<span style="color: var(--text-muted); font-size: 0.9rem;">별도 지정 프로세스 없음</span>`;
-                return;
-            }
-
-            if (DEMO_MODE) {
-                renderAccordionInfo(val);
-            } else {
-                renderStageInfo(val, 0);
-            }
-
-            // Trigger reflow for animation
-            processFlowArea.style.display = 'none';
-            processFlowArea.offsetHeight; // force reflow
-            processFlowArea.style.display = 'block';
-            
-            showBookingSection(val);
-        }
+        // updateProcessFlow is removed as it's no longer needed
 
         const bookingSection = document.getElementById('bookingSection');
         const bookingStageSelect = document.getElementById('bookingStageSelect');
