@@ -206,3 +206,97 @@ input:focus, select:focus {
     display: block;
     font-size: 0.95rem;
 }
+
+/* 🔷 HEADER */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 60px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 0 20px;
+
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.sub {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.header-right {
+  display: flex;
+  gap: 10px;
+}
+
+.nav-btn {
+  background: transparent;
+  border: none;
+  color: #cbd5f5;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.nav-btn:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.nav-btn.primary {
+  background: #6366f1;
+  color: white;
+}
+
+/* 🔷 INTRO */
+.page-intro {
+  padding: 30px 20px 10px;
+}
+
+.page-intro h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.page-intro p {
+  margin: 8px 0 20px;
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+/* 🔷 CTA */
+.cta-group {
+  display: flex;
+  gap: 10px;
+}
+
+.cta {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.cta.primary {
+  background: #6366f1;
+}
