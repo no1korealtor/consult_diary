@@ -14,6 +14,13 @@
             <a href="case-list.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">목록으로</a>
         </div>
 
+        <!-- 미처리 상담 접수건 담당자 지정 영역 -->
+        <div id="claimActionArea" class="glass-panel" style="display: none; margin-bottom: 2rem; background: linear-gradient(145deg, rgba(239, 68, 68, 0.1), rgba(30, 41, 59, 0.8)); border: 1px solid rgba(239, 68, 68, 0.3); text-align: center;">
+            <h3 style="color: #fca5a5; margin-bottom: 0.5rem;">🔔 미처리 온라인 예약 건입니다</h3>
+            <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 1.5rem;">이 예약은 아직 담당자가 지정되지 않았습니다. 다른 전문가와 업무가 겹치지 않도록 '진행하기'를 눌러 담당자로 등록해주세요.</p>
+            <button id="claimCaseBtn" class="btn" style="background: linear-gradient(to right, #ef4444, #f97316); border: none; font-size: 1.1rem; padding: 0.8rem 2rem; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">🚀 이 상담 내가 진행하기</button>
+        </div>
+
         <div class="glass-panel" style="margin-bottom: 2rem;">
             <h3>진행 단계</h3>
             <select id="stageSelect">
@@ -78,6 +85,19 @@
 
                 await loadStagesAndCase();
                 await loadLogs();
+                
+                // Check if this case is still pending
+                if (!DEMO_MODE) {
+                    const { data: caseStatusData } = await supabase
+                        .from('cases')
+                        .select('status')
+                        .eq('id', caseId)
+                        .single();
+                        
+                    if (caseStatusData && caseStatusData.status === '온라인접수') {
+                        document.getElementById('claimActionArea').style.display = 'block';
+                    }
+                }
             } catch (err) {
                 console.error("Initialization error:", err);
                 document.getElementById('timeline').innerHTML = `<div style="color:red; text-align:center;">오류가 발생했습니다:<br>${err.message}</div>`;
@@ -233,6 +253,29 @@
                 alert('로그 등록에 실패했습니다.');
             }
         }
+
+        document.getElementById('claimCaseBtn')?.addEventListener('click', async () => {
+            const btn = document.getElementById('claimCaseBtn');
+            btn.disabled = true;
+            btn.textContent = '처리 중...';
+            
+            const { error: updateErr } = await supabase
+                .from('cases')
+                .update({ status: '진행중' })
+                .eq('id', caseId);
+                
+            if (updateErr) {
+                alert('오류가 발생했습니다: ' + updateErr.message);
+                btn.disabled = false;
+                btn.textContent = '🚀 이 상담 내가 진행하기';
+                return;
+            }
+            
+            await addLog(`[시스템] ${currentUser} 전문가가 담당자로 지정되어 상담을 시작했습니다.`);
+            
+            document.getElementById('claimActionArea').style.display = 'none';
+            alert('담당자로 지정되었습니다. 이제 상담을 진행해주세요.');
+        });
 
         init();
     </script>

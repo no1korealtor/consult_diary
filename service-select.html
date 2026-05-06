@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Service Select</title>
     <link rel="stylesheet" href="app.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div class="container" style="max-width: 500px; margin-top: 10vh;">
@@ -12,7 +13,10 @@
             <h2 style="text-align: center; margin-bottom: 2rem;">서비스 선택</h2>
             <div class="flex-col" id="menuContainer">
                 <a href="ediary/index.html?service=ediary" class="btn btn-secondary">일기 (Ediary)</a>
-                <a href="consult-start.html" class="btn">상담 (Consulting System)</a>
+                <a href="consult-start.html" class="btn" id="consultMenuBtn" style="position: relative;">
+                    상담 (Consulting System)
+                    <span id="newConsultBadge" style="display: none; position: absolute; top: -10px; right: -10px; background: #ef4444; color: white; border-radius: 50%; padding: 0.3rem 0.6rem; font-size: 0.8rem; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 2px solid #1e293b;">0</span>
+                </a>
             </div>
             
             <button onclick="logout()" class="btn btn-secondary" style="margin-top: 2rem; border: none; color: var(--text-muted);">로그아웃</button>
@@ -20,7 +24,7 @@
     </div>
 
     <script type="module">
-        import { supabase, requireAuth } from './supabase-client.js';
+        import { supabase, requireAuth, DEMO_MODE } from './supabase-client.js';
 
         // Check auth and role
         await requireAuth();
@@ -36,9 +40,24 @@
             menuContainer.appendChild(guideBtn);
         }
 
-        window.logout = async () => {
-            await supabase.auth.signOut();
+        // 미처리 예약 건수 확인 및 뱃지 표시
+        if (!DEMO_MODE) {
+            const { count, error } = await supabase
+                .from('cases')
+                .select('*', { count: 'exact', head: true })
+                .eq('status', '온라인접수');
+                
+            if (count > 0) {
+                const badge = document.getElementById('newConsultBadge');
+                badge.style.display = 'block';
+                badge.textContent = count;
+            }
+        }
+
+        window.logout = () => {
+            supabase.auth.signOut();
             localStorage.removeItem('userRole');
+            window.location.href = 'login.html';
         }
     </script>
     <footer class="site-footer">
