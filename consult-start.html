@@ -287,11 +287,48 @@
             margin-top: 0.6rem;
             color: #fef08a;
         }
+
+        /* Responsive Layout */
+        .responsive-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .layout-left, .layout-right {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 992px) {
+            .responsive-layout {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+            .layout-left {
+                flex: 1;
+                position: sticky;
+                top: 2rem;
+            }
+            .layout-right {
+                flex: 1;
+            }
+            /* 데스크탑에서는 불필요한 hr 제거 */
+            .mobile-only-hr {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container" style="max-width: 500px; margin-top: 10vh; margin-bottom: 10vh;">
-        <div class="glass-panel text-center">
+    <div class="container responsive-layout" style="margin-top: 5vh; margin-bottom: 10vh; padding: 0 1rem;">
+        
+        <!-- 좌측 열: 상단 타이틀, 대기열, 프로세스 가이드 -->
+        <div class="layout-left glass-panel text-center">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h2 style="margin: 0;">상담 시작 (Consult Start)</h2>
                 <div id="topActionButtons">
@@ -310,6 +347,19 @@
                 </div>
             </div>
 
+            <!-- Step 2 -->
+            <div id="processFlowArea" class="step-container" style="display: none; animation-delay: 0.1s;">
+                <label class="form-label">진행 프로세스 (Process Flow)</label>
+                <div id="processFlowBox" style="padding: 1.5rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <!-- Process items injected here -->
+                </div>
+            </div>
+        </div>
+
+        <hr class="mobile-only-hr" style="border-color: rgba(255,255,255,0.1); margin: 2rem 0; width: 100%;">
+
+        <!-- 우측 열: 카테고리 선택 및 고객 검색 -->
+        <div class="layout-right glass-panel text-center">
             <!-- Step 1 -->
             <div class="step-container" style="animation-delay: 0s;">
                 <label for="categorySelect" class="form-label">1. 상담 유형 (Category)</label>
@@ -337,15 +387,6 @@
                     <div style="color: #ef4444; font-weight: bold; margin-bottom: 0.5rem; font-size: 1.1rem;">🚨 예상 최대 과태료: <span id="penaltyAmount"></span>만원</div>
                     <div style="font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.3rem;"><strong>근거 법령:</strong> 공인중개사법 제<span id="penaltyLaw"></span></div>
                     <div style="font-size: 0.85rem; color: #94a3b8;">*주의: 행정청 조사 결과 및 소명 여부에 따라 실제 부과 금액은 달라질 수 있습니다.</div>
-                </div>
-            </div>
-
-
-            <!-- Step 2 -->
-            <div id="processFlowArea" class="step-container" style="display: none; animation-delay: 0.1s;">
-                <label class="form-label">진행 프로세스 (Process Flow)</label>
-                <div id="processFlowBox" style="padding: 1.5rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
-                    <!-- Process items injected here -->
                 </div>
             </div>
 

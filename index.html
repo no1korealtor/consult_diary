@@ -287,6 +287,41 @@
             margin-top: 0.6rem;
             color: #fef08a;
         }
+
+        /* Responsive Layout */
+        .responsive-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .layout-left, .layout-right {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 992px) {
+            .responsive-layout {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+            .layout-left {
+                flex: 1;
+                position: sticky;
+                top: 2rem;
+            }
+            .layout-right {
+                flex: 1;
+            }
+            /* 데스크탑에서는 불필요한 hr 제거 */
+            .mobile-only-hr {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -306,7 +341,7 @@
     </header>
 
     <!-- 🔷 PAGE INTRO -->
-    <section class="page-intro" style="max-width: 500px; margin: 0 auto;">
+    <section class="page-intro" style="max-width: 1200px; margin: 0 auto; padding: 0 1rem;">
       <h1>상담 프로세스 가이드</h1>
       <p>과태료 · 행정처분 상담 시 단계별 대응을 빠르게 확인하세요</p>
     
@@ -316,11 +351,12 @@
       </div>
     </section>
 
-    <div class="container" style="max-width: 500px; margin-top: 1rem; margin-bottom: 10vh;">
-        <div class="glass-panel text-center">
-            
+    <div class="container responsive-layout" style="margin-top: 1rem; margin-bottom: 10vh; padding: 0 1rem;">
+        
+        <!-- 왼쪽 열: 프로세스 가이드 -->
+        <div class="layout-left glass-panel text-center">
             <!-- 프로세스 가이드 (무조건 노출) -->
-            <div id="processFlowArea" class="step-container" style="animation-delay: 0s;">
+            <div id="processFlowArea" class="step-container" style="animation-delay: 0s; margin-bottom: 0;">
                 <label class="form-label" style="font-size: 1.1rem; color: #fff; margin-bottom: 1rem;">대응 프로세스 가이드</label>
                 <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
                     <button class="btn" id="tabFine" style="flex: 1; padding: 0.5rem; background: var(--accent-color);" onclick="window.switchTab('과태료')">과태료</button>
@@ -330,9 +366,12 @@
                     <!-- Process items injected here -->
                 </div>
             </div>
+        </div>
 
-            <hr style="border-color: rgba(255,255,255,0.1); margin: 2rem 0;">
+        <hr class="mobile-only-hr" style="border-color: rgba(255,255,255,0.1); margin: 2rem 0; width: 100%;">
 
+        <!-- 오른쪽 열: 상담 폼 -->
+        <div class="layout-right glass-panel text-center">
             <div style="text-align: left; margin-bottom: 1.5rem;">
                 <h3 style="color: #93c5fd; margin-bottom: 0.5rem; font-size: 1.1rem;">📞 맞춤형 전문가 상담 예약</h3>
                 <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.5;">현재 겪고 계신 상황과 연락처를 남겨주시면, 전문 상담사가 확인 후 빠르게 연락드립니다.</p>
