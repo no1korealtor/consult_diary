@@ -295,7 +295,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                 <h2 style="margin: 0;">상담 시작 (Consult Start)</h2>
                 <div id="topActionButtons">
-                    <a href="service-select.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto; margin-right: 0.5rem;">뒤로</a>
+                    <!-- <a href="service-select.html" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto; margin-right: 0.5rem;">뒤로</a> -->
                     <button onclick="logout()" class="btn btn-secondary" style="padding: 0.5rem 1rem; width: auto;">로그아웃</button>
                 </div>
             </div>
@@ -395,9 +395,8 @@
             element.classList.toggle('expanded');
         };
 
-        // Logout function
-        window.logout = () => {
-            supabase.auth.signOut();
+        window.logout = async () => {
+            await supabase.auth.signOut();
             localStorage.removeItem('userRole');
             window.location.href = 'login.html';
         };

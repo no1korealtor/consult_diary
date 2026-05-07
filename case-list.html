@@ -21,7 +21,7 @@
         <div class="top-bar">
             <h2>상담 케이스 목록</h2>
             <div>
-                <a href="service-select.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">뒤로</a>
+                <a href="consult-start.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">뒤로</a>
                 <a href="daily-report.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">일일 보고서</a>
                 <button onclick="logout()" class="btn btn-secondary" style="padding: 0.5rem 1rem;">로그아웃</button>
             </div>
@@ -35,8 +35,8 @@
     <script type="module">
         import { supabase, requireAuth } from './supabase-client.js';
 
-        window.logout = () => {
-            supabase.auth.signOut();
+        window.logout = async () => {
+            await supabase.auth.signOut();
             localStorage.removeItem('userRole');
             window.location.href = 'login.html';
         };
@@ -88,13 +88,16 @@
                     
                     const lastLog = logs && logs.length > 0 ? logs[0].content : '로그 없음';
 
+                    const statusText = c.status || '진행중';
+                    const badgeHtml = statusText !== '진행중' ? `<span class="badge" style="background-color: var(--primary);">${statusText}</span>` : '';
+
                     const card = document.createElement('div');
                     card.className = 'case-card';
                     card.onclick = () => window.location.href = `case-detail.html?id=${c.id}`;
                     card.innerHTML = `
                         <div class="case-header">
                             <strong style="font-size: 1.1rem;">${c.customers?.name || '알 수 없음'} (${c.customers?.phone || '번호 없음'})</strong>
-                            <span class="badge" style="background-color: var(--primary);">${c.status || '진행중'}</span>
+                            ${badgeHtml}
                         </div>
                         <div style="margin-bottom: 0.5rem;">유형: ${c.case_type || '-'}</div>
                         <div class="text-sm">최근 내용: ${lastLog}</div>

@@ -54,8 +54,8 @@
             }
         }
 
-        window.logout = () => {
-            supabase.auth.signOut();
+        window.logout = async () => {
+            await supabase.auth.signOut();
             localStorage.removeItem('userRole');
             window.location.href = 'login.html';
         }

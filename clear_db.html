@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Clear Test DB</title>
+</head>
+<body>
+    <h2>데이터 초기화 스크립트</h2>
+    <p id="status">초기화 진행 중...</p>
+    <script type="module">
+        import { supabase } from './supabase-client.js';
+
+        async function clearRecords() {
+            const statusEl = document.getElementById('status');
+            
+            try {
+                // Fetch customers
+                const { data: customers, error: fetchErr } = await supabase.from('customers').select('id');
+                if (fetchErr) throw fetchErr;
+
+                if (!customers || customers.length === 0) {
+                    statusEl.textContent = '지울 고객 데이터가 없습니다.';
+                    return;
+                }
+
+                const ids = customers.map(c => c.id);
+                
+                // Delete customers
+                const { data, error } = await supabase
+                    .from('customers')
+                    .delete()
+                    .in('id', ids);
+
+                if (error) throw error;
+                
+                statusEl.textContent = `테스트용 상담 기록(총 ${ids.length}명)과 관련 데이터가 모두 삭제되었습니다. 이 창을 닫아주세요.`;
+            } catch (err) {
+                console.error(err);
+                statusEl.textContent = '에러가 발생했습니다: ' + err.message;
+            }
+        }
+
+        clearRecords();
+    </script>
+</body>
+</html>

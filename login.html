@@ -90,7 +90,7 @@
             } else if (data.role === 'admin' || data.role === 'consultant') {
                 // Store role locally for convenience
                 localStorage.setItem('userRole', data.role);
-                window.location.href = 'service-select.html';
+                window.location.href = 'consult-start.html'; // 임시로 service-select.html 생략
             } else {
                 window.location.href = 'ediary/index.html';
             }
