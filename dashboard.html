@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상담 관리 대시보드</title>
+    <link rel="stylesheet" href="app.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { margin: 0; overflow: hidden; /* Desktop handles overflow in columns */ }
+        @media (max-width: 1023px) {
+            body { overflow: auto; }
+            .dashboard-layout { height: auto; overflow: visible; }
+        }
+        
+        /* Dashboard specific styles */
+        .panel-title {
+            font-size: 1.1rem;
+            color: #93c5fd;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 0.5rem;
+        }
+        
+        .active-case-card {
+            border-color: var(--primary) !important;
+            background: rgba(37, 99, 235, 0.15) !important;
+        }
+        
+        .current-stage-display {
+            background: linear-gradient(145deg, rgba(37,99,235,0.2), rgba(139,92,246,0.2));
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        
+        .current-stage-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo">📘 상담 다이어리</div>
+        <div class="sub">전문가용 통합 대시보드</div>
+      </div>
+      <div class="header-right">
+        <a href="consult-start.html" class="nav-btn">접수현황</a>
+        <button class="nav-btn primary" onclick="window.location.reload()">새로고침</button>
+        <button class="nav-btn" onclick="logout()">로그아웃</button>
+      </div>
+    </header>
+
+    <div class="dashboard-layout">
+        <!-- LEFT COLUMN: Search & List -->
+        <div class="dashboard-left">
+            <div class="glass-panel" style="margin-bottom: 1rem; padding: 1.5rem;">
+                <h3 class="panel-title">🔍 고객/상담 검색</h3>
+                <form id="searchForm" style="display: flex; gap: 0.5rem; margin-bottom: 0;">
+                    <input type="tel" id="phoneSearch" class="form-input" placeholder="전화번호 (숫자만)" style="margin-bottom: 0;">
+                    <button type="submit" class="btn" style="width: auto; padding: 0.75rem 1rem;">검색</button>
+                </form>
+            </div>
+            
+            <div class="glass-panel" style="padding: 1.5rem; flex: 1;">
+                <div class="panel-title" style="justify-content: space-between;">
+                    <span>📋 상담 목록</span>
+                    <span id="caseCountBadge" class="badge" style="background: var(--primary);">0</span>
+                </div>
+                <div id="caseList" class="flex-col">
+                    <div style="text-align: center; color: var(--text-muted);">로딩 중...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER COLUMN: Detail & Logs -->
+        <div class="dashboard-center">
+            <div id="emptyStateCenter" class="glass-panel" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; opacity: 0.7;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📝</div>
+                <h3>상담을 선택해주세요</h3>
+                <p style="color: var(--text-muted);">좌측 목록에서 상담을 선택하거나 새 고객을 검색하세요.</p>
+            </div>
+
+            <div id="activeCaseCenter" style="display: none; height: 100%; flex-direction: column; gap: 1.5rem;">
+                <!-- Case Info Header -->
+                <div class="glass-panel" style="padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                        <div>
+                            <h2 id="detailCustomerName" style="margin-bottom: 0.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                                고객명
+                                <span id="detailStatusBadge" class="badge">상태</span>
+                            </h2>
+                            <div id="detailCustomerPhone" style="color: var(--text-muted); font-size: 0.9rem;">전화번호</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div id="detailCaseType" style="color: #93c5fd; font-weight: 500; margin-bottom: 0.2rem;">상담유형</div>
+                            <div id="detailCaseDate" style="color: var(--text-muted); font-size: 0.8rem;">접수일</div>
+                        </div>
+                    </div>
+                    
+                    <div id="claimActionArea" style="display: none; margin-top: 1rem; padding: 1rem; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; text-align: center;">
+                        <p style="color: #fca5a5; font-size: 0.9rem; margin-bottom: 0.8rem;">아직 담당자가 지정되지 않은 신규 접수건입니다.</p>
+                        <button id="claimCaseBtn" class="btn" style="background: linear-gradient(to right, #ef4444, #f97316); border: none; padding: 0.6rem 2rem;">🚀 이 상담 진행하기</button>
+                    </div>
+                </div>
+
+                <!-- Logs Area (flex-grow) -->
+                <div class="glass-panel" style="flex: 1; display: flex; flex-direction: column; padding: 1.5rem; overflow: hidden;">
+                    <h3 class="panel-title">💬 상담 기록</h3>
+                    
+                    <!-- Quick Note Input -->
+                    <form id="logForm" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+                        <input type="text" id="logInput" class="form-input" placeholder="빠른 메모 입력..." required style="margin-bottom: 0;">
+                        <button type="submit" class="btn" style="white-space: nowrap; width: auto; padding: 0.75rem 1.5rem;">등록</button>
+                    </form>
+
+                    <!-- Timeline Scroll Area -->
+                    <div id="timeline" style="flex: 1; overflow-y: auto; padding-right: 10px;">
+                        <div style="text-align: center; color: var(--text-muted);">로딩 중...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Stage & Guide -->
+        <div class="dashboard-right">
+            <div id="emptyStateRight" class="glass-panel" style="height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; opacity: 0.7;">
+                <div>가이드가 여기에 표시됩니다</div>
+            </div>
+
+            <div id="activeCaseRight" style="display: none; height: 100%; flex-direction: column; gap: 1.5rem;">
+                <div class="glass-panel" style="padding: 1.5rem; position: sticky; top: 0; flex: 1; display: flex; flex-direction: column;">
+                    <!-- Current Stage Emphasized -->
+                    <div class="current-stage-display">
+                        <div style="font-size: 0.85rem; color: #cbd5e1;">현재 진행 단계</div>
+                        <div id="currentStageName" class="current-stage-name">-</div>
+                        
+                        <div style="margin-top: 1rem; text-align: left;">
+                            <label class="form-label" style="font-size: 0.8rem;">단계 변경</label>
+                            <select id="stageSelect" class="form-input" style="margin-bottom: 0; padding: 0.5rem; font-size: 0.9rem; background: rgba(0,0,0,0.4);">
+                                <option value="">단계를 선택하세요</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Guide Content -->
+                    <div id="guideSection" style="display: none; flex: 1; overflow-y: auto;">
+                        <h3 class="panel-title">📚 실무 가이드</h3>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="color: #60a5fa; font-size: 0.9rem; margin-bottom: 0.5rem;">⚖️ 관련 법령</h4>
+                            <div id="lawText" style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; font-size: 0.85rem; color: #cbd5e1; line-height: 1.6; border-left: 3px solid #60a5fa; white-space: pre-wrap;"></div>
+                        </div>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="color: #60a5fa; font-size: 0.9rem; margin-bottom: 0.5rem;">💡 가이드</h4>
+                            <div id="guideText" style="background: rgba(234, 179, 8, 0.1); padding: 1rem; border-radius: 8px; font-size: 0.85rem; color: #fef08a; line-height: 1.6; border-left: 3px solid #eab308; white-space: pre-wrap;"></div>
+                        </div>
+                        
+                        <div>
+                            <h4 style="color: #60a5fa; font-size: 0.9rem; margin-bottom: 0.5rem;">✅ 체크리스트</h4>
+                            <div id="checklist" style="background: rgba(30, 41, 59, 0.5); padding: 1rem; border-radius: 8px; font-size: 0.85rem; line-height: 1.6;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase, requireAuth, DEMO_MODE } from './supabase-client.js';
+
+        let currentUser = null;
+        let currentCaseId = null;
+        let allCases = [];
+
+        window.logout = async () => {
+            await supabase.auth.signOut();
+            localStorage.removeItem('userRole');
+            window.location.href = 'login.html';
+        };
+
+        async function init() {
+            try {
+                await requireAuth();
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session) {
+                    const { data: userData } = await supabase.from('users').select('name').eq('id', session.user.id).single();
+                    currentUser = userData ? userData.name : session.user.email;
+                } else {
+                    currentUser = "데모 방문자";
+                }
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const caseId = urlParams.get('id');
+                const customerId = urlParams.get('customer_id');
+
+                await loadCaseList(null, customerId);
+                
+                if (caseId) {
+                    await selectCase(caseId);
+                }
+            } catch (err) {
+                console.error("Init error:", err);
+            }
+        }
+
+        async function loadCaseList(phoneFilter = null, customerIdFilter = null) {
+            let query = supabase.from('cases').select(`id, case_type, status, created_at, customer_id, customers (name, phone)`).order('created_at', { ascending: false });
+            
+            const { data: cases, error } = await query;
+            if (error) {
+                console.error('Error loading cases:', error);
+                return;
+            }
+
+            allCases = cases || [];
+            renderCaseList(phoneFilter, customerIdFilter);
+        }
+
+        function renderCaseList(phoneFilter = null, customerIdFilter = null) {
+            const listEl = document.getElementById('caseList');
+            const badge = document.getElementById('caseCountBadge');
+            listEl.innerHTML = '';
+
+            let filtered = allCases;
+            if (phoneFilter) {
+                filtered = allCases.filter(c => c.customers?.phone.includes(phoneFilter));
+            } else if (customerIdFilter) {
+                filtered = allCases.filter(c => c.customer_id == customerIdFilter);
+            }
+
+            badge.textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = '<div style="text-align: center; color: var(--text-muted); margin-top: 1rem;">결과가 없습니다.</div>';
+                return;
+            }
+
+            filtered.forEach(c => {
+                const statusColor = c.status === '온라인접수' ? '#ef4444' : (c.status === '완료' ? '#22c55e' : 'var(--primary)');
+                const dateObj = new Date(c.created_at);
+                const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+                
+                const card = document.createElement('div');
+                card.className = `case-card ${c.id == currentCaseId ? 'active-case-card' : ''}`;
+                card.onclick = () => selectCase(c.id);
+                card.innerHTML = `
+                    <div class="case-header" style="margin-bottom: 0.2rem;">
+                        <strong style="font-size: 1rem;">${c.customers?.name || '알 수 없음'}</strong>
+                        <span class="badge" style="background-color: ${statusColor}; font-size: 0.7rem;">${c.status || '진행중'}</span>
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">${c.customers?.phone || '번호 없음'}</div>
+                    <div style="font-size: 0.85rem; display: flex; justify-content: space-between;">
+                        <span style="color: #93c5fd;">${c.case_type || '-'}</span>
+                        <span style="color: var(--text-muted); font-size: 0.75rem;">${dateStr}</span>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        document.getElementById('searchForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('phoneSearch').value.replace(/[^0-9]/g, '');
+            renderCaseList(phone);
+        });
+
+        async function selectCase(caseId) {
+            currentCaseId = caseId;
+            renderCaseList(); // Update active class
+            
+            // Show panels
+            document.getElementById('emptyStateCenter').style.display = 'none';
+            document.getElementById('activeCaseCenter').style.display = 'flex';
+            document.getElementById('emptyStateRight').style.display = 'none';
+            document.getElementById('activeCaseRight').style.display = 'flex';
+            
+            // Load case data
+            const { data: caseData } = await supabase
+                .from('cases')
+                .select('*, customers(name, phone)')
+                .eq('id', caseId)
+                .single();
+                
+            if (!caseData) return;
+
+            document.getElementById('detailCustomerName').innerHTML = `${caseData.customers?.name} <span class="badge" style="background: ${caseData.status === '온라인접수' ? '#ef4444' : 'var(--primary)'}; font-size: 0.8rem; margin-left: 0.5rem;">${caseData.status}</span>`;
+            document.getElementById('detailCustomerPhone').textContent = caseData.customers?.phone;
+            document.getElementById('detailCaseType').textContent = caseData.case_type;
+            const dateObj = new Date(caseData.created_at);
+            document.getElementById('detailCaseDate').textContent = `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')} 접수`;
+
+            if (caseData.status === '온라인접수') {
+                document.getElementById('claimActionArea').style.display = 'block';
+            } else {
+                document.getElementById('claimActionArea').style.display = 'none';
+            }
+
+            await loadStages(caseData);
+            await loadLogs();
+        }
+
+        async function loadStages(caseData) {
+            const isPenalty = caseData.case_type && caseData.case_type.includes('과태료');
+            const isAdmin = caseData.case_type && caseData.case_type.includes('행정처분');
+
+            let expectedStages = [];
+            if (isPenalty) {
+                expectedStages = ['소명', '사전통지', '과태료 부과', '이의제기'];
+            } else if (isAdmin) {
+                expectedStages = ['조사단계', '사전통지', '행정처분', '불복절차'];
+            }
+
+            const { data: allStages } = await supabase.from('stages').select('*').order('id');
+            const stageSelect = document.getElementById('stageSelect');
+            stageSelect.innerHTML = '<option value="">단계를 선택하세요</option>';
+            
+            let currentStageNameStr = '-';
+
+            if (allStages) {
+                allStages.forEach(stage => {
+                    if (expectedStages.length === 0 || expectedStages.includes(stage.name)) {
+                        const opt = document.createElement('option');
+                        opt.value = stage.id;
+                        opt.textContent = stage.name;
+                        stageSelect.appendChild(opt);
+                        
+                        if (caseData.current_stage_id == stage.id) {
+                            currentStageNameStr = stage.name;
+                        }
+                    }
+                });
+            }
+
+            if (caseData.current_stage_id) {
+                stageSelect.value = caseData.current_stage_id;
+                document.getElementById('currentStageName').textContent = currentStageNameStr;
+                loadStageGuide(caseData.current_stage_id);
+            } else {
+                document.getElementById('currentStageName').textContent = '진행 전';
+                document.getElementById('guideSection').style.display = 'none';
+            }
+            
+            // Remove old listener
+            const newSelect = stageSelect.cloneNode(true);
+            stageSelect.parentNode.replaceChild(newSelect, stageSelect);
+            
+            newSelect.addEventListener('change', async (e) => {
+                const newStageId = e.target.value;
+                if (!newStageId) return;
+
+                await supabase.from('cases').update({ current_stage_id: newStageId }).eq('id', currentCaseId);
+                
+                const stageName = newSelect.options[newSelect.selectedIndex].text;
+                document.getElementById('currentStageName').textContent = stageName;
+                
+                loadStageGuide(newStageId);
+                addLog(`[시스템] 진행 단계가 '${stageName}'(으)로 변경되었습니다.`);
+            });
+        }
+
+        async function loadStageGuide(stageId) {
+            const { data: guide } = await supabase.from('stage_guides').select('*').eq('stage_id', stageId).single();
+
+            const guideSection = document.getElementById('guideSection');
+            if (guide) {
+                guideSection.style.display = 'block';
+                document.getElementById('lawText').textContent = guide.law_text || '내용 없음';
+                document.getElementById('guideText').textContent = guide.guide_text || '내용 없음';
+                
+                let checkHtml = '';
+                if (guide.checklist && Array.isArray(guide.checklist)) {
+                    guide.checklist.forEach(item => {
+                        checkHtml += `<div style="margin-bottom: 0.4rem;"><label style="display:flex; gap:0.5rem;"><input type="checkbox" style="width:auto; margin:0;"> <span>${item}</span></label></div>`;
+                    });
+                } else if (guide.checklist) {
+                     checkHtml = guide.checklist;
+                }
+                document.getElementById('checklist').innerHTML = checkHtml || '내용 없음';
+            } else {
+                guideSection.style.display = 'none';
+            }
+        }
+
+        async function loadLogs() {
+            const { data: logs } = await supabase.from('logs').select('*').eq('case_id', currentCaseId).order('created_at', { ascending: false });
+
+            const timeline = document.getElementById('timeline');
+            timeline.innerHTML = '';
+
+            if (logs && logs.length > 0) {
+                logs.forEach(log => {
+                    const dateObj = new Date(log.created_at);
+                    const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2, '0')}`;
+                    const isSystem = log.content.startsWith('[시스템]');
+                    
+                    const item = document.createElement('div');
+                    item.style.cssText = `margin-bottom: 1rem; padding: 0.8rem; border-radius: 8px; background: ${isSystem ? 'rgba(59, 130, 246, 0.1)' : 'rgba(255,255,255,0.05)'}; border-left: 3px solid ${isSystem ? '#3b82f6' : '#cbd5e1'};`;
+                    item.innerHTML = `
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.3rem;">${dateStr} | ${log.created_by}</div>
+                        <div style="font-size: 0.9rem; line-height: 1.5; color: ${isSystem ? '#93c5fd' : 'white'};">${log.content.replace(/\n/g, '<br>')}</div>
+                    `;
+                    timeline.appendChild(item);
+                });
+            } else {
+                timeline.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 1rem;">아직 로그가 없습니다.</div>';
+            }
+        }
+
+        document.getElementById('logForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentCaseId) return;
+            const input = document.getElementById('logInput');
+            const content = input.value.trim();
+            if (!content) return;
+            
+            input.value = '';
+            input.disabled = true;
+
+            await addLog(content);
+            
+            input.disabled = false;
+            input.focus();
+        });
+
+        async function addLog(content) {
+            const { error } = await supabase.from('logs').insert([{
+                case_id: currentCaseId,
+                content: content,
+                created_by: currentUser
+            }]);
+            
+            if (!error) {
+                await loadLogs();
+                // Update last log in case list
+                await loadCaseList();
+            } else {
+                alert('로그 등록에 실패했습니다.');
+            }
+        }
+
+        document.getElementById('claimCaseBtn')?.addEventListener('click', async () => {
+            const btn = document.getElementById('claimCaseBtn');
+            btn.disabled = true;
+            btn.textContent = '처리 중...';
+            
+            const { error: updateErr } = await supabase.from('cases').update({ status: '진행중' }).eq('id', currentCaseId);
+                
+            if (updateErr) {
+                alert('오류가 발생했습니다: ' + updateErr.message);
+                btn.disabled = false;
+                btn.textContent = '🚀 이 상담 진행하기';
+                return;
+            }
+            
+            await addLog(`[시스템] ${currentUser} 전문가가 담당자로 지정되어 상담을 시작했습니다.`);
+            
+            document.getElementById('claimActionArea').style.display = 'none';
+            document.getElementById('detailStatusBadge').textContent = '진행중';
+            document.getElementById('detailStatusBadge').style.background = 'var(--primary)';
+            
+            await loadCaseList();
+        });
+
+        init();
+    </script>
+</body>
+</html>

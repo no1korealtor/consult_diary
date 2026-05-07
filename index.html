@@ -824,7 +824,8 @@
                 
             } catch (err) {
                 console.error("Booking Error:", err);
-                bookingResultMsg.textContent = '❌ 신청 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+                const errMsg = err.message || err.details || err.hint || JSON.stringify(err);
+                bookingResultMsg.textContent = `❌ 신청 중 오류가 발생했습니다: ${errMsg}`;
                 bookingResultMsg.style.color = '#ef4444';
                 bookingResultMsg.style.background = 'rgba(239, 68, 68, 0.1)';
                 bookingResultMsg.style.display = 'block';
