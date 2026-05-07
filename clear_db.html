@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Clear Test DB</title>
+    <!-- Use UMD build from CDN for supabase so we don't need modules -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <h2>데이터 초기화 스크립트</h2>
     <p id="status">초기화 진행 중...</p>
-    <script type="module">
-        import { supabase } from './supabase-client.js';
+    <script>
+        const SUPABASE_URL = 'https://yqolkvmrfvumpwlxjimp.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_Y3waCN-Y0LA26BC80eUO-g_Njmuq1Hu';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function clearRecords() {
             const statusEl = document.getElementById('status');

@@ -23,6 +23,7 @@
             <div>
                 <a href="consult-start.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">뒤로</a>
                 <a href="daily-report.html" class="btn btn-secondary" style="padding: 0.5rem 1rem;">일일 보고서</a>
+                <button onclick="clearTestDB()" class="btn" style="padding: 0.5rem 1rem; background-color: #ef4444; border: none;">DB 초기화</button>
                 <button onclick="logout()" class="btn btn-secondary" style="padding: 0.5rem 1rem;">로그아웃</button>
             </div>
         </div>
@@ -34,6 +35,24 @@
 
     <script type="module">
         import { supabase, requireAuth } from './supabase-client.js';
+
+        window.clearTestDB = async () => {
+            if(!confirm('모든 고객 및 상담 데이터를 삭제하시겠습니까? (테스트용)')) return;
+            
+            try {
+                const { data: customers } = await supabase.from('customers').select('id');
+                if (customers && customers.length > 0) {
+                    const ids = customers.map(c => c.id);
+                    await supabase.from('customers').delete().in('id', ids);
+                    alert(`총 ${ids.length}건의 고객 및 상담 데이터가 삭제되었습니다.`);
+                    window.location.reload();
+                } else {
+                    alert('삭제할 데이터가 없습니다.');
+                }
+            } catch (err) {
+                alert('삭제 중 오류가 발생했습니다: ' + err.message);
+            }
+        };
 
         window.logout = async () => {
             await supabase.auth.signOut();
