@@ -93,7 +93,7 @@ js_script = '''    <script type="module">
 
             stages.forEach((s, i) => {
                 let phaseType = (i >= 3) ? 'appeal' : 'admin';
-                let newPhase = (i >= 3) ? '🚨 불복 절차' : '⚖️ 행정 절차';
+                let newPhase = (i >= 3) ? '🚨 불복 절차' : (category === '과태료' ? '⚖️ 과태료부과절차' : '⚖️ 행정처분절차');
                 
                 if (currentPhase !== newPhase) {
                     if (currentPhase !== '') {
