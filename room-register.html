@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>호수 등록</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            max-width: 480px;
+            margin: auto;
+        }
+
+        select,
+        input,
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            font-size: 18px;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>호수 등록</h2>
+
+    <select id="buildingSelect">
+        <option value="">건물 선택</option>
+    </select>
+
+    <input id="room_name" placeholder="예: 101호">
+
+    <button onclick="saveRoom()">
+        저장
+    </button>
+
+    <div id="status"></div>
+
+    <script>
+
+        const SUPABASE_URL =
+            'https://clzrbyplzjdrrscctcsl.supabase.co';
+
+        const SUPABASE_ANON_KEY =
+            'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k';
+
+        const supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_ANON_KEY
+            );
+
+        async function loadBuildings() {
+
+            const { data, error } =
+                await supabaseClient
+                    .from('buildings')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+            if (error) {
+                console.log(error);
+                return;
+            }
+
+            const select =
+                document.getElementById('buildingSelect');
+
+            data.forEach(building => {
+
+                const option =
+                    document.createElement('option');
+
+                option.value = building.id;
+
+                option.textContent =
+                    building.road_address;
+
+                select.appendChild(option);
+
+            });
+
+        }
+
+        async function saveRoom() {
+
+            const buildingId =
+                document.getElementById('buildingSelect').value;
+
+            const roomName =
+                document.getElementById('room_name').value;
+
+            const status =
+                document.getElementById('status');
+
+            if (!buildingId) {
+                status.innerText = '건물을 선택하세요';
+                return;
+            }
+
+            status.innerText = '저장 중...';
+
+            const { error } =
+                await supabaseClient
+                    .from('rooms')
+                    .insert([
+                        {
+                            building_id: buildingId,
+                            room_name: roomName
+                        }
+                    ]);
+
+            if (error) {
+                status.innerText =
+                    '에러: ' + error.message;
+                return;
+            }
+
+            status.innerText = '저장 완료';
+
+            document.getElementById('room_name').value = '';
+
+        }
+
+        loadBuildings();
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>건물 등록</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            max-width: 480px;
+            margin: auto;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>건물 등록</h2>
+
+    <button onclick="openAddressSearch()">
+        주소 검색
+    </button>
+
+    <input id="road_address" placeholder="도로명 주소">
+
+    <input id="jibun_address" placeholder="지번 주소">
+
+    <button onclick="saveBuilding()">
+        저장
+    </button>
+
+    <div id="status"></div>
+
+    <script>
+
+        const SUPABASE_URL = 'https://clzrbyplzjdrrscctcsl.supabase.co';
+
+        const SUPABASE_ANON_KEY = 'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k';
+
+        const supabaseClient = window.supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_ANON_KEY
+        );
+
+        function openAddressSearch() {
+
+            new daum.Postcode({
+
+                oncomplete: function (data) {
+
+                    document.getElementById('road_address').value =
+                        data.roadAddress;
+
+                    document.getElementById('jibun_address').value =
+                        data.jibunAddress;
+
+                }
+
+            }).open();
+
+        }
+
+        async function saveBuilding() {
+
+            const roadAddress =
+                document.getElementById('road_address').value;
+
+            const jibunAddress =
+                document.getElementById('jibun_address').value;
+
+            const status =
+                document.getElementById('status');
+
+            status.innerText = '저장 중...';
+
+            const { error } = await supabaseClient
+                .from('buildings')
+                .insert([
+                    {
+                        road_address: roadAddress,
+                        jibun_address: jibunAddress
+                    }
+                ]);
+
+            if (error) {
+                status.innerText = '에러: ' + error.message;
+                return;
+            }
+
+            status.innerText = '저장 완료';
+
+        }
+
+    </script>
+
+</body>
+
+</html>
