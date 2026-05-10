@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>사진 업로드</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            max-width: 480px;
+            margin: auto;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            font-size: 18px;
+        }
+
+        img {
+            width: 100%;
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>사진 업로드</h2>
+
+    <input
+        type="file"
+        id="photoInput"
+        accept="image/*"
+        capture="environment"
+    >
+
+    <button onclick="uploadPhoto()">
+        사진 업로드
+    </button>
+
+    <div id="status"></div>
+
+    <img id="preview">
+
+    <script>
+
+        const SUPABASE_URL =
+            'https://clzrbyplzjdrrscctcsl.supabase.co';
+
+        const SUPABASE_ANON_KEY =
+            'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k';
+
+        const supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_ANON_KEY
+            );
+
+        async function uploadPhoto() {
+
+            const file =
+                document.getElementById('photoInput')
+                    .files[0];
+
+            const status =
+                document.getElementById('status');
+
+            if (!file) {
+
+                status.innerText =
+                    '사진을 선택하세요';
+
+                return;
+            }
+
+            status.innerText =
+                '업로드 중...';
+
+            const fileName =
+                Date.now() + '_' + file.name;
+
+            const { data, error } =
+                await supabaseClient
+                    .storage
+                    .from('meter-photos')
+                    .upload(fileName, file);
+
+            if (error) {
+
+                status.innerText =
+                    '에러: ' + error.message;
+
+                return;
+            }
+
+            const { data: publicUrlData } =
+                supabaseClient
+                    .storage
+                    .from('meter-photos')
+                    .getPublicUrl(fileName);
+
+            const imageUrl =
+                publicUrlData.publicUrl;
+
+            document
+                .getElementById('preview')
+                .src = imageUrl;
+
+            status.innerText =
+                '업로드 완료';
+
+            console.log(imageUrl);
+
+        }
+
+    </script>
+
+</body>
+
+</html>
