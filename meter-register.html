@@ -182,6 +182,14 @@
             const status =
                 document.getElementById('status');
 
+            const buildingId =
+                document.getElementById('buildingSelect').value;
+
+            if (!buildingId) {
+                status.innerText = '건물을 선택하세요';
+                return;
+            }
+
             if (!roomId) {
                 status.innerText = '호수를 선택하세요';
                 return;
