@@ -160,8 +160,10 @@
             }
 
             status.innerText = '저장 완료';
-
             document.getElementById('room_name').value = '';
+
+            alert('호수가 성공적으로 등록되었습니다.');
+            history.back(); // 이전 페이지(잔금 일정 등록 등)로 돌아가기
 
         }
 
