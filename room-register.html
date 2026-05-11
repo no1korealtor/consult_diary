@@ -99,6 +99,12 @@
 
             });
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const buildingIdFromUrl = urlParams.get('building_id');
+            if (buildingIdFromUrl) {
+                select.value = buildingIdFromUrl;
+            }
+
         }
 
         window.addEventListener('pageshow', function (event) {
