@@ -91,7 +91,7 @@
             } else if (data.role === 'admin' || data.role === 'consultant') {
                 // Store role locally for convenience
                 localStorage.setItem('userRole', data.role);
-                window.location.href = 'deal-register.html';
+                window.location.href = 'deal-register.html?t=' + Date.now();
             } else {
                 window.location.href = 'ediary/index.html';
             }
