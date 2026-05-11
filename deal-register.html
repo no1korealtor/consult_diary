@@ -158,10 +158,20 @@
             }
         }
 
+        async function checkAuthAndLoad() {
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            if (!session) {
+                alert('로그인이 필요한 서비스입니다.');
+                location.href = 'login.html';
+                return;
+            }
+            loadBuildings();
+            loadDeals();
+        }
+
         window.addEventListener('pageshow', function(event) {
             if (event.persisted || window.performance && window.performance.navigation.type === 2) {
-                loadBuildings();
-                loadDeals();
+                checkAuthAndLoad();
             }
         });
 
@@ -317,8 +327,7 @@
             .getElementById('buildingSelect')
             .addEventListener('change', loadRooms);
 
-        loadBuildings();
-        loadDeals();
+        checkAuthAndLoad();
 
     </script>
 
