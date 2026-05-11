@@ -154,8 +154,22 @@
                     ]);
 
             if (error) {
+
+                if (
+                    error.message.includes(
+                        'unique_room_per_building'
+                    )
+                ) {
+
+                    status.innerText =
+                        '중복 호실입니다.';
+
+                    return;
+                }
+
                 status.innerText =
                     '에러: ' + error.message;
+
                 return;
             }
 
