@@ -103,6 +103,7 @@
             const buildingIdFromUrl = urlParams.get('building_id');
             if (buildingIdFromUrl) {
                 select.value = buildingIdFromUrl;
+                select.disabled = true; // 변경하지 못하도록 잠금 처리
             }
 
         }
