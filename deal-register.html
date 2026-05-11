@@ -114,6 +114,11 @@
                 SUPABASE_ANON_KEY
             );
 
+        // 로그인 인증용 클라이언트 (메인 프로젝트)
+        const AUTH_URL = 'https://yqolkvmrfvumpwlxjimp.supabase.co';
+        const AUTH_KEY = 'sb_publishable_Y3waCN-Y0LA26BC80eUO-g_Njmuq1Hu';
+        const authClient = window.supabase.createClient(AUTH_URL, AUTH_KEY);
+
         async function loadBuildings() {
 
             const { data, error } =
@@ -159,7 +164,7 @@
         }
 
         async function checkAuthAndLoad() {
-            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            const { data: { session }, error } = await authClient.auth.getSession();
             if (!session) {
                 alert('로그인이 필요한 서비스입니다.');
                 location.href = 'login.html';
