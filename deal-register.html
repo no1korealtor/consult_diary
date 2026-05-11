@@ -54,6 +54,12 @@
     <select id="roomSelect">
         <option value="">호수 선택</option>
     </select>
+    <button
+        type="button"
+        onclick="goToRoomRegister()"
+    >
+        + 호수 등록
+    </button>
 
     <select id="contractType">
 
@@ -140,6 +146,15 @@
 
             });
 
+        }
+
+        function goToRoomRegister() {
+            const buildingId = document.getElementById('buildingSelect').value;
+            if (buildingId) {
+                location.href = 'room-register.html?building_id=' + buildingId;
+            } else {
+                location.href = 'room-register.html';
+            }
         }
 
         window.addEventListener('pageshow', function(event) {
