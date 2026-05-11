@@ -44,10 +44,7 @@
         <option value="">건물 선택</option>
     </select>
 
-    <input
-        id="room_name"
-        placeholder="예: 101호 / 해당없음"
-    >
+    <input id="room_name" placeholder="예: 101호 / 해당없음">
 
     <button onclick="saveRoom()">
         저장
@@ -85,7 +82,7 @@
 
             const select =
                 document.getElementById('buildingSelect');
-                
+
             select.innerHTML = '<option value="">건물 선택</option>';
 
             data.forEach(building => {
@@ -104,7 +101,7 @@
 
         }
 
-        window.addEventListener('pageshow', function(event) {
+        window.addEventListener('pageshow', function (event) {
             if (event.persisted || window.performance && window.performance.navigation.type === 2) {
                 loadBuildings();
             }

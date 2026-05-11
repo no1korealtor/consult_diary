@@ -39,7 +39,7 @@
 
 <body>
 
-    <h2>잔금 일정 등록</h2>
+    <h2>잔금 일정 등록 (업데이트됨)</h2>
 
     <select id="buildingSelect">
         <option value="">건물 선택</option>
@@ -284,11 +284,11 @@
                 li.style.marginBottom = '10px';
                 li.style.borderRadius = '5px';
                 
-                li.innerHTML = \`
-                    <div style="font-weight: bold; margin-bottom: 5px;">\${deal.balance_date || '날짜 미정'} - \${deal.contract_type}</div>
-                    <div style="margin-bottom: 5px;">\${bName} \${rName}</div>
-                    <div style="color: gray; font-size: 14px;">\${deal.memo || ''}</div>
-                \`;
+                li.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 5px;">${deal.balance_date || '날짜 미정'} - ${deal.contract_type}</div>
+                    <div style="margin-bottom: 5px;">${bName} ${rName}</div>
+                    <div style="color: gray; font-size: 14px;">${deal.memo || ''}</div>
+                `;
                 list.appendChild(li);
             });
         }
