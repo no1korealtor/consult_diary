@@ -113,7 +113,14 @@
                 return;
             }
 
-            status.innerText = '저장 완료';
+            status.innerText = '저장 완료! 이전 화면으로 돌아갑니다...';
+            setTimeout(() => {
+                if (document.referrer) {
+                    location.href = document.referrer;
+                } else {
+                    history.back();
+                }
+            }, 1500);
 
         }
 
