@@ -193,6 +193,15 @@
             const status =
                 document.getElementById('status');
 
+            if (!buildingId) {
+                status.innerText = '에러: 건물을 선택해주세요.';
+                return;
+            }
+            if (!roomId) {
+                status.innerText = '에러: 호수를 선택해주세요.';
+                return;
+            }
+
             status.innerText = '저장 중...';
 
             const { error } =
