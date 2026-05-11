@@ -299,6 +299,10 @@
                 li.style.padding = '10px';
                 li.style.marginBottom = '10px';
                 li.style.borderRadius = '5px';
+                li.style.cursor = 'pointer';
+                li.onclick = () => {
+                    location.href = 'deal-detail.html?id=' + deal.id;
+                };
                 
                 li.innerHTML = `
                     <div style="font-weight: bold; margin-bottom: 5px;">${deal.balance_date || '날짜 미정'} - ${deal.contract_type}</div>
