@@ -143,7 +143,7 @@
                 option.value = building.id;
 
                 option.textContent =
-                    building.road_address;
+                    building.jibun_address || building.road_address;
 
                 select.appendChild(option);
 
@@ -297,7 +297,7 @@
                     contract_type,
                     balance_date,
                     memo,
-                    buildings ( road_address ),
+                    buildings ( jibun_address, road_address ),
                     rooms ( room_name )
                 `)
                 .eq('user_id', window.currentUser.id)
@@ -317,7 +317,7 @@
             }
 
             data.forEach(deal => {
-                const bName = deal.buildings ? deal.buildings.road_address : '알 수 없는 건물';
+                const bName = deal.buildings ? (deal.buildings.jibun_address || deal.buildings.road_address) : '알 수 없는 건물';
                 const rName = deal.rooms ? deal.rooms.room_name : '알 수 없는 호수';
                 
                 const li = document.createElement('li');

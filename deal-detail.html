@@ -102,6 +102,7 @@
                     .select(`
                         *,
                         buildings (
+                            jibun_address,
                             road_address,
                             entrance_password
                         ),
@@ -123,10 +124,11 @@
             ).innerText =
                 data.contract_type;
 
+            const finalAddress = data.buildings.jibun_address || data.buildings.road_address;
             document.getElementById(
                 'address'
             ).innerText =
-                data.buildings.road_address
+                finalAddress
                 + ' '
                 + data.rooms.room_name;
 
