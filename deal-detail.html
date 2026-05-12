@@ -57,6 +57,11 @@
 
         <div class="info" id="memo"></div>
 
+        <div id="meterInfo" style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px; font-size: 16px; color: #4b5563; display: none;">
+            <div style="font-weight: bold; margin-bottom: 5px; color: #1f2937;">최근 정산 입력정보</div>
+            <div id="meterData"></div>
+        </div>
+
     </div>
 
     <div style="text-align: center; margin-bottom: 15px; font-size: 18px; font-weight: bold;">
@@ -152,6 +157,32 @@
             window.currentBuildingId = data.building_id;
             window.currentRoomId = data.room_id;
 
+            await loadMeters(data.room_id);
+        }
+
+        async function loadMeters(roomId) {
+            const { data, error } = await supabaseClient
+                .from('utility_meters')
+                .select('*')
+                .eq('room_id', roomId)
+                .order('created_at', { ascending: false });
+
+            if (error || !data || data.length === 0) return;
+
+            let electric = '-', water = '-', gas = '-';
+            
+            for (let m of data) {
+                if (m.type === 'electric' && electric === '-') electric = m.meter_last4;
+                if (m.type === 'water' && water === '-') water = m.meter_last4;
+                if (m.type === 'gas' && gas === '-') gas = m.meter_last4;
+            }
+
+            document.getElementById('meterInfo').style.display = 'block';
+            document.getElementById('meterData').innerHTML = `
+                <div>⚡ 전기: ${electric}</div>
+                <div>💧 수도: ${water}</div>
+                <div>🔥 가스: ${gas}</div>
+            `;
         }
 
         function openKakaoMap() {
@@ -169,7 +200,7 @@
 
         function goSettlement() {
             if (window.currentBuildingId && window.currentRoomId) {
-                location.href = 'meter-register.html?building_id=' + window.currentBuildingId + '&room_id=' + window.currentRoomId;
+                location.href = 'meter-register.html?building_id=' + window.currentBuildingId + '&room_id=' + window.currentRoomId + '&deal_id=' + dealId;
             } else {
                 alert('일정 정보를 불러오는 중입니다.');
             }
