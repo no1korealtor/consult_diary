@@ -28,6 +28,23 @@ async function requireAuth() {
         return null;
     }
     
+    // DB에서 해당 사용자의 role 정보 조회
+    const { data: profile, error: profileError } = await supabaseClient
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    // profile이 없거나, role이 NULL이거나 비어있으면 접근 차단
+    if (profileError || !profile || !profile.role) {
+        alert('전문가 승인이 필요합니다. 관리자 승인 후 이용 가능합니다.');
+        await authClient.auth.signOut();
+        location.href = 'login.html';
+        return null;
+    }
+    
+    // user 객체에 role 정보를 함께 저장해둠 (나중에 권한 분리에 유용함)
+    user.role = profile.role;
     window.currentUser = user;
     return user;
 }
