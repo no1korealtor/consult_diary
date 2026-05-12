@@ -124,7 +124,11 @@
             ).innerText =
                 data.contract_type;
 
-            const finalAddress = data.buildings.jibun_address || data.buildings.road_address;
+            let finalAddress = data.buildings.road_address;
+            if (data.buildings.jibun_address) {
+                finalAddress += ' (' + data.buildings.jibun_address + ')';
+            }
+            
             document.getElementById(
                 'address'
             ).innerText =

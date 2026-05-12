@@ -142,8 +142,11 @@
 
                 option.value = building.id;
 
-                option.textContent =
-                    building.jibun_address || building.road_address;
+                let text = building.road_address;
+                if (building.jibun_address) {
+                    text += ' (' + building.jibun_address + ')';
+                }
+                option.textContent = text;
 
                 select.appendChild(option);
 
@@ -317,7 +320,13 @@
             }
 
             data.forEach(deal => {
-                const bName = deal.buildings ? (deal.buildings.jibun_address || deal.buildings.road_address) : '알 수 없는 건물';
+                let bName = '알 수 없는 건물';
+                if (deal.buildings) {
+                    bName = deal.buildings.road_address;
+                    if (deal.buildings.jibun_address) {
+                        bName += ' (' + deal.buildings.jibun_address + ')';
+                    }
+                }
                 const rName = deal.rooms ? deal.rooms.room_name : '알 수 없는 호수';
                 
                 const li = document.createElement('li');

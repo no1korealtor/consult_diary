@@ -90,8 +90,11 @@
 
                 option.value = building.id;
 
-                option.textContent =
-                    building.jibun_address || building.road_address;
+                let text = building.road_address;
+                if (building.jibun_address) {
+                    text += ' (' + building.jibun_address + ')';
+                }
+                option.textContent = text;
 
                 select.appendChild(option);
 
