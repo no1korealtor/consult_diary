@@ -3,43 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Consulting System</title>
+    <title>공인중개사의 다이어리 - 로그인</title>
+    <link rel="stylesheet" href="app.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .login-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 3rem 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        .custom-input {
+            background-color: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 1.2rem;
+            border-radius: 0.8rem;
+            font-size: 1.05rem;
+            transition: all 0.3s;
+            color: white;
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 1rem;
+        }
+        .custom-input:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.12);
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            font-size: 1.1rem;
+            padding: 1rem;
+            border-radius: 0.8rem;
+            margin-top: 0.5rem;
+            color: white;
+            border: none;
+            width: 100%;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+        }
+    </style>
     <link rel="stylesheet" href="app.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div class="container" style="max-width: 400px; margin-top: 10vh;">
-        <div class="glass-panel text-center">
-            <h2 id="loginTitle" style="text-align: center; margin-bottom: 0.5rem;">시스템 로그인</h2>
-            <p id="loginDesc" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem; display: none;">전문가 전용 상담 관리 CRM</p>
-            <form id="loginForm" class="flex-col">
-                <input type="email" id="email" placeholder="이메일" required>
-                <input type="password" id="password" placeholder="비밀번호" required>
-                <button type="submit" class="btn" id="loginBtn">로그인</button>
+    <div class="container" style="max-width: 420px; margin-top: 8vh; margin-bottom: 8vh;">
+        <div class="login-card text-center">
+            <div class="icon-circle">📔</div>
+            <h2 style="text-align: center; margin-bottom: 0.5rem; font-weight: 700; letter-spacing: -0.5px; color: #fff;">공인중개사의 다이어리</h2>
+            <p style="color: #cbd5e1; font-size: 1rem; margin-bottom: 2.5rem; word-break: keep-all; text-align: center; line-height: 1.5;">현장에서 바로 꺼내 쓰는<br>나만의 든든한 업무 수첩</p>
+            
+            <form id="loginForm" class="flex-col" style="gap: 0;">
+                <input type="email" id="email" class="custom-input" placeholder="이메일 주소" required>
+                <input type="password" id="password" class="custom-input" placeholder="비밀번호" required>
+                <button type="submit" class="btn-login" id="loginBtn">시작하기</button>
             </form>
-            <div id="errorMsg" style="color: #ef4444; margin-top: 1rem; text-align: center; display: none;"></div>
-            <div style="margin-top: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem;">
-                <a href="index.html" style="display: none; color: var(--text-muted); text-decoration: none; font-size: 0.9rem;">← 홈페이지 메인으로 돌아가기</a>
-                <a href="register.html" style="color: var(--accent-color); text-decoration: none; font-size: 0.9rem;">전문가 계정이 없으신가요? 회원가입</a>
+            
+            <div id="errorMsg" style="color: #fca5a5; margin-top: 1rem; text-align: center; display: none; font-size: 0.95rem;"></div>
+            
+            <div style="margin-top: 2rem; text-align: center;">
+                <a href="register.html" style="color: #94a3b8; text-decoration: none; font-size: 0.95rem; transition: color 0.2s;">계정이 없으신가요? <span style="color: #818cf8;">무료 회원가입</span></a>
             </div>
-        </div>
-        
-        <!-- 일반 사용자 유입을 위한 CTA (버튼) -->
-        <div id="publicCtaSection" style="margin-top: 2rem; padding: 1.5rem; background: linear-gradient(145deg, rgba(37,99,235,0.1), rgba(15,23,42,0.6)); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem; line-height: 1.5; word-break: keep-all;">갑작스러운 과태료나 행정처분으로 막막하신가요?<br>내 상황에 딱 맞는 전문가의 대응 가이드를 확인해 보세요.</p>
-            <a href="index.html" class="btn" style="background: linear-gradient(to right, #3b82f6, #8b5cf6); border: none; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); text-decoration: none; display: inline-block; width: 100%; font-weight: bold; font-size: 1.05rem;">무료 자가진단 및 상담 예약하기</a>
         </div>
     </div>
 
     <script src="auth-helper.js"></script>
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const isProLogin = urlParams.get('pro') === 'true';
-
-        if (isProLogin) {
-            document.getElementById('loginTitle').textContent = '공인중개사 / 전문 상담사 로그인';
-            document.getElementById('loginDesc').style.display = 'block';
-        }
 
         // 이미 로그인되어 있는지 확인
         async function checkSession() {
@@ -58,7 +107,7 @@
             
             errorMsg.style.display = 'none';
             document.getElementById('loginBtn').disabled = true;
-            document.getElementById('loginBtn').textContent = '로그인 중...';
+            document.getElementById('loginBtn').textContent = '확인 중...';
 
             const { data, error } = await authClient.auth.signInWithPassword({
                 email,
@@ -69,7 +118,7 @@
                 errorMsg.textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
                 errorMsg.style.display = 'block';
                 document.getElementById('loginBtn').disabled = false;
-                document.getElementById('loginBtn').textContent = '로그인';
+                document.getElementById('loginBtn').textContent = '시작하기';
             } else {
                 // 로그인 성공 시 무조건 deal-register.html 로 이동
                 window.location.href = 'deal-register.html';
