@@ -77,19 +77,8 @@
         목록으로 돌아가기
     </button>
 
+    <script src="auth-helper.js"></script>
     <script>
-
-        const SUPABASE_URL =
-            'https://clzrbyplzjdrrscctcsl.supabase.co';
-
-        const SUPABASE_ANON_KEY =
-            'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k';
-
-        const supabaseClient =
-            window.supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_ANON_KEY
-            );
 
         const params =
             new URLSearchParams(
@@ -114,6 +103,7 @@
                         )
                     `)
                     .eq('id', dealId)
+                    .eq('user_id', window.currentUser.id)
                     .single();
 
             if (error) {
@@ -184,7 +174,13 @@
 
         }
 
-        loadDeal();
+        async function init() {
+            const user = await requireAuth();
+            if (user) {
+                loadDeal();
+            }
+        }
+        init();
 
     </script>
 

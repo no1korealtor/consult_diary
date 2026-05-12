@@ -61,6 +61,7 @@
                 await supabaseClient
                     .from('buildings')
                     .select('*')
+                    .eq('user_id', window.currentUser.id)
                     .order('created_at', { ascending: false });
 
             if (error) {

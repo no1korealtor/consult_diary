@@ -69,6 +69,7 @@
                 await supabaseClient
                     .from('buildings')
                     .select('*')
+                    .eq('user_id', window.currentUser.id)
                     .order('created_at', { ascending: false });
 
             if (error) {
@@ -119,7 +120,8 @@
                 await supabaseClient
                     .from('rooms')
                     .select('*')
-                    .eq('building_id', buildingId);
+                    .eq('building_id', buildingId)
+                    .eq('user_id', window.currentUser.id);
 
             if (error) {
                 console.log(error);
