@@ -129,6 +129,11 @@
 
             const select =
                 document.getElementById('buildingSelect');
+
+            // 검색 가능한 드롭다운(Tom Select) 초기화 전 기존 객체 파괴
+            if (window.buildingTomSelect) {
+                window.buildingTomSelect.destroy();
+            }
                 
             select.innerHTML = '<option value="">건물 선택</option>';
 
@@ -146,10 +151,6 @@
 
             });
 
-            // 검색 가능한 드롭다운(Tom Select) 초기화
-            if (window.buildingTomSelect) {
-                window.buildingTomSelect.destroy();
-            }
             window.buildingTomSelect = new TomSelect("#buildingSelect", {
                 create: false,
                 placeholder: "건물명 또는 주소 검색...",
