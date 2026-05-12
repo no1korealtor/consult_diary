@@ -128,6 +128,11 @@
             <div class="info" id="entrancePassword" style="color: #ef4444; font-weight: 600;"></div>
         </div>
 
+        <div class="info-row" id="contactRow" style="display: none;">
+            <div class="info-icon">📞</div>
+            <div class="info" id="contact" style="color: #3b82f6; font-weight: 600;"></div>
+        </div>
+
         <div class="info-row">
             <div class="info-icon">📅</div>
             <div class="info" id="date"></div>
@@ -258,12 +263,20 @@
                 return;
             }
 
-            let electric = '-', water = '-', gas = '-';
+            let electric = '-', water = '-', gas = '-', contact = '';
             
             for (let m of data) {
                 if (m.type === 'electric') electric = m.meter_last4;
                 if (m.type === 'water') water = m.meter_last4;
                 if (m.type === 'gas') gas = m.meter_last4;
+                if (m.type === 'contact') contact = m.meter_last4;
+            }
+
+            if (contact) {
+                document.getElementById('contact').innerHTML = `<a href="tel:${contact}" style="color: inherit; text-decoration: none;">${contact}</a>`;
+                document.getElementById('contactRow').style.display = 'flex';
+            } else {
+                document.getElementById('contactRow').style.display = 'none';
             }
 
             document.getElementById('meterInfo').style.display = 'block';

@@ -55,6 +55,9 @@
 
     <input id="gas" placeholder="가스 끝4자리">
 
+    <div style="margin: 20px 0 10px; border-top: 1px dashed #ccc; padding-top: 15px; font-weight: bold; font-size: 14px; color: #6b7280;">추가 정보</div>
+    <input id="contact" placeholder="긴급 연락처 (예: 010-1234-5678)">
+
     <button onclick="saveMeters()">
         저장
     </button>
@@ -199,6 +202,9 @@
             const gas =
                 document.getElementById('gas').value;
 
+            const contact =
+                document.getElementById('contact').value;
+
             const status =
                 document.getElementById('status');
 
@@ -222,6 +228,8 @@
             await saveMeter('water', water, roomId);
 
             await saveMeter('gas', gas, roomId);
+            
+            await saveMeter('contact', contact, roomId);
 
             status.innerText = '저장 완료! 이전 화면으로 돌아갑니다...';
 
