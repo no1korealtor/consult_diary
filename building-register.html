@@ -115,7 +115,8 @@
                         entrance_password: entrancePassword,
                         user_id: window.currentUser.id
                     }
-                ]);
+                ])
+                .select();
 
             if (error) {
 
@@ -135,6 +136,10 @@
                     '에러: ' + error.message;
 
                 return;
+            }
+
+            if (data && data.length > 0) {
+                sessionStorage.setItem('lastRegisteredBuildingId', data[0].id);
             }
 
             status.innerText = '저장 완료! 이전 화면으로 돌아갑니다...';

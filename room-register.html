@@ -91,9 +91,14 @@
 
             const urlParams = new URLSearchParams(window.location.search);
             const buildingIdFromUrl = urlParams.get('building_id');
+            const lastBuildingId = sessionStorage.getItem('lastRegisteredBuildingId');
+            
             if (buildingIdFromUrl) {
                 select.value = buildingIdFromUrl;
                 select.disabled = true; // 변경하지 못하도록 잠금 처리
+            } else if (lastBuildingId) {
+                select.value = lastBuildingId;
+                sessionStorage.removeItem('lastRegisteredBuildingId');
             }
 
         }
