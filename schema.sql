@@ -2,7 +2,9 @@
 create table public.users (
   id uuid references auth.users not null primary key,
   name text,
-  role text check (role in ('admin', 'consultant'))
+  role text check (role in ('admin', 'consultant')),
+  office_address text,
+  phone text
 );
 
 -- Enable RLS
