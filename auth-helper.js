@@ -28,17 +28,21 @@ async function requireAuth() {
         return null;
     }
     
-    // DB에서 해당 사용자의 role 정보 조회
-    const { data: profile, error: profileError } = await supabaseClient
+    // DB에서 해당 사용자의 role 정보 조회 (users 테이블은 authClient 프로젝트에 존재)
+    const { data: profile, error: profileError } = await authClient
         .from('users')
         .select('role')
         .eq('id', user.id)
         .single();
 
     // profile이 없거나, role이 NULL이거나 비어있으면 접근 차단
-    // (즉, role에 'broker', 'admin' 등 어떤 값이라도 들어있으면 무조건 허용)
     if (profileError || !profile || !profile.role) {
-        alert('전문가 승인이 필요합니다. 관리자 승인 후 이용 가능합니다.');
+        let debugMsg = "알 수 없는 오류";
+        if (profileError) debugMsg = "DB 에러: " + JSON.stringify(profileError);
+        else if (!profile) debugMsg = "users 테이블에 해당 id(" + user.id + ")의 정보가 없습니다.";
+        else if (!profile.role) debugMsg = "role 값이 비어있습니다.";
+        
+        alert('전문가 승인이 필요합니다. 관리자 승인 후 이용 가능합니다.\n[디버그] ' + debugMsg);
         await authClient.auth.signOut();
         location.href = 'login.html';
         return null;
