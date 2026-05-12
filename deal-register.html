@@ -6,6 +6,10 @@
     <title>잔금 일정 등록</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Tom Select 라이브러리 (검색형 드롭다운) -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     <style>
         body {
@@ -153,6 +157,16 @@
 
                 select.appendChild(option);
 
+            });
+
+            // 검색 가능한 드롭다운(Tom Select) 초기화
+            if (window.buildingTomSelect) {
+                window.buildingTomSelect.destroy();
+            }
+            window.buildingTomSelect = new TomSelect("#buildingSelect", {
+                create: false,
+                placeholder: "건물명 또는 주소 검색...",
+                maxOptions: 100
             });
 
         }
