@@ -51,6 +51,8 @@
 
     <input id="jibun_address" placeholder="지번 주소">
 
+    <input id="entrance_password" placeholder="공동현관 비밀번호">
+
     <button onclick="saveBuilding()">
         저장
     </button>
@@ -94,8 +96,21 @@
             const jibunAddress =
                 document.getElementById('jibun_address').value;
 
+            const entrancePassword =
+                document.getElementById(
+                    'entrance_password'
+                ).value;
+
             const status =
                 document.getElementById('status');
+
+            if (!roadAddress) {
+
+                status.innerText =
+                    '주소를 입력하세요';
+
+                return;
+            }
 
             status.innerText = '저장 중...';
 
@@ -104,12 +119,28 @@
                 .insert([
                     {
                         road_address: roadAddress,
-                        jibun_address: jibunAddress
+                        jibun_address: jibunAddress,
+                        entrance_password: entrancePassword
                     }
                 ]);
 
             if (error) {
-                status.innerText = '에러: ' + error.message;
+
+                if (
+                    error.message.includes(
+                        'unique_road_address'
+                    )
+                ) {
+
+                    status.innerText =
+                        '이미 등록된 주소입니다.';
+
+                    return;
+                }
+
+                status.innerText =
+                    '에러: ' + error.message;
+
                 return;
             }
 
