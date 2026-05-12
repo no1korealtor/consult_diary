@@ -13,46 +13,155 @@
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 
     <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+
         body {
-            font-family: sans-serif;
-            padding: 20px;
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f3f4f6;
+            padding: 24px 16px;
             max-width: 480px;
             margin: auto;
+            color: #111827;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #111827;
+            letter-spacing: -0.5px;
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #374151;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
         }
 
         select,
         input,
-        textarea,
-        button {
+        textarea {
             width: 100%;
-            padding: 14px;
+            padding: 14px 16px;
             margin-bottom: 12px;
-            font-size: 16px;
+            font-size: 15px;
             box-sizing: border-box;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         button {
-            font-size: 18px;
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            font-family: inherit;
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            margin-top: 8px;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
         }
 
         #status {
-            margin-top: 20px;
+            margin-top: 16px;
             font-size: 14px;
+            text-align: center;
+        }
+
+        .deal-item {
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.05);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .deal-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+            border-color: #bfdbfe;
+        }
+
+        .app-footer {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .app-footer strong {
+            color: #6b7280;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
         }
     </style>
 </head>
 
 <body>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+<div class="main-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
         <h2 style="margin: 0;">잔금 일정 등록</h2>
-        <button type="button" onclick="logout()" style="width: auto; padding: 8px 12px; font-size: 14px; background: #ef4444; border: none; color: white; border-radius: 4px; cursor: pointer; margin-bottom: 0;">로그아웃</button>
+        <button type="button" onclick="logout()" style="width: auto; padding: 8px 16px; font-size: 14px; background: #fee2e2; border: none; color: #ef4444; border-radius: 8px; cursor: pointer; margin-bottom: 0;">로그아웃</button>
     </div>
 
     <h3>최근 등록된 일정</h3>
     <ul id="dealList" style="list-style: none; padding: 0;"></ul>
 
-    <hr style="margin: 30px 0; border: 0; border-top: 1px solid #ccc;">
+    <div class="card" style="margin-top: 30px;">
+        <h3 style="margin-top: 0;">새 일정 추가</h3>
 
     <select id="buildingSelect">
         <option value="">건물 선택</option>
@@ -102,11 +211,13 @@
 
     <textarea id="memo" placeholder="메모"></textarea>
 
-    <button onclick="saveDeal()">
+    <button class="btn-primary" onclick="saveDeal()">
         저장
     </button>
 
     <div id="status"></div>
+    </div>
+</div>
 
     <script src="auth-helper.js"></script>
     <script>
@@ -331,19 +442,18 @@
                 const rName = deal.rooms ? deal.rooms.room_name : '알 수 없는 호수';
                 
                 const li = document.createElement('li');
-                li.style.border = '1px solid #ddd';
-                li.style.padding = '10px';
-                li.style.marginBottom = '10px';
-                li.style.borderRadius = '5px';
-                li.style.cursor = 'pointer';
+                li.className = 'deal-item';
                 li.onclick = () => {
                     location.href = 'deal-detail.html?id=' + deal.id;
                 };
                 
                 li.innerHTML = `
-                    <div style="font-weight: bold; margin-bottom: 5px;">${deal.balance_date || '날짜 미정'} - ${deal.contract_type}</div>
-                    <div style="margin-bottom: 5px;">${bName} ${rName}</div>
-                    <div style="color: gray; font-size: 14px;">${deal.memo || ''}</div>
+                    <div style="display: flex; align-items: center; margin-bottom: 6px;">
+                        <span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 8px;">${deal.contract_type}</span>
+                        <span style="font-weight: 600; color: #1f2937; font-size: 15px;">${deal.balance_date || '날짜 미정'}</span>
+                    </div>
+                    <div style="margin-bottom: 4px; color: #4b5563; font-size: 15px;">📍 ${bName} ${rName}</div>
+                    ${deal.memo ? `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${deal.memo}</div>` : ''}
                 `;
                 list.appendChild(li);
             });
@@ -357,6 +467,11 @@
 
     </script>
 
+    <footer class="app-footer">
+        <strong>신대림공인중개사사무소</strong>
+        사업자등록번호: 219-01-50737 | 전화번호: 010-9128-0586<br>
+        서울특별시 마포구 모래내로7길 52 (성산동)
+    </footer>
 </body>
 
 </html>
