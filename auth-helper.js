@@ -36,6 +36,7 @@ async function requireAuth() {
         .single();
 
     // profile이 없거나, role이 NULL이거나 비어있으면 접근 차단
+    // (즉, role에 'broker', 'admin' 등 어떤 값이라도 들어있으면 무조건 허용)
     if (profileError || !profile || !profile.role) {
         alert('전문가 승인이 필요합니다. 관리자 승인 후 이용 가능합니다.');
         await authClient.auth.signOut();
