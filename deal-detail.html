@@ -168,7 +168,18 @@
                 .eq('user_id', window.currentUser.id)
                 .order('created_at', { ascending: false });
 
-            if (error || !data || data.length === 0) return;
+            if (error) {
+                document.getElementById('meterInfo').style.display = 'block';
+                document.getElementById('meterData').innerHTML = `<div style="color:red;">오류 발생: ${error.message}</div>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                // 데이터가 없는 경우 (아직 입력 안 됨 등) -> 영역은 보이되 없다고 표시
+                document.getElementById('meterInfo').style.display = 'block';
+                document.getElementById('meterData').innerHTML = `<div style="color:#9ca3af;">입력된 정산 정보가 없습니다.</div>`;
+                return;
+            }
 
             let electric = '-', water = '-', gas = '-';
             
