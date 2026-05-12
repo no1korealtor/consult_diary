@@ -52,19 +52,8 @@
 
     <div id="status"></div>
 
+    <script src="auth-helper.js"></script>
     <script>
-
-        const SUPABASE_URL =
-            'https://clzrbyplzjdrrscctcsl.supabase.co';
-
-        const SUPABASE_ANON_KEY =
-            'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k';
-
-        const supabaseClient =
-            window.supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_ANON_KEY
-            );
 
         async function loadBuildings() {
 
@@ -149,7 +138,8 @@
                     .insert([
                         {
                             building_id: buildingId,
-                            room_name: roomName
+                            room_name: roomName,
+                            user_id: window.currentUser.id
                         }
                     ]);
 
@@ -181,7 +171,13 @@
 
         }
 
-        loadBuildings();
+        async function init() {
+            const user = await requireAuth();
+            if (user) {
+                loadBuildings();
+            }
+        }
+        init();
 
     </script>
 

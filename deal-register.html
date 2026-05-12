@@ -109,22 +109,8 @@
 
     <script>
 
-        const SUPABASE_URL =
-            'https://clzrbyplzjdrrscctcsl.supabase.co';
-
-        const SUPABASE_ANON_KEY =
-            'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k';
-
-        const supabaseClient =
-            window.supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_ANON_KEY
-            );
-
-        // 로그인 인증용 클라이언트 (메인 프로젝트)
-        const AUTH_URL = 'https://yqolkvmrfvumpwlxjimp.supabase.co';
-        const AUTH_KEY = 'sb_publishable_Y3waCN-Y0LA26BC80eUO-g_Njmuq1Hu';
-        const authClient = window.supabase.createClient(AUTH_URL, AUTH_KEY);
+    <script src="auth-helper.js"></script>
+    <script>
 
         async function loadBuildings() {
 
@@ -181,19 +167,11 @@
         }
 
         async function checkAuthAndLoad() {
-            const { data: { session }, error } = await authClient.auth.getSession();
-            if (!session) {
-                alert('세션이 만료되었거나 로그인이 필요합니다. (새로고침 완료)');
-                location.href = 'login.html';
-                return;
+            const user = await requireAuth();
+            if (user) {
+                loadBuildings();
+                loadDeals();
             }
-            loadBuildings();
-            loadDeals();
-        }
-
-        async function logout() {
-            await authClient.auth.signOut();
-            location.href = 'login.html';
         }
 
         window.addEventListener('pageshow', function(event) {
@@ -280,7 +258,8 @@
                             room_id: roomId,
                             contract_type: contractType,
                             balance_date: balanceDate,
-                            memo: memo
+                            memo: memo,
+                            user_id: window.currentUser.id
                         }
                     ]);
 
