@@ -165,6 +165,7 @@
                 .from('utility_meters')
                 .select('*')
                 .eq('room_id', roomId)
+                .eq('user_id', window.currentUser.id)
                 .order('created_at', { ascending: false });
 
             if (error || !data || data.length === 0) return;
