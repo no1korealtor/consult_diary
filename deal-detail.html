@@ -68,7 +68,7 @@
     </button>
 
     <button type="button" onclick="goSettlement()">
-        공과금 정산
+        공과금 정산정보입력
     </button>
 
     <button onclick="editDeal()">
@@ -149,6 +149,9 @@
             ).innerText =
                 data.memo || '';
 
+            window.currentBuildingId = data.building_id;
+            window.currentRoomId = data.room_id;
+
         }
 
         function openKakaoMap() {
@@ -165,9 +168,11 @@
         }
 
         function goSettlement() {
-
-            alert('다음 단계에서 연결 예정');
-
+            if (window.currentBuildingId && window.currentRoomId) {
+                location.href = 'meter-register.html?building_id=' + window.currentBuildingId + '&room_id=' + window.currentRoomId;
+            } else {
+                alert('일정 정보를 불러오는 중입니다.');
+            }
         }
 
         function editDeal() {

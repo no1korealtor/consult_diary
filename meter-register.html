@@ -100,6 +100,16 @@
 
             });
 
+            const urlParams = new URLSearchParams(window.location.search);
+            const buildingIdFromUrl = urlParams.get('building_id');
+            const roomIdFromUrl = urlParams.get('room_id');
+
+            if (buildingIdFromUrl) {
+                select.value = buildingIdFromUrl;
+                select.disabled = true;
+                await loadRooms(roomIdFromUrl);
+            }
+
         }
 
         window.addEventListener('pageshow', function(event) {
@@ -108,7 +118,7 @@
             }
         });
 
-        async function loadRooms() {
+        async function loadRooms(roomIdToSelect) {
 
             const buildingId =
                 document.getElementById('buildingSelect').value;
@@ -144,6 +154,11 @@
                 roomSelect.appendChild(option);
 
             });
+
+            if (typeof roomIdToSelect === 'string' && roomIdToSelect) {
+                roomSelect.value = roomIdToSelect;
+                roomSelect.disabled = true;
+            }
 
         }
 
