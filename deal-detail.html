@@ -165,8 +165,7 @@
                 .from('utility_meters')
                 .select('*')
                 .eq('room_id', roomId)
-                .eq('user_id', window.currentUser.id)
-                .order('created_at', { ascending: false });
+                .eq('user_id', window.currentUser.id);
 
             if (error) {
                 document.getElementById('meterInfo').style.display = 'block';
@@ -184,9 +183,9 @@
             let electric = '-', water = '-', gas = '-';
             
             for (let m of data) {
-                if (m.type === 'electric' && electric === '-') electric = m.meter_last4;
-                if (m.type === 'water' && water === '-') water = m.meter_last4;
-                if (m.type === 'gas' && gas === '-') gas = m.meter_last4;
+                if (m.type === 'electric') electric = m.meter_last4;
+                if (m.type === 'water') water = m.meter_last4;
+                if (m.type === 'gas') gas = m.meter_last4;
             }
 
             document.getElementById('meterInfo').style.display = 'block';
