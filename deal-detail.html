@@ -51,6 +51,8 @@
 
         <div class="info" id="address"></div>
 
+        <div class="info" id="entrancePassword" style="color: #ef4444; font-size: 16px; font-weight: bold;"></div>
+
         <div class="info" id="date"></div>
 
         <div class="info" id="memo"></div>
@@ -96,7 +98,8 @@
                     .select(`
                         *,
                         buildings (
-                            road_address
+                            road_address,
+                            entrance_password
                         ),
                         rooms (
                             room_name
@@ -122,6 +125,9 @@
                 data.buildings.road_address
                 + ' '
                 + data.rooms.room_name;
+
+            const pwd = data.buildings.entrance_password;
+            document.getElementById('entrancePassword').innerText = pwd ? '공동현관 비밀번호: ' + pwd : '';
 
             document.getElementById(
                 'date'
