@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원 정보 수정 - 공인중개사의 다이어리</title>
+    <link rel="stylesheet" href="app.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container" style="max-width: 400px; margin-top: 5vh;">
+        <div class="glass-panel text-center">
+            <h2 style="text-align: center; margin-bottom: 0.5rem;">회원 정보 수정</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 2rem;">원활한 공동중개 및 연락을 위해<br>최신 사무실 주소와 전화번호를 입력해주세요.</p>
+            
+            <form id="profileForm" class="flex-col">
+                <label style="text-align: left; font-size: 0.9rem; color: #cbd5e1; margin-bottom: -0.5rem; display: block;">이름 (또는 상호명)</label>
+                <input type="text" id="name" placeholder="이름 (또는 상호명)" required>
+                
+                <label style="text-align: left; font-size: 0.9rem; color: #cbd5e1; margin-bottom: -0.5rem; display: block;">사무실 주소</label>
+                <input type="text" id="office_address" placeholder="사무실 주소 (예: 서울 마포구 모래내로)" required>
+                
+                <label style="text-align: left; font-size: 0.9rem; color: #cbd5e1; margin-bottom: -0.5rem; display: block;">전화번호</label>
+                <input type="tel" id="phone" placeholder="전화번호 (예: 010-1234-5678)" required>
+                
+                <button type="submit" class="btn" id="saveBtn" style="margin-top: 1rem;">정보 저장</button>
+            </form>
+            
+            <div id="resultMsg" style="margin-top: 1rem; text-align: center; display: none;"></div>
+            
+            <div style="margin-top: 1rem;">
+                <button type="button" class="btn btn-secondary" onclick="location.href='deal-register.html'" style="width: 100%;">메인으로 돌아가기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth-helper.js"></script>
+    <script>
+        async function loadProfile() {
+            const user = await requireAuth(true); // pass true to bypass profile completion check to avoid infinite loop
+            if (!user) return;
+
+            const { data, error } = await authClient
+                .from('users')
+                .select('name, office_address, phone')
+                .eq('id', user.id)
+                .single();
+
+            if (data) {
+                if (data.name) document.getElementById('name').value = data.name;
+                if (data.office_address) document.getElementById('office_address').value = data.office_address;
+                if (data.phone) document.getElementById('phone').value = data.phone;
+            }
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const office_address = document.getElementById('office_address').value;
+            const phone = document.getElementById('phone').value;
+            const resultMsg = document.getElementById('resultMsg');
+            
+            document.getElementById('saveBtn').disabled = true;
+            document.getElementById('saveBtn').textContent = '저장 중...';
+
+            const { error } = await authClient
+                .from('users')
+                .update({ name, office_address, phone })
+                .eq('id', window.currentUser.id);
+
+            if (error) {
+                resultMsg.textContent = '정보 저장 실패: ' + error.message;
+                resultMsg.style.color = '#fca5a5';
+                resultMsg.style.display = 'block';
+                document.getElementById('saveBtn').disabled = false;
+                document.getElementById('saveBtn').textContent = '정보 저장';
+                return;
+            }
+
+            resultMsg.textContent = '회원 정보가 성공적으로 업데이트되었습니다!';
+            resultMsg.style.color = '#86efac';
+            resultMsg.style.display = 'block';
+            document.getElementById('saveBtn').textContent = '저장 완료';
+            
+            setTimeout(() => {
+                window.location.href = 'deal-register.html';
+            }, 1500);
+        });
+
+        loadProfile();
+    </script>
+</body>
+</html>

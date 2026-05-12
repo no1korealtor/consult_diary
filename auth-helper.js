@@ -19,7 +19,7 @@ window.currentUser = null;
  * 로그인 상태를 확인하고, 없으면 로그인 페이지로 이동합니다.
  * @returns {Promise<Object|null>} user 객체 반환
  */
-async function requireAuth() {
+async function requireAuth(bypassProfileCheck = false) {
     const { data: { user }, error } = await authClient.auth.getUser();
     
     if (error || !user) {
@@ -28,10 +28,10 @@ async function requireAuth() {
         return null;
     }
     
-    // DB에서 해당 사용자의 role 정보 조회 (users 테이블은 authClient 프로젝트에 존재)
+    // DB에서 해당 사용자의 role, 주소, 전화번호 정보 조회 (users 테이블은 authClient 프로젝트에 존재)
     const { data: profile, error: profileError } = await authClient
         .from('users')
-        .select('role')
+        .select('role, office_address, phone')
         .eq('id', user.id)
         .single();
 
@@ -47,9 +47,17 @@ async function requireAuth() {
         location.href = 'login.html';
         return null;
     }
+
+    if (!bypassProfileCheck && (!profile.office_address || !profile.phone)) {
+        alert('원활한 공동중개 및 연락을 위해 사무실 주소와 전화번호를 먼저 등록해주세요.');
+        location.href = 'profile-edit.html';
+        return null;
+    }
     
-    // user 객체에 role 정보를 함께 저장해둠 (나중에 권한 분리에 유용함)
+    // user 객체에 추가 정보를 함께 저장해둠 (나중에 권한 분리에 유용함)
     user.role = profile.role;
+    user.office_address = profile.office_address;
+    user.phone = profile.phone;
     window.currentUser = user;
     return user;
 }

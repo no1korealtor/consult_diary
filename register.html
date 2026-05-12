@@ -16,6 +16,8 @@
                 <input type="text" id="name" placeholder="이름 (또는 상호명)" required>
                 <input type="email" id="email" placeholder="이메일 (로그인 ID)" required>
                 <input type="password" id="password" placeholder="비밀번호" required>
+                <input type="text" id="office_address" placeholder="사무실 주소 (예: 서울 마포구 모래내로)" required>
+                <input type="tel" id="phone" placeholder="전화번호 (예: 010-1234-5678)" required>
                 <button type="submit" class="btn" id="registerBtn">가입 신청</button>
             </form>
             <div id="resultMsg" style="margin-top: 1rem; text-align: center; display: none;"></div>
@@ -33,6 +35,8 @@
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const office_address = document.getElementById('office_address').value;
+            const phone = document.getElementById('phone').value;
             const resultMsg = document.getElementById('resultMsg');
             
             resultMsg.style.display = 'none';
@@ -62,7 +66,7 @@
             if (authData.user) {
                 try {
                     await supabase.from('users').insert([
-                        { id: authData.user.id, name: name, role: null }
+                        { id: authData.user.id, name: name, office_address: office_address, phone: phone, role: null }
                     ]);
                 } catch (e) {
                     console.error("Users table insert skipped or failed:", e);
