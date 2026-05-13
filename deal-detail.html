@@ -125,7 +125,7 @@
 
         <div class="info-row" id="pwdRow">
             <div class="info-icon">🔑</div>
-            <div class="info" id="entrancePassword" style="color: #ef4444; font-weight: 600;"></div>
+            <div class="info" id="entrancePassword" style="color: #ef4444; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="promptEditPassword()"></div>
         </div>
 
         <div class="info-row" id="contactRow" style="display: none;">
@@ -217,12 +217,9 @@
                 finalAddress + ' ' + data.rooms.room_name;
 
             const pwd = data.buildings.entrance_password;
-            if (pwd) {
-                document.getElementById('entrancePassword').innerText = pwd;
-                document.getElementById('pwdRow').style.display = 'flex';
-            } else {
-                document.getElementById('pwdRow').style.display = 'none';
-            }
+            document.getElementById('entrancePassword').innerHTML = pwd 
+                ? `<span>${pwd}</span> <span style="font-size: 12px; color: #6b7280; font-weight: normal; border: 1px solid #e5e7eb; padding: 2px 6px; border-radius: 4px; background: #ffffff;">수정</span>`
+                : `<span style="color: #9ca3af; font-weight: normal;">미등록</span> <span style="font-size: 12px; color: #3b82f6; border: 1px solid #bfdbfe; background: #eff6ff; padding: 2px 6px; border-radius: 4px; font-weight: normal;">+ 추가</span>`;
 
             document.getElementById('date').innerText =
                 data.balance_date;
@@ -280,6 +277,34 @@
                 <div>💧 수도: ${water}</div>
                 <div style="display: flex; align-items: center; flex-wrap: wrap;">🔥 가스: ${gas} <span style="font-size: 13px; color: #9ca3af; margin-left: 8px;">(강북3고객센터 <a href="tel:1588-5788" style="color: #3b82f6; text-decoration: none;">1588-5788</a>)</span></div>
             `;
+        }
+
+        async function promptEditPassword() {
+            if (!window.currentBuildingId) return;
+            
+            // Extract current password from DOM (removing the '수정' text and span tags)
+            const currentPwdText = document.getElementById('entrancePassword').querySelector('span').innerText;
+            const isUnregistered = currentPwdText === '미등록';
+            const defaultText = isUnregistered ? '' : currentPwdText;
+
+            const newPwd = prompt('공동현관 비밀번호를 입력하세요:', defaultText);
+            
+            // If user clicked Cancel, do nothing
+            if (newPwd === null) return;
+            
+            const { error } = await supabaseClient
+                .from('buildings')
+                .update({ entrance_password: newPwd })
+                .eq('id', window.currentBuildingId)
+                .eq('user_id', window.currentUser.id);
+                
+            if (error) {
+                alert('비밀번호 변경 실패: ' + error.message);
+                return;
+            }
+            
+            // Reload to reflect changes
+            loadDeal();
         }
 
         function openKakaoMap() {
