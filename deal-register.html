@@ -535,54 +535,56 @@
                     if (m) { startDt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
 
-                const formatKoreanDate = (dateString) => {
-                    if (!dateString) return '';
-                    const d = new Date(dateString);
-                    if (isNaN(d.getTime())) return dateString;
-                    const days = ['일', '월', '화', '수', '목', '금', '토'];
-                    return `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
-                };
+                let monthStr = '미정';
+                let dateStr = '-';
+                let dayStr = '';
 
-                let dateDisplay = '날짜 미정';
                 if (deal.balance_date) {
-                    dateDisplay = formatKoreanDate(deal.balance_date);
+                    const d = new Date(deal.balance_date);
+                    if (!isNaN(d.getTime())) {
+                        monthStr = (d.getMonth() + 1) + '월';
+                        dateStr = d.getDate().toString();
+                        const days = ['일', '월', '화', '수', '목', '금', '토'];
+                        dayStr = days[d.getDay()] + '요일';
+                    }
                 }
+
+                let rangeHtml = '';
                 if (startDt && deal.balance_date) {
-                    dateDisplay = `${formatKoreanDate(startDt)} ~ ${formatKoreanDate(deal.balance_date)}`;
+                    rangeHtml = `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px; font-weight: 600;">🗓️ 시작일: ${startDt}</div>`;
                 } else if (startDt) {
-                    dateDisplay = `${formatKoreanDate(startDt)} ~ 날짜 미정`;
+                    rangeHtml = `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px; font-weight: 600;">🗓️ 시작일: ${startDt}</div>`;
                 }
 
                 let locationHtml = '';
                 let typeBadgeHtml = '';
                 
                 if (isGlobal) {
-                    locationHtml = `<div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 ${deal.contract_type}</div>`;
-                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 8px;">전체 공지</span>`;
+                    locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📢 ${deal.contract_type}</div>`;
+                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">전체 공지</span>`;
                 } else {
                     let bName = deal.buildings.road_address;
                     if (deal.buildings.jibun_address) {
                         bName += ' (' + deal.buildings.jibun_address + ')';
                     }
-                    const rName = deal.rooms ? deal.rooms.room_name : '알 수 없는 호수';
-                    locationHtml = `<div style="margin-bottom: 4px; color: #4b5563; font-size: 14px; font-weight: 600;">📍 ${bName} ${rName}</div>`;
-                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 8px;">${deal.contract_type}</span>`;
+                    const rName = deal.rooms ? deal.rooms.room_name : '';
+                    locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📍 ${bName} <span style="color: #3b82f6;">${rName}</span></div>`;
+                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">${deal.contract_type}</span>`;
                 }
                 
                 const dDayText = getDDay(deal.balance_date);
                 let dDayHtml = '';
                 if (dDayText) {
-                    let badgeBg = '#f3f4f6', badgeColor = '#9ca3af'; // Default / Past / Far future
+                    let badgeBg = '#f3f4f6', badgeColor = '#9ca3af';
                     if (dDayText === 'D-Day') { 
                         badgeBg = '#fee2e2'; badgeColor = '#ef4444'; 
                     } else if (dDayText.startsWith('D-')) { 
                         const daysLeft = parseInt(dDayText.substring(2));
                         if (daysLeft <= 7) {
-                            badgeBg = '#dbeafe'; badgeColor = '#2563eb'; // Blue for upcoming week
+                            badgeBg = '#dbeafe'; badgeColor = '#2563eb'; 
                         }
                     }
-                    
-                    dDayHtml = `<span style="background: ${badgeBg}; color: ${badgeColor}; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; margin-left: auto;">${dDayText}</span>`;
+                    dDayHtml = `<span style="background: ${badgeBg}; color: ${badgeColor}; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">${dDayText}</span>`;
                 }
 
                 const li = document.createElement('li');
@@ -597,20 +599,29 @@
                 
                 let memoHtml = '';
                 if (rawMemo.trim()) {
-                    memoHtml = `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${rawMemo.trim()}</div>`;
+                    memoHtml = `<div style="color: #6b7280; font-size: 13px; margin-top: 6px; display: flex; gap: 6px; align-items: flex-start;"><span style="font-size: 14px; line-height: 1.4;">📝</span><span style="flex:1; line-height: 1.4; word-break: keep-all;">${rawMemo.trim()}</span></div>`;
                 }
                 if (linkUrl) {
-                    memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 6px; font-size: 13px; color: #3b82f6; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 8px; background: #eff6ff; border-radius: 6px;">🔗 관련 링크 열기</div>`;
+                    memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 8px; font-size: 12px; color: #3b82f6; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 6px 10px; background: #eff6ff; border-radius: 6px; border: 1px solid #bfdbfe;">🔗 관련 링크 열기</div>`;
                 }
 
                 li.innerHTML = `
-                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                        ${typeBadgeHtml}
-                        <span style="color: #111827; font-size: 16px; font-weight: 800;">${dateDisplay}</span>
-                        ${dDayHtml}
+                    <div style="display: flex; gap: 16px; align-items: stretch;">
+                        <div style="flex-shrink: 0; width: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 0;">
+                            <span style="font-size: 12px; font-weight: 800; color: #ef4444; margin-bottom: 2px;">${monthStr}</span>
+                            <span style="font-size: 22px; font-weight: 900; color: #111827; line-height: 1; letter-spacing: -1px;">${dateStr}</span>
+                            <span style="font-size: 11px; font-weight: 600; color: #6b7280; margin-top: 4px;">${dayStr}</span>
+                        </div>
+                        <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0;">
+                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap;">
+                                ${typeBadgeHtml}
+                                ${dDayHtml}
+                            </div>
+                            ${rangeHtml}
+                            ${locationHtml}
+                            ${memoHtml}
+                        </div>
                     </div>
-                    ${locationHtml}
-                    ${memoHtml}
                 `;
                 return li;
             };
