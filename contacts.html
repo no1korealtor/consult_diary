@@ -97,6 +97,25 @@
             font-size: 12px;
             line-height: 1.6;
         }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: #4b5563;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #111827;
+            color: white;
+            border-color: #111827;
+        }
     </style>
 </head>
 
@@ -115,11 +134,76 @@
         </div>
     </div>
 
-    <ul id="userList" style="list-style: none; padding: 0;"></ul>
+    <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+        <button class="tab-btn active" id="tabStaff" onclick="switchTab('staff')">사무소 직원</button>
+        <button class="tab-btn" id="tabOrgs" onclick="switchTab('orgs')">유관기관</button>
+    </div>
+
+    <div id="staffTab">
+        <ul id="userList" style="list-style: none; padding: 0;"></ul>
+    </div>
+
+    <div id="orgsTab" style="display: none;">
+        <ul style="list-style: none; padding: 0;">
+            <li class="user-item">
+                <div class="user-info">
+                    <span class="user-name">한국공인중개사협회</span>
+                    <span class="user-phone">공제가입 및 실무교육</span>
+                </div>
+                <a href="tel:1990" style="padding: 8px 12px; background: #e0f2fe; color: #0284c7; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 700;">📞 1990</a>
+            </li>
+            <li class="user-item">
+                <div class="user-info">
+                    <span class="user-name">한국전력공사 (전기)</span>
+                    <span class="user-phone">이사 정산 및 명의변경</span>
+                </div>
+                <a href="tel:123" style="padding: 8px 12px; background: #e0f2fe; color: #0284c7; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 700;">📞 국번없이 123</a>
+            </li>
+            <li class="user-item">
+                <div class="user-info">
+                    <span class="user-name">지역 도시가스</span>
+                    <span class="user-phone">전출입 가스 연결/해제</span>
+                </div>
+                <div style="font-size: 12px; color: #9ca3af; padding: 8px;">(관할지역 검색)</div>
+            </li>
+            <li class="user-item">
+                <div class="user-info">
+                    <span class="user-name">정부24 (민원)</span>
+                    <span class="user-phone">각종 증명서 발급</span>
+                </div>
+                <a href="tel:1588-2188" style="padding: 8px 12px; background: #e0f2fe; color: #0284c7; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 700;">📞 1588-2188</a>
+            </li>
+            <li class="user-item">
+                <div class="user-info">
+                    <span class="user-name">부동산거래관리시스템</span>
+                    <span class="user-phone">실거래가 신고 문의</span>
+                </div>
+                <a href="tel:1644-2828" style="padding: 8px 12px; background: #e0f2fe; color: #0284c7; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 700;">📞 1644-2828</a>
+            </li>
+            <li class="user-item">
+                <div class="user-info">
+                    <span class="user-name">인터넷등기소</span>
+                    <span class="user-phone">등기부등본 열람/발급</span>
+                </div>
+                <a href="tel:1544-0770" style="padding: 8px 12px; background: #e0f2fe; color: #0284c7; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 700;">📞 1544-0770</a>
+            </li>
+        </ul>
+        <div style="text-align: center; margin-top: 16px; font-size: 12px; color: #6b7280;">
+            💡 관할 구청 지적과 및 지역 가스업체는 지역마다 번호가 다릅니다.
+        </div>
+    </div>
 </div>
 
     <script src="auth-helper.js"></script>
     <script>
+        function switchTab(tabName) {
+            document.getElementById('staffTab').style.display = tabName === 'staff' ? 'block' : 'none';
+            document.getElementById('orgsTab').style.display = tabName === 'orgs' ? 'block' : 'none';
+            
+            document.getElementById('tabStaff').className = tabName === 'staff' ? 'tab-btn active' : 'tab-btn';
+            document.getElementById('tabOrgs').className = tabName === 'orgs' ? 'tab-btn active' : 'tab-btn';
+        }
+
         async function checkAuthAndLoad() {
             const user = await requireAuth();
             if (user) {
