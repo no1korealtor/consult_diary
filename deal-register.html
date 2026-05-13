@@ -312,7 +312,12 @@
             }
         }
 
+        let _isCheckingAuth = false;
         async function checkAuthAndLoad() {
+            if (_isCheckingAuth) return;
+            _isCheckingAuth = true;
+            setTimeout(() => { _isCheckingAuth = false; }, 500);
+
             const user = await requireAuth();
             if (user) {
                 if (!user.office_address || !user.phone) {
