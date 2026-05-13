@@ -457,8 +457,8 @@
                 
                 li.innerHTML = `
                     <div style="display: flex; align-items: center; margin-bottom: 6px;">
-                        <span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 8px;">${deal.contract_type}</span>
-                        <span style="font-weight: 600; color: #1f2937; font-size: 15px;">${deal.balance_date || '날짜 미정'}</span>
+                        <span style="font-weight: 600; color: #1f2937; font-size: 15px; margin-right: 8px;">${deal.balance_date || '날짜 미정'}</span>
+                        <span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700;">${deal.contract_type}</span>
                     </div>
                     <div style="margin-bottom: 4px; color: #4b5563; font-size: 15px;">📍 ${bName} ${rName}</div>
                     ${deal.memo ? `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${deal.memo}</div>` : ''}
