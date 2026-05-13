@@ -179,16 +179,7 @@
         </button>
     </div>
 
-    <div id="globalDealsContainer" style="display: none; margin-bottom: 32px;">
-        <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span>📢 전체공지</span>
-            <span id="globalDealsCount" style="font-size: 13px; color: #6b7280; font-weight: normal; background: #e5e7eb; padding: 2px 8px; border-radius: 10px;"></span>
-        </h3>
-        <ul id="globalDealList" style="list-style: none; padding: 0; margin-bottom: 0;"></ul>
-        <button id="globalDealsMoreBtn" style="display: none; width: 100%; padding: 12px; background: #e0f2fe; color: #0369a1; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-            더보기 ▼
-        </button>
-    </div>
+
 
     <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <span>내 일정</span>
@@ -457,10 +448,6 @@
 
         async function loadDeals() {
             const list = document.getElementById('dealList');
-            const globalContainer = document.getElementById('globalDealsContainer');
-            const globalList = document.getElementById('globalDealList');
-            const globalMoreBtn = document.getElementById('globalDealsMoreBtn');
-            const globalCount = document.getElementById('globalDealsCount');
             const personalMoreBtn = document.getElementById('personalDealsMoreBtn');
             const personalCount = document.getElementById('personalDealsCount');
 
@@ -488,19 +475,11 @@
             }
 
             list.innerHTML = '';
-            globalList.innerHTML = '';
             
-            const globalDeals = [];
-            const personalDeals = [];
+            let allDeals = [];
             
             if (data) {
-                data.forEach(d => {
-                    if (!d.buildings && !d.building_id) {
-                        globalDeals.push(d);
-                    } else {
-                        personalDeals.push(d);
-                    }
-                });
+                allDeals = data;
             }
 
             const sortByDate = (a, b) => {
@@ -524,8 +503,7 @@
                 }
             };
 
-            globalDeals.sort(sortByDate);
-            personalDeals.sort(sortByDate);
+            allDeals.sort(sortByDate);
 
             // 공통 렌더링 함수
             const createDealListItem = (deal, isGlobal) => {
@@ -633,55 +611,20 @@
                 return li;
             };
 
-            // 전체 일정 렌더링
-            if (globalDeals.length > 0) {
-                globalContainer.style.display = 'block';
-                globalCount.innerText = `${globalDeals.length}건`;
-                
-                globalDeals.forEach((deal, index) => {
-                    const li = createDealListItem(deal, true);
-                    if (index >= 1) {
-                        li.style.display = 'none';
-                        li.classList.add('global-hidden-item');
-                    }
-                    globalList.appendChild(li);
-                });
-                
-                if (globalDeals.length > 1) {
-                    globalMoreBtn.style.display = 'block';
-                    globalMoreBtn.onclick = function() {
-                        const isExpanded = this.innerText.includes('접기');
-                        const hiddenItems = document.querySelectorAll('.global-hidden-item');
-                        if (isExpanded) {
-                            hiddenItems.forEach(item => item.style.display = 'none');
-                            this.innerText = `+ ${globalDeals.length - 1}개 더보기 ▼`;
-                        } else {
-                            hiddenItems.forEach(item => item.style.display = 'block');
-                            this.innerText = '접기 ▲';
-                        }
-                    };
-                    globalMoreBtn.innerText = `+ ${globalDeals.length - 1}개 더보기 ▼`;
-                } else {
-                    globalMoreBtn.style.display = 'none';
-                }
-            } else {
-                globalContainer.style.display = 'none';
-            }
-
-            // 개인 일정 렌더링
-            if (personalDeals.length === 0) {
-                list.innerHTML = '<li>등록된 개인 일정이 없습니다.</li>';
+            // 통합 일정 렌더링
+            if (allDeals.length === 0) {
+                list.innerHTML = '<li>등록된 일정이 없습니다.</li>';
                 personalCount.style.display = 'none';
                 personalMoreBtn.style.display = 'none';
             } else {
                 personalCount.style.display = 'inline-block';
-                personalCount.innerText = `${personalDeals.length}건`;
+                personalCount.innerText = `${allDeals.length}건`;
                 
                 let currentMonthLabel = '';
                 let farFutureCount = 0;
                 let visibleCount = 0;
 
-                personalDeals.forEach((deal) => {
+                allDeals.forEach((deal) => {
                     let dealMonth = '날짜 미정';
                     let isPast = false;
                     let mNum = '';
@@ -730,7 +673,7 @@
                         list.appendChild(dividerLi);
                     }
 
-                    const li = createDealListItem(deal, false);
+                    const li = createDealListItem(deal, !deal.buildings && !deal.building_id);
                     if (visibleCount >= 5) {
                         li.style.display = 'none';
                         li.classList.add('personal-hidden-item');
