@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>권한 관리 (관리자)</title>
+    <title>연락처</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -102,7 +102,7 @@
 
 <div class="main-content">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <h2 style="margin: 0;">👑 권한 관리</h2>
+        <h2 style="margin: 0;">👥 연락처</h2>
         <button type="button" onclick="location.href='deal-register.html'" style="width: auto; padding: 8px 16px; font-size: 14px; background: #ffffff; border: 1px solid #e5e7eb; color: #374151; border-radius: 8px; cursor: pointer; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px;">
             <span>◀</span> 돌아가기
         </button>
@@ -116,11 +116,7 @@
         async function checkAuthAndLoad() {
             const user = await requireAuth();
             if (user) {
-                if (user.role !== 'admin') {
-                    alert('관리자 권한이 없습니다.');
-                    location.href = 'deal-register.html';
-                    return;
-                }
+                // allow both consultant and admin
                 loadUsers();
             }
         }
@@ -160,10 +156,17 @@
             const list = document.getElementById('userList');
             list.innerHTML = '<li>로딩 중...</li>';
 
-            const { data, error } = await authClient
+            let query = authClient
                 .from('users')
                 .select('*')
                 .order('name');
+                
+            // 일반 직원(개업공인중개사)은 승인된(role이 있는) 사용자만 볼 수 있음
+            if (window.currentUser.role !== 'admin') {
+                query = query.not('role', 'is', null);
+            }
+
+            const { data, error } = await query;
 
             if (error) {
                 list.innerHTML = `<li style="color: #ef4444; font-size: 14px;">직원 목록을 불러오지 못했습니다.<br>사유: ${error.message}<br><br>💡 권한(RLS) 문제일 확률이 높습니다. Supabase에서 보안 정책을 설정해주세요.</li>`;
@@ -195,6 +198,7 @@
                         <span class="user-phone" style="margin-top: 2px;">${phoneStr}</span>
                         <span class="user-phone" style="font-size: 12px;">${officeStr}</span>
                     </div>
+                    ${window.currentUser.role === 'admin' ? `
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <select id="role-${user.id}" ${isMe ? 'disabled' : ''} style="${!user.role ? 'border-color: #ef4444; background-color: #fef2f2; color: #ef4444; font-weight: bold;' : ''}">
                             ${!user.role ? '<option value="" disabled selected>승인 대기 (미부여)</option>' : ''}
@@ -203,6 +207,7 @@
                         </select>
                         <button onclick="changeRole('${user.id}', document.getElementById('role-${user.id}').value, '${nameStr}')" style="width: auto; padding: 6px 12px; margin: 0; font-size: 13px; font-weight: 600; background: #3b82f6; color: white; border-radius: 6px; box-shadow: none; ${isMe ? 'display: none;' : ''}">확인</button>
                     </div>
+                    ` : ''}
                 `;
                 list.appendChild(li);
             });
