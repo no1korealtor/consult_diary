@@ -535,11 +535,22 @@
                     if (m) { startDt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
 
-                let dateDisplay = deal.balance_date || '날짜 미정';
+                const formatKoreanDate = (dateString) => {
+                    if (!dateString) return '';
+                    const d = new Date(dateString);
+                    if (isNaN(d.getTime())) return dateString;
+                    const days = ['일', '월', '화', '수', '목', '금', '토'];
+                    return `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+                };
+
+                let dateDisplay = '날짜 미정';
+                if (deal.balance_date) {
+                    dateDisplay = formatKoreanDate(deal.balance_date);
+                }
                 if (startDt && deal.balance_date) {
-                    dateDisplay = `${startDt} ~ ${deal.balance_date}`;
+                    dateDisplay = `${formatKoreanDate(startDt)} ~ ${formatKoreanDate(deal.balance_date)}`;
                 } else if (startDt) {
-                    dateDisplay = `${startDt} ~ 날짜 미정`;
+                    dateDisplay = `${formatKoreanDate(startDt)} ~ 날짜 미정`;
                 }
 
                 let locationHtml = '';
@@ -554,18 +565,24 @@
                         bName += ' (' + deal.buildings.jibun_address + ')';
                     }
                     const rName = deal.rooms ? deal.rooms.room_name : '알 수 없는 호수';
-                    locationHtml = `<div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📍 ${bName} ${rName}</div>`;
+                    locationHtml = `<div style="margin-bottom: 4px; color: #4b5563; font-size: 14px; font-weight: 600;">📍 ${bName} ${rName}</div>`;
                     typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 8px;">${deal.contract_type}</span>`;
                 }
                 
                 const dDayText = getDDay(deal.balance_date);
                 let dDayHtml = '';
                 if (dDayText) {
-                    let badgeBg = '#f3f4f6', badgeColor = '#6b7280'; // Past
-                    if (dDayText === 'D-Day') { badgeBg = '#fee2e2'; badgeColor = '#ef4444'; }
-                    else if (dDayText.startsWith('D-')) { badgeBg = '#dbeafe'; badgeColor = '#2563eb'; }
+                    let badgeBg = '#f3f4f6', badgeColor = '#9ca3af'; // Default / Past / Far future
+                    if (dDayText === 'D-Day') { 
+                        badgeBg = '#fee2e2'; badgeColor = '#ef4444'; 
+                    } else if (dDayText.startsWith('D-')) { 
+                        const daysLeft = parseInt(dDayText.substring(2));
+                        if (daysLeft <= 7) {
+                            badgeBg = '#dbeafe'; badgeColor = '#2563eb'; // Blue for upcoming week
+                        }
+                    }
                     
-                    dDayHtml = `<span style="background: ${badgeBg}; color: ${badgeColor}; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; margin-right: 8px;">${dDayText}</span>`;
+                    dDayHtml = `<span style="background: ${badgeBg}; color: ${badgeColor}; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; margin-left: auto;">${dDayText}</span>`;
                 }
 
                 const li = document.createElement('li');
@@ -589,8 +606,8 @@
                 li.innerHTML = `
                     <div style="display: flex; align-items: center; margin-bottom: 8px;">
                         ${typeBadgeHtml}
+                        <span style="color: #111827; font-size: 16px; font-weight: 800;">${dateDisplay}</span>
                         ${dDayHtml}
-                        <span style="color: #6b7280; font-size: 13px; margin-left: auto;">${dateDisplay}</span>
                     </div>
                     ${locationHtml}
                     ${memoHtml}
