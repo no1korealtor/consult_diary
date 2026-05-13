@@ -263,6 +263,16 @@
             const list = document.getElementById('dealList');
             list.innerHTML = '<li>로딩 중...</li>';
 
+            window.deleteDeal = async function(id) {
+                if (!confirm('이 전체 일정을 정말 삭제하시겠습니까?')) return;
+                const { error } = await supabaseClient.from('deals').delete().eq('id', id);
+                if (error) {
+                    alert('삭제 중 오류가 발생했습니다: ' + error.message);
+                } else {
+                    loadDeals();
+                }
+            };
+
             // 전사 일정만 조회 (building_id가 null인 항목)
             let { data, error } = await supabaseClient
                 .from('deals')
@@ -376,6 +386,7 @@
                         ${dDayHtml}
                         <span style="background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 8px;">👤 ${uName}</span>
                         <span style="color: #6b7280; font-size: 13px; margin-left: auto;">${dateDisplay}</span>
+                        <button onclick="event.stopPropagation(); deleteDeal('${deal.id}')" style="margin-left: 8px; width: auto; padding: 4px 8px; font-size: 12px; font-weight: 600; background: #fee2e2; color: #ef4444; border-radius: 6px; margin-bottom: 0; box-shadow: none;">삭제</button>
                     </div>
                     <div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 ${deal.contract_type}</div>
                     ${memoHtml}
