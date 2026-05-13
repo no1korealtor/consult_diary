@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>전체일정 등록하기 (관리자)</title>
+    <title>전체공지 등록하기</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -146,7 +146,7 @@
 
 <div class="main-content">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-        <h2 style="margin: 0;">👑 전체일정 등록하기</h2>
+        <h2 style="margin: 0;">👑 전체공지 등록하기</h2>
         <button type="button" onclick="location.href='contacts.html'" style="width: auto; padding: 8px 16px; font-size: 14px; background: #ffffff; border: 1px solid #e5e7eb; color: #374151; border-radius: 8px; cursor: pointer; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px;">
             <span>◀</span> 돌아가기
         </button>
@@ -219,7 +219,7 @@
             if (urlInput) finalMemo = `[URL]${urlInput}[/URL]` + finalMemo;
             if (startDate) finalMemo = `[START]${startDate}[/START]` + finalMemo;
 
-            // building_id 와 room_id 를 보내지 않고 저장 (공통 일정)
+            // building_id 와 room_id 를 보내지 않고 저장 (전체 공지)
             const payload = {
                 contract_type: contractType,
                 balance_date: balanceDate ? balanceDate : null,
