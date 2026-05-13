@@ -168,6 +168,9 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
         <h2 style="margin: 0;">일정 등록</h2>
         <div style="display: flex; gap: 8px;">
+            <button id="adminUsersBtn" type="button" onclick="location.href='admin-users.html'" style="display: none; width: auto; padding: 8px 16px; font-size: 14px; background: #4b5563; border: none; color: white; border-radius: 8px; cursor: pointer; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-items: center; gap: 6px;">
+                <span>👥</span> 권한 관리
+            </button>
             <button id="adminBtn" type="button" onclick="location.href='admin-global-deals.html'" style="display: none; width: auto; padding: 8px 16px; font-size: 14px; background: #1f2937; border: none; color: white; border-radius: 8px; cursor: pointer; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-items: center; gap: 6px;">
                 <span>👑</span> 전체일정 등록하기
             </button>
@@ -298,6 +301,7 @@
             if (user) {
                 if (user.role === 'admin') {
                     document.getElementById('adminBtn').style.display = 'flex';
+                    document.getElementById('adminUsersBtn').style.display = 'flex';
                 }
                 if (!user.office_address || !user.phone) {
                     document.getElementById('inline-profile-warning').style.display = 'block';
