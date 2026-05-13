@@ -465,6 +465,26 @@
             const displayData = data.slice(0, 15);
 
             displayData.forEach(deal => {
+                let rawMemo = deal.memo || '';
+                let linkUrl = null;
+                let startDt = null;
+                
+                if (rawMemo.includes('[URL]')) {
+                    const m = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
+                    if (m) { linkUrl = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                if (rawMemo.includes('[START]')) {
+                    const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
+                    if (m) { startDt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+
+                let dateDisplay = deal.balance_date || '날짜 미정';
+                if (startDt && deal.balance_date) {
+                    dateDisplay = `${startDt} ~ ${deal.balance_date}`;
+                } else if (startDt) {
+                    dateDisplay = `${startDt} ~ 날짜 미정`;
+                }
+
                 let locationHtml = '';
                 if (!deal.buildings) {
                     locationHtml = `<div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 사무소 전체 일정</div>`;
@@ -490,17 +510,29 @@
                 const li = document.createElement('li');
                 li.className = 'deal-item';
                 li.onclick = () => {
-                    location.href = 'deal-detail.html?id=' + deal.id;
+                    if (linkUrl) {
+                        window.open(linkUrl, '_blank');
+                    } else {
+                        location.href = 'deal-detail.html?id=' + deal.id;
+                    }
                 };
                 
+                let memoHtml = '';
+                if (rawMemo.trim()) {
+                    memoHtml = `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${rawMemo.trim()}</div>`;
+                }
+                if (linkUrl) {
+                    memoHtml += `<div style="margin-top: 6px; font-size: 13px; color: #3b82f6; font-weight: 600; display: flex; align-items: center; gap: 4px;">🔗 관련 링크 열기</div>`;
+                }
+
                 li.innerHTML = `
                     <div style="display: flex; align-items: center; margin-bottom: 8px;">
                         <span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 8px;">${deal.contract_type}</span>
                         ${dDayHtml}
-                        <span style="color: #6b7280; font-size: 13px; margin-left: auto;">${deal.balance_date || '날짜 미정'}</span>
+                        <span style="color: #6b7280; font-size: 13px; margin-left: auto;">${dateDisplay}</span>
                     </div>
                     ${locationHtml}
-                    ${deal.memo ? `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${deal.memo}</div>` : ''}
+                    ${memoHtml}
                 `;
                 list.appendChild(li);
             });

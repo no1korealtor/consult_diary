@@ -156,7 +156,17 @@
         <p style="font-size: 13px; color: #6b7280; margin-top: -10px; margin-bottom: 16px;">여기에 등록한 일정은 사무소 모든 직원의 화면에 표시됩니다.</p>
 
         <input type="text" id="contractType" placeholder="일정 종류 (예: 부가가치세 신고, 회식 등)">
-        <input type="date" id="balanceDate">
+        <div style="display: flex; gap: 8px;">
+            <div style="flex: 1;">
+                <label style="font-size: 12px; color: #6b7280; margin-left: 4px;">시작일 (선택)</label>
+                <input type="date" id="startDate" style="margin-top: 4px;">
+            </div>
+            <div style="flex: 1;">
+                <label style="font-size: 12px; color: #6b7280; margin-left: 4px;">종료일(D-Day)</label>
+                <input type="date" id="balanceDate" style="margin-top: 4px;">
+            </div>
+        </div>
+        <input type="url" id="urlInput" placeholder="관련 URL (선택, https://...)">
         <textarea id="memo" placeholder="상세 내용 메모"></textarea>
 
         <button class="btn-primary" onclick="saveGlobalDeal()">
@@ -192,7 +202,9 @@
         async function saveGlobalDeal() {
             const contractType = document.getElementById('contractType').value;
             const balanceDate = document.getElementById('balanceDate').value;
-            const memo = document.getElementById('memo').value;
+            const startDate = document.getElementById('startDate').value;
+            const urlInput = document.getElementById('urlInput').value;
+            let rawMemo = document.getElementById('memo').value;
             const status = document.getElementById('status');
 
             if (!contractType) {
@@ -202,11 +214,15 @@
 
             status.innerText = '등록 중...';
 
+            let finalMemo = rawMemo;
+            if (urlInput) finalMemo = `[URL]${urlInput}[/URL]` + finalMemo;
+            if (startDate) finalMemo = `[START]${startDate}[/START]` + finalMemo;
+
             // building_id 와 room_id 를 보내지 않고 저장 (공통 일정)
             const payload = {
                 contract_type: contractType,
                 balance_date: balanceDate,
-                memo: memo,
+                memo: finalMemo,
                 user_id: window.currentUser.id
             };
 
@@ -220,6 +236,8 @@
             status.innerText = '등록 완료!';
             document.getElementById('contractType').value = '';
             document.getElementById('balanceDate').value = '';
+            document.getElementById('startDate').value = '';
+            document.getElementById('urlInput').value = '';
             document.getElementById('memo').value = '';
             
             loadDeals();
@@ -303,6 +321,26 @@
             data.forEach(deal => {
                 const uName = deal.users && deal.users.name ? deal.users.name : '관리자';
                 
+                let rawMemo = deal.memo || '';
+                let linkUrl = null;
+                let startDt = null;
+                
+                if (rawMemo.includes('[URL]')) {
+                    const m = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
+                    if (m) { linkUrl = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                if (rawMemo.includes('[START]')) {
+                    const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
+                    if (m) { startDt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+
+                let dateDisplay = deal.balance_date || '날짜 미정';
+                if (startDt && deal.balance_date) {
+                    dateDisplay = `${startDt} ~ ${deal.balance_date}`;
+                } else if (startDt) {
+                    dateDisplay = `${startDt} ~ 날짜 미정`;
+                }
+
                 const dDayText = getDDay(deal.balance_date);
                 let dDayHtml = '';
                 if (dDayText) {
@@ -316,18 +354,30 @@
                 const li = document.createElement('li');
                 li.className = 'deal-item';
                 li.onclick = () => {
-                    location.href = 'deal-detail.html?id=' + deal.id;
+                    if (linkUrl) {
+                        window.open(linkUrl, '_blank');
+                    } else {
+                        location.href = 'deal-detail.html?id=' + deal.id;
+                    }
                 };
                 
+                let memoHtml = '';
+                if (rawMemo.trim()) {
+                    memoHtml = `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${rawMemo.trim()}</div>`;
+                }
+                if (linkUrl) {
+                    memoHtml += `<div style="margin-top: 6px; font-size: 13px; color: #3b82f6; font-weight: 600; display: flex; align-items: center; gap: 4px;">🔗 관련 링크 열기</div>`;
+                }
+
                 li.innerHTML = `
                     <div style="display: flex; align-items: center; margin-bottom: 8px;">
                         <span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 8px;">${deal.contract_type}</span>
                         ${dDayHtml}
                         <span style="background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 8px;">👤 ${uName}</span>
-                        <span style="color: #6b7280; font-size: 13px; margin-left: auto;">${deal.balance_date || '날짜 미정'}</span>
+                        <span style="color: #6b7280; font-size: 13px; margin-left: auto;">${dateDisplay}</span>
                     </div>
                     <div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 사무소 전체 일정</div>
-                    ${deal.memo ? `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${deal.memo}</div>` : ''}
+                    ${memoHtml}
                 `;
                 list.appendChild(li);
             });
