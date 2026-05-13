@@ -527,10 +527,7 @@
                     li.classList.add('global');
                 }
                 
-                if (linkUrl) {
-                    li.style.cursor = 'pointer';
-                    li.onclick = () => window.open(linkUrl, '_blank');
-                } else if (deal.buildings) {
+                if (deal.buildings) {
                     li.style.cursor = 'pointer';
                     li.onclick = () => location.href = 'deal-detail.html?id=' + deal.id;
                 } else {
@@ -542,7 +539,7 @@
                     memoHtml = `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${rawMemo.trim()}</div>`;
                 }
                 if (linkUrl) {
-                    memoHtml += `<div style="margin-top: 6px; font-size: 13px; color: #3b82f6; font-weight: 600; display: flex; align-items: center; gap: 4px;">🔗 관련 링크 열기</div>`;
+                    memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 6px; font-size: 13px; color: #3b82f6; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 8px; background: #eff6ff; border-radius: 6px;">🔗 관련 링크 열기</div>`;
                 }
 
                 li.innerHTML = `

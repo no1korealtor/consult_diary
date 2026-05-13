@@ -170,7 +170,7 @@
         <input type="url" id="urlInput" placeholder="관련 URL (선택, https://...)">
         <textarea id="memo" placeholder="상세 내용 메모"></textarea>
 
-        <button class="btn-primary" onclick="saveGlobalDeal()">
+        <button id="saveBtn" class="btn-primary" onclick="saveGlobalDeal()">
             전체 일정 등록
         </button>
         <div id="status"></div>
@@ -227,14 +227,26 @@
                 user_id: window.currentUser.id
             };
 
-            const { error } = await supabaseClient.from('deals').insert([payload]);
-
-            if (error) {
-                status.innerText = '에러: ' + error.message;
-                return;
+            if (window.editingDealId) {
+                const { error } = await supabaseClient.from('deals').update(payload).eq('id', window.editingDealId);
+                if (error) {
+                    status.innerText = '에러: ' + error.message;
+                    return;
+                }
+                status.innerText = '수정 완료!';
+                window.editingDealId = null;
+                const btn = document.getElementById('saveBtn');
+                btn.innerText = '전체 일정 등록';
+                btn.style.backgroundColor = '#3b82f6';
+            } else {
+                const { error } = await supabaseClient.from('deals').insert([payload]);
+                if (error) {
+                    status.innerText = '에러: ' + error.message;
+                    return;
+                }
+                status.innerText = '등록 완료!';
             }
 
-            status.innerText = '등록 완료!';
             document.getElementById('contractType').value = '';
             document.getElementById('balanceDate').value = '';
             document.getElementById('startDate').value = '';
@@ -364,20 +376,27 @@
 
                 const li = document.createElement('li');
                 li.className = 'deal-item';
-                
-                if (linkUrl) {
-                    li.style.cursor = 'pointer';
-                    li.onclick = () => window.open(linkUrl, '_blank');
-                } else {
-                    li.style.cursor = 'default';
-                }
+                li.onclick = () => {
+                    document.getElementById('contractType').value = deal.contract_type || '';
+                    document.getElementById('balanceDate').value = deal.balance_date || '';
+                    document.getElementById('startDate').value = startDt || '';
+                    document.getElementById('urlInput').value = linkUrl || '';
+                    document.getElementById('memo').value = rawMemo.trim() || '';
+                    
+                    window.editingDealId = deal.id;
+                    const btn = document.getElementById('saveBtn');
+                    btn.innerText = '전체 일정 수정하기 (취소하려면 새로고침)';
+                    btn.style.backgroundColor = '#10b981';
+                    
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                };
                 
                 let memoHtml = '';
                 if (rawMemo.trim()) {
                     memoHtml = `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${rawMemo.trim()}</div>`;
                 }
                 if (linkUrl) {
-                    memoHtml += `<div style="margin-top: 6px; font-size: 13px; color: #3b82f6; font-weight: 600; display: flex; align-items: center; gap: 4px;">🔗 관련 링크 열기</div>`;
+                    memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 6px; font-size: 13px; color: #3b82f6; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 8px; background: #eff6ff; border-radius: 6px;">🔗 관련 링크 열기</div>`;
                 }
 
                 li.innerHTML = `
