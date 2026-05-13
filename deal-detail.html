@@ -165,19 +165,25 @@
         </div>
     </div>
 
-    <button type="button" class="btn-kakao" onclick="openKakaoMap()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 5.58 2 10C2 12.56 3.51 14.83 5.86 16.2L4.64 20.67C4.54 21.05 4.97 21.36 5.3 21.16L10.3 18.06C10.85 18.15 11.41 18.2 12 18.2C17.52 18.2 22 14.62 22 10.2C22 5.78 17.52 2 12 2Z"/></svg>
-        카카오맵 길찾기
-    </button>
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+        <button type="button" class="btn-kakao" onclick="openKakaoMap()" style="margin-bottom: 0; border-radius: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(254, 229, 0, 0.4);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 5.58 2 10C2 12.56 3.51 14.83 5.86 16.2L4.64 20.67C4.54 21.05 4.97 21.36 5.3 21.16L10.3 18.06C10.85 18.15 11.41 18.2 12 18.2C17.52 18.2 22 14.62 22 10.2C22 5.78 17.52 2 12 2Z"/></svg>
+            카카오맵 길찾기
+        </button>
 
-    <div style="display: flex; gap: 10px;">
-        <button class="btn-secondary" onclick="editDeal()" style="flex: 1;">일정 수정</button>
-        <button class="btn-danger" onclick="deleteDeal()" style="flex: 1;">일정 삭제</button>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn-secondary" onclick="editDeal()" style="flex: 1; margin-bottom: 0; border-radius: 14px; background-color: #ffffff; border: 1px solid #e5e7eb; color: #4b5563; font-weight: 700;">
+                ✏️ 일정 수정
+            </button>
+            <button class="btn-danger" onclick="deleteDeal()" style="flex: 1; margin-bottom: 0; border-radius: 14px; background-color: #fff1f2; color: #e11d48; font-weight: 700; border: 1px solid #ffe4e6;">
+                🗑️ 일정 삭제
+            </button>
+        </div>
+
+        <button onclick="location.href='deal-register.html'" style="margin-bottom: 0; background: transparent; border: none; box-shadow: none; color: #6b7280; font-weight: 600; padding: 12px;">
+            ← 목록으로 돌아가기
+        </button>
     </div>
-
-    <button class="btn-secondary" onclick="location.href='deal-register.html'" style="margin-top: 8px; background-color: #fff; border: 1px solid #e5e7eb;">
-        목록으로 돌아가기
-    </button>
 
     <script src="auth-helper.js"></script>
     <script>
