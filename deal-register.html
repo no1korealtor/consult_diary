@@ -130,6 +130,16 @@
             border-color: #bfdbfe;
         }
 
+        .deal-item.global {
+            background-color: #f0f9ff; /* light blue */
+            border-color: #bae6fd;
+        }
+
+        .deal-item.global:hover {
+            border-color: #7dd3fc;
+            background-color: #e0f2fe;
+        }
+
         .app-footer {
             margin-top: 40px;
             padding-top: 24px;
@@ -509,6 +519,9 @@
 
                 const li = document.createElement('li');
                 li.className = 'deal-item';
+                if (!deal.buildings) {
+                    li.classList.add('global');
+                }
                 li.onclick = () => {
                     if (linkUrl) {
                         window.open(linkUrl, '_blank');
