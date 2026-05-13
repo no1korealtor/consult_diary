@@ -372,12 +372,12 @@
 
                 li.innerHTML = `
                     <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                        <span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 8px;">${deal.contract_type}</span>
+                        <span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 8px;">전체 일정</span>
                         ${dDayHtml}
                         <span style="background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 8px;">👤 ${uName}</span>
                         <span style="color: #6b7280; font-size: 13px; margin-left: auto;">${dateDisplay}</span>
                     </div>
-                    <div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 사무소 전체 일정</div>
+                    <div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 ${deal.contract_type}</div>
                     ${memoHtml}
                 `;
                 list.appendChild(li);
