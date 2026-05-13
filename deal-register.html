@@ -678,18 +678,25 @@
                 personalCount.innerText = `${personalDeals.length}건`;
                 
                 let currentMonthLabel = '';
+                let farFutureCount = 0;
+                let visibleCount = 0;
 
-                personalDeals.forEach((deal, index) => {
+                personalDeals.forEach((deal) => {
                     let dealMonth = '날짜 미정';
                     let isPast = false;
                     let mNum = '';
+                    let isFarFuture = false;
 
                     if (deal.balance_date) {
                         const d = new Date(deal.balance_date);
                         if (!isNaN(d.getTime())) {
                             const today = new Date();
                             today.setHours(0,0,0,0);
-                            if (d < today) {
+                            const diffDays = Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                            
+                            if (diffDays > 45) {
+                                isFarFuture = true;
+                            } else if (d < today) {
                                 dealMonth = '지난 일정';
                                 isPast = true;
                             } else {
@@ -697,6 +704,11 @@
                                 mNum = d.getMonth() + 1;
                             }
                         }
+                    }
+
+                    if (isFarFuture) {
+                        farFutureCount++;
+                        return; // Skip rendering
                     }
 
                     if (dealMonth !== currentMonthLabel) {
@@ -711,7 +723,7 @@
                             dividerLi.innerHTML = `<span style="font-size: 44px; font-weight: 900; color: #111827; letter-spacing: -2px; line-height: 1;">${mNum}</span><span style="font-size: 18px; font-weight: 800; color: #111827; margin-left: 6px;">월</span>`;
                         }
 
-                        if (index >= 5) {
+                        if (visibleCount >= 5) {
                             dividerLi.style.display = 'none';
                             dividerLi.classList.add('personal-hidden-item');
                         }
@@ -719,27 +731,41 @@
                     }
 
                     const li = createDealListItem(deal, false);
-                    if (index >= 5) {
+                    if (visibleCount >= 5) {
                         li.style.display = 'none';
                         li.classList.add('personal-hidden-item');
                     }
                     list.appendChild(li);
+                    
+                    visibleCount++;
                 });
+
+                if (farFutureCount > 0) {
+                    const noticeLi = document.createElement('li');
+                    noticeLi.style.cssText = "margin-top: 24px; padding: 16px; text-align: center; background: #f8fafc; border-radius: 12px; color: #6b7280; font-size: 14px; font-weight: 600; border: 1px solid #e2e8f0;";
+                    noticeLi.innerHTML = `🗓️ 45일 이후 예정된 일정이 <strong>${farFutureCount}건</strong> 있습니다.`;
+                    
+                    if (visibleCount >= 5) {
+                        noticeLi.style.display = 'none';
+                        noticeLi.classList.add('personal-hidden-item');
+                    }
+                    list.appendChild(noticeLi);
+                }
                 
-                if (personalDeals.length > 5) {
+                if (visibleCount > 5 || (visibleCount === 5 && farFutureCount > 0)) {
                     personalMoreBtn.style.display = 'block';
                     personalMoreBtn.onclick = function() {
                         const isExpanded = this.innerText.includes('접기');
                         const hiddenItems = document.querySelectorAll('.personal-hidden-item');
                         if (isExpanded) {
                             hiddenItems.forEach(item => item.style.display = 'none');
-                            this.innerText = `+ ${personalDeals.length - 5}개 더보기 ▼`;
+                            this.innerText = `+ 더보기 ▼`;
                         } else {
                             hiddenItems.forEach(item => item.style.display = 'block');
                             this.innerText = '접기 ▲';
                         }
                     };
-                    personalMoreBtn.innerText = `+ ${personalDeals.length - 5}개 더보기 ▼`;
+                    personalMoreBtn.innerText = `+ 더보기 ▼`;
                 } else {
                     personalMoreBtn.style.display = 'none';
                 }
