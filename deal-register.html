@@ -526,13 +526,16 @@
                 if (!deal.buildings) {
                     li.classList.add('global');
                 }
-                li.onclick = () => {
-                    if (linkUrl) {
-                        window.open(linkUrl, '_blank');
-                    } else {
-                        location.href = 'deal-detail.html?id=' + deal.id;
-                    }
-                };
+                
+                if (linkUrl) {
+                    li.style.cursor = 'pointer';
+                    li.onclick = () => window.open(linkUrl, '_blank');
+                } else if (deal.buildings) {
+                    li.style.cursor = 'pointer';
+                    li.onclick = () => location.href = 'deal-detail.html?id=' + deal.id;
+                } else {
+                    li.style.cursor = 'default';
+                }
                 
                 let memoHtml = '';
                 if (rawMemo.trim()) {

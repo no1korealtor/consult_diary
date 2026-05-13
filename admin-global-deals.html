@@ -364,13 +364,13 @@
 
                 const li = document.createElement('li');
                 li.className = 'deal-item';
-                li.onclick = () => {
-                    if (linkUrl) {
-                        window.open(linkUrl, '_blank');
-                    } else {
-                        location.href = 'deal-detail.html?id=' + deal.id;
-                    }
-                };
+                
+                if (linkUrl) {
+                    li.style.cursor = 'pointer';
+                    li.onclick = () => window.open(linkUrl, '_blank');
+                } else {
+                    li.style.cursor = 'default';
+                }
                 
                 let memoHtml = '';
                 if (rawMemo.trim()) {
