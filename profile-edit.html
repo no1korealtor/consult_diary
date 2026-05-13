@@ -6,6 +6,7 @@
     <title>회원 정보 수정 - 공인중개사의 다이어리</title>
     <link rel="stylesheet" href="app.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 </head>
 <body>
     <div class="container" style="max-width: 400px; margin-top: 5vh;">
@@ -18,7 +19,10 @@
                 <input type="text" id="name" placeholder="이름 (또는 상호명)" required>
                 
                 <label style="text-align: left; font-size: 0.9rem; color: #cbd5e1; margin-bottom: -0.5rem; display: block;">사무실 주소</label>
-                <input type="text" id="office_address" placeholder="사무실 주소 (예: 서울 마포구 모래내로)" required>
+                <div style="display: flex; gap: 8px; margin-bottom: 12px; width: 100%;">
+                    <input type="text" id="office_address" placeholder="주소 검색을 이용하세요" required readonly style="margin-bottom: 0; flex: 1; cursor: pointer;" onclick="openAddressSearch()">
+                    <button type="button" class="btn btn-secondary" onclick="openAddressSearch()" style="width: auto; padding: 0 12px; margin-bottom: 0; white-space: nowrap;">검색</button>
+                </div>
                 
                 <label style="text-align: left; font-size: 0.9rem; color: #cbd5e1; margin-bottom: -0.5rem; display: block;">전화번호</label>
                 <input type="tel" id="phone" placeholder="전화번호 (예: 010-1234-5678)" required>
@@ -36,6 +40,14 @@
 
     <script src="auth-helper.js"></script>
     <script>
+        function openAddressSearch() {
+            new daum.Postcode({
+                oncomplete: function (data) {
+                    document.getElementById('office_address').value = data.address;
+                }
+            }).open();
+        }
+
         async function loadProfile() {
             const user = await requireAuth(true); // pass true to bypass profile completion check to avoid infinite loop
             if (!user) return;
