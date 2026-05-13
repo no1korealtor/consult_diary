@@ -116,7 +116,7 @@
 <body>
 
     <div class="card">
-        <div class="title" id="contractType"></div>
+        <div class="title" id="dealTitle"></div>
         
         <div class="info-row">
             <div class="info-icon">📍</div>
@@ -131,11 +131,6 @@
         <div class="info-row" id="contactRow" style="display: none;">
             <div class="info-icon">📞</div>
             <div class="info" id="contact" style="color: #3b82f6; font-weight: 600;"></div>
-        </div>
-
-        <div class="info-row">
-            <div class="info-icon">📅</div>
-            <div class="info" id="date"></div>
         </div>
 
         <div class="info-row">
@@ -204,9 +199,8 @@
             }
 
             document.getElementById(
-                'contractType'
-            ).innerText =
-                data.contract_type;
+                'dealTitle'
+            ).innerText = (data.balance_date ? data.balance_date + ' ' : '') + data.contract_type;
 
             let finalAddress = data.buildings.road_address;
             if (data.buildings.jibun_address) {
@@ -220,9 +214,6 @@
             document.getElementById('entrancePassword').innerHTML = pwd 
                 ? `<span>${pwd}</span> <span style="font-size: 12px; color: #6b7280; font-weight: normal; border: 1px solid #e5e7eb; padding: 2px 6px; border-radius: 4px; background: #ffffff;">수정</span>`
                 : `<span style="color: #9ca3af; font-weight: normal;">미등록</span> <span style="font-size: 12px; color: #3b82f6; border: 1px solid #bfdbfe; background: #eff6ff; padding: 2px 6px; border-radius: 4px; font-weight: normal;">+ 추가</span>`;
-
-            document.getElementById('date').innerText =
-                data.balance_date;
 
             document.getElementById(
                 'memo'
