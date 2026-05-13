@@ -191,8 +191,9 @@
                         <span class="user-phone">${phoneStr}</span>
                     </div>
                     <div>
-                        <select onchange="changeRole('${user.id}', this.value, '${nameStr}')" ${isMe ? 'disabled' : ''}>
-                            <option value="consultant" ${user.role !== 'admin' ? 'selected' : ''}>개업공인중개사</option>
+                        <select onchange="changeRole('${user.id}', this.value, '${nameStr}')" ${isMe ? 'disabled' : ''} style="${!user.role ? 'border-color: #ef4444; background-color: #fef2f2; color: #ef4444; font-weight: bold;' : ''}">
+                            ${!user.role ? '<option value="" disabled selected>승인 대기 (미부여)</option>' : ''}
+                            <option value="consultant" ${user.role === 'consultant' ? 'selected' : ''}>개업공인중개사</option>
                             <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>관리자 (Admin)</option>
                         </select>
                     </div>
