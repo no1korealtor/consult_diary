@@ -3,11 +3,8 @@ export const SUPABASE_ANON_KEY = 'sb_publishable_Y3waCN-Y0LA26BC80eUO-g_Njmuq1Hu
 
 export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// 현재 주소가 로컬환경(개발 중)인지 확인합니다.
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
-
-// 로컬(개발 환경)에서는 정상 작동(false), 외부 배포 환경(Vercel)에서는 데모 모드(true)
-export let DEMO_MODE = isLocal ? false : true;
+// 모든 환경(로컬 및 Vercel)에서 정상 데이터베이스를 사용하도록 데모 모드를 해제합니다.
+export let DEMO_MODE = false;
 
 export async function requireAuth() {
     const { data: { session } } = await supabase.auth.getSession();
