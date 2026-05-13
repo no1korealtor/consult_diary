@@ -48,65 +48,6 @@ async function requireAuth(bypassProfileCheck = false) {
         return null;
     }
 
-    if (!bypassProfileCheck && (!profile.office_address || !profile.phone)) {
-        const showWarning = () => {
-            if (document.getElementById('profile-warning-banner')) return;
-            if (sessionStorage.getItem('hideProfileWarning') === 'true') return;
-
-            const warningBanner = document.createElement('div');
-            warningBanner.id = 'profile-warning-banner';
-            warningBanner.style.backgroundColor = '#fef08a';
-            warningBanner.style.color = '#854d0e';
-            warningBanner.style.padding = '10px';
-            warningBanner.style.display = 'flex';
-            warningBanner.style.justifyContent = 'space-between';
-            warningBanner.style.alignItems = 'center';
-            warningBanner.style.position = 'sticky';
-            warningBanner.style.top = '0';
-            warningBanner.style.zIndex = '9999';
-            warningBanner.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-
-            const textSpan = document.createElement('span');
-            textSpan.innerHTML = '⚠️ 사무실 주소가 입력되지 않았습니다. 여기를 클릭하여 수정해주세요.';
-            textSpan.style.cursor = 'pointer';
-            textSpan.style.fontWeight = 'bold';
-            textSpan.style.fontSize = '0.9rem';
-            textSpan.style.flex = '1';
-            textSpan.style.textAlign = 'center';
-            textSpan.onclick = () => {
-                location.href = 'profile-edit.html';
-            };
-
-            const closeBtn = document.createElement('button');
-            closeBtn.innerText = '다음에 하기';
-            closeBtn.style.background = 'transparent';
-            closeBtn.style.border = '1px solid #854d0e';
-            closeBtn.style.color = '#854d0e';
-            closeBtn.style.padding = '4px 8px';
-            closeBtn.style.borderRadius = '4px';
-            closeBtn.style.cursor = 'pointer';
-            closeBtn.style.fontSize = '0.8rem';
-            closeBtn.style.marginLeft = '10px';
-            closeBtn.style.whiteSpace = 'nowrap';
-            closeBtn.onclick = (e) => {
-                e.stopPropagation();
-                warningBanner.remove();
-                sessionStorage.setItem('hideProfileWarning', 'true');
-            };
-
-            warningBanner.appendChild(textSpan);
-            warningBanner.appendChild(closeBtn);
-
-            document.body.insertBefore(warningBanner, document.body.firstChild);
-        };
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', showWarning);
-        } else {
-            showWarning();
-        }
-    }
-    
     // user 객체에 추가 정보를 함께 저장해둠 (나중에 권한 분리에 유용함)
     user.role = profile.role;
     user.office_address = profile.office_address;

@@ -152,6 +152,9 @@
 <body>
 
 <div class="main-content">
+    <div id="inline-profile-warning" style="display: none; background-color: #fef08a; color: #854d0e; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; font-size: 0.95rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onclick="location.href='profile-edit.html'">
+        ⚠️ 사무실 주소 정보가 입력되지 않았습니다. <span style="text-decoration: underline;">여기를 클릭하여 수정해주세요.</span>
+    </div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
         <h2 style="margin: 0;">일정 등록</h2>
         <button type="button" onclick="logout()" style="width: auto; padding: 8px 16px; font-size: 14px; background: #fee2e2; border: none; color: #ef4444; border-radius: 8px; cursor: pointer; margin-bottom: 0;">로그아웃</button>
@@ -292,6 +295,9 @@
         async function checkAuthAndLoad() {
             const user = await requireAuth();
             if (user) {
+                if (!user.office_address || !user.phone) {
+                    document.getElementById('inline-profile-warning').style.display = 'block';
+                }
                 loadBuildings();
                 loadDeals();
             }
