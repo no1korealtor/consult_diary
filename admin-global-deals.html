@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전체일정 등록하기 (관리자)</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+
+        body {
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f3f4f6;
+            padding: 24px 16px;
+            max-width: 480px;
+            margin: auto;
+            color: #111827;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #111827;
+            letter-spacing: -0.5px;
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #374151;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            font-size: 15px;
+            box-sizing: border-box;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            font-family: inherit;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            margin-top: 8px;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .deal-item {
+            background: #ffffff;
+            border: 1px solid rgba(0,0,0,0.05);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .deal-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.04);
+            border-color: #bfdbfe;
+        }
+
+        #status {
+            margin-top: 16px;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .app-footer {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .app-footer strong {
+            color: #6b7280;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="main-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 style="margin: 0;">👑 전체일정 등록하기</h2>
+        <button type="button" onclick="location.href='deal-register.html'" style="width: auto; padding: 8px 16px; font-size: 14px; background: #ffffff; border: 1px solid #e5e7eb; color: #374151; border-radius: 8px; cursor: pointer; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px;">
+            <span>◀</span> 돌아가기
+        </button>
+    </div>
+
+    <div class="card" style="margin-bottom: 30px;">
+        <h3 style="margin-top: 0;">공지 및 공통 일정 등록</h3>
+        <p style="font-size: 13px; color: #6b7280; margin-top: -10px; margin-bottom: 16px;">여기에 등록한 일정은 사무소 모든 직원의 화면에 표시됩니다.</p>
+
+        <input type="text" id="contractType" placeholder="일정 종류 (예: 부가가치세 신고, 회식 등)">
+        <input type="date" id="balanceDate">
+        <textarea id="memo" placeholder="상세 내용 메모"></textarea>
+
+        <button class="btn-primary" onclick="saveGlobalDeal()">
+            전체 일정 등록
+        </button>
+        <div id="status"></div>
+    </div>
+
+    <h3>최근 등록된 전체 일정</h3>
+    <ul id="dealList" style="list-style: none; padding: 0;"></ul>
+</div>
+
+    <script src="auth-helper.js"></script>
+    <script>
+        async function checkAuthAndLoad() {
+            const user = await requireAuth();
+            if (user) {
+                if (user.role !== 'admin') {
+                    alert('관리자 권한이 없습니다.');
+                    location.href = 'deal-register.html';
+                    return;
+                }
+                loadDeals();
+            }
+        }
+
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || window.performance && window.performance.navigation.type === 2) {
+                checkAuthAndLoad();
+            }
+        });
+
+        async function saveGlobalDeal() {
+            const contractType = document.getElementById('contractType').value;
+            const balanceDate = document.getElementById('balanceDate').value;
+            const memo = document.getElementById('memo').value;
+            const status = document.getElementById('status');
+
+            if (!contractType) {
+                status.innerText = '에러: 일정 종류를 입력해주세요.';
+                return;
+            }
+
+            status.innerText = '등록 중...';
+
+            // building_id 와 room_id 를 보내지 않고 저장 (공통 일정)
+            const payload = {
+                contract_type: contractType,
+                balance_date: balanceDate,
+                memo: memo,
+                user_id: window.currentUser.id
+            };
+
+            const { error } = await supabaseClient.from('deals').insert([payload]);
+
+            if (error) {
+                status.innerText = '에러: ' + error.message;
+                return;
+            }
+
+            status.innerText = '등록 완료!';
+            document.getElementById('contractType').value = '';
+            document.getElementById('balanceDate').value = '';
+            document.getElementById('memo').value = '';
+            
+            loadDeals();
+        }
+
+        function getDDay(dateString) {
+            if (!dateString) return '';
+            const targetDate = new Date(dateString);
+            targetDate.setHours(0,0,0,0);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            
+            const diffTime = targetDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 0) return `D-${diffDays}`;
+            if (diffDays === 0) return `D-Day`;
+            return `D+${Math.abs(diffDays)}`;
+        }
+
+        async function loadDeals() {
+            const list = document.getElementById('dealList');
+            list.innerHTML = '<li>로딩 중...</li>';
+
+            // 전사 일정만 조회 (building_id가 null인 항목)
+            let { data, error } = await supabaseClient
+                .from('deals')
+                .select(`
+                    id,
+                    contract_type,
+                    balance_date,
+                    memo,
+                    users ( name )
+                `)
+                .is('building_id', null)
+                .order('balance_date', { ascending: false })
+                .limit(50);
+
+            if (error) {
+                console.warn('users join failed, falling back:', error.message);
+                const fallback = await supabaseClient
+                    .from('deals')
+                    .select(`
+                        id,
+                        contract_type,
+                        balance_date,
+                        memo
+                    `)
+                    .is('building_id', null)
+                    .order('balance_date', { ascending: false })
+                    .limit(50);
+                
+                if (fallback.error) {
+                    list.innerHTML = '<li>목록을 불러오지 못했습니다.</li>';
+                    console.log(fallback.error);
+                    return;
+                }
+                data = fallback.data;
+            }
+
+            list.innerHTML = '';
+            if (!data || data.length === 0) {
+                list.innerHTML = '<li>등록된 전체 일정이 없습니다.</li>';
+                return;
+            }
+
+            // 오늘 날짜 기준으로 가장 가까운 순서대로 정렬
+            data.sort((a, b) => {
+                if (!a.balance_date) return 1;
+                if (!b.balance_date) return -1;
+                const dateA = new Date(a.balance_date);
+                const dateB = new Date(b.balance_date);
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                
+                const diffA = Math.abs(dateA - today);
+                const diffB = Math.abs(dateB - today);
+                return diffA - diffB;
+            });
+
+            data.forEach(deal => {
+                const uName = deal.users && deal.users.name ? deal.users.name : '관리자';
+                
+                const dDayText = getDDay(deal.balance_date);
+                let dDayHtml = '';
+                if (dDayText) {
+                    let badgeBg = '#f3f4f6', badgeColor = '#6b7280'; // Past
+                    if (dDayText === 'D-Day') { badgeBg = '#fee2e2'; badgeColor = '#ef4444'; }
+                    else if (dDayText.startsWith('D-')) { badgeBg = '#dbeafe'; badgeColor = '#2563eb'; }
+                    
+                    dDayHtml = `<span style="background: ${badgeBg}; color: ${badgeColor}; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; margin-right: 8px;">${dDayText}</span>`;
+                }
+
+                const li = document.createElement('li');
+                li.className = 'deal-item';
+                li.onclick = () => {
+                    location.href = 'deal-detail.html?id=' + deal.id;
+                };
+                
+                li.innerHTML = `
+                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                        <span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 8px;">${deal.contract_type}</span>
+                        ${dDayHtml}
+                        <span style="background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 8px;">👤 ${uName}</span>
+                        <span style="color: #6b7280; font-size: 13px; margin-left: auto;">${deal.balance_date || '날짜 미정'}</span>
+                    </div>
+                    <div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 사무소 전체 일정</div>
+                    ${deal.memo ? `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${deal.memo}</div>` : ''}
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        checkAuthAndLoad();
+    </script>
+
+    <footer class="app-footer">
+        <strong>신대림공인중개사사무소</strong>
+        사업자등록번호: 219-01-50737 | 전화번호: 010-9128-0586<br>
+        서울특별시 마포구 모래내로7길 52 (성산동)
+    </footer>
+</body>
+</html>
