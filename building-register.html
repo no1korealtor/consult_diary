@@ -107,7 +107,7 @@
 
             status.innerText = '저장 중...';
 
-            const { error } = await supabaseClient
+            const { data, error } = await supabaseClient
                 .from('buildings')
                 .insert([
                     {
@@ -123,7 +123,7 @@
 
                 if (
                     error.message.includes(
-                        'unique_road_address'
+                        'unique_user_road_address'
                     )
                 ) {
 
