@@ -211,6 +211,10 @@
             계약
         </option>
 
+        <option value="세무">
+            세무 (사무소 공통)
+        </option>
+
         <option value="기타">
             기타
         </option>
@@ -378,30 +382,33 @@
             const status =
                 document.getElementById('status');
 
-            if (!buildingId) {
-                status.innerText = '에러: 건물을 선택해주세요.';
-                return;
-            }
-            if (!roomId) {
-                status.innerText = '에러: 호수를 선택해주세요.';
-                return;
+            if (contractType !== '세무') {
+                if (!buildingId) {
+                    status.innerText = '에러: 건물을 선택해주세요.';
+                    return;
+                }
+                if (!roomId) {
+                    status.innerText = '에러: 호수를 선택해주세요.';
+                    return;
+                }
             }
 
             status.innerText = '저장 중...';
+            
+            const payload = {
+                contract_type: contractType,
+                balance_date: balanceDate,
+                memo: memo,
+                user_id: window.currentUser.id
+            };
+            
+            if (buildingId) payload.building_id = buildingId;
+            if (roomId) payload.room_id = roomId;
 
             const { error } =
                 await supabaseClient
                     .from('deals')
-                    .insert([
-                        {
-                            building_id: buildingId,
-                            room_id: roomId,
-                            contract_type: contractType,
-                            balance_date: balanceDate,
-                            memo: memo,
-                            user_id: window.currentUser.id
-                        }
-                    ]);
+                    .insert([payload]);
 
             if (error) {
 
@@ -446,7 +453,7 @@
                     buildings ( jibun_address, road_address ),
                     rooms ( room_name )
                 `)
-                .eq('user_id', window.currentUser.id)
+                .or(`user_id.eq.${window.currentUser.id},contract_type.eq.세무`)
                 .order('balance_date', { ascending: false }) // Fetch recent & upcoming
                 .limit(30);
 
@@ -480,14 +487,20 @@
             const displayData = data.slice(0, 15);
 
             displayData.forEach(deal => {
-                let bName = '알 수 없는 건물';
-                if (deal.buildings) {
-                    bName = deal.buildings.road_address;
-                    if (deal.buildings.jibun_address) {
-                        bName += ' (' + deal.buildings.jibun_address + ')';
+                let locationHtml = '';
+                if (deal.contract_type === '세무') {
+                    locationHtml = `<div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">🏢 사무소 공통 일정 (세무)</div>`;
+                } else {
+                    let bName = '알 수 없는 건물';
+                    if (deal.buildings) {
+                        bName = deal.buildings.road_address;
+                        if (deal.buildings.jibun_address) {
+                            bName += ' (' + deal.buildings.jibun_address + ')';
+                        }
                     }
+                    const rName = deal.rooms ? deal.rooms.room_name : '알 수 없는 호수';
+                    locationHtml = `<div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📍 ${bName} ${rName}</div>`;
                 }
-                const rName = deal.rooms ? deal.rooms.room_name : '알 수 없는 호수';
                 
                 const dDayText = getDDay(deal.balance_date);
                 let dDayHtml = '';
@@ -511,7 +524,7 @@
                         ${dDayHtml}
                         <span style="color: #6b7280; font-size: 13px; margin-left: auto;">${deal.balance_date || '날짜 미정'}</span>
                     </div>
-                    <div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📍 ${bName} ${rName}</div>
+                    ${locationHtml}
                     ${deal.memo ? `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${deal.memo}</div>` : ''}
                 `;
                 list.appendChild(li);
