@@ -185,8 +185,14 @@
         </button>
     </div>
 
-    <h3>내 일정</h3>
-    <ul id="dealList" style="list-style: none; padding: 0;"></ul>
+    <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <span>내 일정</span>
+        <span id="personalDealsCount" style="font-size: 13px; color: #6b7280; font-weight: normal; background: #e5e7eb; padding: 2px 8px; border-radius: 10px; display: none;"></span>
+    </h3>
+    <ul id="dealList" style="list-style: none; padding: 0; margin-bottom: 0;"></ul>
+    <button id="personalDealsMoreBtn" style="display: none; width: 100%; padding: 12px; background: #f3f4f6; color: #4b5563; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        더보기 ▼
+    </button>
 
     <div class="card" style="margin-top: 30px;">
         <h3 style="margin-top: 0;">새 일정 추가</h3>
@@ -445,6 +451,8 @@
             const globalList = document.getElementById('globalDealList');
             const globalMoreBtn = document.getElementById('globalDealsMoreBtn');
             const globalCount = document.getElementById('globalDealsCount');
+            const personalMoreBtn = document.getElementById('personalDealsMoreBtn');
+            const personalCount = document.getElementById('personalDealsCount');
 
             list.innerHTML = '<li>로딩 중...</li>';
 
@@ -618,11 +626,38 @@
             // 개인 일정 렌더링
             if (personalDeals.length === 0) {
                 list.innerHTML = '<li>등록된 개인 일정이 없습니다.</li>';
+                personalCount.style.display = 'none';
+                personalMoreBtn.style.display = 'none';
             } else {
-                const displayData = personalDeals.slice(0, 15);
-                displayData.forEach(deal => {
-                    list.appendChild(createDealListItem(deal, false));
+                personalCount.style.display = 'inline-block';
+                personalCount.innerText = `${personalDeals.length}건`;
+                
+                personalDeals.forEach((deal, index) => {
+                    const li = createDealListItem(deal, false);
+                    if (index >= 5) {
+                        li.style.display = 'none';
+                        li.classList.add('personal-hidden-item');
+                    }
+                    list.appendChild(li);
                 });
+                
+                if (personalDeals.length > 5) {
+                    personalMoreBtn.style.display = 'block';
+                    personalMoreBtn.onclick = function() {
+                        const isExpanded = this.innerText.includes('접기');
+                        const hiddenItems = document.querySelectorAll('.personal-hidden-item');
+                        if (isExpanded) {
+                            hiddenItems.forEach(item => item.style.display = 'none');
+                            this.innerText = `+ ${personalDeals.length - 5}개 더보기 ▼`;
+                        } else {
+                            hiddenItems.forEach(item => item.style.display = 'block');
+                            this.innerText = '접기 ▲';
+                        }
+                    };
+                    personalMoreBtn.innerText = `+ ${personalDeals.length - 5}개 더보기 ▼`;
+                } else {
+                    personalMoreBtn.style.display = 'none';
+                }
             }
         }
 
