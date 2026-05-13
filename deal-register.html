@@ -353,6 +353,13 @@
 
             });
 
+            // 방금 등록한 호수가 있다면 자동 선택
+            const lastRoomId = sessionStorage.getItem('lastRegisteredRoomId');
+            if (lastRoomId) {
+                roomSelect.value = lastRoomId;
+                sessionStorage.removeItem('lastRegisteredRoomId');
+            }
+
         }
 
         async function saveDeal() {

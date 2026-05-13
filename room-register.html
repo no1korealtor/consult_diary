@@ -142,7 +142,7 @@
 
             status.innerText = '저장 중...';
 
-            const { error } =
+            const { data, error } =
                 await supabaseClient
                     .from('rooms')
                     .insert([
@@ -151,7 +151,8 @@
                             room_name: roomName,
                             user_id: window.currentUser.id
                         }
-                    ]);
+                    ])
+                    .select();
 
             if (error) {
 
@@ -171,6 +172,11 @@
                     '에러: ' + error.message;
 
                 return;
+            }
+
+            if (data && data.length > 0) {
+                sessionStorage.setItem('lastRegisteredBuildingId', buildingId);
+                sessionStorage.setItem('lastRegisteredRoomId', data[0].id);
             }
 
             status.innerText = '저장 완료';
