@@ -681,6 +681,9 @@
 
                 personalDeals.forEach((deal, index) => {
                     let dealMonth = '날짜 미정';
+                    let isPast = false;
+                    let mNum = '';
+
                     if (deal.balance_date) {
                         const d = new Date(deal.balance_date);
                         if (!isNaN(d.getTime())) {
@@ -688,8 +691,10 @@
                             today.setHours(0,0,0,0);
                             if (d < today) {
                                 dealMonth = '지난 일정';
+                                isPast = true;
                             } else {
                                 dealMonth = `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
+                                mNum = d.getMonth() + 1;
                             }
                         }
                     }
@@ -697,9 +702,15 @@
                     if (dealMonth !== currentMonthLabel) {
                         currentMonthLabel = dealMonth;
                         const dividerLi = document.createElement('li');
-                        dividerLi.style.cssText = "margin: 24px 0 12px 0; display: flex; align-items: center;";
-                        dividerLi.innerHTML = `<span style="background: #e2e8f0; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 800; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">${currentMonthLabel}</span><div style="flex: 1; height: 1px; background: #e2e8f0; margin-left: 12px;"></div>`;
                         
+                        if (isPast || dealMonth === '날짜 미정') {
+                            dividerLi.style.cssText = "margin: 32px 0 12px 0; display: flex; align-items: center;";
+                            dividerLi.innerHTML = `<span style="color: #9ca3af; font-size: 14px; font-weight: 700;">${dealMonth}</span><div style="flex: 1; height: 1px; background: #e5e7eb; margin-left: 12px;"></div>`;
+                        } else {
+                            dividerLi.style.cssText = "margin: 40px 0 16px 0; display: flex; align-items: baseline; border-bottom: 2px solid #111827; padding-bottom: 4px;";
+                            dividerLi.innerHTML = `<span style="font-size: 44px; font-weight: 900; color: #111827; letter-spacing: -2px; line-height: 1;">${mNum}</span><span style="font-size: 18px; font-weight: 800; color: #111827; margin-left: 6px;">월</span>`;
+                        }
+
                         if (index >= 5) {
                             dividerLi.style.display = 'none';
                             dividerLi.classList.add('personal-hidden-item');
