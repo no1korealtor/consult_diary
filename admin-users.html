@@ -137,7 +137,7 @@
                 return;
             }
 
-            const { error } = await supabaseClient
+            const { error } = await authClient
                 .from('users')
                 .update({ role: newRole })
                 .eq('id', userId);
@@ -157,7 +157,7 @@
             const list = document.getElementById('userList');
             list.innerHTML = '<li>로딩 중...</li>';
 
-            const { data, error } = await supabaseClient
+            const { data, error } = await authClient
                 .from('users')
                 .select('*')
                 .order('name');
