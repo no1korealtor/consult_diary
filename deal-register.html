@@ -649,11 +649,6 @@
                         }
                     }
 
-                    if (isFarFuture) {
-                        farFutureCount++;
-                        return; // Skip rendering
-                    }
-
                     if (dealMonth !== currentMonthLabel) {
                         currentMonthLabel = dealMonth;
                         const dividerLi = document.createElement('li');
@@ -666,7 +661,12 @@
                             dividerLi.innerHTML = `<span style="font-size: 44px; font-weight: 900; color: #111827; letter-spacing: -2px; line-height: 1;">${mNum}</span><span style="font-size: 18px; font-weight: 800; color: #111827; margin-left: 6px;">월</span>`;
                         }
 
-                        if (visibleCount >= 5) {
+                        dividerLi.dataset.originalDisplay = 'flex';
+
+                        if (isFarFuture) {
+                            dividerLi.style.display = 'none';
+                            dividerLi.classList.add('far-future-item');
+                        } else if (visibleCount >= 5) {
                             dividerLi.style.display = 'none';
                             dividerLi.classList.add('personal-hidden-item');
                         }
@@ -674,19 +674,35 @@
                     }
 
                     const li = createDealListItem(deal, !deal.buildings && !deal.building_id);
-                    if (visibleCount >= 5) {
+                    li.dataset.originalDisplay = 'block';
+
+                    if (isFarFuture) {
                         li.style.display = 'none';
-                        li.classList.add('personal-hidden-item');
+                        li.classList.add('far-future-item');
+                        farFutureCount++;
+                    } else {
+                        if (visibleCount >= 5) {
+                            li.style.display = 'none';
+                            li.classList.add('personal-hidden-item');
+                        }
+                        visibleCount++;
                     }
                     list.appendChild(li);
-                    
-                    visibleCount++;
                 });
 
                 if (farFutureCount > 0) {
                     const noticeLi = document.createElement('li');
-                    noticeLi.style.cssText = "margin-top: 24px; padding: 16px; text-align: center; background: #f8fafc; border-radius: 12px; color: #6b7280; font-size: 14px; font-weight: 600; border: 1px solid #e2e8f0;";
-                    noticeLi.innerHTML = `🗓️ 45일 이후 예정된 일정이 <strong>${farFutureCount}건</strong> 있습니다.`;
+                    noticeLi.dataset.originalDisplay = 'block';
+                    noticeLi.style.cssText = "margin-top: 24px; padding: 16px; text-align: center; background: #f8fafc; border-radius: 12px; color: #6b7280; font-size: 14px; font-weight: 600; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s;";
+                    noticeLi.innerHTML = `🗓️ 45일 이후 예정된 일정 <strong>${farFutureCount}건</strong> 펼쳐보기 ▼`;
+                    
+                    noticeLi.onclick = () => {
+                        const farItems = document.querySelectorAll('.far-future-item');
+                        farItems.forEach(item => {
+                            item.style.display = item.dataset.originalDisplay || '';
+                        });
+                        noticeLi.style.display = 'none';
+                    };
                     
                     if (visibleCount >= 5) {
                         noticeLi.style.display = 'none';
@@ -704,7 +720,9 @@
                             hiddenItems.forEach(item => item.style.display = 'none');
                             this.innerText = `+ 더보기 ▼`;
                         } else {
-                            hiddenItems.forEach(item => item.style.display = 'block');
+                            hiddenItems.forEach(item => {
+                                item.style.display = item.dataset.originalDisplay || '';
+                            });
                             this.innerText = '접기 ▲';
                         }
                     };
