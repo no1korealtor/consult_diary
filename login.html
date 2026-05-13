@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>공인중개사의 다이어리 - 로그인</title>
+    <title>
+        <h1>공인중개사 다이어리 TEST123</h1> - 로그인
+    </title>
     <link rel="stylesheet" href="app.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
@@ -16,6 +19,7 @@
             padding: 3rem 2rem;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
         }
+
         .icon-circle {
             width: 80px;
             height: 80px;
@@ -28,6 +32,7 @@
             font-size: 2.5rem;
             box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
         }
+
         .custom-input {
             background-color: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -40,12 +45,14 @@
             box-sizing: border-box;
             margin-bottom: 1rem;
         }
+
         .custom-input:focus {
             outline: none;
             background-color: rgba(255, 255, 255, 0.12);
             border-color: #6366f1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
+
         .btn-login {
             background: linear-gradient(135deg, #3b82f6, #6366f1);
             font-size: 1.1rem;
@@ -59,6 +66,7 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
+
         .btn-login:hover {
             transform: translateY(-2px);
         }
@@ -66,23 +74,31 @@
     <link rel="stylesheet" href="app.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
     <div class="container" style="max-width: 420px; margin-top: 8vh; margin-bottom: 8vh;">
         <div class="login-card text-center">
             <div class="icon-circle">📔</div>
-            <h2 style="text-align: center; margin-bottom: 0.5rem; font-weight: 700; letter-spacing: -0.5px; color: #fff;">공인중개사의 다이어리</h2>
-            <p style="color: #cbd5e1; font-size: 1rem; margin-bottom: 2.5rem; word-break: keep-all; text-align: center; line-height: 1.5;">현장에서 바로 꺼내 쓰는<br>나만의 든든한 업무 수첩</p>
-            
+            <h2
+                style="text-align: center; margin-bottom: 0.5rem; font-weight: 700; letter-spacing: -0.5px; color: #fff;">
+                공인중개사의 다이어리</h2>
+            <p
+                style="color: #cbd5e1; font-size: 1rem; margin-bottom: 2.5rem; word-break: keep-all; text-align: center; line-height: 1.5;">
+                현장에서 바로 꺼내 쓰는<br>나만의 든든한 업무 수첩</p>
+
             <form id="loginForm" class="flex-col" style="gap: 0;">
                 <input type="email" id="email" class="custom-input" placeholder="이메일 주소" required>
                 <input type="password" id="password" class="custom-input" placeholder="비밀번호" required>
                 <button type="submit" class="btn-login" id="loginBtn">시작하기</button>
             </form>
-            
-            <div id="errorMsg" style="color: #fca5a5; margin-top: 1rem; text-align: center; display: none; font-size: 0.95rem;"></div>
-            
+
+            <div id="errorMsg"
+                style="color: #fca5a5; margin-top: 1rem; text-align: center; display: none; font-size: 0.95rem;"></div>
+
             <div style="margin-top: 2rem; text-align: center;">
-                <a href="register.html" style="color: #94a3b8; text-decoration: none; font-size: 0.95rem; transition: color 0.2s;">계정이 없으신가요? <span style="color: #818cf8;">무료 회원가입</span></a>
+                <a href="register.html"
+                    style="color: #94a3b8; text-decoration: none; font-size: 0.95rem; transition: color 0.2s;">계정이
+                    없으신가요? <span style="color: #818cf8;">무료 회원가입</span></a>
             </div>
         </div>
     </div>
@@ -104,7 +120,7 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorMsg = document.getElementById('errorMsg');
-            
+
             errorMsg.style.display = 'none';
             document.getElementById('loginBtn').disabled = true;
             document.getElementById('loginBtn').textContent = '확인 중...';
@@ -140,4 +156,5 @@
         </div>
     </footer>
 </body>
+
 </html>
