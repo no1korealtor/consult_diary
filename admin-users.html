@@ -132,8 +132,11 @@
         });
 
         async function changeRole(userId, newRole, userName) {
-            if (!confirm(`'${userName}' 님의 권한을 '${newRole === 'admin' ? '관리자' : '개업공인중개사'}'(으)로 변경하시겠습니까?`)) {
-                loadUsers(); // revert select UI
+            if (!newRole) {
+                alert('부여할 권한을 선택해주세요.');
+                return;
+            }
+            if (!confirm(`'${userName}' 님의 권한을 '${newRole === 'admin' ? '관리자' : '개업공인중개사'}'(으)로 최종 저장하시겠습니까?`)) {
                 return;
             }
 
@@ -190,12 +193,13 @@
                         <span class="user-name">${nameStr} ${isMe ? '(나)' : ''}</span>
                         <span class="user-phone">${phoneStr}</span>
                     </div>
-                    <div>
-                        <select onchange="changeRole('${user.id}', this.value, '${nameStr}')" ${isMe ? 'disabled' : ''} style="${!user.role ? 'border-color: #ef4444; background-color: #fef2f2; color: #ef4444; font-weight: bold;' : ''}">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <select id="role-${user.id}" ${isMe ? 'disabled' : ''} style="${!user.role ? 'border-color: #ef4444; background-color: #fef2f2; color: #ef4444; font-weight: bold;' : ''}">
                             ${!user.role ? '<option value="" disabled selected>승인 대기 (미부여)</option>' : ''}
                             <option value="consultant" ${user.role === 'consultant' ? 'selected' : ''}>개업공인중개사</option>
                             <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>관리자 (Admin)</option>
                         </select>
+                        <button onclick="changeRole('${user.id}', document.getElementById('role-${user.id}').value, '${nameStr}')" style="width: auto; padding: 6px 12px; margin: 0; font-size: 13px; font-weight: 600; background: #3b82f6; color: white; border-radius: 6px; box-shadow: none; ${isMe ? 'display: none;' : ''}">확인</button>
                     </div>
                 `;
                 list.appendChild(li);
