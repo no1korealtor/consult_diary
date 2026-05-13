@@ -11,6 +11,8 @@
     <!-- Tom Select 라이브러리 (검색형 드롭다운) -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    
+    <link rel="stylesheet" href="nav.css">
 
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
@@ -167,17 +169,6 @@
     </div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
         <h2 style="margin: 0;">일정 등록</h2>
-        <div style="display: flex; gap: 8px;">
-            <button id="contactsBtn" type="button" onclick="location.href='contacts.html'" style="width: auto; padding: 8px 16px; font-size: 14px; background: #4b5563; border: none; color: white; border-radius: 8px; cursor: pointer; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 6px;">
-                <span>👥</span> 연락처
-            </button>
-            <button id="adminBtn" type="button" onclick="location.href='admin-global-deals.html'" style="display: none; width: auto; padding: 8px 16px; font-size: 14px; background: #1f2937; border: none; color: white; border-radius: 8px; cursor: pointer; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-items: center; gap: 6px;">
-                <span>👑</span> 전체일정 등록하기
-            </button>
-            <button type="button" onclick="location.href='profile-edit.html'" style="width: auto; padding: 8px 16px; font-size: 14px; background: #ffffff; border: 1px solid #e5e7eb; color: #374151; border-radius: 8px; cursor: pointer; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 6px; white-space: nowrap;">
-                <span>👤</span> 내 정보 / 로그아웃
-            </button>
-        </div>
     </div>
 
     <h3>최근 등록된 일정</h3>
@@ -299,9 +290,6 @@
         async function checkAuthAndLoad() {
             const user = await requireAuth();
             if (user) {
-                if (user.role === 'admin') {
-                    document.getElementById('adminBtn').style.display = 'flex';
-                }
                 if (!user.office_address || !user.phone) {
                     document.getElementById('inline-profile-warning').style.display = 'block';
                 }
@@ -578,6 +566,21 @@
         사업자등록번호: 219-01-50737 | 전화번호: 010-9128-0586<br>
         서울특별시 마포구 모래내로7길 52 (성산동)
     </footer>
+
+    <nav class="bottom-nav">
+        <a href="deal-register.html" class="nav-item active">
+            <span class="nav-icon">🏠</span>
+            <span>일정</span>
+        </a>
+        <a href="contacts.html" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span>연락처</span>
+        </a>
+        <a href="profile-edit.html" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span>내 정보</span>
+        </a>
+    </nav>
 </body>
 
 </html>
