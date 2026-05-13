@@ -222,7 +222,7 @@
             // building_id 와 room_id 를 보내지 않고 저장 (공통 일정)
             const payload = {
                 contract_type: contractType,
-                balance_date: balanceDate,
+                balance_date: balanceDate ? balanceDate : null,
                 memo: finalMemo,
                 user_id: window.currentUser.id
             };

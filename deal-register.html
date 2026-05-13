@@ -383,11 +383,11 @@
                 document.getElementById('status');
 
             if (!buildingId) {
-                status.innerText = '에러: 건물을 선택해주세요.';
+                status.innerText = '건물을 선택해주세요.';
                 return;
             }
             if (!roomId) {
-                status.innerText = '에러: 호수를 선택해주세요.';
+                status.innerText = '호수를 선택해주세요.';
                 return;
             }
 
@@ -395,7 +395,7 @@
             
             const payload = {
                 contract_type: contractType,
-                balance_date: balanceDate,
+                balance_date: balanceDate ? balanceDate : null,
                 memo: memo,
                 user_id: window.currentUser.id
             };
