@@ -503,7 +503,6 @@
                 });
             }
 
-            // 날짜 정렬 함수 (오늘에 가장 가까운 순서)
             const sortByDate = (a, b) => {
                 if (!a.balance_date) return 1;
                 if (!b.balance_date) return -1;
@@ -512,9 +511,17 @@
                 const today = new Date();
                 today.setHours(0,0,0,0);
                 
-                const diffA = Math.abs(dateA - today);
-                const diffB = Math.abs(dateB - today);
-                return diffA - diffB;
+                const isPastA = dateA < today;
+                const isPastB = dateB < today;
+
+                if (isPastA && !isPastB) return 1;
+                if (!isPastA && isPastB) return -1;
+                
+                if (!isPastA && !isPastB) {
+                    return dateA - dateB;
+                } else {
+                    return dateB - dateA;
+                }
             };
 
             globalDeals.sort(sortByDate);
@@ -670,7 +677,36 @@
                 personalCount.style.display = 'inline-block';
                 personalCount.innerText = `${personalDeals.length}건`;
                 
+                let currentMonthLabel = '';
+
                 personalDeals.forEach((deal, index) => {
+                    let dealMonth = '날짜 미정';
+                    if (deal.balance_date) {
+                        const d = new Date(deal.balance_date);
+                        if (!isNaN(d.getTime())) {
+                            const today = new Date();
+                            today.setHours(0,0,0,0);
+                            if (d < today) {
+                                dealMonth = '지난 일정';
+                            } else {
+                                dealMonth = `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
+                            }
+                        }
+                    }
+
+                    if (dealMonth !== currentMonthLabel) {
+                        currentMonthLabel = dealMonth;
+                        const dividerLi = document.createElement('li');
+                        dividerLi.style.cssText = "margin: 24px 0 12px 0; display: flex; align-items: center;";
+                        dividerLi.innerHTML = `<span style="background: #e2e8f0; color: #475569; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 800; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">${currentMonthLabel}</span><div style="flex: 1; height: 1px; background: #e2e8f0; margin-left: 12px;"></div>`;
+                        
+                        if (index >= 5) {
+                            dividerLi.style.display = 'none';
+                            dividerLi.classList.add('personal-hidden-item');
+                        }
+                        list.appendChild(dividerLi);
+                    }
+
                     const li = createDealListItem(deal, false);
                     if (index >= 5) {
                         li.style.display = 'none';
