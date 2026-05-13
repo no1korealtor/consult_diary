@@ -163,7 +163,7 @@
                 .order('name');
 
             if (error) {
-                list.innerHTML = '<li>직원 목록을 불러오지 못했습니다.</li>';
+                list.innerHTML = `<li style="color: #ef4444; font-size: 14px;">직원 목록을 불러오지 못했습니다.<br>사유: ${error.message}<br><br>💡 권한(RLS) 문제일 확률이 높습니다. Supabase에서 보안 정책을 설정해주세요.</li>`;
                 console.error(error);
                 return;
             }
