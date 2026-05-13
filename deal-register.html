@@ -171,7 +171,18 @@
         <h2 style="margin: 0;">일정 등록</h2>
     </div>
 
-    <h3>최근 등록된 일정</h3>
+    <div id="globalDealsContainer" style="display: none; margin-bottom: 32px;">
+        <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span>📢 사내 공지 및 전체 일정</span>
+            <span id="globalDealsCount" style="font-size: 13px; color: #6b7280; font-weight: normal; background: #e5e7eb; padding: 2px 8px; border-radius: 10px;"></span>
+        </h3>
+        <ul id="globalDealList" style="list-style: none; padding: 0; margin-bottom: 0;"></ul>
+        <button id="globalDealsMoreBtn" style="display: none; width: 100%; padding: 12px; background: #e0f2fe; color: #0369a1; border: none; border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+            더보기 ▼
+        </button>
+    </div>
+
+    <h3>내 일정</h3>
     <ul id="dealList" style="list-style: none; padding: 0;"></ul>
 
     <div class="card" style="margin-top: 30px;">
@@ -427,12 +438,18 @@
 
         async function loadDeals() {
             const list = document.getElementById('dealList');
+            const globalContainer = document.getElementById('globalDealsContainer');
+            const globalList = document.getElementById('globalDealList');
+            const globalMoreBtn = document.getElementById('globalDealsMoreBtn');
+            const globalCount = document.getElementById('globalDealsCount');
+
             list.innerHTML = '<li>로딩 중...</li>';
 
             const { data, error } = await supabaseClient
                 .from('deals')
                 .select(`
                     id,
+                    building_id,
                     contract_type,
                     balance_date,
                     memo,
@@ -441,7 +458,7 @@
                 `)
                 .or(`user_id.eq.${window.currentUser.id},building_id.is.null`)
                 .order('balance_date', { ascending: false }) // Fetch recent & upcoming
-                .limit(30);
+                .limit(50);
 
             if (error) {
                 list.innerHTML = '<li>목록을 불러오지 못했습니다.</li>';
@@ -450,13 +467,23 @@
             }
 
             list.innerHTML = '';
-            if (data.length === 0) {
-                list.innerHTML = '<li>등록된 일정이 없습니다.</li>';
-                return;
+            globalList.innerHTML = '';
+            
+            const globalDeals = [];
+            const personalDeals = [];
+            
+            if (data) {
+                data.forEach(d => {
+                    if (!d.buildings && !d.building_id) {
+                        globalDeals.push(d);
+                    } else {
+                        personalDeals.push(d);
+                    }
+                });
             }
 
-            // 오늘 날짜 기준으로 가장 가까운 순서대로 정렬
-            data.sort((a, b) => {
+            // 날짜 정렬 함수 (오늘에 가장 가까운 순서)
+            const sortByDate = (a, b) => {
                 if (!a.balance_date) return 1;
                 if (!b.balance_date) return -1;
                 const dateA = new Date(a.balance_date);
@@ -467,12 +494,13 @@
                 const diffA = Math.abs(dateA - today);
                 const diffB = Math.abs(dateB - today);
                 return diffA - diffB;
-            });
+            };
 
-            // 화면에 15개까지만 표시
-            const displayData = data.slice(0, 15);
+            globalDeals.sort(sortByDate);
+            personalDeals.sort(sortByDate);
 
-            displayData.forEach(deal => {
+            // 공통 렌더링 함수
+            const createDealListItem = (deal, isGlobal) => {
                 let rawMemo = deal.memo || '';
                 let linkUrl = null;
                 let startDt = null;
@@ -496,7 +524,7 @@
                 let locationHtml = '';
                 let typeBadgeHtml = '';
                 
-                if (!deal.buildings) {
+                if (isGlobal) {
                     locationHtml = `<div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 ${deal.contract_type}</div>`;
                     typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 8px;">전체 일정</span>`;
                 } else {
@@ -521,15 +549,12 @@
 
                 const li = document.createElement('li');
                 li.className = 'deal-item';
-                if (!deal.buildings) {
+                if (isGlobal) {
                     li.classList.add('global');
-                }
-                
-                if (deal.buildings) {
+                    li.style.cursor = 'default';
+                } else {
                     li.style.cursor = 'pointer';
                     li.onclick = () => location.href = 'deal-detail.html?id=' + deal.id;
-                } else {
-                    li.style.cursor = 'default';
                 }
                 
                 let memoHtml = '';
@@ -549,8 +574,53 @@
                     ${locationHtml}
                     ${memoHtml}
                 `;
-                list.appendChild(li);
-            });
+                return li;
+            };
+
+            // 전체 일정 렌더링
+            if (globalDeals.length > 0) {
+                globalContainer.style.display = 'block';
+                globalCount.innerText = `${globalDeals.length}건`;
+                
+                globalDeals.forEach((deal, index) => {
+                    const li = createDealListItem(deal, true);
+                    if (index >= 1) {
+                        li.style.display = 'none';
+                        li.classList.add('global-hidden-item');
+                    }
+                    globalList.appendChild(li);
+                });
+                
+                if (globalDeals.length > 1) {
+                    globalMoreBtn.style.display = 'block';
+                    globalMoreBtn.onclick = function() {
+                        const isExpanded = this.innerText.includes('접기');
+                        const hiddenItems = document.querySelectorAll('.global-hidden-item');
+                        if (isExpanded) {
+                            hiddenItems.forEach(item => item.style.display = 'none');
+                            this.innerText = `+ ${globalDeals.length - 1}개 더보기 ▼`;
+                        } else {
+                            hiddenItems.forEach(item => item.style.display = 'block');
+                            this.innerText = '접기 ▲';
+                        }
+                    };
+                    globalMoreBtn.innerText = `+ ${globalDeals.length - 1}개 더보기 ▼`;
+                } else {
+                    globalMoreBtn.style.display = 'none';
+                }
+            } else {
+                globalContainer.style.display = 'none';
+            }
+
+            // 개인 일정 렌더링
+            if (personalDeals.length === 0) {
+                list.innerHTML = '<li>등록된 개인 일정이 없습니다.</li>';
+            } else {
+                const displayData = personalDeals.slice(0, 15);
+                displayData.forEach(deal => {
+                    list.appendChild(createDealListItem(deal, false));
+                });
+            }
         }
 
         document
