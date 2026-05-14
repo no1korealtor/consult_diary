@@ -130,19 +130,23 @@
         // 회원수 및 승인수 조회
         async function fetchUserStats() {
             try {
-                // 전체 회원수
-                const { count: total } = await authClient
-                    .from('users')
-                    .select('*', { count: 'exact', head: true });
+                // RLS 정책으로 인해 직접 조회가 막혀있을 수 있으므로, RPC 함수 사용
+                const { data, error } = await authClient.rpc('get_user_stats');
                 
-                // 승인된 회원수 (role이 null이 아닌 경우)
-                const { count: approved } = await authClient
-                    .from('users')
-                    .select('*', { count: 'exact', head: true })
-                    .not('role', 'is', null);
+                if (error) {
+                    console.log("RPC 함수가 없거나 접근 불가하여 기존 방식으로 재시도합니다.");
+                    // Fallback (RLS가 풀려있는 경우를 대비)
+                    const { count: total } = await authClient.from('users').select('*', { count: 'exact', head: true });
+                    const { count: approved } = await authClient.from('users').select('*', { count: 'exact', head: true }).not('role', 'is', null);
+                    if (total !== null) document.getElementById('totalUsers').textContent = total + '명';
+                    if (approved !== null) document.getElementById('approvedUsers').textContent = approved + '명';
+                    return;
+                }
 
-                if (total !== null) document.getElementById('totalUsers').textContent = total + '명';
-                if (approved !== null) document.getElementById('approvedUsers').textContent = approved + '명';
+                if (data) {
+                    document.getElementById('totalUsers').textContent = data.total + '명';
+                    document.getElementById('approvedUsers').textContent = data.approved + '명';
+                }
             } catch (error) {
                 console.error("통계 조회 중 오류:", error);
             }
