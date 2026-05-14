@@ -83,8 +83,20 @@
                 style="text-align: center; margin-bottom: 0.5rem; font-weight: 700; letter-spacing: -0.5px; color: #fff;">
                 공인중개사의 다이어리</h2>
             <p
-                style="color: #cbd5e1; font-size: 1rem; margin-bottom: 2.5rem; word-break: keep-all; text-align: center; line-height: 1.5;">
+                style="color: #cbd5e1; font-size: 1rem; margin-bottom: 1.5rem; word-break: keep-all; text-align: center; line-height: 1.5;">
                 현장에서 바로 꺼내 쓰는<br>나만의 든든한 업무 수첩</p>
+
+            <div style="background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 0.8rem; margin-bottom: 2rem; font-size: 0.9rem; color: #94a3b8; display: flex; justify-content: space-around; border: 1px solid rgba(255,255,255,0.05);">
+                <div style="text-align: center; flex: 1;">
+                    <div style="font-size: 0.75rem; margin-bottom: 0.2rem; opacity: 0.8;">누적 가입자</div>
+                    <div style="color: #fff; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;" id="totalUsers">-</div>
+                </div>
+                <div style="width: 1px; background: rgba(255,255,255,0.1); margin: 0.2rem 0;"></div>
+                <div style="text-align: center; flex: 1;">
+                    <div style="font-size: 0.75rem; margin-bottom: 0.2rem; opacity: 0.8;">승인된 중개사</div>
+                    <div style="color: #818cf8; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;" id="approvedUsers">-</div>
+                </div>
+            </div>
 
             <form id="loginForm" class="flex-col" style="gap: 0;">
                 <input type="email" id="email" class="custom-input" placeholder="이메일 주소" required>
@@ -114,6 +126,28 @@
             }
         }
         checkSession();
+
+        // 회원수 및 승인수 조회
+        async function fetchUserStats() {
+            try {
+                // 전체 회원수
+                const { count: total } = await authClient
+                    .from('users')
+                    .select('*', { count: 'exact', head: true });
+                
+                // 승인된 회원수 (role이 null이 아닌 경우)
+                const { count: approved } = await authClient
+                    .from('users')
+                    .select('*', { count: 'exact', head: true })
+                    .not('role', 'is', null);
+
+                if (total !== null) document.getElementById('totalUsers').textContent = total + '명';
+                if (approved !== null) document.getElementById('approvedUsers').textContent = approved + '명';
+            } catch (error) {
+                console.error("통계 조회 중 오류:", error);
+            }
+        }
+        fetchUserStats();
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
