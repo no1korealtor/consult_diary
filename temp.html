@@ -1,0 +1,346 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>?붽툑 ?쇱젙 ?깅줉</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Tom Select ?쇱씠釉뚮윭由?(寃?됲삎 ?쒕∼?ㅼ슫) -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            max-width: 480px;
+            margin: auto;
+        }
+
+        select,
+        input,
+        textarea,
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            font-size: 18px;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+</head>
+
+<body>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0;">?붽툑 ?쇱젙 ?깅줉</h2>
+        <button type="button" onclick="logout()" style="width: auto; padding: 8px 12px; font-size: 14px; background: #ef4444; border: none; color: white; border-radius: 4px; cursor: pointer; margin-bottom: 0;">濡쒓렇?꾩썐</button>
+    </div>
+
+    <h3>理쒓렐 ?깅줉???쇱젙</h3>
+    <ul id="dealList" style="list-style: none; padding: 0;"></ul>
+
+    <hr style="margin: 30px 0; border: 0; border-top: 1px solid #ccc;">
+
+    <select id="buildingSelect">
+        <option value="">嫄대Ъ ?좏깮</option>
+    </select>
+    <button
+        type="button"
+        onclick="location.href='building-register.html'"
+    >
+        + ??嫄대Ъ ?깅줉
+    </button>
+
+    <select id="roomSelect">
+        <option value="">?몄닔 ?좏깮</option>
+    </select>
+    <button
+        type="button"
+        onclick="goToRoomRegister()"
+    >
+        + ?몄닔 ?깅줉
+    </button>
+
+    <select id="contractType">
+
+        <option value="?낆＜ ?뺤궛">
+            ?낆＜ ?뺤궛
+        </option>
+
+        <option value="?댁떎 ?뺤궛">
+            ?댁떎 ?뺤궛
+        </option>
+
+        <option value="?붽툑">
+            ?붽툑
+        </option>
+
+        <option value="怨꾩빟">
+            怨꾩빟
+        </option>
+
+        <option value="湲고?">
+            湲고?
+        </option>
+
+    </select>
+
+    <input type="date" id="balanceDate">
+
+    <textarea id="memo" placeholder="硫붾え"></textarea>
+
+    <button onclick="saveDeal()">
+        ???    </button>
+
+    <div id="status"></div>
+
+    <script src="auth-helper.js"></script>
+    <script>
+
+        async function loadBuildings() {
+
+            const { data, error } =
+                await supabaseClient
+                    .from('buildings')
+                    .select('*')
+                    .eq('user_id', window.currentUser.id)
+                    .order('created_at', { ascending: false });
+
+            if (error) {
+                alert('嫄대Ъ 紐⑸줉 濡쒕뱶 ?먮윭: ' + error.message);
+                console.log(error);
+                return;
+            }
+
+            const select =
+                document.getElementById('buildingSelect');
+
+            // 寃??媛?ν븳 ?쒕∼?ㅼ슫(Tom Select) 珥덇린????湲곗〈 媛앹껜 ?뚭눼
+            if (window.buildingTomSelect) {
+                window.buildingTomSelect.destroy();
+            }
+                
+            select.innerHTML = '<option value="">嫄대Ъ ?좏깮</option>';
+
+            data.forEach(building => {
+
+                const option =
+                    document.createElement('option');
+
+                option.value = building.id;
+
+                option.textContent =
+                    building.road_address;
+
+                select.appendChild(option);
+
+            });
+
+            window.buildingTomSelect = new TomSelect("#buildingSelect", {
+                create: false,
+                placeholder: "嫄대Ъ紐??먮뒗 二쇱냼 寃??..",
+                maxOptions: 100
+            });
+
+        }
+
+        function goToRoomRegister() {
+            const buildingId = document.getElementById('buildingSelect').value;
+            if (buildingId) {
+                location.href = 'room-register.html?building_id=' + buildingId;
+            } else {
+                location.href = 'room-register.html';
+            }
+        }
+
+        async function checkAuthAndLoad() {
+            const user = await requireAuth();
+            if (user) {
+                loadBuildings();
+                loadDeals();
+            }
+        }
+
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || window.performance && window.performance.navigation.type === 2) {
+                checkAuthAndLoad();
+            }
+        });
+
+        async function loadRooms() {
+
+            const buildingId =
+                document.getElementById('buildingSelect').value;
+
+            const roomSelect =
+                document.getElementById('roomSelect');
+
+            roomSelect.innerHTML =
+                '<option value="">?몄닔 ?좏깮</option>';
+
+            const { data, error } =
+                await supabaseClient
+                    .from('rooms')
+                    .select('*')
+                    .eq('building_id', buildingId)
+                    .eq('user_id', window.currentUser.id);
+
+            if (error) {
+                console.log(error);
+                return;
+            }
+
+            data.forEach(room => {
+
+                const option =
+                    document.createElement('option');
+
+                option.value = room.id;
+
+                option.textContent =
+                    room.room_name;
+
+                roomSelect.appendChild(option);
+
+            });
+
+        }
+
+        async function saveDeal() {
+
+            const buildingId =
+                document.getElementById('buildingSelect').value;
+
+            const roomId =
+                document.getElementById('roomSelect').value;
+
+            const contractType =
+                document.getElementById('contractType').value;
+
+            const balanceDate =
+                document.getElementById('balanceDate').value;
+
+            const memo =
+                document.getElementById('memo').value;
+
+            const status =
+                document.getElementById('status');
+
+            if (!buildingId) {
+                status.innerText = '?먮윭: 嫄대Ъ???좏깮?댁＜?몄슂.';
+                return;
+            }
+            if (!roomId) {
+                status.innerText = '?먮윭: ?몄닔瑜??좏깮?댁＜?몄슂.';
+                return;
+            }
+
+            status.innerText = '???以?..';
+
+            const { error } =
+                await supabaseClient
+                    .from('deals')
+                    .insert([
+                        {
+                            building_id: buildingId,
+                            room_id: roomId,
+                            contract_type: contractType,
+                            balance_date: balanceDate,
+                            memo: memo,
+                            user_id: window.currentUser.id
+                        }
+                    ]);
+
+            if (error) {
+
+                status.innerText =
+                    '?먮윭: ' + error.message;
+
+                return;
+            }
+
+            status.innerText = '????꾨즺';
+            document.getElementById('memo').value = '';
+            loadDeals();
+
+        }
+
+        async function loadDeals() {
+            const list = document.getElementById('dealList');
+            list.innerHTML = '<li>濡쒕뵫 以?..</li>';
+
+            const { data, error } = await supabaseClient
+                .from('deals')
+                .select(`
+                    id,
+                    contract_type,
+                    balance_date,
+                    memo,
+                    buildings ( road_address ),
+                    rooms ( room_name )
+                `)
+                .eq('user_id', window.currentUser.id)
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            if (error) {
+                list.innerHTML = '<li>紐⑸줉??遺덈윭?ㅼ? 紐삵뻽?듬땲??</li>';
+                console.log(error);
+                return;
+            }
+
+            list.innerHTML = '';
+            if (data.length === 0) {
+                list.innerHTML = '<li>?깅줉???쇱젙???놁뒿?덈떎.</li>';
+                return;
+            }
+
+            data.forEach(deal => {
+                const bName = deal.buildings ? deal.buildings.road_address : '?????녿뒗 嫄대Ъ';
+                const rName = deal.rooms ? deal.rooms.room_name : '?????녿뒗 ?몄닔';
+                
+                const li = document.createElement('li');
+                li.style.border = '1px solid #ddd';
+                li.style.padding = '10px';
+                li.style.marginBottom = '10px';
+                li.style.borderRadius = '5px';
+                li.style.cursor = 'pointer';
+                li.onclick = () => {
+                    location.href = 'deal-detail.html?id=' + deal.id;
+                };
+                
+                li.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 5px;">${deal.balance_date || '?좎쭨 誘몄젙'} - ${deal.contract_type}</div>
+                    <div style="margin-bottom: 5px;">${bName} ${rName}</div>
+                    <div style="color: gray; font-size: 14px;">${deal.memo || ''}</div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        document
+            .getElementById('buildingSelect')
+            .addEventListener('change', loadRooms);
+
+        checkAuthAndLoad();
+
+    </script>
+
+</body>
+
+</html>
