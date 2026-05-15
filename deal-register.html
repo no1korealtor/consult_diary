@@ -626,6 +626,27 @@
                     let details = [timeStr, locStr].filter(Boolean).join(' · ');
                     if(details) details = `<div style="font-size:13px; color:#6b7280; margin-top:4px;">${details}</div>`;
                     
+                                        let myAtt = null;
+                    let attCount = 0;
+                    let noCount = 0;
+                    if (deal.deal_attendances) {
+                        const attendances = deal.deal_attendances;
+                        const myRec = attendances.find(a => a.user_id === window.currentUser.id);
+                        if (myRec) myAtt = myRec.status;
+                        attCount = attendances.filter(a => a.status === '참석').length;
+                        noCount = attendances.filter(a => a.status === '불참').length;
+                    }
+
+                    if (isGlobal && myAtt) mAtt = myAtt; // 내 상태로 뱃지 덮어쓰기
+                    
+                    if (isGlobal) {
+                        details += `
+                        <div style="display: flex; gap: 8px; margin-top: 12px; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;" onclick="event.stopPropagation()">
+                            <button type="button" onclick="setAttendance('${deal.id}', '참석')" style="flex: 1; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s; border: 1px solid ${myAtt === '참석' ? '#16a34a' : '#cbd5e1'}; background: ${myAtt === '참석' ? '#16a34a' : 'white'}; color: ${myAtt === '참석' ? 'white' : '#475569'}; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">👍 참석 (${attCount})</button>
+                            <button type="button" onclick="setAttendance('${deal.id}', '불참')" style="flex: 1; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s; border: 1px solid ${myAtt === '불참' ? '#dc2626' : '#cbd5e1'}; background: ${myAtt === '불참' ? '#dc2626' : 'white'}; color: ${myAtt === '불참' ? 'white' : '#475569'}; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">✋ 불참 (${noCount})</button>
+                        </div>
+                        `;
+                    }
                     let attBadge = '';
                     if(mAtt === '참석') attBadge = `<span style="color:#16a34a; font-size:12px; font-weight:800;">[참석]</span>`;
                     else if(mAtt === '미정') attBadge = `<span style="color:#d97706; font-size:12px; font-weight:800;">[미정]</span>`;
