@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -566,13 +566,18 @@
                 
                 const dDayText = getDDay(deal.balance_date);
                 let dDayHtml = '';
+                let isUrgent = false;
                 if (dDayText) {
                     let badgeBg = '#f3f4f6', badgeColor = '#9ca3af';
                     if (dDayText === 'D-Day') { 
                         badgeBg = '#fee2e2'; badgeColor = '#ef4444'; 
+                        isUrgent = true;
                     } else if (dDayText.startsWith('D-')) { 
                         const daysLeft = parseInt(dDayText.substring(2));
-                        if (daysLeft <= 7) {
+                        if (daysLeft <= 3) {
+                            badgeBg = '#ffedd5'; badgeColor = '#ea580c'; 
+                            isUrgent = true;
+                        } else if (daysLeft <= 7) {
                             badgeBg = '#dbeafe'; badgeColor = '#2563eb'; 
                         }
                     }
@@ -587,6 +592,11 @@
                 } else {
                     li.style.cursor = 'pointer';
                     li.onclick = () => location.href = 'deal-detail.html?id=' + deal.id;
+                    if (isUrgent) {
+                        li.style.borderColor = '#fda4af';
+                        li.style.backgroundColor = '#fff1f2';
+                        li.style.boxShadow = '0 4px 12px rgba(244, 63, 94, 0.1)';
+                    }
                 }
                 
                 let memoHtml = '';
