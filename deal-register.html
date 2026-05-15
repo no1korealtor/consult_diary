@@ -519,7 +519,8 @@
                     balance_date,
                     memo,
                     buildings ( jibun_address, road_address ),
-                    rooms ( room_name )
+                    rooms ( room_name ),
+                    deal_attendances ( user_id, status )
                 `)
                 .or(`user_id.eq.${window.currentUser.id},building_id.is.null`)
                 .order('balance_date', { ascending: false }) // Fetch recent & upcoming
