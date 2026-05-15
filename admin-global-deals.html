@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -192,7 +192,10 @@
                 <input type="date" id="balanceDate" style="margin-top: 4px;">
             </div>
         </div>
-        <input type="url" id="urlInput" placeholder="관련 URL (선택, https://...)">
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="url" id="urlInput" placeholder="관련 URL (예, https://...)" style="flex: 1; margin: 0;">
+            <input type="text" id="urlNameInput" placeholder="링크 이름 (예: 홈택스)" style="flex: 1; margin: 0;">
+        </div>
         <textarea id="memo" placeholder="상세 내용 메모"></textarea>
 
         <button id="saveBtn" class="btn-primary" onclick="saveGlobalDeal()">
@@ -252,6 +255,7 @@
             const balanceDate = document.getElementById('balanceDate').value;
             const startDate = document.getElementById('startDate').value;
             const urlInput = document.getElementById('urlInput').value;
+            const urlNameInput = document.getElementById('urlNameInput').value;
             let rawMemo = document.getElementById('memo').value;
             const status = document.getElementById('status');
 
@@ -276,7 +280,9 @@
             let finalMemo = rawMemo;
             let finalBalanceDate = balanceDate ? balanceDate : null;
 
-            if (urlInput) finalMemo = `[URL]${urlInput}[/URL]` + finalMemo;
+            if (urlInput) {
+                finalMemo = `[URL]${urlInput}${urlNameInput ? '|' + urlNameInput : ''}[/URL]` + finalMemo;
+            }
             if (startDate && !isMeeting) finalMemo = `[START]${startDate}[/START]` + finalMemo;
             
             if (isMeeting) {
@@ -328,6 +334,7 @@
             document.getElementById('balanceDate').value = '';
             document.getElementById('startDate').value = '';
             document.getElementById('urlInput').value = '';
+            document.getElementById('urlNameInput').value = '';
             document.getElementById('memo').value = '';
             
             loadDeals();
@@ -425,9 +432,20 @@
                 let linkUrl = null;
                 let startDt = null;
                 
+                let linkName = '🔗 관련 링크 열기';
                 if (rawMemo.includes('[URL]')) {
                     const m = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
-                    if (m) { linkUrl = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                    if (m) { 
+                        let urlData = m[1];
+                        if (urlData.includes('|')) {
+                            const parts = urlData.split('|');
+                            linkUrl = parts[0];
+                            linkName = '🔗 ' + parts[1];
+                        } else {
+                            linkUrl = urlData;
+                        }
+                        rawMemo = rawMemo.replace(m[0], ''); 
+                    }
                 }
                 if (rawMemo.includes('[START]')) {
                     const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
@@ -493,7 +511,7 @@
                     memoHtml = `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${rawMemo.trim()}</div>`;
                 }
                 if (linkUrl) {
-                    memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 6px; font-size: 13px; color: #3b82f6; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 8px; background: #eff6ff; border-radius: 6px;">🔗 관련 링크 열기</div>`;
+                    memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 6px; font-size: 13px; color: #3b82f6; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 8px; background: #eff6ff; border-radius: 6px;">${linkName}</div>`;
                 }
 
                 li.innerHTML = `

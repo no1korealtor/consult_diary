@@ -239,7 +239,10 @@
             <option value="미정">미정</option>
             <option value="불참">불참</option>
         </select>
-        <input type="url" id="meetingUrl" placeholder="관련 링크 (URL)" style="margin-bottom: 0;">
+        <div style="display: flex; gap: 8px;">
+            <input type="url" id="meetingUrl" placeholder="관련 링크 (URL)" style="margin-bottom: 0; flex: 1;">
+            <input type="text" id="meetingUrlName" placeholder="링크 이름 (예: 국세청 홈택스)" style="margin-bottom: 0; flex: 1;">
+        </div>
     </div>
 
     <div id="balanceDateContainer">
@@ -442,6 +445,7 @@
                 const mLoc = document.getElementById('meetingLocation').value;
                 const mAtt = document.getElementById('meetingAttendance').value;
                 const mUrl = document.getElementById('meetingUrl').value;
+                  const mUrlName = document.getElementById('meetingUrlName').value;
                 if(mTime) finalMemo += `[TIME]${mTime}[/TIME]`;
                 if(mLoc) finalMemo += `[LOC]${mLoc}[/LOC]`;
                 if(mAtt) finalMemo += `[ATT]${mAtt}[/ATT]`;
