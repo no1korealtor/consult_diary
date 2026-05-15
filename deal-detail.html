@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -334,7 +334,7 @@
             document.getElementById('meterInfo').style.display = 'block';
             document.getElementById('meterData').innerHTML = `
                 <div>⚡ 전기: ${electric}</div>
-                <div>💧 수도: ${water}</div>
+                <div style="display: flex; align-items: center; flex-wrap: wrap;">💧 수도: ${water} <span style="font-size: 13px; color: #9ca3af; margin-left: 8px;">(고객센터 <a href="tel:120" style="color: #3b82f6; text-decoration: none;">120</a> / <a href="tel:02-3146-3500" style="color: #3b82f6; text-decoration: none;">02-3146-3500</a>)</span></div>
                 <div style="display: flex; align-items: center; flex-wrap: wrap;">🔥 가스: ${gas} <span style="font-size: 13px; color: #9ca3af; margin-left: 8px;">(강북3고객센터 <a href="tel:1588-5788" style="color: #3b82f6; text-decoration: none;">1588-5788</a>)</span></div>
             `;
         }
