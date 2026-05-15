@@ -43,6 +43,26 @@
             
             <div id="resultMsg" style="margin-top: 1rem; text-align: center; display: none;"></div>
             
+            <div style="margin-top: 40px; border-top: 1px solid #334155; padding-top: 24px;">
+                <h3 style="font-size: 14px; color: #94a3b8; margin-bottom: 16px; text-align: left; padding-left: 4px;">나의 스크랩북</h3>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <button type="button" onclick="location.href='tips-archive.html?filter=saved'" style="width: 100%; padding: 16px; background: #1e293b; border: 1px solid #475569; color: #f8fafc; border-radius: 16px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 22px;">⭐</span>
+                            <span>내가 저장한 팁</span>
+                        </div>
+                        <span style="color: #94a3b8; font-size: 20px;">›</span>
+                    </button>
+                    <button type="button" onclick="location.href='tips-archive.html?filter=all'" style="width: 100%; padding: 16px; background: #0f172a; border: 1px solid #334155; color: #cbd5e1; border-radius: 16px; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.2s;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span style="font-size: 22px;">📚</span>
+                            <span>실무 팁 전체보기</span>
+                        </div>
+                        <span style="color: #64748b; font-size: 20px;">›</span>
+                    </button>
+                </div>
+            </div>
+            
         </div>
     </div>
 
@@ -121,7 +141,7 @@
         </a>
         <a href="profile-edit.html" class="nav-item active">
             <span class="nav-icon">👤</span>
-            <span>내 정보</span>
+            <span>마이페이지</span>
         </a>
     </nav>
 <script>

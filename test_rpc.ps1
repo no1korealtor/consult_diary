@@ -1,0 +1,1 @@
+ = 'https://yqolkvmrfvumpwlxjimp.supabase.co';  = 'sb_publishable_Y3waCN-Y0LA26BC80eUO-g_Njmuq1Hu'; Invoke-RestMethod -Uri "/rest/v1/rpc/get_user_stats" -Method Post -Headers @{ 'apikey' = ; 'Authorization' = "Bearer " }

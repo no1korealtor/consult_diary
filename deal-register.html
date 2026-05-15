@@ -901,7 +901,7 @@
         </a>
         <a href="profile-edit.html" class="nav-item">
             <span class="nav-icon">👤</span>
-            <span>내 정보</span>
+            <span>마이페이지</span>
         </a>
     </nav>
 <script>
@@ -986,6 +986,28 @@ async function loadTips() {
     } else {
         banner.style.display = "none"; // 표시할 팁이 없으면 배너 숨김
     }
+}
+
+async function saveCurrentTip(e) {
+    e.stopPropagation();
+    if(!practicalTips || practicalTips.length === 0 || !window.currentUser) return;
+    
+    const currentTip = practicalTips[0];
+    
+    // DB에 스크랩(저장) 처리 기록 (is_hidden = true, is_saved = true)
+    const { error } = await supabaseClient.from("user_tip_status").upsert({
+        user_id: window.currentUser.id,
+        tip_id: currentTip.id,
+        is_hidden: true,
+        is_saved: true
+    }, { onConflict: "user_id,tip_id" });
+    if(error) { alert("Error: " + error.message); console.error(error); return; }
+    
+    alert("이 팁이 마이페이지의 '내가 저장한 팁'에 보관되었습니다!");
+    
+    // 로컬 배열에서 제거 후 다시 렌더링
+    practicalTips.shift();
+    loadTips(); // UI 갱신
 }
 
 async function hideCurrentTip(e) {
