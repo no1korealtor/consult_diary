@@ -333,6 +333,8 @@
 
             const user = await requireAuth();
             if (user) {
+                const { data: usersData } = await window.authClient.from('users').select('id, name');
+                if (usersData) { window.allUsersMap = {}; usersData.forEach(u => window.allUsersMap[u.id] = u.name); }
                 if (!user.office_address || !user.phone) {
                     document.getElementById('inline-profile-warning').style.display = 'block';
                 }
