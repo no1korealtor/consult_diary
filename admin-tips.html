@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -118,7 +118,24 @@
             margin: 0;
             font-size: 13px;
         }
+    
+        .app-footer {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .app-footer strong {
+            color: #6b7280;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
     </style>
+    <link rel="stylesheet" href="nav.css">
 </head>
 
 <body>
@@ -148,6 +165,26 @@
     <ul class="tip-list" id="tipList"></ul>
 
     <script src="auth-helper.js"></script>
+    <footer class="app-footer">
+        <strong>신대림공인중개사사무소</strong>
+        사업자등록번호: 219-01-50737 | 전화번호: 010-9128-0586<br>
+        서울특별시 마포구 모래내로7길 52 (성산동)
+    </footer>
+
+    <nav class="bottom-nav">
+        <a href="deal-register.html" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span>일정</span>
+        </a>
+        <a href="contacts.html" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span>연락처</span>
+        </a>
+        <a href="profile-edit.html" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span>마이페이지</span>
+        </a>
+    </nav>
     <script>
         let allTipsData = [];
         let editingTipId = null;
