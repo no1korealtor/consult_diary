@@ -1,0 +1,251 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실무 팁 관리자</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+
+        body {
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 8px;
+            margin-top: 16px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+            background: #f8fafc;
+        }
+
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #4338ca;
+        }
+
+        .tip-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .tip-item {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tip-item h4 {
+            margin: 0 0 4px;
+            font-size: 16px;
+            color: #0f172a;
+        }
+
+        .tip-item p {
+            margin: 0;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #ef4444;
+            padding: 8px 12px;
+            width: auto;
+            margin: 0;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>💡 실무 팁 등록 관리</h2>
+
+    <div class="form-group">
+        <label>팁 제목</label>
+        <input type="text" id="title" placeholder="예: 2026년 개정 주택임대차보호법 요약">
+
+        <label>적용일 (또는 라벨)</label>
+        <input type="text" id="effectiveDate" placeholder="예: 2026.06.01 시행">
+
+        <label>핵심 요약 (각 줄바꿈으로 구분, 최대 3줄 권장)</label>
+        <textarea id="summary" placeholder="요약 내용 1&#10;요약 내용 2&#10;요약 내용 3" style="height: 80px;"></textarea>
+
+        <label>주의사항 (선택)</label>
+        <input type="text" id="warnings" placeholder="예: 기존 계약 소급 적용 주의">
+
+        <label>원문 내용 (HTML 사용 가능)</label>
+        <textarea id="fullText" placeholder="전체 세부 내용, 법령, 가이드 등 상세 정보 기재"></textarea>
+
+        <button onclick="saveTip()">등록하기</button>
+        <div id="status" style="text-align: center; margin-top: 12px; font-size: 14px; font-weight: bold; color: #4f46e5;"></div>
+    </div>
+
+    <h3 style="font-size: 18px; margin-bottom: 12px;">등록된 팁 (최신순)</h3>
+    <ul class="tip-list" id="tipList"></ul>
+
+    <script src="auth-helper.js"></script>
+    <script>
+        async function loadTips() {
+            const list = document.getElementById('tipList');
+            list.innerHTML = '<li>로딩 중...</li>';
+
+            const { data, error } = await supabaseClient
+                .from('practical_tips')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                list.innerHTML = '<li>목록을 불러오지 못했습니다. 테이블이 생성되었는지 확인해주세요.</li>';
+                return;
+            }
+
+            list.innerHTML = '';
+            
+            if (data.length === 0) {
+                list.innerHTML = '<li style="font-size: 14px; color: #64748b; text-align: center; padding: 20px;">등록된 팁이 없습니다.</li>';
+                return;
+            }
+
+            data.forEach(tip => {
+                const li = document.createElement('li');
+                li.className = 'tip-item';
+                li.innerHTML = `
+                    <div>
+                        <h4>${tip.title}</h4>
+                        <p>${tip.effective_date} ${tip.is_active ? '🟢 활성' : '🔴 비활성'}</p>
+                    </div>
+                    <button class="btn-delete" onclick="deleteTip('${tip.id}')">삭제</button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        async function saveTip() {
+            const title = document.getElementById('title').value;
+            const effectiveDate = document.getElementById('effectiveDate').value;
+            const summaryRaw = document.getElementById('summary').value;
+            const warnings = document.getElementById('warnings').value;
+            const fullText = document.getElementById('fullText').value;
+
+            if (!title) {
+                alert('제목을 입력해주세요.');
+                return;
+            }
+
+            const status = document.getElementById('status');
+            status.innerText = '저장 중...';
+
+            const summaryArray = summaryRaw.split('\n').filter(s => s.trim() !== '');
+
+            const payload = {
+                title: title,
+                effective_date: effectiveDate,
+                summary: summaryArray,
+                warnings: warnings,
+                full_text: fullText
+            };
+
+            const { error } = await supabaseClient
+                .from('practical_tips')
+                .insert([payload]);
+
+            if (error) {
+                status.innerText = '에러: ' + error.message;
+                return;
+            }
+
+            status.innerText = '저장 완료!';
+            setTimeout(() => status.innerText = '', 3000);
+
+            document.getElementById('title').value = '';
+            document.getElementById('effectiveDate').value = '';
+            document.getElementById('summary').value = '';
+            document.getElementById('warnings').value = '';
+            document.getElementById('fullText').value = '';
+
+            loadTips();
+        }
+
+        async function deleteTip(id) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+            
+            const { error } = await supabaseClient
+                .from('practical_tips')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                alert('삭제 실패: ' + error.message);
+                return;
+            }
+            
+            loadTips();
+        }
+
+        // 페이지 로드 시
+        window.addEventListener('load', async () => {
+            await requireAuth();
+            loadTips();
+        });
+    </script>
+</body>
+</html>
