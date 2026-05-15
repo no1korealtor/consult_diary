@@ -1,162 +1,4 @@
-<!DOCTYPE html>
-<html lang="ko">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>일정 등록</title>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <!-- Tom Select 라이브러리 (검색형 드롭다운) -->
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-    
-    <link rel="stylesheet" href="nav.css">
-
-    <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
-
-        body {
-            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-            background-color: #f3f4f6;
-            padding: 24px 16px;
-            max-width: 480px;
-            margin: auto;
-            color: #111827;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .main-content {
-            flex: 1;
-        }
-
-        h2 {
-            font-size: 24px;
-            font-weight: 800;
-            color: #111827;
-            letter-spacing: -0.5px;
-        }
-
-        h3 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 16px;
-            color: #374151;
-        }
-
-        .card {
-            background-color: #ffffff;
-            border: 1px solid rgba(0, 0, 0, 0.05);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-        }
-
-        select,
-        input,
-        textarea {
-            width: 100%;
-            padding: 14px 16px;
-            margin-bottom: 12px;
-            font-size: 15px;
-            box-sizing: border-box;
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
-
-        select:focus, input:focus, textarea:focus {
-            outline: none;
-            border-color: #3b82f6;
-            background-color: #ffffff;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        button {
-            width: 100%;
-            padding: 16px;
-            margin-bottom: 12px;
-            font-size: 16px;
-            font-weight: 600;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            font-family: inherit;
-            background-color: #f3f4f6;
-            color: #374151;
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        .btn-primary {
-            background-color: #3b82f6;
-            color: white;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-            margin-top: 8px;
-        }
-
-        .btn-primary:hover {
-            background-color: #2563eb;
-        }
-
-        #status {
-            margin-top: 16px;
-            font-size: 14px;
-            text-align: center;
-        }
-
-        .deal-item { background: #ffffff; border: 1px solid rgba(0,0,0,0.03); padding: 18px 20px; margin-bottom: 16px; border-radius: 24px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.02); }
-
-        .deal-item:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.04); }
-
-        .deal-item.global { background-color: #ffffff; border: 1px solid rgba(139, 92, 246, 0.15); box-shadow: 0 4px 16px rgba(139, 92, 246, 0.04); }
-
-        .deal-item.global:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(139, 92, 246, 0.08); }
-
-        .app-footer {
-            margin-top: 40px;
-            padding-top: 24px;
-            border-top: 1px solid #e5e7eb;
-            text-align: center;
-            color: #9ca3af;
-            font-size: 12px;
-            line-height: 1.6;
-        }
-
-        .app-footer strong {
-            color: #6b7280;
-            display: block;
-            margin-bottom: 4px;
-            font-size: 13px;
-        }
-    </style>
-
-    <link rel="icon" type="image/png" href="icon.png">
-    <link rel="apple-touch-icon" href="icon.png">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#3b82f6">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-</head>
-
-<body>
-
-<div class="main-content">
-    <div id="inline-profile-warning" style="display: none; background-color: #fef08a; color: #854d0e; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; font-size: 0.95rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onclick="location.href='profile-edit.html'">
-        ⚠️ 사무실 주소 정보가 입력되지 않았습니다. <span style="text-decoration: underline;">여기를 클릭하여 수정해주세요.</span>
-    </div>
-    <div style="margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start;">
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -328,20 +170,19 @@
 
 
     <!-- 실무팁 배너 -->
-    <div id="tipBanner" style="display: none; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 16px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-        <div onclick="openTipSheet()" style="cursor: pointer;">
-            <div style="font-size: 12px; color: #94a3b8; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                <span>💡 새로운 실무 팁</span>
-                <span id="tipBannerCategory" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; padding: 2px 6px; border-radius: 4px; font-size: 10px;">일반</span>
-            </div>
-            <div id="tipBannerTitle" style="font-size: 16px; font-weight: 800; color: #f8fafc; word-break: keep-all; line-height: 1.4;">-</div>
-        </div>
-        <div style="display: flex; gap: 8px; margin-top: 16px;">
-            <button type="button" onclick="saveCurrentTip(event)" style="flex: 1; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; border: none; background: #3b82f6; color: white; box-shadow: 0 2px 4px rgba(59,130,246,0.3);">⭐ 보관하기</button>
-            <button type="button" onclick="hideCurrentTip(event)" style="flex: 1; padding: 12px; border-radius: 10px; font-weight: 700; font-size: 14px; cursor: pointer; border: none; background: rgba(255,255,255,0.1); color: #cbd5e1;">✕ 이제 안보기</button>
-        </div>
+<div id="tipBanner" style="display: none; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 16px; padding: 16px 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative;">
+    <div style="position: absolute; top: 12px; right: 12px; display: flex; gap: 8px;">
+        <button onclick="hideCurrentTip(event)" style="background: rgba(255,255,255,0.1); border: none; color: #cbd5e1; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px;" title="이 팁 다시 보지 않기">✕</button>
     </div>
-    <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+    <div onclick="openTipSheet()" style="cursor: pointer; padding-right: 30px;">
+        <div style="font-size: 12px; color: #94a3b8; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+            <span>💡 맞춤 실무 팁</span>
+            <span id="tipBannerCategory" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; padding: 2px 6px; border-radius: 4px; font-size: 10px;">일반</span>
+        </div>
+        <div id="tipBannerTitle" style="font-size: 15px; font-weight: 800; color: #f8fafc; word-break: keep-all; line-height: 1.4;">-</div>
+    </div>
+</div>
+<h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <span>내 일정</span>
         <span id="personalDealsCount" style="font-size: 13px; color: #6b7280; font-weight: normal; background: #e5e7eb; padding: 2px 8px; border-radius: 10px; display: none;"></span>
     </h3>
@@ -698,6 +539,555 @@
             list.innerHTML = '';
             
             let allDeals = [];
+        window.allUsersMap = window.allUsersMap || {};
+        window.allUsersMap = {};
+            
+            if (data) {
+                allDeals = data;
+            }
+
+            const sortByDate = (a, b) => {
+                if (!a.balance_date) return 1;
+                if (!b.balance_date) return -1;
+                const dateA = new Date(a.balance_date);
+                const dateB = new Date(b.balance_date);
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                
+                const isPastA = dateA < today;
+                const isPastB = dateB < today;
+
+                if (isPastA && !isPastB) return 1;
+                if (!isPastA && isPastB) return -1;
+                
+                if (!isPastA && !isPastB) {
+                    return dateA - dateB;
+                } else {
+                    return dateB - dateA;
+                }
+            };
+
+            allDeals.sort(sortByDate);
+
+            // 공통 렌더링 함수
+            const createDealListItem = (deal, isGlobal) => {
+                let rawMemo = deal.memo || '';
+                let linkUrl = null;
+                let startDt = null;
+                
+                let linkName = '관련 링크';
+                if (rawMemo.includes('[URL]')) {
+                    const m = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
+                    if (m) { 
+                        let urlData = m[1];
+                        if (urlData.includes('|')) {
+                            const parts = urlData.split('|');
+                            linkUrl = parts[0];
+                            linkName = parts[1];
+                        } else {
+                            linkUrl = urlData;
+                        }
+                        rawMemo = rawMemo.replace(m[0], ''); 
+                    }
+                }
+                if (rawMemo.includes('[START]')) {
+                    const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
+                    if (m) { startDt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                
+                let mTime = null, mLoc = null, mAtt = null;
+                if (rawMemo.includes('[TIME]')) {
+                    const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
+                    if (m) { mTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                if (rawMemo.includes('[LOC]')) {
+                    const m = rawMemo.match(/\[LOC\](.*?)\[\/LOC\]/);
+                    if (m) { mLoc = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                if (rawMemo.includes('[ATT]')) {
+                    const m = rawMemo.match(/\[ATT\](.*?)\[\/ATT\]/);
+                    if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+
+                let monthStr = '미정';
+                let dateStr = '-';
+                let dayStr = '';
+
+                if (deal.balance_date) {
+                    const d = new Date(deal.balance_date);
+                    if (!isNaN(d.getTime())) {
+                        monthStr = (d.getMonth() + 1) + '월';
+                        dateStr = d.getDate().toString();
+                        const days = ['일', '월', '화', '수', '목', '금', '토'];
+                        dayStr = days[d.getDay()] + '요일';
+                    }
+                }
+
+                let rangeHtml = '';
+                if (startDt && deal.balance_date) {
+                    rangeHtml = `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px; font-weight: 600;">🗓️ 시작일: ${startDt}</div>`;
+                } else if (startDt) {
+                    rangeHtml = `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px; font-weight: 600;">🗓️ 시작일: ${startDt}</div>`;
+                }
+
+                let locationHtml = '';
+                let typeBadgeHtml = '';
+                
+                const isMeetingTag = mTime || mLoc || mAtt;
+                if (deal.contract_type === '모임' || (isGlobal && isMeetingTag)) {
+                    const timeStr = mTime ? `${mTime}` : '';
+                    let locStr = '';
+                    if (mLoc) {
+                        locStr = `<span onclick="window.open('https://map.kakao.com/link/search/${encodeURIComponent(mLoc)}', '_blank'); event.stopPropagation();" style="color: #475569; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 2px;">📍 ${mLoc}</span>`;
+                    }
+                    
+                    let details = '';
+                    if (timeStr || locStr) {
+                        details = `<div style="font-size: 13px; margin-top: 8px; display: inline-flex; gap: 8px; align-items: center; background: #f8fafc; padding: 6px 12px; border-radius: 8px; border: 1px solid #f1f5f9;">`;
+                        if (timeStr) details += `<span style="color: #1e293b; font-weight: 800;">🕒 ${timeStr}</span>`;
+                        if (timeStr && locStr) details += `<span style="color: #cbd5e1;">|</span>`;
+                        if (locStr) details += `${locStr}`;
+                        details += `</div>`;
+                    }
+
+                    let myAtt = null;
+                    let attCount = 0;
+                    let noCount = 0;
+                    let attNames = [];
+                    let noNames = [];
+                    if (deal.deal_attendances) {
+                        const attendances = deal.deal_attendances;
+                        const myRec = attendances.find(a => a.user_id === window.currentUser.id);
+                        if (myRec) myAtt = myRec.status;
+                        
+                        attendances.forEach(a => {
+                            const name = window.allUsersMap[a.user_id] || ('이름없음 (' + (Object.keys(window.allUsersMap).length) + '명 매핑됨)');
+                            if (a.status === '참석') {
+                                attCount++;
+                                attNames.push(name);
+                            } else if (a.status === '불참') {
+                                noCount++;
+                                noNames.push(name);
+                            }
+                        });
+                    }
+
+                    if (isGlobal && myAtt) mAtt = myAtt;
+                    
+                    if (isGlobal) {
+                        const attStr = attNames.length > 0 ? `<div style="font-size: 12px; color: #4f46e5; margin-top: 12px; padding: 0 4px; font-weight: 600;">✅ 참석자: ${attNames.join(', ')}</div>` : '';
+                        const noStr = noNames.length > 0 ? `<div style="font-size: 12px; color: #64748b; margin-top: 4px; padding: 0 4px;">❌ 불참자: ${noNames.join(', ')}</div>` : '';
+                        
+                        details += `
+                        <div style="display: flex; gap: 10px; margin-top: 16px;" onclick="event.stopPropagation()">
+                            <button type="button" onclick="setAttendance('${deal.id}', '참석')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '참석' ? '#4f46e5' : '#f1f5f9'}; color: ${myAtt === '참석' ? 'white' : '#64748b'};">👍 참석 ${attCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${attCount}</span>` : ''}</button>
+                            <button type="button" onclick="setAttendance('${deal.id}', '불참')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '불참' ? '#e2e8f0' : '#f8fafc'}; color: ${myAtt === '불참' ? '#475569' : '#94a3b8'};">✋ 불참 ${noCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${noCount}</span>` : ''}</button>
+                        </div>
+                        ${attStr}
+                        ${noStr}
+                        `;
+                    }
+
+                    let attBadge = '';
+                    if(mAtt === '참석') attBadge = `<span style="color:#4f46e5; font-size:13px; font-weight:800; margin-left: 6px;">[참석]</span>`;
+                    else if(mAtt === '불참') attBadge = `<span style="color:#64748b; font-size:13px; font-weight:800; margin-left: 6px;">[불참]</span>`;
+                    else if(mAtt === '미정') attBadge = `<span style="color:#94a3b8; font-size:13px; font-weight:800; margin-left: 6px;">[미정]</span>`;
+
+                    const meetName = rawMemo.trim() || '이름 없음';
+                    locationHtml = `<div style="color: #0f172a; font-size: 18px; font-weight: 900; line-height: 1.4; margin-bottom: 2px; letter-spacing: -0.5px;">${meetName}${attBadge}</div>${details}`;
+                    typeBadgeHtml = `<span style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">공지</span>`;
+                    rawMemo = ''; // Hide memo
+                } else if (isGlobal) {
+                    locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📢 ${deal.contract_type}</div>`;
+                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">전체 공지</span>`;
+                } else {
+                    let bName = deal.buildings.road_address;
+                    if (deal.buildings.jibun_address) {
+                        bName += ' (' + deal.buildings.jibun_address + ')';
+                    }
+                    const rName = deal.rooms ? deal.rooms.room_name : '';
+                    locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📍 ${bName} <span style="color: #3b82f6;">${rName}</span></div>`;
+                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">${deal.contract_type}</span>`;
+                }
+                
+                const dDayText = getDDay(deal.balance_date);
+                let dDayHtml = '';
+                let isUrgent = false;
+                if (dDayText) {
+                    let badgeBg = '#f3f4f6', badgeColor = '#9ca3af';
+                    if (dDayText === 'D-Day') { 
+                        badgeBg = '#fee2e2'; badgeColor = '#ef4444'; 
+                        isUrgent = true;
+                    } else if (dDayText.startsWith('D-')) { 
+                        const daysLeft = parseInt(dDayText.substring(2));
+                        if (daysLeft <= 3) {
+                            badgeBg = '#ffedd5'; badgeColor = '#ea580c'; 
+                            isUrgent = true;
+                        } else if (daysLeft <= 7) {
+                            badgeBg = '#dbeafe'; badgeColor = '#2563eb'; 
+                        }
+                    }
+                    dDayHtml = `<span style="background: ${badgeBg}; color: ${badgeColor}; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">${dDayText}</span>`;
+                }
+
+                const li = document.createElement('li');
+                li.className = 'deal-item';
+                if (isGlobal) {
+                    li.classList.add('global');
+                    li.style.cursor = 'default';
+                } else {
+                    li.style.cursor = 'pointer';
+                    li.onclick = () => location.href = 'deal-detail.html?id=' + deal.id;
+                    if (isUrgent) {
+                        li.style.borderColor = '#fda4af';
+                        li.style.backgroundColor = '#fff1f2';
+                        li.style.boxShadow = '0 4px 12px rgba(244, 63, 94, 0.1)';
+                    }
+                }
+                
+                let memoHtml = '';
+                if (rawMemo.trim()) {
+                    memoHtml = `<div style="color: #6b7280; font-size: 13px; margin-top: 6px; display: flex; gap: 6px; align-items: flex-start;"><span style="font-size: 14px; line-height: 1.4;">📝</span><span style="flex:1; line-height: 1.4; word-break: keep-all;">${rawMemo.trim()}</span></div>`;
+                }
+                if (linkUrl) {
+                    memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 12px; font-size: 13px; color: #475569; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 12px; background: #f1f5f9; border-radius: 8px; transition: 0.2s;">🔗 ${linkName}</div>`;
+                }
+
+
+                li.innerHTML = `
+                    <div style="display: flex; gap: 16px; align-items: stretch;">
+                        <div style="flex-shrink: 0; width: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 0;">
+                            <span style="font-size: 12px; font-weight: 800; color: #ef4444; margin-bottom: 2px;">${monthStr}</span>
+                            <span style="font-size: 22px; font-weight: 900; color: #111827; line-height: 1; letter-spacing: -1px;">${dateStr}</span>
+                            <span style="font-size: 11px; font-weight: 600; color: #6b7280; margin-top: 4px;">${dayStr}</span>
+                        </div>
+                        <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0;">
+                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap;">
+                                ${typeBadgeHtml}
+                                ${dDayHtml}
+                            </div>
+                            ${rangeHtml}
+                            ${locationHtml}
+                            ${memoHtml}
+                        </div>
+                    </div>
+                `;
+                return li;
+            };
+
+            // 통합 일정 렌더링
+            if (allDeals.length === 0) {
+                list.innerHTML = '<li>등록된 일정이 없습니다.</li>';
+                personalCount.style.display = 'none';
+                personalMoreBtn.style.display = 'none';
+            } else {
+                personalCount.style.display = 'inline-block';
+                personalCount.innerText = `${allDeals.length}건`;
+                
+                let currentMonthLabel = '';
+                let farFutureCount = 0;
+                let visibleCount = 0;
+
+                allDeals.forEach((deal) => {
+                    let dealMonth = '날짜 미정';
+                    let isPast = false;
+                    let mNum = '';
+                    let isFarFuture = false;
+
+                    if (deal.balance_date) {
+                        const d = new Date(deal.balance_date);
+                        if (!isNaN(d.getTime())) {
+                            const today = new Date();
+                            today.setHours(0,0,0,0);
+                            const diffDays = Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                            
+                            if (diffDays > 45) {
+                                isFarFuture = true;
+                            } else if (d < today) {
+                                dealMonth = '지난 일정';
+                                isPast = true;
+                            } else {
+                                dealMonth = `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
+                                mNum = d.getMonth() + 1;
+                            }
+                        }
+                    }
+
+                    if (dealMonth !== currentMonthLabel) {
+                        currentMonthLabel = dealMonth;
+                        const dividerLi = document.createElement('li');
+                        
+                        if (isPast || dealMonth === '날짜 미정') {
+                            dividerLi.style.cssText = "margin: 32px 0 12px 0; display: flex; align-items: center;";
+                            dividerLi.innerHTML = `<span style="color: #9ca3af; font-size: 14px; font-weight: 700;">${dealMonth}</span><div style="flex: 1; height: 1px; background: #e5e7eb; margin-left: 12px;"></div>`;
+                        } else {
+                            dividerLi.style.cssText = "margin: 40px 0 16px 0; display: flex; align-items: baseline; border-bottom: 2px solid #111827; padding-bottom: 4px;";
+                            dividerLi.innerHTML = `<span style="font-size: 44px; font-weight: 900; color: #111827; letter-spacing: -2px; line-height: 1;">${mNum}</span><span style="font-size: 18px; font-weight: 800; color: #111827; margin-left: 6px;">월</span>`;
+                        }
+
+                        dividerLi.dataset.originalDisplay = 'flex';
+
+                        if (isFarFuture) {
+                            dividerLi.style.display = 'none';
+                            dividerLi.classList.add('far-future-item');
+                        } else if (visibleCount >= 5) {
+                            dividerLi.style.display = 'none';
+                            dividerLi.classList.add('personal-hidden-item');
+                        }
+                        list.appendChild(dividerLi);
+                    }
+
+                    const li = createDealListItem(deal, !deal.buildings && !deal.building_id);
+                    li.dataset.originalDisplay = 'block';
+
+                    if (isFarFuture) {
+                        li.style.display = 'none';
+                        li.classList.add('far-future-item');
+                        farFutureCount++;
+                    } else {
+                        if (visibleCount >= 5) {
+                            li.style.display = 'none';
+                            li.classList.add('personal-hidden-item');
+                        }
+                        visibleCount++;
+                    }
+                    list.appendChild(li);
+                });
+
+                if (farFutureCount > 0) {
+                    const noticeLi = document.createElement('li');
+                    noticeLi.dataset.originalDisplay = 'block';
+                    noticeLi.style.cssText = "margin-top: 24px; padding: 16px; text-align: center; background: #f8fafc; border-radius: 12px; color: #6b7280; font-size: 14px; font-weight: 600; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s;";
+                    noticeLi.innerHTML = `🗓️ 45일 이후 예정된 일정 <strong>${farFutureCount}건</strong> 펼쳐보기 ▼`;
+                    
+                    noticeLi.onclick = () => {
+                        const farItems = document.querySelectorAll('.far-future-item');
+                        farItems.forEach(item => {
+                            item.style.display = item.dataset.originalDisplay || '';
+                        });
+                        noticeLi.style.display = 'none';
+                    };
+                    
+                    if (visibleCount >= 5) {
+                        noticeLi.style.display = 'none';
+                        noticeLi.classList.add('personal-hidden-item');
+                    }
+                    list.appendChild(noticeLi);
+                }
+                
+                if (visibleCount > 5 || (visibleCount === 5 && farFutureCount > 0)) {
+                    personalMoreBtn.style.display = 'block';
+                    personalMoreBtn.onclick = function() {
+                        const isExpanded = this.innerText.includes('접기');
+                        const hiddenItems = document.querySelectorAll('.personal-hidden-item');
+                        if (isExpanded) {
+                            hiddenItems.forEach(item => item.style.display = 'none');
+                            this.innerText = `+ 더보기 ▼`;
+                        } else {
+                            hiddenItems.forEach(item => {
+                                item.style.display = item.dataset.originalDisplay || '';
+                            });
+                            this.innerText = '접기 ▲';
+                        }
+                    };
+                    personalMoreBtn.innerText = `+ 더보기 ▼`;
+                } else {
+                    personalMoreBtn.style.display = 'none';
+                }
+            }
+        }
+
+        document
+            .getElementById('buildingSelect')
+            .addEventListener('change', loadRooms);
+
+        checkAuthAndLoad();
+
+    </script>
+
+    <footer class="app-footer">
+        <strong>신대림공인중개사사무소</strong>
+        사업자등록번호: 219-01-50737 | 전화번호: 010-9128-0586<br>
+        서울특별시 마포구 모래내로7길 52 (성산동)
+    </footer>
+
+    <nav class="bottom-nav">
+        <a href="deal-register.html" class="nav-item active">
+            <span class="nav-icon">🏠</span>
+            <span>일정</span>
+        </a>
+        <a href="contacts.html" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span>연락처</span>
+        </a>
+        <a href="profile-edit.html" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span>마이페이지</span>
+        </a>
+    </nav>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js');
+    });
+  }
+</script>
+
+
+<!-- 실무팁 바텀시트 배경 -->
+<div id="tipBackdrop" onclick="closeTipSheet()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; opacity: 0; transition: opacity 0.3s;"></div>
+
+<!-- 실무팁 바텀시트 -->
+<div id="tipSheet" style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 24px 24px 0 0; z-index: 1001; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; max-height: 85vh; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
+    <!-- 드래그 핸들 -->
+    <div style="padding: 16px; display: flex; justify-content: center; align-items: center; cursor: pointer;" onclick="closeTipSheet()">
+        <div style="width: 40px; height: 5px; background: #e2e8f0; border-radius: 5px;"></div>
+    </div>
+    
+    <div style="padding: 0 24px 20px; flex: 1; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: #111827;">💡 현장 실무 팁</h2>
+            <span style="font-size: 13px; color: #6b7280; font-weight: 600;">빠른 판단 가이드</span>
+        </div>
+        
+        <div id="tipContainer" style="display: flex; flex-direction: column; gap: 16px; padding-bottom: 40px;">
+            <!-- Tips will be injected here -->
+        </div>
+    </div>
+</div>
+
+<script>
+let practicalTips = [
+    {
+        id: 1,
+        title: "2026년 개정 주택임대차보호법 요약",
+        summary: ["계약갱신청구권 행사 기간이 1개월 전까지로 단축됨", "묵시적 갱신 시 임차인의 해지 통고 효력이 2개월로 단축", "임대인의 실거주 목적 갱신 거절 시 증빙 서류 제출 의무화"],
+        effective_date: "2026.06.01 적용",
+        warnings: "기존 계약에도 소급 적용될 수 있으므로 특약 작성 주의",
+        full_text: "<b>제6조(계약의 갱신)</b><br>임대인이 임대차기간이 끝나기 6개월 전부터 1개월 전까지의 기간에 임차인에게 갱신거절의 통지를 하지 아니하거나 계약조건을 변경하지 아니하면 그 기간이 끝난 때에 전 임대차와 동일한 조건으로 다시 임대차한 것으로 본다.<br><br>현장 적용 팁: 기존 2개월 전에서 1개월 전으로 단축되었으므로, 임대인에게 만기 1개월 전까지 반드시 의사를 물어봐야 중개 사고를 예방할 수 있습니다."
+    }
+];
+
+async function loadTips() {
+    try {
+        if(!window.currentUser) return;
+        
+        // 1. 활성화된 팁 조회
+        const { data: tips, error } = await supabaseClient
+            .from("practical_tips")
+            .select("*")
+            .eq("is_active", true)
+            .order("created_at", { ascending: false });
+            
+        // 2. 현재 유저가 숨김 처리한 팁 ID 조회
+        const { data: hidden } = await supabaseClient
+            .from("user_tip_status")
+            .select("tip_id")
+            .eq("user_id", window.currentUser.id)
+            .eq("is_hidden", true);
+            
+        if (!error && tips) {
+            const hiddenIds = new Set((hidden || []).map(h => h.tip_id));
+            practicalTips = tips.filter(t => !hiddenIds.has(t.id)); // 안 본 것만 필터링
+        }
+    } catch(e) {
+        console.log("DB load failed.");
+    }
+    
+    const banner = document.getElementById("tipBanner");
+    if(practicalTips && practicalTips.length > 0) {
+        banner.style.display = "block";
+        document.getElementById("tipBannerTitle").innerText = practicalTips[0].title;
+        if(practicalTips[0].category) {
+            document.getElementById("tipBannerCategory").innerText = practicalTips[0].category;
+            document.getElementById("tipBannerCategory").style.display = "inline-block";
+        } else {
+            document.getElementById("tipBannerCategory").style.display = "none";
+        }
+    } else {
+        banner.style.display = "none"; // 표시할 팁이 없으면 배너 숨김
+    }
+}
+
+async function saveCurrentTip(e) {
+    e.stopPropagation();
+    if(!practicalTips || practicalTips.length === 0 || !window.currentUser) return;
+    
+    const currentTip = practicalTips[0];
+    
+    // DB에 스크랩(저장) 처리 기록 (is_hidden = true, is_saved = true)
+    const { error } = await supabaseClient.from("user_tip_status").upsert({
+        user_id: window.currentUser.id,
+        tip_id: currentTip.id,
+        is_hidden: true,
+        is_saved: true
+    }, { onConflict: "user_id,tip_id" });
+    if(error) { alert("Error: " + error.message); console.error(error); return; }
+    
+    alert("이 팁이 마이페이지의 '내가 저장한 팁'에 보관되었습니다!");
+    
+    // 로컬 배열에서 제거 후 다시 렌더링
+    practicalTips.shift();
+    loadTips(); // UI 갱신
+}
+
+async function hideCurrentTip(e) {
+    e.stopPropagation();
+    if(!practicalTips || practicalTips.length === 0 || !window.currentUser) return;
+    
+    const currentTip = practicalTips[0];
+    if(!confirm("이 팁을 다시 보지 않으시겠습니까?")) return;
+    
+    // DB에 숨김 처리 기록
+    const { error } = await supabaseClient.from("user_tip_status").upsert({
+        user_id: window.currentUser.id,
+        tip_id: currentTip.id,
+        is_hidden: true
+    }, { onConflict: "user_id,tip_id" });
+    if(error) { alert("Error: " + error.message); console.error(error); }
+    
+    // 로컬 배열에서 제거 후 다시 렌더링
+    practicalTips.shift();
+    loadTips(); // UI 갱신
+}
+loadTips();
+
+
+
+function openTipSheet() {
+    const backdrop = document.getElementById('tipBackdrop');
+    const sheet = document.getElementById('tipSheet');
+    
+    renderTips();
+    
+    backdrop.style.display = 'block';
+    // Trigger reflow
+    void backdrop.offsetWidth;
+    
+    backdrop.style.opacity = '1';
+    sheet.style.transform = 'translateY(0)';
+}
+
+function closeTipSheet() {
+    const backdrop = document.getElementById('tipBackdrop');
+    const sheet = document.getElementById('tipSheet');
+    
+    backdrop.style.opacity = '0';
+    sheet.style.transform = 'translateY(100%)';
+    
+    setTimeout(() => {
+        backdrop.style.display = 'none';
+    }, 300);
+}
+
+function renderTips() {
+    const container = document.getElementById('tipContainer');
+    container.innerHTML = '';
+    
+    practicalTips.forEach(tip => {
+        const card = document.createElement('div');
+        card.style.cssText = "background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);";
+        
         const sumArr = Array.isArray(tip.summary) ? tip.summary : (typeof tip.summary === "string" ? JSON.parse(tip.summary || "[]") : []); const sumHtml = sumArr.map(s => `<li style="margin-bottom:8px; color:#334155; line-height:1.4; display:flex; gap:8px;"><span style="color:#3b82f6;">✓</span><span>${s}</span></li>`).join('');
         
         card.innerHTML = `
