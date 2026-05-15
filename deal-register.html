@@ -906,6 +906,145 @@
     });
   }
 </script>
-</body>
+<!-- 실무팁 FAB -->
+<button id="tipFab" onclick="openTipSheet()" style="position: fixed; bottom: 85px; right: 20px; z-index: 90; background: #111827; color: white; border: none; border-radius: 50px; padding: 12px 20px; font-weight: 700; font-size: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 6px; cursor: pointer;">
+    💡 실무 팁
+</button>
 
+<!-- 실무팁 바텀시트 배경 -->
+<div id="tipBackdrop" onclick="closeTipSheet()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; opacity: 0; transition: opacity 0.3s;"></div>
+
+<!-- 실무팁 바텀시트 -->
+<div id="tipSheet" style="position: fixed; bottom: 0; left: 0; right: 0; background: white; border-radius: 24px 24px 0 0; z-index: 1001; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; max-height: 85vh; box-shadow: 0 -4px 20px rgba(0,0,0,0.1);">
+    <!-- 드래그 핸들 -->
+    <div style="padding: 16px; display: flex; justify-content: center; align-items: center; cursor: pointer;" onclick="closeTipSheet()">
+        <div style="width: 40px; height: 5px; background: #e2e8f0; border-radius: 5px;"></div>
+    </div>
+    
+    <div style="padding: 0 24px 20px; flex: 1; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: #111827;">💡 현장 실무 팁</h2>
+            <span style="font-size: 13px; color: #6b7280; font-weight: 600;">빠른 판단 가이드</span>
+        </div>
+        
+        <div id="tipContainer" style="display: flex; flex-direction: column; gap: 16px; padding-bottom: 40px;">
+            <!-- Tips will be injected here -->
+        </div>
+    </div>
+</div>
+
+<script>
+const practicalTips = [
+    {
+        id: 1,
+        title: "2026년 개정 주택임대차보호법 요약",
+        summary: [
+            "계약갱신청구권 행사 기간이 1개월 전까지로 단축됨",
+            "묵시적 갱신 시 임차인의 해지 통고 효력이 2개월로 단축",
+            "임대인의 실거주 목적 갱신 거절 시 증빙 서류 제출 의무화"
+        ],
+        effectiveDate: "2026.06.01 적용",
+        warnings: "기존 계약에도 소급 적용될 수 있으므로 특약 작성 주의",
+        fullText: "<b>제6조(계약의 갱신)</b><br>임대인이 임대차기간이 끝나기 6개월 전부터 1개월 전까지의 기간에 임차인에게 갱신거절의 통지를 하지 아니하거나 계약조건을 변경하지 아니하면 그 기간이 끝난 때에 전 임대차와 동일한 조건으로 다시 임대차한 것으로 본다.<br><br>현장 적용 팁: 기존 2개월 전에서 1개월 전으로 단축되었으므로, 임대인에게 만기 1개월 전까지 반드시 의사를 물어봐야 중개 사고를 예방할 수 있습니다."
+    },
+    {
+        id: 2,
+        title: "외국인 임대차 계약 시 주의사항",
+        summary: [
+            "외국인등록증 및 여권 진위 여부 하이코리아에서 확인",
+            "체류 기간 내에서만 계약 기간 설정 권장",
+            "체류지 변경 신고를 해야 대항력 발생"
+        ],
+        effectiveDate: "상시 적용",
+        warnings: "불법체류자와 계약 시 중개사에게 책임 전가 우려",
+        fullText: "<b>출입국관리법 제36조(체류지 변경신고)</b><br>외국인이 체류지를 변경하였을 때에는 전입한 날부터 14일 이내에 시장·군수·구청장에게 전입신고를 하여야 한다.<br><br>현장 적용 팁: 외국인은 확정일자 외에도 '체류지 변경 신고'가 주민등록 전입신고를 대신하므로, 잔금일 당일 출입국관리사무소 또는 관할 구청에 신고하도록 안내해야 합니다."
+    },
+    {
+        id: 3,
+        title: "전세사기 예방 특약 필수 기재사항",
+        summary: [
+            "잔금 익일까지 제한물권 설정 금지 특약 필수",
+            "임대인 국세/지방세 완납 증명서 교부 의무화 명시",
+            "전세보증보험 가입 불가 시 계약 해제 조항 추가"
+        ],
+        effectiveDate: "상시 적용",
+        warnings: "표준 특약 누락 시 중개사고 배상 책임 발생 가능",
+        fullText: "<b>권장 특약 문구:</b><br>1. 임대인은 잔금일 익일 자정까지 현재의 등기부등본 상태를 유지해야 하며, 이를 위반하여 근저당 등 제한물권을 설정할 경우 본 계약은 무효로 하고 임대인은 계약금의 배액을 배상한다.<br>2. 임대인은 계약 체결 시 국세 및 지방세 완납증명서를 임차인에게 제시하여야 한다.<br>3. 임차인의 전세보증금반환보증 가입이 임대인의 사유로 불가할 경우 본 계약은 해제되며 받은 계약금은 즉시 반환한다."
+    }
+];
+
+function openTipSheet() {
+    const backdrop = document.getElementById('tipBackdrop');
+    const sheet = document.getElementById('tipSheet');
+    
+    renderTips();
+    
+    backdrop.style.display = 'block';
+    // Trigger reflow
+    void backdrop.offsetWidth;
+    
+    backdrop.style.opacity = '1';
+    sheet.style.transform = 'translateY(0)';
+}
+
+function closeTipSheet() {
+    const backdrop = document.getElementById('tipBackdrop');
+    const sheet = document.getElementById('tipSheet');
+    
+    backdrop.style.opacity = '0';
+    sheet.style.transform = 'translateY(100%)';
+    
+    setTimeout(() => {
+        backdrop.style.display = 'none';
+    }, 300);
+}
+
+function renderTips() {
+    const container = document.getElementById('tipContainer');
+    container.innerHTML = '';
+    
+    practicalTips.forEach(tip => {
+        const card = document.createElement('div');
+        card.style.cssText = "background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);";
+        
+        const sumHtml = tip.summary.map(s => `<li style="margin-bottom:8px; color:#334155; line-height:1.4; display:flex; gap:8px;"><span style="color:#3b82f6;">✓</span><span>${s}</span></li>`).join('');
+        
+        card.innerHTML = `
+            <h3 style="margin: 0 0 16px; font-size: 16px; font-weight: 800; color: #111827;">${tip.title}</h3>
+            
+            <ul style="list-style: none; padding: 0; margin: 0 0 16px; font-size: 14px; font-weight: 700;">
+                ${sumHtml}
+            </ul>
+            
+            <div style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+                <span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800;">📅 ${tip.effectiveDate}</span>
+                <span style="background: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800;">⚠️ ${tip.warnings}</span>
+            </div>
+            
+            <div id="fullText_${tip.id}" style="display: none; margin-top: 16px; padding-top: 16px; border-top: 1px solid #cbd5e1; font-size: 14px; color: #475569; line-height: 1.6; word-break: keep-all;">
+                ${tip.fullText}
+            </div>
+            
+            <button onclick="toggleTipText(${tip.id}, this)" style="width: 100%; padding: 12px; background: white; border: 1px solid #cbd5e1; border-radius: 10px; font-weight: 700; color: #475569; font-size: 14px; cursor: pointer; transition: 0.2s;">
+                📄 원문 보기
+            </button>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function toggleTipText(id, btn) {
+    const fullTextDiv = document.getElementById('fullText_' + id);
+    if (fullTextDiv.style.display === 'none') {
+        fullTextDiv.style.display = 'block';
+        btn.innerText = '접기';
+        btn.style.background = '#f1f5f9';
+    } else {
+        fullTextDiv.style.display = 'none';
+        btn.innerText = '📄 원문 보기';
+        btn.style.background = 'white';
+    }
+}
+</script>
+</body>
 </html>
