@@ -601,7 +601,8 @@
                 let locationHtml = '';
                 let typeBadgeHtml = '';
                 
-                if (deal.contract_type === '모임') {
+                const isMeetingTag = mTime || mLoc || mAtt;
+                if (deal.contract_type === '모임' || (isGlobal && isMeetingTag)) {
                     const timeStr = mTime ? `${mTime}` : '';
                     let locStr = '';
                     if (mLoc) {
