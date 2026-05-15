@@ -135,6 +135,7 @@
             <button id="adminBtn" type="button" onclick="location.href='admin-global-deals.html'" style="display: none; width: auto; padding: 6px 10px; font-size: 13px; background: #1f2937; border: none; color: white; border-radius: 8px; cursor: pointer; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-items: center; gap: 4px;">
                 👑 공지등록
             </button>
+            <button id="adminTipsBtn" type="button" onclick="location.href='admin-tips.html'" style="display: none; width: auto; padding: 6px 10px; font-size: 13px; background: #10b981; border: none; color: white; border-radius: 8px; cursor: pointer; margin-bottom: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); align-items: center; gap: 4px;">💡 팁관리</button>
             <button type="button" onclick="logout()" style="background: white; border: 1px solid #e5e7eb; font-size: 13px; cursor: pointer; padding: 6px 10px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); color: #4b5563; display: flex; align-items: center; gap: 4px; margin: 0; width: auto;" title="로그아웃">
                 🚪 로그아웃
             </button>
@@ -210,6 +211,7 @@
             if (user) {
                 if (user.role === 'admin') {
                     document.getElementById('adminBtn').style.display = 'flex';
+                    document.getElementById('adminTipsBtn').style.display = 'flex';
                 }
                 // allow both consultant and admin
                 loadUsers();
