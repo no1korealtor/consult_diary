@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -12,68 +12,79 @@
 
         body {
             font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-            background-color: #f8fafc;
+            background-color: #f3f4f6;
             margin: 0;
-            padding: 20px;
+            padding: 24px 16px;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         h2 {
             font-size: 22px;
             font-weight: 800;
-            color: #1e293b;
-            margin-bottom: 20px;
+            color: #0f172a;
         }
 
         .form-group {
-            background: white;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.03);
+            margin-bottom: 32px;
         }
 
         label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
-            color: #475569;
+            color: #64748b;
             margin-bottom: 8px;
             margin-top: 16px;
         }
 
-        input[type="text"],
-        textarea {
+        input[type="text"], select, textarea {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 14px;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
             font-family: inherit;
             box-sizing: border-box;
-            background: #f8fafc;
+            background: #f1f5f9;
+            color: #1e293b;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus, textarea:focus {
+            outline: none;
+            background: #e2e8f0;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
         }
 
         textarea {
-            height: 120px;
+            height: 100px;
             resize: vertical;
         }
 
-        button {
+        .btn-primary {
             width: 100%;
-            padding: 14px;
-            background: #4f46e5;
+            padding: 16px;
+            background: #3b82f6;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 16px;
             font-size: 16px;
-            font-weight: 700;
+            font-weight: 800;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 24px;
             transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
         }
 
-        button:hover {
-            background: #4338ca;
+        .btn-primary:active {
+            transform: scale(0.98);
         }
 
         .tip-list {
@@ -84,19 +95,13 @@
 
         .tip-item {
             background: white;
-            padding: 16px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .tip-item h4 {
-            margin: 0 0 4px;
-            font-size: 16px;
-            color: #0f172a;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .tip-item p {
@@ -135,7 +140,7 @@
         <label>원문 내용 (HTML 사용 가능)</label>
         <textarea id="fullText" placeholder="전체 세부 내용, 법령, 가이드 등 상세 정보 기재"></textarea>
 
-        <button onclick="saveTip()">등록하기</button>
+        <button class="btn-primary" onclick="saveTip()">팁 등록하기</button>
         <div id="status" style="text-align: center; margin-top: 12px; font-size: 14px; font-weight: bold; color: #4f46e5;"></div>
     </div>
 
@@ -146,6 +151,21 @@
     <script>
         let allTipsData = [];
         let editingTipId = null;
+
+        async function resetVisibility(tipId) {
+            if(!confirm('이 팁을 다시 모든 사용자의 메인 화면 배너에 띄우시겠습니까? (숨김 처리 초기화)')) return;
+            
+            const { error } = await supabaseClient
+                .from('user_tip_status')
+                .update({ is_hidden: false })
+                .eq('tip_id', tipId);
+                
+            if(error) {
+                alert('재공지 처리 실패: ' + error.message);
+                return;
+            }
+            alert('성공적으로 재공지되었습니다! 이제 사용자들이 접속하면 배너가 다시 뜹니다.');
+        }
 
         async function loadTips() {
             const list = document.getElementById('tipList');
@@ -173,13 +193,16 @@
                 const li = document.createElement('li');
                 li.className = 'tip-item';
                 li.innerHTML = `
-                    <div style="flex: 1;">
-                        <span style="font-size: 11px; font-weight: 800; color: #4338ca; background: #e0e7ff; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px; display: inline-block;">${tip.category}</span>
-                        <div style="font-size: 15px; font-weight: 700; color: #1e293b;">${tip.title}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <span style="font-size: 11px; font-weight: 800; color: #4338ca; background: #e0e7ff; padding: 4px 8px; border-radius: 6px; margin-bottom: 8px; display: inline-block;">${tip.category}</span>
+                            <div style="font-size: 16px; font-weight: 800; color: #0f172a; line-height: 1.4;">${tip.title}</div>
+                        </div>
                     </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button onclick="editTip(${tip.id})" style="background: #f1f5f9; color: #475569; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; transition: 0.2s;">수정</button>
-                        <button onclick="deleteTip(${tip.id})" style="background: #fee2e2; color: #ef4444; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; transition: 0.2s;">삭제</button>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button onclick="resetVisibility(${tip.id})" style="flex: 1; background: #eff6ff; color: #2563eb; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px;">📢 재공지</button>
+                        <button onclick="editTip(${tip.id})" style="flex: 1; background: #f1f5f9; color: #475569; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px;">✏️ 수정</button>
+                        <button onclick="deleteTip(${tip.id})" style="flex: 1; background: #fef2f2; color: #dc2626; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 13px;">🗑️ 삭제</button>
                     </div>
                 `;
                 list.appendChild(li);
