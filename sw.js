@@ -1,0 +1,28 @@
+const CACHE_NAME = 'consult-diary-v1';
+
+// 기본적으로 캐싱할 에셋 목록 (오프라인에서도 화면을 보여주기 위해)
+const urlsToCache = [
+  './login.html',
+  './app.css',
+  './icon.png',
+  './manifest.json'
+];
+
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        return cache.addAll(urlsToCache);
+      })
+  );
+});
+
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // 캐시에 있으면 캐시된 응답 반환, 없으면 네트워크 요청
+        return response || fetch(event.request);
+      })
+  );
+});
