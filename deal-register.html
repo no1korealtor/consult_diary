@@ -477,6 +477,17 @@
 
         }
 
+        window.setAttendance = async function(dealId, status) {
+            const { error } = await supabaseClient
+                .from('deal_attendances')
+                .upsert({ deal_id: dealId, user_id: window.currentUser.id, status: status }, { onConflict: 'deal_id,user_id' });
+            if (error) {
+                alert('투표 저장에 실패했습니다: ' + error.message);
+                return;
+            }
+            loadDeals();
+        };
+
         function getDDay(dateString) {
             if (!dateString) return '';
             const targetDate = new Date(dateString);
