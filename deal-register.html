@@ -200,37 +200,51 @@
     <div class="card" style="margin-top: 30px;">
         <h3 style="margin-top: 0;">새 일정 추가</h3>
 
-    <select id="buildingSelect">
-        <option value="">건물 선택</option>
-    </select>
-    <button
-        type="button"
-        onclick="location.href='building-register.html'"
-    >
-        + 새 건물 등록
-    </button>
+    <div id="propertyFields">
+        <select id="buildingSelect">
+            <option value="">건물 선택</option>
+        </select>
+        <button
+            type="button"
+            onclick="location.href='building-register.html'"
+        >
+            + 새 건물 등록
+        </button>
 
-    <select id="roomSelect">
-        <option value="">호수 선택</option>
-    </select>
-    <button
-        type="button"
-        onclick="goToRoomRegister()"
-    >
-        + 호수 등록
-    </button>
+        <select id="roomSelect">
+            <option value="">호수 선택</option>
+        </select>
+        <button
+            type="button"
+            onclick="goToRoomRegister()"
+        >
+            + 호수 등록
+        </button>
+    </div>
 
-    <select id="contractType">
+    <select id="contractType" onchange="toggleMeetingFields()">
         <option value="입주 정산">입주 정산</option>
         <option value="퇴실 정산">퇴실 정산</option>
         <option value="잔금">잔금</option>
         <option value="계약">계약</option>
         <option value="기타">기타</option>
+        <option value="모임">모임</option>
     </select>
+
+    <div id="meetingFields" style="display: none; background: #eff6ff; padding: 16px; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 12px;">
+        <input type="time" id="meetingTime" style="margin-bottom: 8px;">
+        <input type="text" id="meetingLocation" placeholder="모임 장소 (예: 합정역 인근)" style="margin-bottom: 8px;">
+        <select id="meetingAttendance" style="margin-bottom: 8px;">
+            <option value="참석">참석</option>
+            <option value="미정">미정</option>
+            <option value="불참">불참</option>
+        </select>
+        <input type="url" id="meetingUrl" placeholder="관련 링크 (URL)" style="margin-bottom: 0;">
+    </div>
 
     <input type="date" id="balanceDate">
 
-    <textarea id="memo" placeholder="메모"></textarea>
+    <textarea id="memo" placeholder="메모 (모임일 경우 모임명 입력)"></textarea>
 
     <button class="btn-primary" onclick="saveDeal()">
         저장
@@ -378,6 +392,15 @@
 
         }
 
+        function toggleMeetingFields() {
+            const isMeeting = document.getElementById('contractType').value === '모임';
+            const mFields = document.getElementById('meetingFields');
+            const pFields = document.getElementById('propertyFields');
+            if(mFields) mFields.style.display = isMeeting ? 'block' : 'none';
+            if(pFields) pFields.style.display = isMeeting ? 'none' : 'block';
+            document.getElementById('memo').placeholder = isMeeting ? '모임 이름 (예: 마포구 협회 정기모임)' : '메모 (모임일 경우 모임명 입력)';
+        }
+
         async function saveDeal() {
 
             const buildingId =
@@ -398,26 +421,38 @@
             const status =
                 document.getElementById('status');
 
-            if (!buildingId) {
+            if (contractType !== '모임' && !buildingId) {
                 status.innerText = '건물을 선택해주세요.';
                 return;
             }
-            if (!roomId) {
+            if (contractType !== '모임' && !roomId) {
                 status.innerText = '호수를 선택해주세요.';
                 return;
             }
 
             status.innerText = '저장 중...';
             
+            let finalMemo = memo;
+            if (contractType === '모임') {
+                const mTime = document.getElementById('meetingTime').value;
+                const mLoc = document.getElementById('meetingLocation').value;
+                const mAtt = document.getElementById('meetingAttendance').value;
+                const mUrl = document.getElementById('meetingUrl').value;
+                if(mTime) finalMemo += `[TIME]${mTime}[/TIME]`;
+                if(mLoc) finalMemo += `[LOC]${mLoc}[/LOC]`;
+                if(mAtt) finalMemo += `[ATT]${mAtt}[/ATT]`;
+                if(mUrl) finalMemo += `[URL]${mUrl}[/URL]`;
+            }
+
             const payload = {
                 contract_type: contractType,
                 balance_date: balanceDate ? balanceDate : null,
-                memo: memo,
+                memo: finalMemo,
                 user_id: window.currentUser.id
             };
             
-            if (buildingId) payload.building_id = buildingId;
-            if (roomId) payload.room_id = roomId;
+            if (contractType !== '모임' && buildingId) payload.building_id = buildingId;
+            if (contractType !== '모임' && roomId) payload.room_id = roomId;
 
             const { error } =
                 await supabaseClient
@@ -526,6 +561,20 @@
                     const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
                     if (m) { startDt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
+                
+                let mTime = null, mLoc = null, mAtt = null;
+                if (rawMemo.includes('[TIME]')) {
+                    const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
+                    if (m) { mTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                if (rawMemo.includes('[LOC]')) {
+                    const m = rawMemo.match(/\[LOC\](.*?)\[\/LOC\]/);
+                    if (m) { mLoc = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                if (rawMemo.includes('[ATT]')) {
+                    const m = rawMemo.match(/\[ATT\](.*?)\[\/ATT\]/);
+                    if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
 
                 let monthStr = '미정';
                 let dateStr = '-';
@@ -551,7 +600,26 @@
                 let locationHtml = '';
                 let typeBadgeHtml = '';
                 
-                if (isGlobal) {
+                if (deal.contract_type === '모임') {
+                    const timeStr = mTime ? `${mTime}` : '';
+                    let locStr = '';
+                    if (mLoc) {
+                        locStr = `<span onclick="window.open('https://map.kakao.com/link/search/${encodeURIComponent(mLoc)}', '_blank'); event.stopPropagation();" style="color: #2563eb; cursor: pointer; text-decoration: underline;">${mLoc}</span>`;
+                    }
+                    
+                    let details = [timeStr, locStr].filter(Boolean).join(' · ');
+                    if(details) details = `<div style="font-size:13px; color:#6b7280; margin-top:4px;">${details}</div>`;
+                    
+                    let attBadge = '';
+                    if(mAtt === '참석') attBadge = `<span style="color:#16a34a; font-size:12px; font-weight:800;">[참석]</span>`;
+                    else if(mAtt === '미정') attBadge = `<span style="color:#d97706; font-size:12px; font-weight:800;">[미정]</span>`;
+                    else if(mAtt === '불참') attBadge = `<span style="color:#dc2626; font-size:12px; font-weight:800;">[불참]</span>`;
+
+                    const meetName = rawMemo.trim() || '모임 일정';
+                    locationHtml = `<div style="color: #111827; font-size: 16px; font-weight: 800; line-height: 1.4; margin-bottom: 2px;">${meetName} ${attBadge}</div>${details}`;
+                    typeBadgeHtml = `<span style="background: #fdf4ff; color: #c026d3; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">모임</span>`;
+                    rawMemo = ''; // Hide memo
+                } else if (isGlobal) {
                     locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📢 ${deal.contract_type}</div>`;
                     typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">전체 공지</span>`;
                 } else {

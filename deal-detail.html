@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -228,32 +228,71 @@
                 return;
             }
 
-            document.getElementById(
-                'dealTitle'
-            ).innerText = (data.balance_date ? data.balance_date + ' ' : '') + data.contract_type;
-
-            let finalAddress = data.buildings.road_address;
-            if (data.buildings.jibun_address) {
-                finalAddress += ' (' + data.buildings.jibun_address + ')';
+            let rawMemo = data.memo || '';
+            let linkUrl = null, mTime = null, mLoc = null, mAtt = null;
+            if (rawMemo.includes('[URL]')) {
+                const m = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
+                if (m) { linkUrl = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
             }
-            
-            document.getElementById('address').innerText =
-                finalAddress + ' ' + data.rooms.room_name;
+            if (rawMemo.includes('[START]')) {
+                const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
+                if (m) { rawMemo = rawMemo.replace(m[0], ''); }
+            }
+            if (rawMemo.includes('[TIME]')) {
+                const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
+                if (m) { mTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+            }
+            if (rawMemo.includes('[LOC]')) {
+                const m = rawMemo.match(/\[LOC\](.*?)\[\/LOC\]/);
+                if (m) { mLoc = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+            }
+            if (rawMemo.includes('[ATT]')) {
+                const m = rawMemo.match(/\[ATT\](.*?)\[\/ATT\]/);
+                if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+            }
 
-            const pwd = data.buildings.entrance_password;
-            document.getElementById('entrancePassword').innerHTML = pwd 
-                ? `<span>${pwd}</span> <span style="font-size: 12px; color: #6b7280; font-weight: normal; border: 1px solid #e5e7eb; padding: 2px 6px; border-radius: 4px; background: #ffffff;">수정</span>`
-                : `<span style="color: #9ca3af; font-weight: normal;">미등록</span> <span style="font-size: 12px; color: #3b82f6; border: 1px solid #bfdbfe; background: #eff6ff; padding: 2px 6px; border-radius: 4px; font-weight: normal;">+ 추가</span>`;
+            if (data.contract_type === '모임') {
+                document.getElementById('dealTitle').innerText = (data.balance_date ? data.balance_date + ' ' : '') + '모임';
+                document.getElementById('address').innerText = mLoc || '장소 미정';
+                document.getElementById('pwdRow').style.display = 'none';
+                
+                let meetInfoHtml = '';
+                if(mTime) meetInfoHtml += `<div style="margin-bottom:8px;">⏰ 시간: <strong>${mTime}</strong></div>`;
+                if(mAtt) meetInfoHtml += `<div style="margin-bottom:8px;">👤 참석: <strong>${mAtt}</strong></div>`;
+                if(linkUrl) meetInfoHtml += `<div>🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6;">관련 링크 열기</a></div>`;
+                
+                document.getElementById('memo').innerHTML = `<div style="font-size:18px; font-weight:700; margin-bottom:12px; color:#111827;">${rawMemo.trim() || '모임 일정'}</div>${meetInfoHtml}`;
+            } else {
+                document.getElementById('dealTitle').innerText = (data.balance_date ? data.balance_date + ' ' : '') + data.contract_type;
 
-            document.getElementById(
-                'memo'
-            ).innerText =
-                data.memo || '';
+                let finalAddress = data.buildings ? data.buildings.road_address : '장소 없음';
+                if (data.buildings && data.buildings.jibun_address) {
+                    finalAddress += ' (' + data.buildings.jibun_address + ')';
+                }
+                
+                document.getElementById('address').innerText =
+                    finalAddress + (data.rooms ? ' ' + data.rooms.room_name : '');
+
+                const pwd = data.buildings ? data.buildings.entrance_password : null;
+                document.getElementById('entrancePassword').innerHTML = pwd 
+                    ? `<span>${pwd}</span> <span style="font-size: 12px; color: #6b7280; font-weight: normal; border: 1px solid #e5e7eb; padding: 2px 6px; border-radius: 4px; background: #ffffff;">수정</span>`
+                    : `<span style="color: #9ca3af; font-weight: normal;">미등록</span> <span style="font-size: 12px; color: #3b82f6; border: 1px solid #bfdbfe; background: #eff6ff; padding: 2px 6px; border-radius: 4px; font-weight: normal;">+ 추가</span>`;
+
+                if (!data.buildings) document.getElementById('pwdRow').style.display = 'none';
+
+                let finalMemoHtml = rawMemo.replace(/\n/g, '<br>');
+                if(linkUrl) {
+                   finalMemoHtml += `<div style="margin-top:12px;">🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6; font-weight:bold;">관련 링크 열기</a></div>`;
+                }
+                document.getElementById('memo').innerHTML = finalMemoHtml || '';
+            }
 
             window.currentBuildingId = data.building_id;
             window.currentRoomId = data.room_id;
 
-            await loadMeters(data.room_id);
+            if (data.room_id) {
+                await loadMeters(data.room_id);
+            }
         }
 
         async function loadMeters(roomId) {
