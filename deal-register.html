@@ -633,13 +633,19 @@
                     const timeStr = mTime ? `${mTime}` : '';
                     let locStr = '';
                     if (mLoc) {
-                        locStr = `<span onclick="window.open('https://map.kakao.com/link/search/${encodeURIComponent(mLoc)}', '_blank'); event.stopPropagation();" style="color: #2563eb; cursor: pointer; text-decoration: underline;">${mLoc}</span>`;
+                        locStr = `<span onclick="window.open('https://map.kakao.com/link/search/${encodeURIComponent(mLoc)}', '_blank'); event.stopPropagation();" style="color: #475569; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 2px;">📍 ${mLoc}</span>`;
                     }
                     
-                    let details = [timeStr, locStr].filter(Boolean).join(' · ');
-                    if(details) details = `<div style="font-size:13px; color:#6b7280; margin-top:4px;">${details}</div>`;
-                    
-                                        let myAtt = null;
+                    let details = '';
+                    if (timeStr || locStr) {
+                        details = `<div style="font-size: 13px; margin-top: 8px; display: inline-flex; gap: 8px; align-items: center; background: #f8fafc; padding: 6px 12px; border-radius: 8px; border: 1px solid #f1f5f9;">`;
+                        if (timeStr) details += `<span style="color: #1e293b; font-weight: 800;">🕒 ${timeStr}</span>`;
+                        if (timeStr && locStr) details += `<span style="color: #cbd5e1;">|</span>`;
+                        if (locStr) details += `${locStr}`;
+                        details += `</div>`;
+                    }
+
+                    let myAtt = null;
                     let attCount = 0;
                     let noCount = 0;
                     if (deal.deal_attendances) {
@@ -650,24 +656,25 @@
                         noCount = attendances.filter(a => a.status === '불참').length;
                     }
 
-                    if (isGlobal && myAtt) mAtt = myAtt; // 내 상태로 뱃지 덮어쓰기
+                    if (isGlobal && myAtt) mAtt = myAtt;
                     
                     if (isGlobal) {
                         details += `
-                        <div style="display: flex; gap: 8px; margin-top: 12px; background: #f8fafc; padding: 12px; border-radius: 12px; border: 1px solid #e2e8f0;" onclick="event.stopPropagation()">
-                            <button type="button" onclick="setAttendance('${deal.id}', '참석')" style="flex: 1; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s; border: 1px solid ${myAtt === '참석' ? '#16a34a' : '#cbd5e1'}; background: ${myAtt === '참석' ? '#16a34a' : 'white'}; color: ${myAtt === '참석' ? 'white' : '#475569'}; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">👍 참석 (${attCount})</button>
-                            <button type="button" onclick="setAttendance('${deal.id}', '불참')" style="flex: 1; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s; border: 1px solid ${myAtt === '불참' ? '#dc2626' : '#cbd5e1'}; background: ${myAtt === '불참' ? '#dc2626' : 'white'}; color: ${myAtt === '불참' ? 'white' : '#475569'}; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">✋ 불참 (${noCount})</button>
+                        <div style="display: flex; gap: 10px; margin-top: 16px;" onclick="event.stopPropagation()">
+                            <button type="button" onclick="setAttendance('${deal.id}', '참석')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '참석' ? '#4f46e5' : '#f1f5f9'}; color: ${myAtt === '참석' ? 'white' : '#64748b'};">👍 참석 ${attCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${attCount}</span>` : ''}</button>
+                            <button type="button" onclick="setAttendance('${deal.id}', '불참')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '불참' ? '#e2e8f0' : '#f8fafc'}; color: ${myAtt === '불참' ? '#475569' : '#94a3b8'};">✋ 불참 ${noCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${noCount}</span>` : ''}</button>
                         </div>
                         `;
                     }
-                    let attBadge = '';
-                    if(mAtt === '참석') attBadge = `<span style="color:#16a34a; font-size:12px; font-weight:800;">[참석]</span>`;
-                    else if(mAtt === '미정') attBadge = `<span style="color:#d97706; font-size:12px; font-weight:800;">[미정]</span>`;
-                    else if(mAtt === '불참') attBadge = `<span style="color:#dc2626; font-size:12px; font-weight:800;">[불참]</span>`;
 
-                    const meetName = rawMemo.trim() || '모임 일정';
-                    locationHtml = `<div style="color: #111827; font-size: 16px; font-weight: 800; line-height: 1.4; margin-bottom: 2px;">${meetName} ${attBadge}</div>${details}`;
-                    typeBadgeHtml = `<span style="background: #fdf4ff; color: #c026d3; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">모임</span>`;
+                    let attBadge = '';
+                    if(mAtt === '참석') attBadge = `<span style="color:#4f46e5; font-size:13px; font-weight:800; margin-left: 6px;">[참석]</span>`;
+                    else if(mAtt === '불참') attBadge = `<span style="color:#64748b; font-size:13px; font-weight:800; margin-left: 6px;">[불참]</span>`;
+                    else if(mAtt === '미정') attBadge = `<span style="color:#94a3b8; font-size:13px; font-weight:800; margin-left: 6px;">[미정]</span>`;
+
+                    const meetName = rawMemo.trim() || '이름 없음';
+                    locationHtml = `<div style="color: #0f172a; font-size: 18px; font-weight: 900; line-height: 1.4; margin-bottom: 2px; letter-spacing: -0.5px;">${meetName}${attBadge}</div>${details}`;
+                    typeBadgeHtml = `<span style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">공지</span>`;
                     rawMemo = ''; // Hide memo
                 } else if (isGlobal) {
                     locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📢 ${deal.contract_type}</div>`;
