@@ -41,6 +41,16 @@
 
         async function loadArchive() {
             await requireAuth();
+            
+            const urlParams = new URLSearchParams(window.location.search);
+            const isSavedOnly = urlParams.get('filter') === 'saved';
+
+            if (isSavedOnly) {
+                document.querySelector('.header h2').innerHTML = '⭐ 내가 저장한 팁';
+            } else {
+                document.querySelector('.header h2').innerHTML = '📚 실무 팁 전체보기';
+            }
+
             const { data, error } = await supabaseClient
                 .from('practical_tips')
                 .select('*')
@@ -52,7 +62,23 @@
                 return;
             }
 
-            allTips = data || [];
+            if (isSavedOnly) {
+                const { data: savedData } = await supabaseClient
+                    .from('user_tip_status')
+                    .select('tip_id')
+                    .eq('user_id', window.currentUser.id)
+                    .eq('is_saved', true);
+                    
+                if (savedData) {
+                    const savedIds = savedData.map(d => d.tip_id);
+                    allTips = (data || []).filter(t => savedIds.includes(t.id));
+                } else {
+                    allTips = [];
+                }
+            } else {
+                allTips = data || [];
+            }
+            
             renderTips(allTips);
         }
 
