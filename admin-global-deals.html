@@ -175,12 +175,12 @@
             </select>
         </div>
         <div style="display: flex; gap: 8px;">
-            <div style="flex: 1;">
+            <div id="startDateContainer" style="flex: 1;">
                 <label style="font-size: 12px; color: #6b7280; margin-left: 4px;">시작일 (선택)</label>
                 <input type="date" id="startDate" style="margin-top: 4px;">
             </div>
             <div style="flex: 1;">
-                <label style="font-size: 12px; color: #6b7280; margin-left: 4px;">종료일(D-Day)</label>
+                <label id="balanceDateLabel" style="font-size: 12px; color: #6b7280; margin-left: 4px;">종료일(D-Day)</label>
                 <input type="date" id="balanceDate" style="margin-top: 4px;">
             </div>
         </div>
@@ -220,6 +220,9 @@
         function checkMeetingType() {
             const isMeeting = document.getElementById('contractType').value.includes('모임');
             document.getElementById('meetingFields').style.display = isMeeting ? 'block' : 'none';
+            document.getElementById('startDateContainer').style.display = isMeeting ? 'none' : 'block';
+            document.getElementById('balanceDateLabel').innerText = isMeeting ? '모임일자' : '종료일(D-Day)';
+            if (isMeeting) document.getElementById('startDate').value = '';
         }
 
         async function saveGlobalDeal() {
@@ -232,6 +235,10 @@
 
             if (!contractType) {
                 status.innerText = '에러: 일정 종류를 입력해주세요.';
+                return;
+            }
+            if (!balanceDate) {
+                status.innerText = '에러: 날짜(모임일/종료일)를 지정해주세요.';
                 return;
             }
 
