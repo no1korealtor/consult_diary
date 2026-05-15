@@ -120,7 +120,7 @@
     <h2>💡 실무 팁 등록 관리</h2>
 
     <div class="form-group">
-        <label>팁 제목</label>
+        <label>카테고리</label><select id="category" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:16px; font-size:14px;"><option value="공통">공통</option><option value="세법">세법/정책</option><option value="주택">주택</option><option value="상가">상가/사무실</option><option value="토지">토지</option></select><label>팁 제목</label>
         <input type="text" id="title" placeholder="예: 2026년 개정 주택임대차보호법 요약">
 
         <label>적용일 (또는 라벨)</label>
@@ -180,6 +180,7 @@
         }
 
         async function saveTip() {
+            const category = document.getElementById('category').value;
             const title = document.getElementById('title').value;
             const effectiveDate = document.getElementById('effectiveDate').value;
             const summaryRaw = document.getElementById('summary').value;
@@ -197,6 +198,7 @@
             const summaryArray = summaryRaw.split('\n').filter(s => s.trim() !== '');
 
             const payload = {
+                category: category,
                 title: title,
                 effective_date: effectiveDate,
                 summary: summaryArray,

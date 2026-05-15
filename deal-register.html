@@ -947,22 +947,62 @@ let practicalTips = [
 
 async function loadTips() {
     try {
-        const { data, error } = await supabaseClient
+        if(!window.currentUser) return;
+        
+        // 1. 활성화된 팁 조회
+        const { data: tips, error } = await supabaseClient
             .from("practical_tips")
             .select("*")
             .eq("is_active", true)
             .order("created_at", { ascending: false });
             
-        if (!error && data && data.length > 0) {
-            practicalTips = data;
+        // 2. 현재 유저가 숨김 처리한 팁 ID 조회
+        const { data: hidden } = await supabaseClient
+            .from("user_tip_status")
+            .select("tip_id")
+            .eq("user_id", window.currentUser.id)
+            .eq("is_hidden", true);
+            
+        if (!error && tips) {
+            const hiddenIds = new Set((hidden || []).map(h => h.tip_id));
+            practicalTips = tips.filter(t => !hiddenIds.has(t.id)); // 안 본 것만 필터링
         }
     } catch(e) {
-        console.log("DB load failed, using fallback.");
+        console.log("DB load failed.");
     }
     
-    if(practicalTips.length > 0) {
+    const banner = document.getElementById("tipBanner");
+    if(practicalTips && practicalTips.length > 0) {
+        banner.style.display = "block";
         document.getElementById("tipBannerTitle").innerText = practicalTips[0].title;
+        if(practicalTips[0].category) {
+            document.getElementById("tipBannerCategory").innerText = practicalTips[0].category;
+            document.getElementById("tipBannerCategory").style.display = "inline-block";
+        } else {
+            document.getElementById("tipBannerCategory").style.display = "none";
+        }
+    } else {
+        banner.style.display = "none"; // 표시할 팁이 없으면 배너 숨김
     }
+}
+
+async function hideCurrentTip(e) {
+    e.stopPropagation();
+    if(!practicalTips || practicalTips.length === 0 || !window.currentUser) return;
+    
+    const currentTip = practicalTips[0];
+    if(!confirm("이 팁을 다시 보지 않으시겠습니까?")) return;
+    
+    // DB에 숨김 처리 기록
+    await supabaseClient.from("user_tip_status").upsert({
+        user_id: window.currentUser.id,
+        tip_id: currentTip.id,
+        is_hidden: true
+    });
+    
+    // 로컬 배열에서 제거 후 다시 렌더링
+    practicalTips.shift();
+    loadTips(); // UI 갱신
 }
 loadTips();
 
