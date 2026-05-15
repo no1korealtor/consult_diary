@@ -357,6 +357,7 @@
                 }
                 loadBuildings();
                 loadDeals();
+                if(typeof loadTips === 'function') loadTips();
             }
         }
 
@@ -491,6 +492,7 @@
             status.innerText = '저장 완료';
             document.getElementById('memo').value = '';
             loadDeals();
+                if(typeof loadTips === 'function') loadTips();
 
         }
 
@@ -503,6 +505,7 @@
                 return;
             }
             loadDeals();
+                if(typeof loadTips === 'function') loadTips();
         };
 
         function getDDay(dateString) {
