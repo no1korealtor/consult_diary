@@ -536,6 +536,7 @@
             list.innerHTML = '';
             
             let allDeals = [];
+        window.allUsersMap = {};
             
             if (data) {
                 allDeals = data;
@@ -648,22 +649,38 @@
                     let myAtt = null;
                     let attCount = 0;
                     let noCount = 0;
+                    let attNames = [];
+                    let noNames = [];
                     if (deal.deal_attendances) {
                         const attendances = deal.deal_attendances;
                         const myRec = attendances.find(a => a.user_id === window.currentUser.id);
                         if (myRec) myAtt = myRec.status;
-                        attCount = attendances.filter(a => a.status === '참석').length;
-                        noCount = attendances.filter(a => a.status === '불참').length;
+                        
+                        attendances.forEach(a => {
+                            const name = window.allUsersMap[a.user_id] || '이름없음';
+                            if (a.status === '참석') {
+                                attCount++;
+                                attNames.push(name);
+                            } else if (a.status === '불참') {
+                                noCount++;
+                                noNames.push(name);
+                            }
+                        });
                     }
 
                     if (isGlobal && myAtt) mAtt = myAtt;
                     
                     if (isGlobal) {
+                        const attStr = attNames.length > 0 ? `<div style="font-size: 12px; color: #4f46e5; margin-top: 12px; padding: 0 4px; font-weight: 600;">✅ 참석자: ${attNames.join(', ')}</div>` : '';
+                        const noStr = noNames.length > 0 ? `<div style="font-size: 12px; color: #64748b; margin-top: 4px; padding: 0 4px;">❌ 불참자: ${noNames.join(', ')}</div>` : '';
+                        
                         details += `
                         <div style="display: flex; gap: 10px; margin-top: 16px;" onclick="event.stopPropagation()">
                             <button type="button" onclick="setAttendance('${deal.id}', '참석')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '참석' ? '#4f46e5' : '#f1f5f9'}; color: ${myAtt === '참석' ? 'white' : '#64748b'};">👍 참석 ${attCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${attCount}</span>` : ''}</button>
                             <button type="button" onclick="setAttendance('${deal.id}', '불참')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '불참' ? '#e2e8f0' : '#f8fafc'}; color: ${myAtt === '불참' ? '#475569' : '#94a3b8'};">✋ 불참 ${noCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${noCount}</span>` : ''}</button>
                         </div>
+                        ${attStr}
+                        ${noStr}
                         `;
                     }
 
