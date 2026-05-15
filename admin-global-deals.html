@@ -163,7 +163,17 @@
         <h3 style="margin-top: 0;">공지 및 공통 일정 등록</h3>
         <p style="font-size: 13px; color: #6b7280; margin-top: -10px; margin-bottom: 16px;">여기에 등록한 일정은 사무소 모든 직원의 화면에 표시됩니다.</p>
 
-        <input type="text" id="contractType" placeholder="일정 종류 (예: 부가가치세 신고, 회식 등)">
+        <input type="text" id="contractType" placeholder="일정 종류 (예: 부가가치세 신고, 모임 등)" oninput="checkMeetingType()">
+        <div id="meetingFields" style="display: none; background: #eff6ff; padding: 16px; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 12px;">
+            <div style="font-size: 13px; font-weight: 700; color: #1e3a8a; margin-bottom: 12px;">모임 정보 입력</div>
+            <input type="time" id="meetingTime" style="margin-bottom: 8px;">
+            <input type="text" id="meetingLocation" placeholder="장소 (예: 합정역 인근)" style="margin-bottom: 8px;">
+            <select id="meetingAttendance" style="margin-bottom: 0; width: 100%; padding: 14px 16px; font-size: 15px; border-radius: 12px; border: 1px solid #e2e8f0; background-color: #f8fafc;">
+                <option value="참석">참석</option>
+                <option value="미정">미정</option>
+                <option value="불참">불참</option>
+            </select>
+        </div>
         <div style="display: flex; gap: 8px;">
             <div style="flex: 1;">
                 <label style="font-size: 12px; color: #6b7280; margin-left: 4px;">시작일 (선택)</label>
@@ -207,6 +217,11 @@
             }
         });
 
+        function checkMeetingType() {
+            const isMeeting = document.getElementById('contractType').value.includes('모임');
+            document.getElementById('meetingFields').style.display = isMeeting ? 'block' : 'none';
+        }
+
         async function saveGlobalDeal() {
             const contractType = document.getElementById('contractType').value;
             const balanceDate = document.getElementById('balanceDate').value;
@@ -225,6 +240,14 @@
             let finalMemo = rawMemo;
             if (urlInput) finalMemo = `[URL]${urlInput}[/URL]` + finalMemo;
             if (startDate) finalMemo = `[START]${startDate}[/START]` + finalMemo;
+            if (document.getElementById('meetingFields').style.display !== 'none') {
+                const mTime = document.getElementById('meetingTime').value;
+                const mLoc = document.getElementById('meetingLocation').value;
+                const mAtt = document.getElementById('meetingAttendance').value;
+                if(mTime) finalMemo = `[TIME]${mTime}[/TIME]` + finalMemo;
+                if(mLoc) finalMemo = `[LOC]${mLoc}[/LOC]` + finalMemo;
+                if(mAtt) finalMemo = `[ATT]${mAtt}[/ATT]` + finalMemo;
+            }
 
             // building_id 와 room_id 를 보내지 않고 저장 (전체 공지)
             const payload = {
@@ -363,6 +386,20 @@
                     const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
                     if (m) { startDt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
+                
+                let mTime = null, mLoc = null, mAtt = null;
+                if (rawMemo.includes('[TIME]')) {
+                    const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
+                    if (m) { mTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                if (rawMemo.includes('[LOC]')) {
+                    const m = rawMemo.match(/\[LOC\](.*?)\[\/LOC\]/);
+                    if (m) { mLoc = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                if (rawMemo.includes('[ATT]')) {
+                    const m = rawMemo.match(/\[ATT\](.*?)\[\/ATT\]/);
+                    if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
 
                 let dateDisplay = deal.balance_date || '날짜 미정';
                 if (startDt && deal.balance_date) {
@@ -389,6 +426,10 @@
                     document.getElementById('startDate').value = startDt || '';
                     document.getElementById('urlInput').value = linkUrl || '';
                     document.getElementById('memo').value = rawMemo.trim() || '';
+                    document.getElementById('meetingTime').value = mTime || '';
+                    document.getElementById('meetingLocation').value = mLoc || '';
+                    if(mAtt) document.getElementById('meetingAttendance').value = mAtt;
+                    checkMeetingType();
                     
                     window.editingDealId = deal.id;
                     const btn = document.getElementById('saveBtn');
@@ -414,7 +455,8 @@
                         <span style="color: #6b7280; font-size: 13px; margin-left: auto;">${dateDisplay}</span>
                         <button onclick="event.stopPropagation(); deleteDeal('${deal.id}')" style="margin-left: 8px; width: auto; padding: 4px 8px; font-size: 12px; font-weight: 600; background: #fee2e2; color: #ef4444; border-radius: 6px; margin-bottom: 0; box-shadow: none;">삭제</button>
                     </div>
-                    <div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 ${deal.contract_type}</div>
+                    <div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 ${deal.contract_type} ${mAtt ? `<span style="background: ${mAtt === '참석' ? '#dcfce7' : (mAtt === '미정' ? '#fef3c7' : '#fee2e2')}; color: ${mAtt === '참석' ? '#16a34a' : (mAtt === '미정' ? '#d97706' : '#dc2626')}; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">[${mAtt}]</span>` : ''}</div>
+                    ${(mTime || mLoc) ? `<div style="font-size:13px; color:#6b7280; margin-bottom:4px;">${[mTime, mLoc ? `<span onclick="window.open('https://map.kakao.com/link/search/${encodeURIComponent(mLoc)}', '_blank'); event.stopPropagation();" style="color: #2563eb; cursor: pointer; text-decoration: underline;">${mLoc}</span>` : null].filter(Boolean).join(' · ')}</div>` : ''}
                     ${memoHtml}
                 `;
                 list.appendChild(li);
