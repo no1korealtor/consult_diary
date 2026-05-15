@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'consult-diary-v2';
+﻿const CACHE_NAME = 'consult-diary-v3';
 
 // 기본적으로 캐싱할 에셋 목록 (오프라인에서도 화면을 보여주기 위해)
 const urlsToCache = [
@@ -9,6 +9,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -28,6 +29,7 @@ self.addEventListener('fetch', event => {
 });
 
 self.addEventListener('activate', event => {
+  event.waitUntil(clients.claim());
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
