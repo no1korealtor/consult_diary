@@ -165,9 +165,17 @@
 
         <input type="text" id="contractType" placeholder="일정 종류 (예: 부가가치세 신고, 모임 등)" oninput="checkMeetingType()">
         <div id="meetingFields" style="display: none; background: #eff6ff; padding: 16px; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 12px;">
-            <div style="font-size: 13px; font-weight: 700; color: #1e3a8a; margin-bottom: 12px;">모임 정보 입력</div>
-            <input type="time" id="meetingTime" style="margin-bottom: 8px;">
-            <input type="text" id="meetingLocation" placeholder="장소 (예: 합정역 인근)" style="margin-bottom: 8px;">
+            <label style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block; margin-bottom: 4px;">모임 일시</label>
+            <input type="datetime-local" id="meetingDateTime" style="margin-bottom: 12px;">
+            
+            <label style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block; margin-bottom: 4px;">장소 (주소 검색)</label>
+            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                <input type="text" id="meetingLocation" placeholder="도로명/지번 주소 검색" readonly style="flex: 1; margin-bottom: 0;" onclick="execDaumPostcodeMeeting()">
+                <button type="button" onclick="execDaumPostcodeMeeting()" style="width: auto; padding: 0 16px; margin-bottom: 0; background: #3b82f6; color: white; border-radius: 12px; font-weight: 600;">검색</button>
+            </div>
+            <input type="text" id="meetingLocationDetail" placeholder="상세 장소 (예: 2층 호프집)" style="margin-bottom: 12px;">
+
+            <label style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block; margin-bottom: 4px;">내 참석 여부</label>
             <select id="meetingAttendance" style="margin-bottom: 0; width: 100%; padding: 14px 16px; font-size: 15px; border-radius: 12px; border: 1px solid #e2e8f0; background-color: #f8fafc;">
                 <option value="참석">참석</option>
                 <option value="미정">미정</option>
@@ -197,6 +205,7 @@
     <ul id="dealList" style="list-style: none; padding: 0;"></ul>
 </div>
 
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script src="auth-helper.js"></script>
     <script>
         async function checkAuthAndLoad() {
@@ -221,8 +230,21 @@
             const isMeeting = document.getElementById('contractType').value.includes('모임');
             document.getElementById('meetingFields').style.display = isMeeting ? 'block' : 'none';
             document.getElementById('startDateContainer').style.display = isMeeting ? 'none' : 'block';
-            document.getElementById('balanceDateLabel').innerText = isMeeting ? '모임일자' : '종료일(D-Day)';
-            if (isMeeting) document.getElementById('startDate').value = '';
+            document.getElementById('balanceDate').parentElement.style.display = isMeeting ? 'none' : 'block';
+            if (isMeeting) {
+                document.getElementById('startDate').value = '';
+                document.getElementById('balanceDate').value = '';
+            }
+        }
+
+        function execDaumPostcodeMeeting() {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    let addr = data.roadAddress !== '' ? data.roadAddress : data.jibunAddress;
+                    document.getElementById('meetingLocation').value = addr;
+                    document.getElementById('meetingLocationDetail').focus();
+                }
+            }).open();
         }
 
         async function saveGlobalDeal() {
@@ -237,21 +259,39 @@
                 status.innerText = '에러: 일정 종류를 입력해주세요.';
                 return;
             }
-            if (!balanceDate) {
-                status.innerText = '에러: 날짜(모임일/종료일)를 지정해주세요.';
+            const isMeeting = document.getElementById('meetingFields').style.display !== 'none';
+            const meetingDateTime = document.getElementById('meetingDateTime').value;
+
+            if (isMeeting && !meetingDateTime) {
+                status.innerText = '에러: 모임 일시를 지정해주세요.';
+                return;
+            }
+            if (!isMeeting && !balanceDate) {
+                status.innerText = '에러: 종료일을 지정해주세요.';
                 return;
             }
 
             status.innerText = '등록 중...';
 
             let finalMemo = rawMemo;
+            let finalBalanceDate = balanceDate ? balanceDate : null;
+
             if (urlInput) finalMemo = `[URL]${urlInput}[/URL]` + finalMemo;
-            if (startDate) finalMemo = `[START]${startDate}[/START]` + finalMemo;
-            if (document.getElementById('meetingFields').style.display !== 'none') {
-                const mTime = document.getElementById('meetingTime').value;
-                const mLoc = document.getElementById('meetingLocation').value;
+            if (startDate && !isMeeting) finalMemo = `[START]${startDate}[/START]` + finalMemo;
+            
+            if (isMeeting) {
+                const mLocMain = document.getElementById('meetingLocation').value;
+                const mLocDetail = document.getElementById('meetingLocationDetail').value;
+                const mLoc = [mLocMain, mLocDetail].filter(Boolean).join(' ');
+                
                 const mAtt = document.getElementById('meetingAttendance').value;
-                if(mTime) finalMemo = `[TIME]${mTime}[/TIME]` + finalMemo;
+                
+                if (meetingDateTime) {
+                    finalBalanceDate = meetingDateTime.split('T')[0];
+                    const mTime = meetingDateTime.split('T')[1];
+                    if(mTime) finalMemo = `[TIME]${mTime}[/TIME]` + finalMemo;
+                }
+                
                 if(mLoc) finalMemo = `[LOC]${mLoc}[/LOC]` + finalMemo;
                 if(mAtt) finalMemo = `[ATT]${mAtt}[/ATT]` + finalMemo;
             }
@@ -259,7 +299,7 @@
             // building_id 와 room_id 를 보내지 않고 저장 (전체 공지)
             const payload = {
                 contract_type: contractType,
-                balance_date: balanceDate ? balanceDate : null,
+                balance_date: finalBalanceDate,
                 memo: finalMemo,
                 user_id: window.currentUser.id
             };
@@ -433,7 +473,9 @@
                     document.getElementById('startDate').value = startDt || '';
                     document.getElementById('urlInput').value = linkUrl || '';
                     document.getElementById('memo').value = rawMemo.trim() || '';
-                    document.getElementById('meetingTime').value = mTime || '';
+                    if (deal.balance_date && mTime) {
+                        document.getElementById('meetingDateTime').value = deal.balance_date + 'T' + mTime;
+                    }
                     document.getElementById('meetingLocation').value = mLoc || '';
                     if(mAtt) document.getElementById('meetingAttendance').value = mAtt;
                     checkMeetingType();

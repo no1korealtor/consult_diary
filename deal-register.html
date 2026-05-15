@@ -242,8 +242,10 @@
         <input type="url" id="meetingUrl" placeholder="관련 링크 (URL)" style="margin-bottom: 0;">
     </div>
 
-    <label id="balanceDateLabel" style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block; margin-top: 8px;">날짜(D-Day) 지정</label>
-    <input type="date" id="balanceDate" style="margin-top: 4px;">
+    <div id="balanceDateContainer">
+        <label id="balanceDateLabel" style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block; margin-top: 8px;">날짜(D-Day) 지정</label>
+        <input type="date" id="balanceDate" style="margin-top: 4px;">
+    </div>
 
     <textarea id="memo" placeholder="메모 (모임일 경우 모임명 입력)"></textarea>
 
@@ -255,6 +257,7 @@
     </div>
 </div>
 
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script src="auth-helper.js"></script>
     <script>
 
