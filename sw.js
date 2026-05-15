@@ -1,4 +1,4 @@
-const CACHE_NAME = 'consult-diary-v1';
+﻿const CACHE_NAME = 'consult-diary-v2';
 
 // 기본적으로 캐싱할 에셋 목록 (오프라인에서도 화면을 보여주기 위해)
 const urlsToCache = [
@@ -24,5 +24,19 @@ self.addEventListener('fetch', event => {
         // 캐시에 있으면 캐시된 응답 반환, 없으면 네트워크 요청
         return response || fetch(event.request);
       })
+  );
+});
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
 });
