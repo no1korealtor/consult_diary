@@ -1007,11 +1007,12 @@ async function hideCurrentTip(e) {
     if(!confirm("이 팁을 다시 보지 않으시겠습니까?")) return;
     
     // DB에 숨김 처리 기록
-    await supabaseClient.from("user_tip_status").upsert({
+    const { error } = await supabaseClient.from("user_tip_status").upsert({
         user_id: window.currentUser.id,
         tip_id: currentTip.id,
         is_hidden: true
-    });
+    }, { onConflict: "user_id,tip_id" });
+    if(error) { alert("Error: " + error.message); console.error(error); }
     
     // 로컬 배열에서 제거 후 다시 렌더링
     practicalTips.shift();
