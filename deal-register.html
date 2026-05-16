@@ -683,7 +683,8 @@
                     memo,
                     buildings ( jibun_address, road_address ),
                     rooms ( room_name ),
-                    deal_attendances ( user_id, status )
+                    deal_attendances ( user_id, status ),
+                    users ( name, phone )
                 `)
                 .or(`user_id.eq.${window.currentUser.id},building_id.is.null`)
                 .order('balance_date', { ascending: false }) // Fetch recent & upcoming
@@ -861,6 +862,12 @@
                         ${attStr}
                         ${noStr}
                         `;
+
+                        if (!isPrivateMeeting && deal.users) {
+                            const uName = deal.users.name || '알 수 없음';
+                            const uPhone = deal.users.phone ? ` (<a href="tel:${deal.users.phone}" style="color: #3b82f6; text-decoration: none;">${deal.users.phone}</a>)` : '';
+                            details += `<div style="font-size: 12px; color: #6b7280; margin-top: 12px; text-align: right; font-weight: 600;">제안자: ${uName}${uPhone}</div>`;
+                        }
 
                         const isMine = deal.user_id === window.currentUser.id;
                         if (isProposal && isMine) {
