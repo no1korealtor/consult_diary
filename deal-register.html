@@ -893,9 +893,17 @@
                         else if(mAtt === '미정') attBadge = `<span style="color:#94a3b8; font-size:13px; font-weight:800; margin-left: 6px;">[미정]</span>`;
                     }
 
-                    const meetName = rawMemo.trim() || '이름 없음';
-                    const namePrefix = isPrivateMeeting ? '🔒 ' : (isProposal ? '💡 ' : (isPendingAdmin ? '⏳ ' : ''));
-                    locationHtml = `<div style="color: #0f172a; font-size: 18px; font-weight: 900; line-height: 1.4; margin-bottom: 2px; letter-spacing: -0.5px;">${namePrefix}${meetName}${attBadge}</div>${details}`;
+                    const rawLines = rawMemo.trim().split('\n');
+                    const meetName = rawLines[0] || '이름 없음';
+                    const meetDesc = rawLines.slice(1).join('<br>').trim();
+                    const namePrefix = isPrivateMeeting ? '🔒 ' : (isProposal ? '💡 ' : (isPendingAdmin ? '⏳ ' : '✅ '));
+                    
+                    let titleHtml = `<div style="color: #0f172a; font-size: 18px; font-weight: 900; line-height: 1.4; margin-bottom: 2px; letter-spacing: -0.5px;">${namePrefix}${meetName}${attBadge}</div>`;
+                    let descHtml = '';
+                    if (meetDesc) {
+                        descHtml = `<div style="color: #475569; font-size: 14px; font-weight: 500; line-height: 1.5; margin-top: 6px; margin-bottom: 8px;">${meetDesc}</div>`;
+                    }
+                    locationHtml = titleHtml + descHtml + details;
                     
                     if (isPrivateMeeting) {
                         typeBadgeHtml = `<span style="background: #f3f4f6; color: #4b5563; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">개인</span>`;
@@ -904,7 +912,7 @@
                     } else if (isPendingAdmin) {
                         typeBadgeHtml = `<span style="background: #fee2e2; color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">승인 대기중</span>`;
                     } else {
-                        typeBadgeHtml = `<span style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">공지</span>`;
+                        typeBadgeHtml = `<span style="background: #dcfce7; color: #16a34a; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">확정 일정</span>`;
                     }
                     rawMemo = ''; // Hide memo
                 } else if (isGlobal) {

@@ -308,6 +308,7 @@
                 if (isPrivateMeeting) meetTitle = '개인 일정';
                 else if (isProposal) meetTitle = '💡 수요조사 (제안)';
                 else if (isPendingAdmin) meetTitle = '⏳ 승인 대기중';
+                else meetTitle = '✅ 확정 모임';
 
                 document.getElementById('dealTitle').innerText = (data.balance_date ? data.balance_date + ' ' : '') + meetTitle;
                 document.getElementById('address').innerText = mLoc || '장소 미정';
@@ -318,8 +319,20 @@
                 if(mAtt) meetInfoHtml += `<div style="margin-bottom:8px;">👤 참석: <strong>${mAtt}</strong></div>`;
                 if(linkUrl) meetInfoHtml += `<div>🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6; font-weight: bold;">${linkName}</a></div>`;
                 
-                const namePrefix = isPrivateMeeting ? '🔒 ' : (isProposal ? '💡 [모임 제안] ' : (isPendingAdmin ? '⏳ [승인 대기중] ' : ''));
-                document.getElementById('memo').innerHTML = `<div style="font-size:18px; font-weight:700; margin-bottom:12px; color:#111827;">${namePrefix}${rawMemo.trim() || '모임 일정'}</div>${meetInfoHtml}`;
+                const namePrefix = isPrivateMeeting ? '🔒 ' : (isProposal ? '💡 [모임 제안] ' : (isPendingAdmin ? '⏳ [승인 대기중] ' : '✅ [확정] '));
+                const rawLines = rawMemo.trim().split('\n');
+                const meetName = rawLines[0] || '모임 일정';
+                const meetDesc = rawLines.slice(1).join('<br>').trim();
+                
+                let titleHtml = `<div style="font-size:18px; font-weight:700; margin-bottom:4px; color:#111827;">${namePrefix}${meetName}</div>`;
+                let descHtml = '';
+                if (meetDesc) {
+                    descHtml = `<div style="font-size:15px; font-weight:400; color:#475569; line-height:1.6; margin-bottom:12px;">${meetDesc}</div>`;
+                } else {
+                    titleHtml = titleHtml.replace('margin-bottom:4px;', 'margin-bottom:12px;');
+                }
+                
+                document.getElementById('memo').innerHTML = titleHtml + descHtml + meetInfoHtml;
             } else {
                 document.getElementById('dealTitle').innerText = (data.balance_date ? data.balance_date + ' ' : '') + data.contract_type;
 
