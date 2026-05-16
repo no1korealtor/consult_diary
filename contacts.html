@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -261,6 +261,27 @@
             loadUsers();
         }
 
+        async function forceDeleteUser(userId, userName) {
+            const input = prompt(`정말로 이 사용자를 강제 탈퇴 처리하시겠습니까?\n이 작업은 취소할 수 없습니다.\n\n계속하려면 '${userName}'을(를) 정확히 입력해주세요.`);
+            if (input !== userName) {
+                if (input !== null) {
+                    alert('입력한 이름이 일치하지 않아 취소되었습니다.');
+                }
+                return;
+            }
+
+            // 1. public.users 테이블에서 삭제 시도
+            const { error } = await authClient.from('users').delete().eq('id', userId);
+            
+            if (error) {
+                alert('강제 탈퇴 중 오류가 발생했습니다: ' + error.message + '\n\n💡 팁: 사용자가 작성한 일정이 남아있어서 DB상 삭제가 막힐 수 있습니다. 이 경우 권한을 "승인 대기"로 변경하시면 로그인을 완벽히 차단할 수 있습니다.');
+                return;
+            }
+
+            alert(userName + ' 사용자가 강제 탈퇴 처리되었습니다.');
+            loadUsers();
+        }
+
         async function loadUsers() {
             const list = document.getElementById('userList');
             list.innerHTML = '<li>로딩 중...</li>';
@@ -315,6 +336,7 @@
                             <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>관리자 (Admin)</option>
                         </select>
                         <button onclick="changeRole('${user.id}', document.getElementById('role-${user.id}').value, '${nameStr}')" style="width: auto; padding: 6px 12px; margin: 0; font-size: 13px; font-weight: 600; background: #3b82f6; color: white; border-radius: 6px; box-shadow: none; ${isMe ? 'display: none;' : ''}">확인</button>
+                        <button onclick="forceDeleteUser('${user.id}', '${nameStr}')" style="width: auto; padding: 6px 12px; margin: 0; font-size: 13px; font-weight: 600; background: #ef4444; color: white; border-radius: 6px; box-shadow: none; ${isMe ? 'display: none;' : ''}">강제탈퇴</button>
                     </div>
                     ` : ''}
                 `;
