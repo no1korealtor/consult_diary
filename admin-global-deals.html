@@ -405,6 +405,13 @@
                 data = fallback.data;
             }
 
+            if (data) {
+                data = data.filter(deal => {
+                    const isPrivate = (deal.memo || '').includes('[PRIVATE]');
+                    return !isPrivate;
+                });
+            }
+
             list.innerHTML = '';
             if (!data || data.length === 0) {
                 list.innerHTML = '<li>등록된 전체 일정이 없습니다.</li>';
