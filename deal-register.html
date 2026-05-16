@@ -906,18 +906,18 @@
                     locationHtml = titleHtml + descHtml + details;
                     
                     if (isPrivateMeeting) {
-                        typeBadgeHtml = `<span style="background: #f3f4f6; color: #4b5563; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">개인</span>`;
+                        typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #f3f4f6; color: #4b5563; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #e5e7eb;">🔒 개인 일정</span>`;
                     } else if (isProposal) {
-                        typeBadgeHtml = `<span style="background: #fffbeb; color: #d97706; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">수요조사</span>`;
+                        typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #fffbeb; color: #d97706; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #fde68a;">💡 수요조사 중</span>`;
                     } else if (isPendingAdmin) {
-                        typeBadgeHtml = `<span style="background: #fee2e2; color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">승인 대기중</span>`;
+                        typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #fee2e2; color: #ef4444; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #fecaca;">⏳ 승인 대기중</span>`;
                     } else {
-                        typeBadgeHtml = `<span style="background: #dcfce7; color: #16a34a; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">확정 일정</span>`;
+                        typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #dcfce7; color: #16a34a; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #bbf7d0;">✅ 모임 확정</span>`;
                     }
                     rawMemo = ''; // Hide memo
                 } else if (isGlobal) {
                     locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📢 ${deal.contract_type}</div>`;
-                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">전체 공지</span>`;
+                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800;">전체 공지</span>`;
                 } else {
                     let bName = deal.buildings.road_address;
                     if (deal.buildings.jibun_address) {
@@ -925,7 +925,7 @@
                     }
                     const rName = deal.rooms ? deal.rooms.room_name : '';
                     locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📍 ${bName} <span style="color: #3b82f6;">${rName}</span></div>`;
-                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">${deal.contract_type}</span>`;
+                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800;">${deal.contract_type}</span>`;
                 }
                 
                 const dDayText = getDDay(deal.balance_date);
