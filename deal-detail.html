@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -240,6 +240,12 @@
             }
             window.currentDealIsDone = isDone;
 
+            let isPrivateMeeting = false;
+            if (rawMemo.includes('[PRIVATE]')) {
+                isPrivateMeeting = true;
+                rawMemo = rawMemo.replace(/\[PRIVATE\]/g, '');
+            }
+
             const btnComplete = document.getElementById('btnComplete');
             if (isDone) {
                 btnComplete.innerHTML = '🔄 완료 취소';
@@ -253,10 +259,20 @@
                 btnComplete.style.borderColor = '#bbf7d0';
             }
 
-            let linkUrl = null, mTime = null, mLoc = null, mAtt = null;
+            let linkUrl = null, linkName = '관련 링크', mTime = null, mLoc = null, mAtt = null;
             if (rawMemo.includes('[URL]')) {
                 const m = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
-                if (m) { linkUrl = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                if (m) { 
+                    let urlData = m[1];
+                    if (urlData.includes('|')) {
+                        const parts = urlData.split('|');
+                        linkUrl = parts[0];
+                        linkName = parts[1];
+                    } else {
+                        linkUrl = urlData;
+                    }
+                    rawMemo = rawMemo.replace(m[0], ''); 
+                }
             }
             if (rawMemo.includes('[START]')) {
                 const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
@@ -283,7 +299,7 @@
                 let meetInfoHtml = '';
                 if(mTime) meetInfoHtml += `<div style="margin-bottom:8px;">⏰ 시간: <strong>${mTime}</strong></div>`;
                 if(mAtt) meetInfoHtml += `<div style="margin-bottom:8px;">👤 참석: <strong>${mAtt}</strong></div>`;
-                if(linkUrl) meetInfoHtml += `<div>🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6;">관련 링크 열기</a></div>`;
+                if(linkUrl) meetInfoHtml += `<div>🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6; font-weight: bold;">${linkName}</a></div>`;
                 
                 document.getElementById('memo').innerHTML = `<div style="font-size:18px; font-weight:700; margin-bottom:12px; color:#111827;">${rawMemo.trim() || '모임 일정'}</div>${meetInfoHtml}`;
             } else {
@@ -306,7 +322,7 @@
 
                 let finalMemoHtml = rawMemo.replace(/\n/g, '<br>');
                 if(linkUrl) {
-                   finalMemoHtml += `<div style="margin-top:12px;">🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6; font-weight:bold;">관련 링크 열기</a></div>`;
+                   finalMemoHtml += `<div style="margin-top:12px;">🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6; font-weight:bold;">${linkName}</a></div>`;
                 }
                 document.getElementById('memo').innerHTML = finalMemoHtml || '';
             }

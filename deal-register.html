@@ -229,6 +229,7 @@
         <option value="모임" style="display: none;">모임</option>
     </select>
 
+    <input type="text" id="meetingName" placeholder="📌 모임 이름 (예: 마포구 협회 정기모임)" style="display: none; margin-bottom: 12px; font-weight: 800; border-color: #bfdbfe;">
     <div id="dateRow" style="display: flex; gap: 8px; margin-top: 8px; margin-bottom: 12px;">
         <div style="flex: 1;">
             <label id="balanceDateLabel" style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block;">날짜 지정</label>
@@ -418,6 +419,7 @@
             const contractType = document.getElementById('contractType');
             const propertyFields = document.getElementById('propertyFields');
             const meetingFields = document.getElementById('meetingFields');
+            const meetingName = document.getElementById('meetingName');
             const timeCol = document.getElementById('timeCol');
             const memo = document.getElementById('memo');
 
@@ -432,6 +434,7 @@
                 contractType.style.display = 'block';
                 propertyFields.style.display = 'block';
                 meetingFields.style.display = 'none';
+                if (meetingName) meetingName.style.display = 'none';
                 if (timeCol) timeCol.style.display = 'none';
                 if (contractType.value === '모임') contractType.value = '입주 정산';
                 memo.placeholder = '메모';
@@ -447,8 +450,9 @@
                 contractType.value = '모임';
                 propertyFields.style.display = 'none';
                 meetingFields.style.display = 'block';
+                if (meetingName) meetingName.style.display = 'block';
                 if (timeCol) timeCol.style.display = 'block';
-                memo.placeholder = '모임 이름 (예: 마포구 협회 정기모임)';
+                memo.placeholder = '추가 메모 (선택사항)';
             }
         }
 
@@ -492,15 +496,37 @@
             
             let finalMemo = memo;
             if (contractType === '모임') {
+                const mNameElem = document.getElementById('meetingName');
+                if (mNameElem && !mNameElem.value.trim()) {
+                    status.innerText = '모임 이름을 입력해주세요.';
+                    return;
+                }
+                const mName = mNameElem ? mNameElem.value.trim() : '';
+
+                finalMemo = mName;
                 const mTime = document.getElementById('meetingTime').value;
                 const mLoc = document.getElementById('meetingLocation').value;
                 const mAtt = document.getElementById('meetingAttendance').value;
                 const mUrl = document.getElementById('meetingUrl').value;
-                  const mUrlName = document.getElementById('meetingUrlName').value;
+                const mUrlName = document.getElementById('meetingUrlName').value;
+                if(mUrlName && mUrl) {
+                    finalMemo += `[URL]${mUrl}|${mUrlName}[/URL]`;
+                } else if(mUrl) {
+                    finalMemo += `[URL]${mUrl}[/URL]`;
+                }
+
                 if(mTime) finalMemo += `[TIME]${mTime}[/TIME]`;
                 if(mLoc) finalMemo += `[LOC]${mLoc}[/LOC]`;
                 if(mAtt) finalMemo += `[ATT]${mAtt}[/ATT]`;
-                if(mUrl) finalMemo += `[URL]${mUrl}[/URL]`;
+
+                const globalCb = document.getElementById('meetingIsGlobal');
+                if (globalCb && !globalCb.checked) {
+                    finalMemo += '[PRIVATE]';
+                }
+                
+                if (memo.trim()) {
+                    finalMemo += `\n${memo.trim()}`;
+                }
             }
 
             const payload = {
@@ -594,7 +620,12 @@
             let allDeals = [];
             
             if (data) {
-                allDeals = data;
+                allDeals = data.filter(deal => {
+                    const isMine = deal.user_id === window.currentUser.id;
+                    const isPrivate = (deal.memo || '').includes('[PRIVATE]');
+                    if (isPrivate && !isMine) return false;
+                    return true;
+                });
             }
 
             const sortByDate = (a, b) => {
@@ -658,6 +689,11 @@
                 if (rawMemo.includes('[ATT]')) {
                     const m = rawMemo.match(/\[ATT\](.*?)\[\/ATT\]/);
                     if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                
+                const isPrivateMeeting = rawMemo.includes('[PRIVATE]');
+                if (isPrivateMeeting) {
+                    rawMemo = rawMemo.replace('[PRIVATE]', '');
                 }
 
                 let monthStr = '미정';
