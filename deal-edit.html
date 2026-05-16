@@ -41,6 +41,7 @@
             <option value="계약">계약</option>
             <option value="기타">기타</option>
         </select>
+        <label id="balanceDateLabel" style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: none;">날짜 지정</label>
         <input type="date" id="balanceDate">
         
         <div id="meetingEditFields" style="display: none; background: #eff6ff; padding: 16px; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 12px;">
@@ -92,7 +93,7 @@
             if (data.contract_type === '모임' || !data.buildings) {
                 document.getElementById('buildingRoomText').innerText = `👥 모임 일정 수정`;
                 document.getElementById('contractType').style.display = 'none';
-                document.getElementById('balanceDate').style.display = 'none';
+                document.getElementById('balanceDateLabel').style.display = 'block';
                 document.querySelector('.notice').innerText = "💡 장소, 시간, 링크 및 메모를 수정할 수 있습니다.";
                 document.getElementById('meetingEditFields').style.display = 'block';
 
@@ -139,9 +140,10 @@
                 
                 document.getElementById('buildingRoomText').innerText = `📍 ${bName} ${rName}`;
                 document.getElementById('contractType').value = data.contract_type;
-                if (data.balance_date) {
-                    document.getElementById('balanceDate').value = data.balance_date;
-                }
+            }
+
+            if (data.balance_date) {
+                document.getElementById('balanceDate').value = data.balance_date;
             }
             document.getElementById('memo').value = data.memo || '';
         }
