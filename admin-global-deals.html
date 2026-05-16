@@ -459,6 +459,11 @@
                     if (m) { startDt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
                 
+                let isPendingAdmin = rawMemo.includes('[PENDING_ADMIN]');
+                if (isPendingAdmin) {
+                    rawMemo = rawMemo.replace('[PENDING_ADMIN]', '');
+                }
+
                 let mTime = null, mLoc = null, mAtt = null;
                 if (rawMemo.includes('[TIME]')) {
                     const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
@@ -521,12 +526,19 @@
                     memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 6px; font-size: 13px; color: #3b82f6; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 8px; background: #eff6ff; border-radius: 6px;">${linkName}</div>`;
                 }
 
+                let approveBtnHtml = '';
+                if (isPendingAdmin) {
+                    approveBtnHtml = `<button onclick="event.stopPropagation(); approveDeal('${deal.id}')" style="margin-left: 8px; width: auto; padding: 4px 8px; font-size: 12px; font-weight: 600; background: #10b981; color: white; border-radius: 6px; margin-bottom: 0; box-shadow: none;">승인하기</button>`;
+                }
+
                 li.innerHTML = `
                     <div style="display: flex; align-items: center; margin-bottom: 8px;">
                         <span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 8px;">전체 일정</span>
                         ${dDayHtml}
                         <span style="background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 8px;">👤 ${uName}</span>
+                        ${isPendingAdmin ? '<span style="background: #fee2e2; color: #ef4444; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 8px;">승인 대기중</span>' : ''}
                         <span style="color: #6b7280; font-size: 13px; margin-left: auto;">${dateDisplay}</span>
+                        ${approveBtnHtml}
                         <button onclick="event.stopPropagation(); deleteDeal('${deal.id}')" style="margin-left: 8px; width: auto; padding: 4px 8px; font-size: 12px; font-weight: 600; background: #fee2e2; color: #ef4444; border-radius: 6px; margin-bottom: 0; box-shadow: none;">삭제</button>
                     </div>
                     <div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 ${deal.contract_type} ${mAtt ? `<span style="background: ${mAtt === '참석' ? '#dcfce7' : (mAtt === '미정' ? '#fef3c7' : '#fee2e2')}; color: ${mAtt === '참석' ? '#16a34a' : (mAtt === '미정' ? '#d97706' : '#dc2626')}; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">[${mAtt}]</span>` : ''}</div>
@@ -538,6 +550,20 @@
         }
 
         checkAuthAndLoad();
+
+        window.approveDeal = async function(dealId) {
+            if (!confirm('이 모임 일정을 공식 전체 일정으로 승인하시겠습니까?')) return;
+            const { data: deal, error: fetchErr } = await supabaseClient.from('deals').select('memo').eq('id', dealId).single();
+            if (deal) {
+                const newMemo = (deal.memo || '').replace('[PENDING_ADMIN]', '');
+                const { error } = await supabaseClient.from('deals').update({ memo: newMemo }).eq('id', dealId);
+                if (error) {
+                    alert('승인 중 오류가 발생했습니다: ' + error.message);
+                } else {
+                    loadDeals();
+                }
+            }
+        };
     </script>
 
     <footer class="app-footer">

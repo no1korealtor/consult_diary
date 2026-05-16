@@ -605,7 +605,7 @@
         };
 
         window.confirmProposal = async function(dealId) {
-            if (!confirm('이 모임을 확정하시겠습니까? (수요조사 마감 및 확정 공지로 전환)')) return;
+            if (!confirm('이 모임을 확정 제안하시겠습니까? (관리자 승인 대기 상태로 전환됩니다)')) return;
 
             const { data: deal, error: fetchErr } = await supabaseClient
                 .from('deals')
@@ -617,7 +617,7 @@
                 alert('모임 정보를 불러오지 못했습니다.'); return;
             }
 
-            const newMemo = (deal.memo || '').replace('[PROPOSAL]', '');
+            const newMemo = (deal.memo || '').replace('[PROPOSAL]', '[PENDING_ADMIN]');
             
             const { error: updateErr } = await supabaseClient
                 .from('deals')
@@ -760,6 +760,10 @@
                 if (isProposal) {
                     rawMemo = rawMemo.replace('[PROPOSAL]', '');
                 }
+                const isPendingAdmin = rawMemo.includes('[PENDING_ADMIN]');
+                if (isPendingAdmin) {
+                    rawMemo = rawMemo.replace('[PENDING_ADMIN]', '');
+                }
 
                 let monthStr = '미정';
                 let dateStr = '-';
@@ -857,13 +861,15 @@
                     }
 
                     const meetName = rawMemo.trim() || '이름 없음';
-                    const namePrefix = isPrivateMeeting ? '🔒 ' : (isProposal ? '💡 ' : '');
+                    const namePrefix = isPrivateMeeting ? '🔒 ' : (isProposal ? '💡 ' : (isPendingAdmin ? '⏳ ' : ''));
                     locationHtml = `<div style="color: #0f172a; font-size: 18px; font-weight: 900; line-height: 1.4; margin-bottom: 2px; letter-spacing: -0.5px;">${namePrefix}${meetName}${attBadge}</div>${details}`;
                     
                     if (isPrivateMeeting) {
                         typeBadgeHtml = `<span style="background: #f3f4f6; color: #4b5563; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">개인</span>`;
                     } else if (isProposal) {
                         typeBadgeHtml = `<span style="background: #fffbeb; color: #d97706; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">수요조사</span>`;
+                    } else if (isPendingAdmin) {
+                        typeBadgeHtml = `<span style="background: #fee2e2; color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">승인 대기중</span>`;
                     } else {
                         typeBadgeHtml = `<span style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">공지</span>`;
                     }
