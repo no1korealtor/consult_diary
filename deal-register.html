@@ -1003,6 +1003,7 @@
                 
                 let currentMonthLabel = '';
                 let farFutureCount = 0;
+                let pastCount = 0;
                 let visibleCount = 0;
 
                 allDeals.forEach((deal) => {
@@ -1047,6 +1048,9 @@
                         if (isFarFuture) {
                             dividerLi.style.display = 'none';
                             dividerLi.classList.add('far-future-item');
+                        } else if (isPast) {
+                            dividerLi.style.display = 'none';
+                            dividerLi.classList.add('past-item');
                         } else if (visibleCount >= 5) {
                             dividerLi.style.display = 'none';
                             dividerLi.classList.add('personal-hidden-item');
@@ -1061,6 +1065,10 @@
                         li.style.display = 'none';
                         li.classList.add('far-future-item');
                         farFutureCount++;
+                    } else if (isPast) {
+                        li.style.display = 'none';
+                        li.classList.add('past-item');
+                        pastCount++;
                     } else {
                         if (visibleCount >= 5) {
                             li.style.display = 'none';
@@ -1091,8 +1099,29 @@
                     }
                     list.appendChild(noticeLi);
                 }
-                
-                if (visibleCount > 5 || (visibleCount === 5 && farFutureCount > 0)) {
+
+                if (pastCount > 0) {
+                    const noticePastLi = document.createElement('li');
+                    noticePastLi.dataset.originalDisplay = 'block';
+                    noticePastLi.style.cssText = "margin-top: 12px; padding: 16px; text-align: center; background: #f3f4f6; border-radius: 12px; color: #6b7280; font-size: 14px; font-weight: 600; border: 1px dashed #d1d5db; cursor: pointer; transition: all 0.2s;";
+                    noticePastLi.innerHTML = `⌛ 지난 일정 <strong>${pastCount}건</strong> 펼쳐보기 ▼`;
+                    
+                    noticePastLi.onclick = () => {
+                        const pastItems = document.querySelectorAll('.past-item');
+                        pastItems.forEach(item => {
+                            item.style.display = item.dataset.originalDisplay || '';
+                        });
+                        noticePastLi.style.display = 'none';
+                    };
+                    
+                    if (visibleCount >= 5) {
+                        noticePastLi.style.display = 'none';
+                        noticePastLi.classList.add('personal-hidden-item');
+                    }
+                    list.appendChild(noticePastLi);
+                }
+
+                if (visibleCount > 5 || (visibleCount === 5 && (farFutureCount > 0 || pastCount > 0))) {
                     personalMoreBtn.style.display = 'block';
                     personalMoreBtn.onclick = function() {
                         const isExpanded = this.innerText.includes('접기');
