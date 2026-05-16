@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -79,6 +79,12 @@
                 allTips = data || [];
             }
             
+            if (isSavedOnly) {
+                document.querySelector('.header h2').innerHTML = `⭐ 내가 저장한 팁 <span style="font-size: 14px; color: #64748b; font-weight: 600;">(총 ${allTips.length}건)</span>`;
+            } else {
+                document.querySelector('.header h2').innerHTML = `📚 실무 팁 전체보기 <span style="font-size: 14px; color: #64748b; font-weight: 600;">(총 ${allTips.length}건)</span>`;
+            }
+
             renderTips(allTips);
         }
 

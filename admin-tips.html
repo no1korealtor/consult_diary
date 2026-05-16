@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -142,7 +142,7 @@
     <h2>💡 실무 팁 등록 관리</h2>
 
     <div class="form-group">
-        <label>카테고리</label><select id="category" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:16px; font-size:14px;"><option value="공통">공통</option><option value="세법">세법/정책</option><option value="주택">주택</option><option value="상가">상가/사무실</option><option value="토지">토지</option></select><label>팁 제목</label>
+        <label>카테고리</label><select id="category" style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:8px; margin-bottom:16px; font-size:14px;"><option value="공통">공통</option><option value="세법/정책">세법/정책</option><option value="중개실무">중개실무</option></select><label>팁 제목</label>
         <input type="text" id="title" placeholder="예: 2026년 개정 주택임대차보호법 요약">
 
         <label>적용일 (또는 라벨)</label>
@@ -259,13 +259,13 @@
             document.getElementById('title').value = tip.title || '';
             
             const summaries = Array.isArray(tip.summary) ? tip.summary : (typeof tip.summary === "string" ? JSON.parse(tip.summary || "[]") : []);
-            document.getElementById('summary1').value = summaries.length > 0 ? summaries[0] : '';
-            document.getElementById('summary2').value = summaries.length > 1 ? summaries[1] : '';
-            document.getElementById('summary3').value = summaries.length > 2 ? summaries[2] : '';
+            document.getElementById('summary').value = summaries.join('\n');
+
+
             
-            document.getElementById('effective_date').value = tip.effective_date || '';
+            document.getElementById('effectiveDate').value = tip.effective_date || '';
             document.getElementById('warnings').value = tip.warnings || '';
-            document.getElementById('full_text').value = tip.full_text || '';
+            document.getElementById('fullText').value = tip.full_text || '';
             
             const btn = document.querySelector('.btn-primary');
             btn.innerText = '팁 수정하기';
@@ -278,12 +278,12 @@
             editingTipId = null;
             document.getElementById('category').value = '공통';
             document.getElementById('title').value = '';
-            document.getElementById('summary1').value = '';
-            document.getElementById('summary2').value = '';
-            document.getElementById('summary3').value = '';
-            document.getElementById('effective_date').value = '';
+            document.getElementById('summary').value = '';
+
+
+            document.getElementById('effectiveDate').value = '';
             document.getElementById('warnings').value = '';
-            document.getElementById('full_text').value = '';
+            document.getElementById('fullText').value = '';
             
             const btn = document.querySelector('.btn-primary');
             btn.innerText = '팁 등록하기';

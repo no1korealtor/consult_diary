@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -176,7 +176,7 @@
     </div>
     <div onclick="openTipSheet()" style="cursor: pointer; padding-right: 30px;">
         <div style="font-size: 12px; color: #94a3b8; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-            <span>💡 맞춤 실무 팁</span>
+            <span id="tipTitleSpan">💡 맞춤 실무 팁</span>
             <span id="tipBannerCategory" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; padding: 2px 6px; border-radius: 4px; font-size: 10px;">일반</span>
         </div>
         <div id="tipBannerTitle" style="font-size: 15px; font-weight: 800; color: #f8fafc; word-break: keep-all; line-height: 1.4;">-</div>
@@ -948,7 +948,7 @@
     
     <div style="padding: 0 24px 20px; flex: 1; overflow-y: auto;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin: 0; font-size: 20px; font-weight: 800; color: #111827;">💡 현장 실무 팁</h2>
+            <h2 id="tipSheetTitle" style="margin: 0; font-size: 20px; font-weight: 800; color: #111827;">💡 현장 실무 팁</h2>
             <span style="font-size: 13px; color: #6b7280; font-weight: 600;">빠른 판단 가이드</span>
         </div>
         
@@ -991,6 +991,15 @@ async function loadTips() {
         if (!error && tips) {
             const hiddenIds = new Set((hidden || []).map(h => h.tip_id));
             practicalTips = tips.filter(t => !hiddenIds.has(t.id)); // 안 본 것만 필터링
+            
+            const tipTitleSpan = document.getElementById("tipTitleSpan");
+            if (tipTitleSpan) {
+                tipTitleSpan.innerHTML = `💡 맞춤 실무 팁 <span style="font-size: 11px; color: #94a3b8; font-weight: normal; margin-left: 4px;">(총 ${tips.length}건)</span>`;
+            }
+            const tipSheetTitle = document.getElementById("tipSheetTitle");
+            if (tipSheetTitle) {
+                tipSheetTitle.innerHTML = `💡 현장 실무 팁 <span style="font-size: 14px; color: #6b7280; font-weight: 600; margin-left: 4px;">(총 ${tips.length}건)</span>`;
+            }
         }
     } catch(e) {
         console.log("DB load failed.");
