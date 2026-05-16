@@ -894,19 +894,26 @@
                     dDayHtml = `<span style="background: ${badgeBg}; color: ${badgeColor}; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">${dDayText}</span>`;
                 }
 
+                const isMine = deal.user_id === window.currentUser.id;
+                
                 const li = document.createElement('li');
                 li.className = 'deal-item';
+                
                 if (isGlobal) {
                     li.classList.add('global');
-                    li.style.cursor = 'default';
-                } else {
+                }
+                
+                if (isMine) {
                     li.style.cursor = 'pointer';
                     li.onclick = () => location.href = 'deal-detail.html?id=' + deal.id;
-                    if (isUrgent) {
-                        li.style.borderColor = '#fda4af';
-                        li.style.backgroundColor = '#fff1f2';
-                        li.style.boxShadow = '0 4px 12px rgba(244, 63, 94, 0.1)';
-                    }
+                } else {
+                    li.style.cursor = 'default';
+                }
+
+                if (!isGlobal && isUrgent) {
+                    li.style.borderColor = '#fda4af';
+                    li.style.backgroundColor = '#fff1f2';
+                    li.style.boxShadow = '0 4px 12px rgba(244, 63, 94, 0.1)';
                 }
                 
                 let memoHtml = '';
