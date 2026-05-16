@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -178,6 +178,10 @@
             카카오맵 길찾기
         </button>
 
+        <button type="button" id="btnComplete" class="btn-secondary" onclick="toggleComplete()" style="margin-bottom: 12px; border-radius: 14px; background-color: #dcfce7; border: 1px solid #bbf7d0; color: #16a34a; font-weight: 700;">
+            ✅ 일정 완료
+        </button>
+
         <div style="display: flex; gap: 12px;">
             <button class="btn-secondary" onclick="editDeal()" style="flex: 1; margin-bottom: 0; border-radius: 14px; background-color: #ffffff; border: 1px solid #e5e7eb; color: #4b5563; font-weight: 700;">
                 ✏️ 일정 수정
@@ -229,6 +233,26 @@
             }
 
             let rawMemo = data.memo || '';
+            let isDone = false;
+            if (rawMemo.includes('[DONE]')) {
+                isDone = true;
+                rawMemo = rawMemo.replace(/\[DONE\]/g, '');
+            }
+            window.currentDealIsDone = isDone;
+
+            const btnComplete = document.getElementById('btnComplete');
+            if (isDone) {
+                btnComplete.innerHTML = '🔄 완료 취소';
+                btnComplete.style.backgroundColor = '#f3f4f6';
+                btnComplete.style.color = '#4b5563';
+                btnComplete.style.borderColor = '#e5e7eb';
+            } else {
+                btnComplete.innerHTML = '✅ 일정 완료';
+                btnComplete.style.backgroundColor = '#dcfce7';
+                btnComplete.style.color = '#16a34a';
+                btnComplete.style.borderColor = '#bbf7d0';
+            }
+
             let linkUrl = null, mTime = null, mLoc = null, mAtt = null;
             if (rawMemo.includes('[URL]')) {
                 const m = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
@@ -417,6 +441,27 @@
             location.href =
                 'deal-register.html';
 
+        }
+
+        async function toggleComplete() {
+            const ok = confirm(window.currentDealIsDone ? '완료 처리를 취소하시겠습니까?' : '이 일정을 완료 처리하시겠습니까?');
+            if (!ok) return;
+
+            const { data, error: fetchErr } = await supabaseClient.from('deals').select('memo').eq('id', dealId).single();
+            if (fetchErr) { alert(fetchErr.message); return; }
+
+            let newMemo = data.memo || '';
+            if (window.currentDealIsDone) {
+                newMemo = newMemo.replace(/\[DONE\]/g, '');
+            } else {
+                newMemo = '[DONE]' + newMemo;
+            }
+
+            const { error } = await supabaseClient.from('deals').update({ memo: newMemo }).eq('id', dealId);
+            if (error) { alert(error.message); return; }
+
+            alert(window.currentDealIsDone ? '완료 취소되었습니다.' : '일정이 완료 처리되었습니다.');
+            location.reload();
         }
 
         async function init() {
