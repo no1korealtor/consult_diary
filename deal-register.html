@@ -269,7 +269,12 @@
     </div>
 
     <div id="meetingFields" style="display: none; background: #eff6ff; padding: 16px; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 12px;">
-        <input type="text" id="meetingLocation" placeholder="모임 장소 (예: 합정역 인근)" style="margin-bottom: 8px;">
+        <label style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block; margin-bottom: 4px;">장소 (주소 검색)</label>
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+            <input type="text" id="meetingLocation" placeholder="도로명/지번 주소 검색" readonly style="flex: 1; margin-bottom: 0;" onclick="execDaumPostcodeMeeting()">
+            <button type="button" onclick="execDaumPostcodeMeeting()" style="width: auto; padding: 0 16px; margin-bottom: 0; background: #3b82f6; color: white; border-radius: 12px; font-weight: 600;">검색</button>
+        </div>
+        <input type="text" id="meetingLocationDetail" placeholder="상세 장소 (예: 2층 호프집)" style="margin-bottom: 8px;">
         <select id="meetingAttendance" style="margin-bottom: 8px;">
             <option value="참석">참석</option>
             <option value="미정">미정</option>
@@ -435,6 +440,16 @@
 
         }
 
+        function execDaumPostcodeMeeting() {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    let addr = data.roadAddress !== '' ? data.roadAddress : data.jibunAddress;
+                    document.getElementById('meetingLocation').value = addr;
+                    document.getElementById('meetingLocationDetail').focus();
+                }
+            }).open();
+        }
+
         let currentTab = 'work';
         function switchTab(tab) {
             currentTab = tab;
@@ -532,7 +547,9 @@
 
                 finalMemo = mName;
                 const mTime = document.getElementById('meetingTime').value;
-                const mLoc = document.getElementById('meetingLocation').value;
+                const mLocMain = document.getElementById('meetingLocation').value;
+                const mLocDetail = document.getElementById('meetingLocationDetail').value;
+                const mLoc = (mLocMain + ' ' + mLocDetail).trim();
                 const mAtt = document.getElementById('meetingAttendance').value;
                 const mUrl = document.getElementById('meetingUrl').value;
                 const mUrlName = document.getElementById('meetingUrlName').value;
@@ -572,10 +589,11 @@
             if (contractType !== '모임' && buildingId) payload.building_id = buildingId;
             if (contractType !== '모임' && roomId) payload.room_id = roomId;
 
-            const { error } =
+            const { data: savedData, error } =
                 await supabaseClient
                     .from('deals')
-                    .insert([payload]);
+                    .insert([payload])
+                    .select();
 
             if (error) {
 
@@ -583,6 +601,15 @@
                     '에러: ' + error.message;
 
                 return;
+            }
+
+            if (savedData && savedData.length > 0 && contractType === '모임') {
+                const mAtt = document.getElementById('meetingAttendance').value;
+                if (mAtt) {
+                    await supabaseClient
+                        .from('deal_attendances')
+                        .insert([{ deal_id: savedData[0].id, user_id: window.currentUser.id, status: mAtt }]);
+                }
             }
 
             status.innerText = '저장 완료';
