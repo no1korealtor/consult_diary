@@ -255,10 +255,27 @@
             <input type="url" id="meetingUrl" placeholder="관련 링크 (URL)" style="margin-bottom: 0; flex: 1;">
             <input type="text" id="meetingUrlName" placeholder="링크 이름 (예: 국세청 홈택스)" style="margin-bottom: 0; flex: 1;">
         </div>
-        <div style="display: flex; gap: 8px; margin-top: 12px; align-items: center; background: #ffffff; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
-            <input type="checkbox" id="meetingIsGlobal" style="width: 18px; height: 18px; margin: 0; cursor: pointer;">
-            <label for="meetingIsGlobal" style="font-size: 13px; color: #334155; font-weight: 700; cursor: pointer;">📢 전체 직원에게 공지 (참석 여부 투표 포함)</label>
+        <div style="background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 12px;">
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <input type="checkbox" id="meetingIsGlobal" style="width: 18px; height: 18px; margin: 0; cursor: pointer;">
+                <label for="meetingIsGlobal" style="font-size: 13px; color: #334155; font-weight: 700; cursor: pointer;">📢 전체 직원에게 공유 (투표 기능 포함)</label>
+            </div>
+            <div id="meetingProposalOptions" style="display: none; padding-left: 26px; flex-direction: column; gap: 8px; margin-top: 10px;">
+                <label style="font-size: 13px; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="radio" name="meetingType" value="CONFIRMED" checked style="margin:0;">
+                    ✅ 확정된 모임으로 공지
+                </label>
+                <label style="font-size: 13px; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                    <input type="radio" name="meetingType" value="PROPOSAL" style="margin:0;">
+                    💡 수요조사 (일정/참석자 파악용)
+                </label>
+            </div>
         </div>
+        <script>
+            document.getElementById('meetingIsGlobal').addEventListener('change', function() {
+                document.getElementById('meetingProposalOptions').style.display = this.checked ? 'flex' : 'none';
+            });
+        </script>
     </div>
 
     <textarea id="memo" placeholder="메모"></textarea>
@@ -526,6 +543,11 @@
                 const globalCb = document.getElementById('meetingIsGlobal');
                 if (globalCb && !globalCb.checked) {
                     finalMemo += '[PRIVATE]';
+                } else if (globalCb && globalCb.checked) {
+                    const proposalRadio = document.querySelector('input[name="meetingType"]:checked');
+                    if (proposalRadio && proposalRadio.value === 'PROPOSAL') {
+                        finalMemo += '[PROPOSAL]';
+                    }
                 }
                 
                 if (memo.trim()) {
@@ -575,6 +597,33 @@
                 if(typeof loadTips === 'function') loadTips();
         };
 
+        window.confirmProposal = async function(dealId) {
+            if (!confirm('이 모임을 확정하시겠습니까? (수요조사 마감 및 확정 공지로 전환)')) return;
+
+            const { data: deal, error: fetchErr } = await supabaseClient
+                .from('deals')
+                .select('memo')
+                .eq('id', dealId)
+                .single();
+            
+            if (fetchErr || !deal) {
+                alert('모임 정보를 불러오지 못했습니다.'); return;
+            }
+
+            const newMemo = (deal.memo || '').replace('[PROPOSAL]', '');
+            
+            const { error: updateErr } = await supabaseClient
+                .from('deals')
+                .update({ memo: newMemo })
+                .eq('id', dealId);
+
+            if (updateErr) {
+                alert('확정 처리에 실패했습니다: ' + updateErr.message); return;
+            }
+
+            loadDeals();
+        };
+
         function getDDay(dateString) {
             if (!dateString) return '';
             const targetDate = new Date(dateString);
@@ -601,6 +650,7 @@
                 .from('deals')
                 .select(`
                     id,
+                    user_id,
                     building_id,
                     contract_type,
                     balance_date,
@@ -699,6 +749,10 @@
                 if (isPrivateMeeting) {
                     rawMemo = rawMemo.replace('[PRIVATE]', '');
                 }
+                const isProposal = rawMemo.includes('[PROPOSAL]');
+                if (isProposal) {
+                    rawMemo = rawMemo.replace('[PROPOSAL]', '');
+                }
 
                 let monthStr = '미정';
                 let dateStr = '-';
@@ -765,7 +819,7 @@
 
                     if (isGlobal && myAtt) mAtt = myAtt;
                     
-                    if (isGlobal) {
+                    if (isGlobal && !isPrivateMeeting) {
                         const attStr = attNames.length > 0 ? `<div style="font-size: 12px; color: #4f46e5; margin-top: 12px; padding: 0 4px; font-weight: 600;">✅ 참석자: ${attNames.join(', ')}</div>` : '';
                         const noStr = noNames.length > 0 ? `<div style="font-size: 12px; color: #64748b; margin-top: 4px; padding: 0 4px;">❌ 불참자: ${noNames.join(', ')}</div>` : '';
                         
@@ -777,16 +831,35 @@
                         ${attStr}
                         ${noStr}
                         `;
+
+                        const isMine = deal.user_id === window.currentUser.id;
+                        if (isProposal && isMine) {
+                            details += `
+                            <div style="margin-top: 12px;" onclick="event.stopPropagation()">
+                                <button type="button" onclick="confirmProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fffbeb; color: #d97706; border: 1px solid #fde68a;">✅ 제안된 모임 확정하기</button>
+                            </div>
+                            `;
+                        }
                     }
 
                     let attBadge = '';
-                    if(mAtt === '참석') attBadge = `<span style="color:#4f46e5; font-size:13px; font-weight:800; margin-left: 6px;">[참석]</span>`;
-                    else if(mAtt === '불참') attBadge = `<span style="color:#64748b; font-size:13px; font-weight:800; margin-left: 6px;">[불참]</span>`;
-                    else if(mAtt === '미정') attBadge = `<span style="color:#94a3b8; font-size:13px; font-weight:800; margin-left: 6px;">[미정]</span>`;
+                    if (!isPrivateMeeting) {
+                        if(mAtt === '참석') attBadge = `<span style="color:#4f46e5; font-size:13px; font-weight:800; margin-left: 6px;">[참석]</span>`;
+                        else if(mAtt === '불참') attBadge = `<span style="color:#64748b; font-size:13px; font-weight:800; margin-left: 6px;">[불참]</span>`;
+                        else if(mAtt === '미정') attBadge = `<span style="color:#94a3b8; font-size:13px; font-weight:800; margin-left: 6px;">[미정]</span>`;
+                    }
 
                     const meetName = rawMemo.trim() || '이름 없음';
-                    locationHtml = `<div style="color: #0f172a; font-size: 18px; font-weight: 900; line-height: 1.4; margin-bottom: 2px; letter-spacing: -0.5px;">${meetName}${attBadge}</div>${details}`;
-                    typeBadgeHtml = `<span style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">공지</span>`;
+                    const namePrefix = isPrivateMeeting ? '🔒 ' : (isProposal ? '💡 ' : '');
+                    locationHtml = `<div style="color: #0f172a; font-size: 18px; font-weight: 900; line-height: 1.4; margin-bottom: 2px; letter-spacing: -0.5px;">${namePrefix}${meetName}${attBadge}</div>${details}`;
+                    
+                    if (isPrivateMeeting) {
+                        typeBadgeHtml = `<span style="background: #f3f4f6; color: #4b5563; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">개인</span>`;
+                    } else if (isProposal) {
+                        typeBadgeHtml = `<span style="background: #fffbeb; color: #d97706; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">수요조사</span>`;
+                    } else {
+                        typeBadgeHtml = `<span style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">공지</span>`;
+                    }
                     rawMemo = ''; // Hide memo
                 } else if (isGlobal) {
                     locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📢 ${deal.contract_type}</div>`;

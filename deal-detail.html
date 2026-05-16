@@ -246,6 +246,12 @@
                 rawMemo = rawMemo.replace(/\[PRIVATE\]/g, '');
             }
 
+            let isProposal = false;
+            if (rawMemo.includes('[PROPOSAL]')) {
+                isProposal = true;
+                rawMemo = rawMemo.replace(/\[PROPOSAL\]/g, '');
+            }
+
             const btnComplete = document.getElementById('btnComplete');
             if (isDone) {
                 btnComplete.innerHTML = '🔄 완료 취소';
@@ -291,8 +297,12 @@
                 if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
             }
 
-            if (data.contract_type === '모임') {
-                document.getElementById('dealTitle').innerText = (data.balance_date ? data.balance_date + ' ' : '') + '모임';
+            if (data.contract_type === '모임' || !data.building_id) {
+                let meetTitle = '모임';
+                if (isPrivateMeeting) meetTitle = '개인 일정';
+                else if (isProposal) meetTitle = '💡 수요조사 (제안)';
+
+                document.getElementById('dealTitle').innerText = (data.balance_date ? data.balance_date + ' ' : '') + meetTitle;
                 document.getElementById('address').innerText = mLoc || '장소 미정';
                 document.getElementById('pwdRow').style.display = 'none';
                 
@@ -301,7 +311,8 @@
                 if(mAtt) meetInfoHtml += `<div style="margin-bottom:8px;">👤 참석: <strong>${mAtt}</strong></div>`;
                 if(linkUrl) meetInfoHtml += `<div>🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6; font-weight: bold;">${linkName}</a></div>`;
                 
-                document.getElementById('memo').innerHTML = `<div style="font-size:18px; font-weight:700; margin-bottom:12px; color:#111827;">${rawMemo.trim() || '모임 일정'}</div>${meetInfoHtml}`;
+                const namePrefix = isPrivateMeeting ? '🔒 ' : (isProposal ? '💡 [모임 제안] ' : '');
+                document.getElementById('memo').innerHTML = `<div style="font-size:18px; font-weight:700; margin-bottom:12px; color:#111827;">${namePrefix}${rawMemo.trim() || '모임 일정'}</div>${meetInfoHtml}`;
             } else {
                 document.getElementById('dealTitle').innerText = (data.balance_date ? data.balance_date + ' ' : '') + data.contract_type;
 
