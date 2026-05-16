@@ -41,7 +41,22 @@
             <option value="기타">기타</option>
         </select>
         <input type="date" id="balanceDate">
-        <textarea id="memo" placeholder="메모" rows="4"></textarea>
+        
+        <div id="meetingEditFields" style="display: none; background: #eff6ff; padding: 16px; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 12px;">
+            <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">모임 장소 (수정 가능)</label>
+            <input type="text" id="mLoc" placeholder="장소 입력">
+            
+            <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">시간</label>
+            <input type="time" id="mTime">
+            
+            <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">관련 링크(URL)</label>
+            <input type="text" id="mUrl" placeholder="https://...">
+            
+            <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">링크 표시 이름</label>
+            <input type="text" id="mUrlName" placeholder="예: 카카오맵 길찾기">
+        </div>
+
+        <textarea id="memo" placeholder="일정 메모 / 모임명" rows="4"></textarea>
 
         <button class="btn-primary" onclick="updateDeal()">수정 완료</button>
         <button class="btn-secondary" onclick="history.back()">취소</button>
@@ -70,10 +85,41 @@
             }
 
             if (data.contract_type === '모임' || !data.buildings) {
-                document.getElementById('buildingRoomText').innerText = `👥 모임 일정 (수정 불가)`;
+                document.getElementById('buildingRoomText').innerText = `👥 모임 일정 수정`;
                 document.getElementById('contractType').style.display = 'none';
                 document.getElementById('balanceDate').style.display = 'none';
-                document.querySelector('.notice').innerText = "💡 모임 일정은 장소/시간 등 세부 항목 수정이 불가능합니다. 내용 수정이 필요하다면 기존 모임을 삭제하고 새로 만들어주세요.";
+                document.querySelector('.notice').innerText = "💡 장소, 시간, 링크 및 메모를 수정할 수 있습니다.";
+                document.getElementById('meetingEditFields').style.display = 'block';
+
+                let rawMemo = data.memo || '';
+                
+                // Parse tags
+                const timeMatch = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
+                if (timeMatch) { document.getElementById('mTime').value = timeMatch[1]; rawMemo = rawMemo.replace(timeMatch[0], ''); }
+                
+                const locMatch = rawMemo.match(/\[LOC\](.*?)\[\/LOC\]/);
+                if (locMatch) { document.getElementById('mLoc').value = locMatch[1]; rawMemo = rawMemo.replace(locMatch[0], ''); }
+                
+                const urlMatch = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
+                if (urlMatch) {
+                    const parts = urlMatch[1].split('|');
+                    document.getElementById('mUrl').value = parts[0];
+                    if (parts.length > 1) document.getElementById('mUrlName').value = parts[1];
+                    rawMemo = rawMemo.replace(urlMatch[0], '');
+                }
+                
+                // Retain hidden attributes like PROPOSAL, PENDING_ADMIN, PRIVATE, DONE
+                window.meetingHiddenTags = '';
+                const tags = ['[DONE]', '[PRIVATE]', '[PROPOSAL]', '[PENDING_ADMIN]'];
+                tags.forEach(tag => {
+                    if (rawMemo.includes(tag)) {
+                        window.meetingHiddenTags += tag;
+                        rawMemo = rawMemo.replace(new RegExp('\\' + tag, 'g'), '');
+                    }
+                });
+
+                document.getElementById('memo').value = rawMemo.trim();
+
             } else {
                 let bName = data.buildings.road_address;
                 if (data.buildings.jibun_address) {
@@ -93,7 +139,22 @@
         async function updateDeal() {
             const contractType = document.getElementById('contractType').style.display !== 'none' ? document.getElementById('contractType').value : undefined;
             const balanceDate = document.getElementById('balanceDate').style.display !== 'none' ? document.getElementById('balanceDate').value : undefined;
-            const memo = document.getElementById('memo').value;
+            let memo = document.getElementById('memo').value;
+            
+            // If meeting, reconstruct memo
+            if (document.getElementById('meetingEditFields').style.display === 'block') {
+                const mLoc = document.getElementById('mLoc').value;
+                const mTime = document.getElementById('mTime').value;
+                const mUrl = document.getElementById('mUrl').value;
+                const mUrlName = document.getElementById('mUrlName').value;
+
+                memo = (window.meetingHiddenTags || '') + memo;
+                if(mUrlName && mUrl) memo += `[URL]${mUrl}|${mUrlName}[/URL]`;
+                else if(mUrl) memo += `[URL]${mUrl}[/URL]`;
+                if(mTime) memo += `[TIME]${mTime}[/TIME]`;
+                if(mLoc) memo += `[LOC]${mLoc}[/LOC]`;
+            }
+
             const status = document.getElementById('status');
 
             status.innerText = '저장 중...';
