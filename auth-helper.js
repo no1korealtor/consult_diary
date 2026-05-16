@@ -31,7 +31,7 @@ async function requireAuth(bypassProfileCheck = false) {
     // DB에서 해당 사용자의 role, 주소, 전화번호 정보 조회 (users 테이블은 authClient 프로젝트에 존재)
     const { data: profile, error: profileError } = await authClient
         .from('users')
-        .select('role, office_address, phone')
+        .select('role, office_address, phone, name')
         .eq('id', user.id)
         .single();
 
@@ -52,6 +52,7 @@ async function requireAuth(bypassProfileCheck = false) {
     user.role = profile.role;
     user.office_address = profile.office_address;
     user.phone = profile.phone;
+    user.name = profile.name || user.email;
     window.currentUser = user;
     return user;
 }

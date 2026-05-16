@@ -162,9 +162,12 @@
             </h2>
             <p style="margin: 6px 0 0 0; color: #6b7280; font-size: 13px; font-weight: 600;">신대림공인중개사사무소 스마트 일정관리</p>
         </div>
-        <button type="button" onclick="logout()" style="background: white; border: 1px solid #e5e7eb; font-size: 13px; cursor: pointer; padding: 6px 10px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); color: #4b5563; display: flex; align-items: center; gap: 4px; margin: 0; width: auto;" title="로그아웃">
-            🚪 로그아웃
-        </button>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+            <div id="welcomeMessage" style="font-size: 13px; font-weight: 700; color: #4b5563;"></div>
+            <button type="button" onclick="logout()" style="background: white; border: 1px solid #e5e7eb; font-size: 13px; cursor: pointer; padding: 6px 10px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); color: #4b5563; display: flex; align-items: center; gap: 4px; margin: 0; width: auto;" title="로그아웃">
+                🚪 로그아웃
+            </button>
+        </div>
     </div>
 
 
@@ -347,6 +350,7 @@
 
             const user = await requireAuth();
             if (user) {
+                document.getElementById('welcomeMessage').innerText = (user.name || '전문가') + '님 환영합니다!';
                 const { data: usersData, error: usersErr } = await window.authClient.from('users').select('id, name');
                   if (usersErr) { alert('Users fetch error: ' + usersErr.message); }
                 if (usersData) { window.allUsersMap = {}; usersData.forEach(u => window.allUsersMap[u.id] = u.name); }
