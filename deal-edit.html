@@ -99,25 +99,25 @@
 
                 let rawMemo = data.memo || '';
                 
-                // Parse tags
+                // Parse tags (extract values from the FIRST occurrence)
                 const timeMatch = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
-                if (timeMatch) { document.getElementById('mTime').value = timeMatch[1]; rawMemo = rawMemo.replace(timeMatch[0], ''); }
+                if (timeMatch) document.getElementById('mTime').value = timeMatch[1];
                 
                 const locMatch = rawMemo.match(/\[LOC\](.*?)\[\/LOC\]/);
-                if (locMatch) { 
-                    document.getElementById('mLoc').value = locMatch[1]; 
-                    // To handle the new separated structure, we just put everything into the base location field if they don't split it nicely, 
-                    // but the user can clear it and re-search.
-                    rawMemo = rawMemo.replace(locMatch[0], ''); 
-                }
+                if (locMatch) document.getElementById('mLoc').value = locMatch[1];
                 
                 const urlMatch = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
                 if (urlMatch) {
                     const parts = urlMatch[1].split('|');
                     document.getElementById('mUrl').value = parts[0];
                     if (parts.length > 1) document.getElementById('mUrlName').value = parts[1];
-                    rawMemo = rawMemo.replace(urlMatch[0], '');
                 }
+
+                // Strip ALL occurrences of functional tags globally so they don't show up in textarea
+                rawMemo = rawMemo.replace(/\[TIME\].*?\[\/TIME\]/g, '');
+                rawMemo = rawMemo.replace(/\[LOC\].*?\[\/LOC\]/g, '');
+                rawMemo = rawMemo.replace(/\[URL\].*?\[\/URL\]/g, '');
+                rawMemo = rawMemo.replace(/\[ATT\].*?\[\/ATT\]/g, '');
                 
                 // Retain hidden attributes like PROPOSAL, PENDING_ADMIN, PRIVATE, DONE
                 window.meetingHiddenTags = '';
@@ -125,9 +125,14 @@
                 tags.forEach(tag => {
                     if (rawMemo.includes(tag)) {
                         window.meetingHiddenTags += tag;
-                        rawMemo = rawMemo.replace(new RegExp('\\' + tag, 'g'), '');
                     }
                 });
+                
+                // Strip hidden tags safely
+                rawMemo = rawMemo.replace(/\[DONE\]/g, '');
+                rawMemo = rawMemo.replace(/\[PRIVATE\]/g, '');
+                rawMemo = rawMemo.replace(/\[PROPOSAL\]/g, '');
+                rawMemo = rawMemo.replace(/\[PENDING_ADMIN\]/g, '');
 
                 document.getElementById('memo').value = rawMemo.trim();
 
