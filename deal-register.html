@@ -378,9 +378,16 @@
             const user = await requireAuth();
             if (user) {
                 document.getElementById('welcomeMessage').innerText = (user.name || '전문가') + '님 환영합니다!';
-                const { data: usersData, error: usersErr } = await window.authClient.from('users').select('id, name');
+                const { data: usersData, error: usersErr } = await window.authClient.from('users').select('id, name, phone');
                   if (usersErr) { alert('Users fetch error: ' + usersErr.message); }
-                if (usersData) { window.allUsersMap = {}; usersData.forEach(u => window.allUsersMap[u.id] = u.name); }
+                if (usersData) { 
+                    window.allUsersMap = {}; 
+                    window.allUsersPhoneMap = {};
+                    usersData.forEach(u => {
+                        window.allUsersMap[u.id] = u.name;
+                        window.allUsersPhoneMap[u.id] = u.phone;
+                    });
+                }
                 if (!user.office_address || !user.phone) {
                     document.getElementById('inline-profile-warning').style.display = 'block';
                 }
@@ -683,8 +690,7 @@
                     memo,
                     buildings ( jibun_address, road_address ),
                     rooms ( room_name ),
-                    deal_attendances ( user_id, status ),
-                    users ( name, phone )
+                    deal_attendances ( user_id, status )
                 `)
                 .or(`user_id.eq.${window.currentUser.id},building_id.is.null`)
                 .order('balance_date', { ascending: false }) // Fetch recent & upcoming
@@ -863,9 +869,10 @@
                         ${noStr}
                         `;
 
-                        if (!isPrivateMeeting && deal.users) {
-                            const uName = deal.users.name || '알 수 없음';
-                            const uPhone = deal.users.phone ? ` (<a href="tel:${deal.users.phone}" style="color: #3b82f6; text-decoration: none;">${deal.users.phone}</a>)` : '';
+                        if (!isPrivateMeeting && window.allUsersMap) {
+                            const uName = window.allUsersMap[deal.user_id] || '알 수 없음';
+                            const uPhoneRaw = window.allUsersPhoneMap ? window.allUsersPhoneMap[deal.user_id] : null;
+                            const uPhone = uPhoneRaw ? ` (<a href="tel:${uPhoneRaw}" style="color: #3b82f6; text-decoration: none;">${uPhoneRaw}</a>)` : '';
                             details += `<div style="font-size: 12px; color: #6b7280; margin-top: 12px; text-align: right; font-weight: 600;">제안자: ${uName}${uPhone}</div>`;
                         }
 
