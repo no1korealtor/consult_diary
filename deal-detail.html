@@ -319,12 +319,11 @@
                 if(mAtt) meetInfoHtml += `<div style="margin-bottom:8px;">👤 참석: <strong>${mAtt}</strong></div>`;
                 if(linkUrl) meetInfoHtml += `<div>🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6; font-weight: bold;">${linkName}</a></div>`;
                 
-                const namePrefix = isPrivateMeeting ? '🔒 ' : (isProposal ? '💡 [모임 제안] ' : (isPendingAdmin ? '⏳ [승인 대기중] ' : '✅ [확정] '));
                 const rawLines = rawMemo.trim().split('\n');
                 const meetName = rawLines[0] || '모임 일정';
                 const meetDesc = rawLines.slice(1).join('<br>').trim();
                 
-                let titleHtml = `<div style="font-size:18px; font-weight:700; margin-bottom:4px; color:#111827;">${namePrefix}${meetName}</div>`;
+                let titleHtml = `<div style="font-size:18px; font-weight:700; margin-bottom:4px; color:#111827;">${meetName}</div>`;
                 let descHtml = '';
                 if (meetDesc) {
                     descHtml = `<div style="font-size:15px; font-weight:400; color:#475569; line-height:1.6; margin-bottom:12px;">${meetDesc}</div>`;

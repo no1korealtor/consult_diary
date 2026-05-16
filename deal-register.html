@@ -896,9 +896,8 @@
                     const rawLines = rawMemo.trim().split('\n');
                     const meetName = rawLines[0] || '이름 없음';
                     const meetDesc = rawLines.slice(1).join('<br>').trim();
-                    const namePrefix = isPrivateMeeting ? '🔒 ' : (isProposal ? '💡 ' : (isPendingAdmin ? '⏳ ' : '✅ '));
                     
-                    let titleHtml = `<div style="color: #0f172a; font-size: 18px; font-weight: 900; line-height: 1.4; margin-bottom: 2px; letter-spacing: -0.5px;">${namePrefix}${meetName}${attBadge}</div>`;
+                    let titleHtml = `<div style="color: #0f172a; font-size: 18px; font-weight: 900; line-height: 1.4; margin-bottom: 2px; letter-spacing: -0.5px;">${meetName}${attBadge}</div>`;
                     let descHtml = '';
                     if (meetDesc) {
                         descHtml = `<div style="color: #475569; font-size: 14px; font-weight: 500; line-height: 1.5; margin-top: 6px; margin-bottom: 8px;">${meetDesc}</div>`;
