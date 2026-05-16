@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -539,10 +539,9 @@
 
                 finalMemo = mName;
                 const mTime = document.getElementById('meetingTime').value;
-                let mLoc = document.getElementById('meetingLocation').value;
+                const mLocBase = document.getElementById('meetingLocation').value;
                 const mLocDetail = document.getElementById('meetingLocationDetail') ? document.getElementById('meetingLocationDetail').value.trim() : '';
-                if (mLoc && mLocDetail) mLoc += ' ' + mLocDetail;
-                else if (!mLoc && mLocDetail) mLoc = mLocDetail;
+                const mLoc = mLocBase + (mLocDetail ? ' ' + mLocDetail : '');
                 const mAtt = document.getElementById('meetingAttendance').value;
                 const mUrl = document.getElementById('meetingUrl').value;
                 const mUrlName = document.getElementById('meetingUrlName').value;
