@@ -229,8 +229,18 @@
         <option value="모임" style="display: none;">모임</option>
     </select>
 
+    <div id="dateRow" style="display: flex; gap: 8px; margin-top: 8px; margin-bottom: 12px;">
+        <div style="flex: 1;">
+            <label id="balanceDateLabel" style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block;">날짜 지정</label>
+            <input type="date" id="balanceDate" style="margin-top: 4px; margin-bottom: 0;">
+        </div>
+        <div id="timeCol" style="flex: 1; display: none;">
+            <label style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block;">시간 지정</label>
+            <input type="time" id="meetingTime" style="margin-top: 4px; margin-bottom: 0;">
+        </div>
+    </div>
+
     <div id="meetingFields" style="display: none; background: #eff6ff; padding: 16px; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 12px;">
-        <input type="time" id="meetingTime" style="margin-bottom: 8px;">
         <input type="text" id="meetingLocation" placeholder="모임 장소 (예: 합정역 인근)" style="margin-bottom: 8px;">
         <select id="meetingAttendance" style="margin-bottom: 8px;">
             <option value="참석">참석</option>
@@ -241,11 +251,10 @@
             <input type="url" id="meetingUrl" placeholder="관련 링크 (URL)" style="margin-bottom: 0; flex: 1;">
             <input type="text" id="meetingUrlName" placeholder="링크 이름 (예: 국세청 홈택스)" style="margin-bottom: 0; flex: 1;">
         </div>
-    </div>
-
-    <div id="balanceDateContainer">
-        <label id="balanceDateLabel" style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block; margin-top: 8px;">날짜(D-Day) 지정</label>
-        <input type="date" id="balanceDate" style="margin-top: 4px;">
+        <div style="display: flex; gap: 8px; margin-top: 12px; align-items: center; background: #ffffff; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <input type="checkbox" id="meetingIsGlobal" style="width: 18px; height: 18px; margin: 0; cursor: pointer;">
+            <label for="meetingIsGlobal" style="font-size: 13px; color: #334155; font-weight: 700; cursor: pointer;">📢 전체 직원에게 공지 (참석 여부 투표 포함)</label>
+        </div>
     </div>
 
     <textarea id="memo" placeholder="메모"></textarea>
@@ -409,6 +418,7 @@
             const contractType = document.getElementById('contractType');
             const propertyFields = document.getElementById('propertyFields');
             const meetingFields = document.getElementById('meetingFields');
+            const timeCol = document.getElementById('timeCol');
             const memo = document.getElementById('memo');
 
             if (tab === 'work') {
@@ -422,6 +432,7 @@
                 contractType.style.display = 'block';
                 propertyFields.style.display = 'block';
                 meetingFields.style.display = 'none';
+                if (timeCol) timeCol.style.display = 'none';
                 if (contractType.value === '모임') contractType.value = '입주 정산';
                 memo.placeholder = '메모';
             } else {
@@ -436,6 +447,7 @@
                 contractType.value = '모임';
                 propertyFields.style.display = 'none';
                 meetingFields.style.display = 'block';
+                if (timeCol) timeCol.style.display = 'block';
                 memo.placeholder = '모임 이름 (예: 마포구 협회 정기모임)';
             }
         }
