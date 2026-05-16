@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -69,33 +69,40 @@
                 return;
             }
 
-            let bName = data.buildings.road_address;
-            if (data.buildings.jibun_address) {
-                bName += ' (' + data.buildings.jibun_address + ')';
-            }
-            const rName = data.rooms ? data.rooms.room_name : '';
-            
-            document.getElementById('buildingRoomText').innerText = `📍 ${bName} ${rName}`;
-            document.getElementById('contractType').value = data.contract_type;
-            if (data.balance_date) {
-                document.getElementById('balanceDate').value = data.balance_date;
+            if (data.contract_type === '모임' || !data.buildings) {
+                document.getElementById('buildingRoomText').innerText = `👥 모임 일정 (수정 불가)`;
+                document.getElementById('contractType').style.display = 'none';
+                document.getElementById('balanceDate').style.display = 'none';
+                document.querySelector('.notice').innerText = "💡 모임 일정은 장소/시간 등 세부 항목 수정이 불가능합니다. 내용 수정이 필요하다면 기존 모임을 삭제하고 새로 만들어주세요.";
+            } else {
+                let bName = data.buildings.road_address;
+                if (data.buildings.jibun_address) {
+                    bName += ' (' + data.buildings.jibun_address + ')';
+                }
+                const rName = data.rooms ? data.rooms.room_name : '';
+                
+                document.getElementById('buildingRoomText').innerText = `📍 ${bName} ${rName}`;
+                document.getElementById('contractType').value = data.contract_type;
+                if (data.balance_date) {
+                    document.getElementById('balanceDate').value = data.balance_date;
+                }
             }
             document.getElementById('memo').value = data.memo || '';
         }
 
         async function updateDeal() {
-            const contractType = document.getElementById('contractType').value;
-            const balanceDate = document.getElementById('balanceDate').value;
+            const contractType = document.getElementById('contractType').style.display !== 'none' ? document.getElementById('contractType').value : undefined;
+            const balanceDate = document.getElementById('balanceDate').style.display !== 'none' ? document.getElementById('balanceDate').value : undefined;
             const memo = document.getElementById('memo').value;
             const status = document.getElementById('status');
 
             status.innerText = '저장 중...';
 
             const payload = {
-                contract_type: contractType,
-                balance_date: balanceDate ? balanceDate : null,
                 memo: memo
             };
+            if (contractType !== undefined) payload.contract_type = contractType;
+            if (balanceDate !== undefined) payload.balance_date = balanceDate ? balanceDate : null;
 
             const { error } = await supabaseClient
                 .from('deals')
