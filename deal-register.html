@@ -232,6 +232,30 @@
         <option value="모임" style="display: none;">모임</option>
     </select>
 
+    <div id="meetSubTabs" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 6px; margin-bottom: 16px; flex-direction: column; gap: 4px;">
+        <div style="display: flex; gap: 4px;">
+            <button type="button" id="subTabPrivate" onclick="switchMeetType('PRIVATE')" style="flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #bfdbfe; cursor: pointer; transition: 0.2s; background: #ffffff; color: #3b82f6; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">🔒 개인 일정</button>
+            <button type="button" id="subTabProposal" onclick="switchMeetType('PROPOSAL')" style="flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid transparent; cursor: pointer; transition: 0.2s; background: transparent; color: #64748b; box-shadow: none;">💡 수요조사(공유)</button>
+            <button type="button" id="subTabConfirmed" onclick="switchMeetType('CONFIRMED')" style="flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid transparent; cursor: pointer; transition: 0.2s; background: transparent; color: #64748b; box-shadow: none;">✅ 확정공지(공유)</button>
+        </div>
+    </div>
+    <script>
+        let currentMeetType = 'PRIVATE';
+        function switchMeetType(type) {
+            currentMeetType = type;
+            const btnPrivate = document.getElementById('subTabPrivate');
+            const btnProposal = document.getElementById('subTabProposal');
+            const btnConfirmed = document.getElementById('subTabConfirmed');
+            
+            const activeStyle = 'background: #ffffff; color: #3b82f6; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-weight: 800; border: 1px solid #bfdbfe;';
+            const inactiveStyle = 'background: transparent; color: #64748b; box-shadow: none; font-weight: 700; border: 1px solid transparent;';
+            
+            btnPrivate.style.cssText = 'flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s; ' + (type === 'PRIVATE' ? activeStyle : inactiveStyle);
+            btnProposal.style.cssText = 'flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s; ' + (type === 'PROPOSAL' ? activeStyle : inactiveStyle);
+            btnConfirmed.style.cssText = 'flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s; ' + (type === 'CONFIRMED' ? activeStyle : inactiveStyle);
+        }
+    </script>
+
     <input type="text" id="meetingName" placeholder="📌 모임 이름 (예: 마포구 협회 정기모임)" style="display: none; margin-bottom: 12px; font-weight: 800; border-color: #bfdbfe;">
     <div id="dateRow" style="display: flex; gap: 8px; margin-top: 8px; margin-bottom: 12px;">
         <div style="flex: 1;">
@@ -255,27 +279,6 @@
             <input type="url" id="meetingUrl" placeholder="관련 링크 (URL)" style="margin-bottom: 0; flex: 1;">
             <input type="text" id="meetingUrlName" placeholder="링크 이름 (예: 국세청 홈택스)" style="margin-bottom: 0; flex: 1;">
         </div>
-        <div style="background: #ffffff; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 12px;">
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <input type="checkbox" id="meetingIsGlobal" style="width: 18px; height: 18px; margin: 0; cursor: pointer;">
-                <label for="meetingIsGlobal" style="font-size: 13px; color: #334155; font-weight: 700; cursor: pointer;">📢 전체 직원에게 공유 (투표 기능 포함)</label>
-            </div>
-            <div id="meetingProposalOptions" style="display: none; padding-left: 26px; flex-direction: column; gap: 8px; margin-top: 10px;">
-                <label style="font-size: 13px; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                    <input type="radio" name="meetingType" value="CONFIRMED" checked style="margin:0;">
-                    ✅ 확정된 모임으로 공지
-                </label>
-                <label style="font-size: 13px; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                    <input type="radio" name="meetingType" value="PROPOSAL" style="margin:0;">
-                    💡 수요조사 (일정/참석자 파악용)
-                </label>
-            </div>
-        </div>
-        <script>
-            document.getElementById('meetingIsGlobal').addEventListener('change', function() {
-                document.getElementById('meetingProposalOptions').style.display = this.checked ? 'flex' : 'none';
-            });
-        </script>
     </div>
 
     <textarea id="memo" placeholder="메모"></textarea>
@@ -440,6 +443,7 @@
             const contractType = document.getElementById('contractType');
             const propertyFields = document.getElementById('propertyFields');
             const meetingFields = document.getElementById('meetingFields');
+            const meetSubTabs = document.getElementById('meetSubTabs');
             const meetingName = document.getElementById('meetingName');
             const timeCol = document.getElementById('timeCol');
             const memo = document.getElementById('memo');
@@ -455,6 +459,7 @@
                 contractType.style.display = 'block';
                 propertyFields.style.display = 'block';
                 meetingFields.style.display = 'none';
+                if (meetSubTabs) meetSubTabs.style.display = 'none';
                 if (meetingName) meetingName.style.display = 'none';
                 if (timeCol) timeCol.style.display = 'none';
                 if (contractType.value === '모임') contractType.value = '입주 정산';
@@ -471,6 +476,7 @@
                 contractType.value = '모임';
                 propertyFields.style.display = 'none';
                 meetingFields.style.display = 'block';
+                if (meetSubTabs) meetSubTabs.style.display = 'flex';
                 if (meetingName) meetingName.style.display = 'block';
                 if (timeCol) timeCol.style.display = 'block';
                 memo.placeholder = '추가 메모 (선택사항)';
@@ -540,14 +546,15 @@
                 if(mLoc) finalMemo += `[LOC]${mLoc}[/LOC]`;
                 if(mAtt) finalMemo += `[ATT]${mAtt}[/ATT]`;
 
-                const globalCb = document.getElementById('meetingIsGlobal');
-                if (globalCb && !globalCb.checked) {
-                    finalMemo += '[PRIVATE]';
-                } else if (globalCb && globalCb.checked) {
-                    const proposalRadio = document.querySelector('input[name="meetingType"]:checked');
-                    if (proposalRadio && proposalRadio.value === 'PROPOSAL') {
+                if (typeof currentMeetType !== 'undefined') {
+                    if (currentMeetType === 'PRIVATE') {
+                        finalMemo += '[PRIVATE]';
+                    } else if (currentMeetType === 'PROPOSAL') {
                         finalMemo += '[PROPOSAL]';
                     }
+                } else {
+                    // Fallback just in case
+                    finalMemo += '[PRIVATE]';
                 }
                 
                 if (memo.trim()) {
