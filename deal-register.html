@@ -1088,6 +1088,7 @@
 
                 if (farFutureCount > 0) {
                     const noticeLi = document.createElement('li');
+                    noticeLi.classList.add('far-future-notice');
                     noticeLi.dataset.originalDisplay = 'block';
                     noticeLi.style.cssText = "margin-top: 24px; padding: 16px; text-align: center; background: #f8fafc; border-radius: 12px; color: #6b7280; font-size: 14px; font-weight: 600; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s;";
                     noticeLi.innerHTML = `🗓️ 45일 이후 예정된 일정 <strong>${farFutureCount}건</strong> 펼쳐보기 ▼`;
@@ -1109,6 +1110,7 @@
 
                 if (pastCount > 0) {
                     const noticePastLi = document.createElement('li');
+                    noticePastLi.classList.add('past-notice');
                     noticePastLi.dataset.originalDisplay = 'block';
                     noticePastLi.style.cssText = "margin-top: 12px; padding: 16px; text-align: center; background: #f3f4f6; border-radius: 12px; color: #6b7280; font-size: 14px; font-weight: 600; border: 1px dashed #d1d5db; cursor: pointer; transition: all 0.2s;";
                     noticePastLi.innerHTML = `⌛ 지난 일정 <strong>${pastCount}건</strong> 펼쳐보기 ▼`;
@@ -1135,6 +1137,15 @@
                         const hiddenItems = document.querySelectorAll('.personal-hidden-item');
                         if (isExpanded) {
                             hiddenItems.forEach(item => item.style.display = 'none');
+                            document.querySelectorAll('.far-future-item').forEach(item => item.style.display = 'none');
+                            document.querySelectorAll('.past-item').forEach(item => item.style.display = 'none');
+                            
+                            document.querySelectorAll('.far-future-notice, .past-notice').forEach(item => {
+                                if (!item.classList.contains('personal-hidden-item')) {
+                                    item.style.display = 'block';
+                                }
+                            });
+                            
                             this.innerText = `+ 더보기 ▼`;
                         } else {
                             hiddenItems.forEach(item => {
