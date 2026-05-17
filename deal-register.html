@@ -224,8 +224,7 @@
     </div>
 
     <select id="contractType">
-        <option value="입주 정산">입주 정산</option>
-        <option value="퇴실 정산">퇴실 정산</option>
+        <option value="정산">정산</option>
         <option value="잔금">잔금</option>
         <option value="계약">계약</option>
         <option value="기타">기타</option>
@@ -237,6 +236,12 @@
             <button type="button" id="subTabPrivate" onclick="switchMeetType('PRIVATE')" style="flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #bfdbfe; cursor: pointer; transition: 0.2s; background: #ffffff; color: #3b82f6; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">🔒 개인 일정</button>
             <button type="button" id="subTabProposal" onclick="switchMeetType('PROPOSAL')" style="flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid transparent; cursor: pointer; transition: 0.2s; background: transparent; color: #64748b; box-shadow: none;">💡 수요조사(공유)</button>
             <button type="button" id="subTabConfirmed" onclick="switchMeetType('CONFIRMED')" style="flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid transparent; cursor: pointer; transition: 0.2s; background: transparent; color: #64748b; box-shadow: none;">✅ 확정공지(공유)</button>
+        </div>
+        <div id="proposalFields" style="display: none; background: #fffbeb; padding: 12px; border-radius: 8px; border: 1px solid #fde68a; margin-top: 4px;">
+            <label style="font-size: 12px; color: #d97706; margin-left: 4px; display: block; margin-bottom: 4px;">수요조사 마감일시 (이후 인원 미달시 자동 취소)</label>
+            <input type="datetime-local" id="proposalDeadline" style="margin-bottom: 8px; border-color: #fde68a; background: #ffffff;">
+            <label style="font-size: 12px; color: #d97706; margin-left: 4px; display: block; margin-bottom: 4px;">최소 참석 인원</label>
+            <input type="number" id="proposalMinAtt" placeholder="예: 5" min="1" style="margin-bottom: 0; border-color: #fde68a; background: #ffffff;">
         </div>
     </div>
     <script>
@@ -253,6 +258,9 @@
             btnPrivate.style.cssText = 'flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s; ' + (type === 'PRIVATE' ? activeStyle : inactiveStyle);
             btnProposal.style.cssText = 'flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s; ' + (type === 'PROPOSAL' ? activeStyle : inactiveStyle);
             btnConfirmed.style.cssText = 'flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s; ' + (type === 'CONFIRMED' ? activeStyle : inactiveStyle);
+            
+            const pFields = document.getElementById('proposalFields');
+            if (pFields) pFields.style.display = (type === 'PROPOSAL') ? 'block' : 'none';
         }
     </script>
 
@@ -476,7 +484,7 @@
                 if (meetSubTabs) meetSubTabs.style.display = 'none';
                 if (meetingName) meetingName.style.display = 'none';
                 if (timeCol) timeCol.style.display = 'none';
-                if (contractType.value === '모임') contractType.value = '입주 정산';
+                if (contractType.value === '모임') contractType.value = '정산';
                 memo.placeholder = '메모';
             } else {
                 tabMeet.style.background = '#ffffff';
@@ -567,6 +575,10 @@
                         finalMemo += '[PRIVATE]';
                     } else if (currentMeetType === 'PROPOSAL') {
                         finalMemo += '[PROPOSAL]';
+                        const pDead = document.getElementById('proposalDeadline') ? document.getElementById('proposalDeadline').value : '';
+                        const pMin = document.getElementById('proposalMinAtt') ? document.getElementById('proposalMinAtt').value : '';
+                        if(pDead) finalMemo += `[DEADLINE]${pDead}[/DEADLINE]`;
+                        if(pMin) finalMemo += `[MIN_ATT]${pMin}[/MIN_ATT]`;
                     }
                 } else {
                     // Fallback just in case
@@ -777,6 +789,16 @@
                     const m = rawMemo.match(/\[ATT\](.*?)\[\/ATT\]/);
                     if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
+
+                let mDeadline = null, mMinAtt = null;
+                if (rawMemo.includes('[DEADLINE]')) {
+                    const m = rawMemo.match(/\[DEADLINE\](.*?)\[\/DEADLINE\]/);
+                    if (m) { mDeadline = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                if (rawMemo.includes('[MIN_ATT]')) {
+                    const m = rawMemo.match(/\[MIN_ATT\](.*?)\[\/MIN_ATT\]/);
+                    if (m) { mMinAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
                 
                 const isPrivateMeeting = rawMemo.includes('[PRIVATE]');
                 if (isPrivateMeeting) {
@@ -856,18 +878,46 @@
 
                     if (isGlobal && myAtt) mAtt = myAtt;
                     
+                    let isAutoCanceled = false;
+                    if (isProposal && mDeadline && mMinAtt) {
+                        const deadlineDate = new Date(mDeadline);
+                        if (!isNaN(deadlineDate.getTime()) && deadlineDate < new Date()) {
+                            if (attCount < parseInt(mMinAtt)) {
+                                isAutoCanceled = true;
+                            }
+                        }
+                    }
+                    
                     if (isGlobal && !isPrivateMeeting) {
                         const attStr = attNames.length > 0 ? `<div style="font-size: 12px; color: #4f46e5; margin-top: 12px; padding: 0 4px; font-weight: 600;">✅ 참석자: ${attNames.join(', ')}</div>` : '';
                         const noStr = noNames.length > 0 ? `<div style="font-size: 12px; color: #64748b; margin-top: 4px; padding: 0 4px;">❌ 불참자: ${noNames.join(', ')}</div>` : '';
                         
-                        details += `
-                        <div style="display: flex; gap: 10px; margin-top: 16px;" onclick="event.stopPropagation()">
-                            <button type="button" onclick="setAttendance('${deal.id}', '참석')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '참석' ? '#4f46e5' : '#f1f5f9'}; color: ${myAtt === '참석' ? 'white' : '#64748b'};">👍 참석 ${attCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${attCount}</span>` : ''}</button>
-                            <button type="button" onclick="setAttendance('${deal.id}', '불참')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '불참' ? '#e2e8f0' : '#f8fafc'}; color: ${myAtt === '불참' ? '#475569' : '#94a3b8'};">✋ 불참 ${noCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${noCount}</span>` : ''}</button>
-                        </div>
-                        ${attStr}
-                        ${noStr}
-                        `;
+                        if (isProposal && mDeadline && mMinAtt && !isAutoCanceled) {
+                            details += `
+                            <div style="margin-top: 12px; padding: 10px; background: #fffbeb; border-radius: 8px; font-size: 12px; color: #d97706; font-weight: 600; border: 1px solid #fde68a;">
+                                ⏳ 수요조사 마감일: ${mDeadline.replace('T', ' ')} (최소 ${mMinAtt}명 필요)
+                            </div>
+                            `;
+                        }
+
+                        if (isAutoCanceled) {
+                            details += `
+                            <div style="margin-top: 16px; padding: 12px; background: #fee2e2; border-radius: 12px; text-align: center; color: #ef4444; font-weight: 800; font-size: 14px; border: 1px solid #fecaca;">
+                                ❌ 수요조사 마감 및 인원 미달로 자동 취소되었습니다.<br>
+                                <span style="font-size: 12px; font-weight: 600; opacity: 0.8; margin-top: 4px; display: inline-block;">(최소 필요 인원: ${mMinAtt}명 / 마감일: ${mDeadline.replace('T', ' ')})</span>
+                            </div>
+                            `;
+                            details += `${attStr}${noStr}`;
+                        } else {
+                            details += `
+                            <div style="display: flex; gap: 10px; margin-top: 16px;" onclick="event.stopPropagation()">
+                                <button type="button" onclick="setAttendance('${deal.id}', '참석')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '참석' ? '#4f46e5' : '#f1f5f9'}; color: ${myAtt === '참석' ? 'white' : '#64748b'};">👍 참석 ${attCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${attCount}</span>` : ''}</button>
+                                <button type="button" onclick="setAttendance('${deal.id}', '불참')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '불참' ? '#e2e8f0' : '#f8fafc'}; color: ${myAtt === '불참' ? '#475569' : '#94a3b8'};">✋ 불참 ${noCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${noCount}</span>` : ''}</button>
+                            </div>
+                            ${attStr}
+                            ${noStr}
+                            `;
+                        }
 
                         if (!isPrivateMeeting && window.allUsersMap) {
                             const uName = window.allUsersMap[deal.user_id] || '알 수 없음';
@@ -877,12 +927,25 @@
                         }
 
                         const isMine = deal.user_id === window.currentUser.id;
-                        if (isProposal && isMine) {
-                            details += `
-                            <div style="margin-top: 12px;" onclick="event.stopPropagation()">
-                                <button type="button" onclick="confirmProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fffbeb; color: #d97706; border: 1px solid #fde68a;">✅ 제안된 모임 확정하기</button>
-                            </div>
-                            `;
+                        let isMinAttMet = true;
+                        if (mMinAtt && attCount < parseInt(mMinAtt)) {
+                            isMinAttMet = false;
+                        }
+
+                        if (isProposal && isMine && !isAutoCanceled) {
+                            if (isMinAttMet) {
+                                details += `
+                                <div style="margin-top: 12px;" onclick="event.stopPropagation()">
+                                    <button type="button" onclick="confirmProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fffbeb; color: #d97706; border: 1px solid #fde68a;">✅ 제안된 모임 확정하기</button>
+                                </div>
+                                `;
+                            } else {
+                                details += `
+                                <div style="margin-top: 12px; padding: 10px; border-radius: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; text-align: center; color: #64748b; font-size: 13px; font-weight: 600;">
+                                    ⏳ 최소 참석 인원(${mMinAtt}명) 충족 시 확정 버튼이 나타납니다.
+                                </div>
+                                `;
+                            }
                         }
                     }
 
@@ -906,6 +969,8 @@
                     
                     if (isPrivateMeeting) {
                         typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #f3f4f6; color: #4b5563; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #e5e7eb;">🔒 개인 일정</span>`;
+                    } else if (typeof isAutoCanceled !== 'undefined' && isAutoCanceled) {
+                        typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #fee2e2; color: #ef4444; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #fecaca;">❌ 자동 취소됨</span>`;
                     } else if (isProposal) {
                         typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #fffbeb; color: #d97706; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #fde68a;">💡 수요조사 중</span>`;
                     } else if (isPendingAdmin) {

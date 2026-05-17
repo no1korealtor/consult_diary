@@ -303,6 +303,16 @@
                 if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
             }
 
+            let mDeadline = null, mMinAtt = null;
+            if (rawMemo.includes('[DEADLINE]')) {
+                const m = rawMemo.match(/\[DEADLINE\](.*?)\[\/DEADLINE\]/);
+                if (m) { mDeadline = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+            }
+            if (rawMemo.includes('[MIN_ATT]')) {
+                const m = rawMemo.match(/\[MIN_ATT\](.*?)\[\/MIN_ATT\]/);
+                if (m) { mMinAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+            }
+
             if (data.contract_type === '모임' || !data.building_id) {
                 let meetTitle = '모임';
                 if (isPrivateMeeting) meetTitle = '개인 일정';
