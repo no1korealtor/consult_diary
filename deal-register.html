@@ -1086,7 +1086,7 @@
                 }
 
                 let hideBtnHtml = '';
-                if (isSharedMeeting && !isMine) {
+                if (isSharedMeeting && !isMine && myAtt === '불참') {
                     hideBtnHtml = `<button onclick="hideProposal('${deal.id}'); event.stopPropagation();" style="position: absolute; top: 12px; right: 12px; background: rgba(241, 245, 249, 0.8); border: none; font-size: 16px; color: #94a3b8; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10;">✕</button>`;
                 }
                 
