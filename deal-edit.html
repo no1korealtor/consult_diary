@@ -6,6 +6,9 @@
     <title>일정 수정</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
     <link rel="stylesheet" href="nav.css">
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
@@ -52,7 +55,7 @@
             <input type="text" id="mLocDetail" placeholder="상세 장소 (예: 2층 호프집)" style="margin-bottom: 12px; display: none;">
             
             <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">시간</label>
-            <input type="time" id="mTime">
+            <input type="text" id="mTime" placeholder="시간 선택">
             
             <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">관련 링크(URL)</label>
             <input type="text" id="mUrl" placeholder="https://...">
@@ -223,6 +226,16 @@
         }
 
         init();
+
+        window.addEventListener('DOMContentLoaded', () => {
+            flatpickr("#mTime", {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                minuteIncrement: 10,
+                locale: "ko"
+            });
+        });
     </script>
 <script>
   if ('serviceWorker' in navigator) {
