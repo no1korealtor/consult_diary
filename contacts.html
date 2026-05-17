@@ -271,18 +271,23 @@
 
             // 체크 해제된 그룹에서 삭제
             if (checkedGroupIds.length > 0) {
-                await authClient.from('user_groups').delete().eq('user_id', userId).not('group_id', 'in', `(${checkedGroupIds.join(',')})`);
+                const { error: delErr1 } = await authClient.from('user_groups').delete().eq('user_id', userId).not('group_id', 'in', `(${checkedGroupIds.join(',')})`);
+                if (delErr1) console.error("Delete Error 1:", delErr1);
             } else {
-                await authClient.from('user_groups').delete().eq('user_id', userId);
+                const { error: delErr2 } = await authClient.from('user_groups').delete().eq('user_id', userId);
+                if (delErr2) console.error("Delete Error 2:", delErr2);
             }
 
             // 체크된 그룹은 approved 로 등록/업데이트
             for (const gid of checkedGroupIds) {
-                const { data: existing } = await authClient.from('user_groups').select('group_role').eq('user_id', userId).eq('group_id', gid).single();
+                const { data: existing, error: selErr } = await authClient.from('user_groups').select('group_role').eq('user_id', userId).eq('group_id', gid).maybeSingle();
+                
                 if (existing) {
-                    await authClient.from('user_groups').update({ status: 'approved' }).eq('user_id', userId).eq('group_id', gid);
+                    const { error: upErr } = await authClient.from('user_groups').update({ status: 'approved' }).eq('user_id', userId).eq('group_id', gid);
+                    if (upErr) { alert('그룹 업데이트 실패 (보안 정책 문제): ' + upErr.message); return; }
                 } else {
-                    await authClient.from('user_groups').insert({ user_id: userId, group_id: gid, status: 'approved', group_role: 'member' });
+                    const { error: insErr } = await authClient.from('user_groups').insert({ user_id: userId, group_id: gid, status: 'approved', group_role: 'member' });
+                    if (insErr) { alert('새 그룹 추가 실패 (보안 정책 문제): ' + insErr.message); return; }
                 }
             }
 
