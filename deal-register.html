@@ -961,6 +961,17 @@
                                 <button type="button" onclick="setAttendance('${deal.id}', '참석')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '참석' ? '#4f46e5' : '#f1f5f9'}; color: ${myAtt === '참석' ? 'white' : '#64748b'};">👍 참석 ${attCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${attCount}</span>` : ''}</button>
                                 <button type="button" onclick="setAttendance('${deal.id}', '불참')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '불참' ? '#e2e8f0' : '#f8fafc'}; color: ${myAtt === '불참' ? '#475569' : '#94a3b8'};">✋ 불참 ${noCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${noCount}</span>` : ''}</button>
                             </div>
+                            `;
+
+                            if (myAtt === '불참' && !isMine) {
+                                details += `
+                                <div style="margin-top: 12px; text-align: right;" onclick="event.stopPropagation()">
+                                    <button type="button" onclick="hideProposal('${deal.id}')" style="background: none; border: none; font-size: 13px; color: #94a3b8; text-decoration: underline; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">👁️ 내 일정에서 숨기기</button>
+                                </div>
+                                `;
+                            }
+
+                            details += `
                             ${attStr}
                             ${noStr}
                             `;
@@ -1087,15 +1098,9 @@
                     memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 12px; font-size: 13px; color: #475569; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 12px; background: #f1f5f9; border-radius: 8px; transition: 0.2s;">🔗 ${linkName}</div>`;
                 }
 
-                let hideBtnHtml = '';
-                if (isSharedMeeting && !isMine && myAtt === '불참') {
-                    hideBtnHtml = `<button onclick="hideProposal('${deal.id}'); event.stopPropagation();" style="position: absolute; top: 12px; right: 12px; background: rgba(241, 245, 249, 0.8); border: none; font-size: 16px; color: #94a3b8; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10;">✕</button>`;
-                }
-                
                 li.style.position = 'relative';
                 
                 li.innerHTML = `
-                    ${hideBtnHtml}
                     <div style="display: flex; gap: 16px; align-items: stretch;">
                         <div style="flex-shrink: 0; width: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 0;">
                             <span style="font-size: 12px; font-weight: 800; color: #ef4444; margin-bottom: 2px;">${monthStr}</span>
