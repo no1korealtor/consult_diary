@@ -72,31 +72,11 @@
             
             if (authData.user) {
                 try {
-                    // 1. 기본 회원 정보 저장
                     await supabase.from('users').insert([
                         { id: authData.user.id, name: name, office_address: office_address, phone: phone, role: null }
                     ]);
-
-                    // 2. 기본 그룹 아이디 조회
-                    const { data: defaultGroup } = await supabase
-                        .from('groups')
-                        .select('id')
-                        .eq('name', '공인중개사법률소비조합')
-                        .single();
-
-                    // 3. 그룹 소속으로 가입 신청 (pending)
-                    if (defaultGroup) {
-                        await supabase.from('user_groups').insert([
-                            { 
-                                user_id: authData.user.id, 
-                                group_id: defaultGroup.id,
-                                group_role: 'member',
-                                status: 'pending'
-                            }
-                        ]);
-                    }
                 } catch (e) {
-                    console.error("DB insert failed:", e);
+                    console.error("Users table insert skipped or failed:", e);
                 }
             }
 
