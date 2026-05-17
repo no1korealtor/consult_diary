@@ -231,6 +231,8 @@
         <option value="모임" style="display: none;">모임</option>
     </select>
 
+    <input type="text" id="meetingName" placeholder="📌 모임 이름 (예: 마포구 협회 정기모임)" style="display: none; margin-bottom: 12px; font-weight: 800; border-color: #bfdbfe;">
+
     <div id="meetSubTabs" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 6px; margin-bottom: 16px; flex-direction: column; gap: 4px;">
         <div style="display: flex; gap: 4px;">
             <button type="button" id="subTabPrivate" onclick="switchMeetType('PRIVATE')" style="flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #bfdbfe; cursor: pointer; transition: 0.2s; background: #ffffff; color: #3b82f6; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">🔒 개인 일정</button>
@@ -268,8 +270,6 @@
             if (pFields) pFields.style.display = (type === 'PROPOSAL') ? 'block' : 'none';
         }
     </script>
-
-    <input type="text" id="meetingName" placeholder="📌 모임 이름 (예: 마포구 협회 정기모임)" style="display: none; margin-bottom: 12px; font-weight: 800; border-color: #bfdbfe;">
     <div id="dateRow" style="display: flex; gap: 8px; margin-top: 8px; margin-bottom: 12px;">
         <div style="flex: 1;">
             <label id="balanceDateLabel" style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block;">날짜 지정</label>
