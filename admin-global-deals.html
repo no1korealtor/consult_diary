@@ -407,8 +407,10 @@
 
             if (data) {
                 data = data.filter(deal => {
-                    const isPrivate = (deal.memo || '').includes('[PRIVATE]');
-                    return !isPrivate;
+                    const rawMemo = deal.memo || '';
+                    const isPrivate = rawMemo.includes('[PRIVATE]');
+                    const isProposal = rawMemo.includes('[PROPOSAL]');
+                    return !isPrivate && !isProposal;
                 });
             }
 
