@@ -8,7 +8,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
     
     <!-- Tom Select 라이브러리 (검색형 드롭다운) -->
@@ -1486,7 +1486,14 @@ function toggleTipText(id, btn) {
 
         // Flatpickr 초기화 (10분 단위 설정)
         function initFlatpickr() {
-            if (typeof flatpickr === 'undefined') return;
+            if (typeof flatpickr === 'undefined') {
+                // flatpickr 로딩 실패 시 네이티브 UI로 fallback (먹통 방지)
+                const pDead = document.getElementById('proposalDeadline');
+                if (pDead) pDead.type = 'datetime-local';
+                const mTime = document.getElementById('meetingTime');
+                if (mTime) mTime.type = 'time';
+                return;
+            }
             flatpickr("#proposalDeadline", {
                 enableTime: true,
                 minuteIncrement: 10,
