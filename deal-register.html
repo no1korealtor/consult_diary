@@ -7,9 +7,9 @@
     <title>일정 등록</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ko.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
     
     <!-- Tom Select 라이브러리 (검색형 드롭다운) -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
@@ -1496,7 +1496,7 @@ function toggleTipText(id, btn) {
                     minuteIncrement: 10,
                     locale: fpLocale,
                     dateFormat: "Y-m-d\\TH:i",
-                    disableMobile: "true"
+                    disableMobile: true
                 });
                 
                 flatpickr("#meetingTime", {
@@ -1505,7 +1505,7 @@ function toggleTipText(id, btn) {
                     dateFormat: "H:i",
                     minuteIncrement: 10,
                     locale: fpLocale,
-                    disableMobile: "true"
+                    disableMobile: true
                 });
             } catch (e) {
                 console.error("Flatpickr initialization failed:", e);
