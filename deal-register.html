@@ -1495,7 +1495,8 @@ function toggleTipText(id, btn) {
                     enableTime: true,
                     minuteIncrement: 10,
                     locale: fpLocale,
-                    dateFormat: "Y-m-d\\TH:i"
+                    dateFormat: "Y-m-d\\TH:i",
+                    disableMobile: "true"
                 });
                 
                 flatpickr("#meetingTime", {
@@ -1503,7 +1504,8 @@ function toggleTipText(id, btn) {
                     noCalendar: true,
                     dateFormat: "H:i",
                     minuteIncrement: 10,
-                    locale: fpLocale
+                    locale: fpLocale,
+                    disableMobile: "true"
                 });
             } catch (e) {
                 console.error("Flatpickr initialization failed:", e);
