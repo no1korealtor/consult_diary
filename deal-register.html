@@ -810,6 +810,7 @@
                 }
                 
                 let mTime = null, mLoc = null, mAtt = null;
+                let myAtt = null;
                 if (rawMemo.includes('[TIME]')) {
                     const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
                     if (m) { mTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
@@ -897,7 +898,6 @@
                         details += `</div>`;
                     }
 
-                    let myAtt = null;
                     let attCount = 0;
                     let noCount = 0;
                     let attNames = [];
