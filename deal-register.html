@@ -234,10 +234,10 @@
     <div id="meetSubTabs" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 6px; margin-bottom: 16px; flex-direction: column; gap: 4px;">
         <div style="display: flex; gap: 4px;">
             <button type="button" id="subTabPrivate" onclick="switchMeetType('PRIVATE')" style="flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #bfdbfe; cursor: pointer; transition: 0.2s; background: #ffffff; color: #3b82f6; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">🔒 개인 일정</button>
-            <button type="button" id="subTabProposal" onclick="switchMeetType('PROPOSAL')" style="flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid transparent; cursor: pointer; transition: 0.2s; background: transparent; color: #64748b; box-shadow: none;">💡 수요조사(공유)</button>
+            <button type="button" id="subTabProposal" onclick="switchMeetType('PROPOSAL')" style="flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid transparent; cursor: pointer; transition: 0.2s; background: transparent; color: #64748b; box-shadow: none;">💡 모임 제안</button>
         </div>
         <div id="proposalFields" style="display: none; background: #fffbeb; padding: 12px; border-radius: 8px; border: 1px solid #fde68a; margin-top: 4px;">
-            <label style="font-size: 12px; color: #d97706; margin-left: 4px; display: block; margin-bottom: 4px;">수요조사 마감일시 (이후 인원 미달시 자동 취소)</label>
+            <label style="font-size: 12px; color: #d97706; margin-left: 4px; display: block; margin-bottom: 4px;">모임 제안 마감일시 (이후 인원 미달시 자동 취소)</label>
             <input type="datetime-local" id="proposalDeadline" style="margin-bottom: 8px; border-color: #fde68a; background: #ffffff;">
             <label style="font-size: 12px; color: #d97706; margin-left: 4px; display: block; margin-bottom: 4px;">최소 참석 인원</label>
             <input type="number" id="proposalMinAtt" placeholder="예: 5" min="1" style="margin-bottom: 0; border-color: #fde68a; background: #ffffff;">
@@ -249,14 +249,12 @@
             currentMeetType = type;
             const btnPrivate = document.getElementById('subTabPrivate');
             const btnProposal = document.getElementById('subTabProposal');
-            const btnConfirmed = document.getElementById('subTabConfirmed');
             
             const activeStyle = 'background: #ffffff; color: #3b82f6; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-weight: 800; border: 1px solid #bfdbfe;';
             const inactiveStyle = 'background: transparent; color: #64748b; box-shadow: none; font-weight: 700; border: 1px solid transparent;';
             
             btnPrivate.style.cssText = 'flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s; ' + (type === 'PRIVATE' ? activeStyle : inactiveStyle);
             btnProposal.style.cssText = 'flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s; ' + (type === 'PROPOSAL' ? activeStyle : inactiveStyle);
-            btnConfirmed.style.cssText = 'flex: 1; margin: 0; padding: 10px 4px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s; ' + (type === 'CONFIRMED' ? activeStyle : inactiveStyle);
             
             const pFields = document.getElementById('proposalFields');
             if (pFields) pFields.style.display = (type === 'PROPOSAL') ? 'block' : 'none';
