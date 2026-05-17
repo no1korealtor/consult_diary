@@ -693,6 +693,15 @@
             loadDeals();
         };
 
+        window.hideProposal = function(dealId) {
+            let hidden = JSON.parse(localStorage.getItem('hiddenProposals') || '[]');
+            if (!hidden.includes(dealId)) {
+                hidden.push(dealId);
+                localStorage.setItem('hiddenProposals', JSON.stringify(hidden));
+            }
+            loadDeals();
+        };
+
         function getDDay(dateString) {
             if (!dateString) return '';
             const targetDate = new Date(dateString);
@@ -832,6 +841,15 @@
                 if (isProposal) {
                     rawMemo = rawMemo.replace('[PROPOSAL]', '');
                 }
+                
+                let isHiddenProposal = false;
+                if (isProposal) {
+                    const hiddenProposals = JSON.parse(localStorage.getItem('hiddenProposals') || '[]');
+                    if (hiddenProposals.includes(deal.id)) {
+                        isHiddenProposal = true;
+                    }
+                }
+
                 const isPendingAdmin = rawMemo.includes('[PENDING_ADMIN]');
                 if (isPendingAdmin) {
                     rawMemo = rawMemo.replace('[PENDING_ADMIN]', '');
@@ -1066,8 +1084,15 @@
                     memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 12px; font-size: 13px; color: #475569; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 12px; background: #f1f5f9; border-radius: 8px; transition: 0.2s;">🔗 ${linkName}</div>`;
                 }
 
-
+                let hideBtnHtml = '';
+                if (isProposal && !isMine) {
+                    hideBtnHtml = `<button onclick="hideProposal('${deal.id}'); event.stopPropagation();" style="position: absolute; top: 12px; right: 12px; background: rgba(241, 245, 249, 0.8); border: none; font-size: 16px; color: #94a3b8; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10;">✕</button>`;
+                }
+                
+                li.style.position = 'relative';
+                
                 li.innerHTML = `
+                    ${hideBtnHtml}
                     <div style="display: flex; gap: 16px; align-items: stretch;">
                         <div style="flex-shrink: 0; width: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 0;">
                             <span style="font-size: 12px; font-weight: 800; color: #ef4444; margin-bottom: 2px;">${monthStr}</span>
@@ -1075,7 +1100,7 @@
                             <span style="font-size: 11px; font-weight: 600; color: #6b7280; margin-top: 4px;">${dayStr}</span>
                         </div>
                         <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0;">
-                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; padding-right: 24px;">
                                 ${typeBadgeHtml}
                                 ${dDayHtml}
                             </div>
@@ -1085,6 +1110,10 @@
                         </div>
                     </div>
                 `;
+                
+                // attach isHiddenProposal flag to li for filtering
+                li.dataset.isHiddenProposal = isHiddenProposal ? 'true' : 'false';
+                
                 return li;
             };
 
@@ -1100,6 +1129,7 @@
                 let currentMonthLabel = '';
                 let farFutureCount = 0;
                 let pastCount = 0;
+                let hiddenPropCount = 0;
                 let visibleCount = 0;
 
                 allDeals.forEach((deal) => {
@@ -1156,11 +1186,17 @@
 
                     const li = createDealListItem(deal, !deal.buildings && !deal.building_id);
                     li.dataset.originalDisplay = 'block';
+                    
+                    const isHiddenProp = li.dataset.isHiddenProposal === 'true';
 
                     if (isFarFuture) {
                         li.style.display = 'none';
                         li.classList.add('far-future-item');
                         farFutureCount++;
+                    } else if (isHiddenProp) {
+                        li.style.display = 'none';
+                        li.classList.add('hidden-proposal-item-rendered');
+                        hiddenPropCount++;
                     } else if (isPast) {
                         li.style.display = 'none';
                         li.classList.add('past-item');
@@ -1219,7 +1255,29 @@
                     list.appendChild(noticePastLi);
                 }
 
-                if (visibleCount > 5 || (visibleCount === 5 && (farFutureCount > 0 || pastCount > 0))) {
+                if (hiddenPropCount > 0) {
+                    const noticePropLi = document.createElement('li');
+                    noticePropLi.classList.add('prop-notice');
+                    noticePropLi.dataset.originalDisplay = 'block';
+                    noticePropLi.style.cssText = "margin-top: 12px; padding: 16px; text-align: center; background: #fefce8; border-radius: 12px; color: #d97706; font-size: 14px; font-weight: 600; border: 1px dashed #fde047; cursor: pointer; transition: all 0.2s;";
+                    noticePropLi.innerHTML = `💡 숨김 처리된 제안된 모임 <strong>${hiddenPropCount}건</strong> 모두 보기 ▼`;
+                    
+                    noticePropLi.onclick = () => {
+                        const propItems = document.querySelectorAll('.hidden-proposal-item-rendered');
+                        propItems.forEach(item => {
+                            item.style.display = item.dataset.originalDisplay || '';
+                        });
+                        noticePropLi.style.display = 'none';
+                    };
+                    
+                    if (visibleCount >= 5) {
+                        noticePropLi.style.display = 'none';
+                        noticePropLi.classList.add('personal-hidden-item');
+                    }
+                    list.appendChild(noticePropLi);
+                }
+
+                if (visibleCount > 5 || (visibleCount === 5 && (farFutureCount > 0 || pastCount > 0 || hiddenPropCount > 0))) {
                     personalMoreBtn.style.display = 'block';
                     personalMoreBtn.onclick = function() {
                         const isExpanded = this.innerText.includes('접기');
@@ -1228,8 +1286,9 @@
                             hiddenItems.forEach(item => item.style.display = 'none');
                             document.querySelectorAll('.far-future-item').forEach(item => item.style.display = 'none');
                             document.querySelectorAll('.past-item').forEach(item => item.style.display = 'none');
+                            document.querySelectorAll('.hidden-proposal-item-rendered').forEach(item => item.style.display = 'none');
                             
-                            document.querySelectorAll('.far-future-notice, .past-notice').forEach(item => {
+                            document.querySelectorAll('.far-future-notice, .past-notice, .prop-notice').forEach(item => {
                                 if (!item.classList.contains('personal-hidden-item')) {
                                     item.style.display = 'block';
                                 }
