@@ -694,10 +694,11 @@
         };
 
         window.hideProposal = function(dealId) {
-            let hidden = JSON.parse(localStorage.getItem('hiddenProposals') || '[]');
+            const key = 'hiddenProposals_' + window.currentUser.id;
+            let hidden = JSON.parse(localStorage.getItem(key) || '[]');
             if (!hidden.includes(dealId)) {
                 hidden.push(dealId);
-                localStorage.setItem('hiddenProposals', JSON.stringify(hidden));
+                localStorage.setItem(key, JSON.stringify(hidden));
             }
             loadDeals();
         };
@@ -843,10 +844,13 @@
                     rawMemo = rawMemo.replace('[PROPOSAL]', '');
                 }
                 
+                const isMine = deal.user_id === window.currentUser.id;
                 const isSharedMeeting = deal.contract_type === '모임' && !isPrivateMeeting;
+                
                 let isHiddenProposal = false;
-                if (isSharedMeeting) {
-                    const hiddenProposals = JSON.parse(localStorage.getItem('hiddenProposals') || '[]');
+                if (isSharedMeeting && !isMine) {
+                    const key = 'hiddenProposals_' + window.currentUser.id;
+                    const hiddenProposals = JSON.parse(localStorage.getItem(key) || '[]');
                     if (hiddenProposals.includes(deal.id)) {
                         isHiddenProposal = true;
                     }
@@ -1055,8 +1059,6 @@
                     dDayHtml = `<span style="background: ${badgeBg}; color: ${badgeColor}; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">${dDayText}</span>`;
                 }
 
-                const isMine = deal.user_id === window.currentUser.id;
-                
                 const li = document.createElement('li');
                 li.className = 'deal-item';
                 
