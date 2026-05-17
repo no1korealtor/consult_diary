@@ -984,7 +984,6 @@
                             details += `<div style="font-size: 12px; color: #6b7280; margin-top: 12px; text-align: right; font-weight: 600;">제안자: ${uName}${uPhone}</div>`;
                         }
 
-                        const isMine = deal.user_id === window.currentUser.id;
                         let isMinAttMet = true;
                         if (mMinAtt && attCount < parseInt(mMinAtt)) {
                             isMinAttMet = false;
