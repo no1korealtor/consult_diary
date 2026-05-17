@@ -227,7 +227,8 @@
 
         init();
 
-        window.addEventListener('DOMContentLoaded', () => {
+        function initFlatpickr() {
+            if (typeof flatpickr === 'undefined') return;
             flatpickr("#mTime", {
                 enableTime: true,
                 noCalendar: true,
@@ -235,7 +236,13 @@
                 minuteIncrement: 10,
                 locale: "ko"
             });
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFlatpickr);
+        } else {
+            initFlatpickr();
+        }
     </script>
 <script>
   if ('serviceWorker' in navigator) {

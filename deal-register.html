@@ -1485,7 +1485,8 @@ function toggleTipText(id, btn) {
         }
 
         // Flatpickr 초기화 (10분 단위 설정)
-        window.addEventListener('DOMContentLoaded', () => {
+        function initFlatpickr() {
+            if (typeof flatpickr === 'undefined') return;
             flatpickr("#proposalDeadline", {
                 enableTime: true,
                 minuteIncrement: 10,
@@ -1500,7 +1501,13 @@ function toggleTipText(id, btn) {
                 minuteIncrement: 10,
                 locale: "ko"
             });
-        });
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFlatpickr);
+        } else {
+            initFlatpickr();
+        }
     </script>
 </body>
 </html>
