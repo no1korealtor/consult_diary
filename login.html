@@ -1,148 +1,284 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>
-        공인중개사 다이어리 - 로그인
-    </title>
+    <title>중개일기 - 로그인</title>
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
-    <link rel="stylesheet" href="app.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        .login-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 3rem 2rem;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-        }
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
 
-        .icon-circle {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #3b82f6, #6366f1);
-            border-radius: 50%;
+        body {
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f8fafc;
+            padding: 0;
+            margin: 0;
+            color: #111827;
             display: flex;
+            flex-direction: column;
+            min-height: 100vh;
             align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.5rem;
-            font-size: 2.5rem;
-            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
         }
 
-        .custom-input {
-            background-color: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 1rem 1.2rem;
-            border-radius: 0.8rem;
-            font-size: 1.05rem;
-            transition: all 0.3s;
-            color: white;
+        .container {
             width: 100%;
+            max-width: 420px;
+            padding: 32px 20px;
             box-sizing: border-box;
-            margin-bottom: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        .custom-input:focus {
+        .brand-title {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .brand-title h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #2563eb, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .brand-title p {
+            margin: 8px 0 0 0;
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 32px 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            margin-bottom: 24px;
+        }
+
+        .stats-box {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 24px;
+            justify-content: space-around;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .stat-divider {
+            width: 1px;
+            background: #e2e8f0;
+            margin: 0 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 12px;
+            font-size: 15px;
+            box-sizing: border-box;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        input:focus {
             outline: none;
-            background-color: rgba(255, 255, 255, 0.12);
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
         .btn-login {
-            background: linear-gradient(135deg, #3b82f6, #6366f1);
-            font-size: 1.1rem;
-            padding: 1rem;
-            border-radius: 0.8rem;
-            margin-top: 0.5rem;
+            background: linear-gradient(135deg, #3b82f6, #4f46e5);
             color: white;
+            font-size: 16px;
+            padding: 16px;
+            border-radius: 14px;
             border: none;
             width: 100%;
-            font-weight: bold;
+            font-weight: 800;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            margin-top: 8px;
+            font-family: inherit;
         }
 
         .btn-login:hover {
             transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .links-container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .manual-btn {
+            display: inline-block;
+            padding: 14px 20px;
+            background: #eff6ff;
+            border-radius: 12px;
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 800;
+            border: 1px dashed #bfdbfe;
+            transition: 0.2s;
+        }
+
+        .manual-btn:hover {
+            background: #dbeafe;
+        }
+
+        .install-guide {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            margin-top: 24px;
+        }
+
+        .install-guide h3 {
+            font-size: 14px;
+            color: #1e293b;
+            margin: 0 0 12px 0;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .install-guide p {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.6;
+            margin: 0;
+            word-break: keep-all;
+        }
+
+        .app-footer {
+            padding: 24px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.6;
+            border-top: 1px solid #e2e8f0;
+            width: 100%;
+            box-sizing: border-box;
+            background: #f8fafc;
+        }
+
+        .app-footer strong {
+            color: #64748b;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
         }
     </style>
-    <link rel="stylesheet" href="app.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#3b82f6">
+    <meta name="theme-color" content="#f8fafc">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
-
 <body>
-    <div class="container" style="max-width: 420px; margin-top: 8vh; margin-bottom: 8vh;">
-        <div class="login-card text-center">
-            <div class="icon-circle">📔</div>
-            <h2
-                style="text-align: center; margin-bottom: 0.5rem; font-weight: 700; letter-spacing: -0.5px; color: #fff;">
-                공인중개사의 다이어리</h2>
-            <p
-                style="color: #cbd5e1; font-size: 1rem; margin-bottom: 1.5rem; word-break: keep-all; text-align: center; line-height: 1.5;">
-                현장에서 바로 꺼내 쓰는<br>나만의 든든한 업무 수첩</p>
 
-            <div style="background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 0.8rem; margin-bottom: 2rem; font-size: 0.9rem; color: #94a3b8; display: flex; justify-content: space-around; border: 1px solid rgba(255,255,255,0.05);">
-                <div style="text-align: center; flex: 1;">
-                    <div style="font-size: 0.75rem; margin-bottom: 0.2rem; opacity: 0.8;">누적 가입자</div>
-                    <div style="color: #fff; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;" id="totalUsers">-</div>
+    <div class="container">
+        <div class="brand-title">
+            <h1>One for All,<br>All for One</h1>
+            <p>신대림공인중개사사무소 스마트 일정관리</p>
+        </div>
+
+        <div class="login-card">
+            <div class="stats-box">
+                <div class="stat-item">
+                    <div class="stat-label">누적 가입자</div>
+                    <div class="stat-value" id="totalUsers">-</div>
                 </div>
-                <div style="width: 1px; background: rgba(255,255,255,0.1); margin: 0.2rem 0;"></div>
-                <div style="text-align: center; flex: 1;">
-                    <div style="font-size: 0.75rem; margin-bottom: 0.2rem; opacity: 0.8;">승인된 중개사</div>
-                    <div style="color: #818cf8; font-weight: 700; font-size: 1.1rem; letter-spacing: 0.5px;" id="approvedUsers">-</div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <div class="stat-label">승인된 중개사</div>
+                    <div class="stat-value" id="approvedUsers" style="color: #4f46e5;">-</div>
                 </div>
             </div>
 
-            <form id="loginForm" class="flex-col" style="gap: 0;">
-                <input type="email" id="email" class="custom-input" placeholder="이메일 주소" required>
-                <input type="password" id="password" class="custom-input" placeholder="비밀번호" required>
+            <form id="loginForm">
+                <input type="email" id="email" placeholder="이메일 주소" required>
+                <input type="password" id="password" placeholder="비밀번호" required>
                 <button type="submit" class="btn-login" id="loginBtn">시작하기</button>
             </form>
+            
+            <div id="errorMsg" style="color: #ef4444; margin-top: 16px; text-align: center; display: none; font-size: 13px; font-weight: 600;"></div>
 
-                        <div style="margin-top: 24px; text-align: center;">
-                <a href="manual.html" style="display: inline-block; padding: 12px 24px; background: rgba(59, 130, 246, 0.1); border-radius: 12px; color: #3b82f6; text-decoration: none; font-size: 15px; font-weight: 800; border: 1px solid rgba(59, 130, 246, 0.2); transition: 0.2s;">
-                    📖 초보자를 위한 앱 사용 설명서 보기
+            <div style="margin-top: 24px; text-align: center;">
+                <a href="register.html" style="color: #64748b; text-decoration: none; font-size: 14px; font-weight: 600;">
+                    계정이 없으신가요? <span style="color: #3b82f6; font-weight: 800;">무료 회원가입</span>
                 </a>
             </div>
-            <div id="errorMsg"
-                style="color: #fca5a5; margin-top: 1rem; text-align: center; display: none; font-size: 0.95rem;"></div>
+        </div>
 
-            <div style="margin-top: 2rem; text-align: center;">
-                <a href="register.html"
-                    style="color: #94a3b8; text-decoration: none; font-size: 0.95rem; transition: color 0.2s;">계정이
-                    없으신가요? <span style="color: #818cf8;">무료 회원가입</span></a>
-            </div>
+        <div class="links-container">
+            <a href="manual.html" class="manual-btn">
+                📖 초보자를 위한 앱 사용 설명서 보기
+            </a>
+        </div>
 
-            <div style="margin-top: 2.5rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 0.8rem; padding: 1.2rem; text-align: left;">
-                <h3 style="color: #cbd5e1; font-size: 0.95rem; margin-top: 0; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; font-weight: bold;">
-                    📱 바탕화면에 진짜 앱처럼 설치하는 방법
-                </h3>
-                <p style="color: #94a3b8; font-size: 0.85rem; line-height: 1.6; margin-bottom: 0; word-break: keep-all;">
-                    매번 주소를 치고 들어오기 번거로우시죠? 아래 방법으로 <strong>바탕화면에 아이콘</strong>을 만들어 두고 쓰세요!<br><br>
-                    <strong style="color: #818cf8;">[스마트폰을 쓰신다면]</strong><br>
-                    - <strong>삼성/안드로이드 (크롬)</strong>: 우측 상단 <strong>점 3개(⋮)</strong> 메뉴를 누르고 <strong>'홈 화면에 추가'</strong> 또는 <strong>'앱 설치'</strong>를 누르세요.<br>
-                    - <strong>아이폰 (사파리)</strong>: 맨 아래 <strong>공유 버튼(네모 안 화살표)</strong>을 누르고 목록에서 <strong>'홈 화면에 추가'</strong>를 누르세요.<br><br>
-                    <strong style="color: #818cf8;">[컴퓨터를 쓰신다면]</strong><br>
-                    인터넷 주소창(화면 맨 위)의 오른쪽 끝을 보세요. <strong>[앱 설치]</strong> 버튼(모니터에 화살표 모양 또는 ➕)이 보일 텐데, 클릭하고 <strong>설치</strong>를 누르시면 바탕화면에 아이콘이 생깁니다.
-                </p>
-            </div>
+        <div class="install-guide">
+            <h3>📱 바탕화면에 진짜 앱처럼 설치하세요!</h3>
+            <p>
+                <strong>[스마트폰]</strong><br>
+                - <strong>안드로이드 (크롬)</strong>: 우측 상단 점 3개(⋮) ➔ <strong>'홈 화면에 추가'</strong><br>
+                - <strong>아이폰 (사파리)</strong>: 하단 공유 버튼(네모 화살표) ➔ <strong>'홈 화면에 추가'</strong><br><br>
+                <strong>[컴퓨터]</strong><br>
+                인터넷 주소창 우측 끝의 <strong>[앱 설치]</strong> 아이콘을 클릭하세요.
+            </p>
         </div>
     </div>
 
+    <footer class="app-footer">
+        <strong>신대림공인중개사사무소</strong>
+        사업자등록번호: 219-01-50737 | 전화번호: 010-9128-0586<br>
+        서울특별시 마포구 모래내로7길 52 (성산동)
+    </footer>
+
     <script src="auth-helper.js"></script>
     <script>
-
         // 이미 로그인되어 있는지 확인
         async function checkSession() {
             const { data: { user } } = await authClient.auth.getUser();
@@ -204,20 +340,6 @@
             }
         });
     </script>
-    <footer class="site-footer">
-        <div class="site-footer-inner">
-            <div class="footer-links">
-                <a href="#">회사소개</a>
-                <a href="#" style="color: #fca5a5;">개인정보처리방침</a>
-                <a href="#">이용약관</a>
-            </div>
-            <div class="footer-info">
-                <strong class="footer-strong">신대림공인중개사사무소</strong>
-                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 010-9128-0586</span><br>
-                <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
-            </div>
-        </div>
-    </footer>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -226,5 +348,4 @@
   }
 </script>
 </body>
-
 </html>
