@@ -1,83 +1,12 @@
-// auth-helper.js
-const AUTH_URL = 'https://yqolkvmrfvumpwlxjimp.supabase.co';
-const AUTH_KEY = 'sb_publishable_Y3waCN-Y0LA26BC80eUO-g_Njmuq1Hu';
-const DB_URL = 'https://clzrbyplzjdrrscctcsl.supabase.co';
-const DB_KEY = 'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k';
-
-if (typeof window.supabase === 'undefined') {
-    console.error('Supabase 라이브러리를 먼저 로드해야 합니다.');
-}
-
-// 인증용 클라이언트
-const authClient = window.supabase.createClient(AUTH_URL, AUTH_KEY);
-// 데이터베이스용 클라이언트
-const supabaseClient = window.supabase.createClient(DB_URL, DB_KEY);
-
-window.currentUser = null;
-
-/**
- * 로그인 상태를 확인하고, 없으면 로그인 페이지로 이동합니다.
- * @returns {Promise<Object|null>} user 객체 반환
- */
-async function requireAuth(bypassProfileCheck = false) {
-    const { data: { user }, error } = await authClient.auth.getUser();
-    
-    if (error || !user) {
-        alert('로그인이 필요하거나 세션이 만료되었습니다. 다시 로그인해 주세요.');
-        location.href = 'login.html';
-        return null;
-    }
-    
-    // DB에서 해당 사용자의 role, 주소, 전화번호 정보 조회 (users 테이블은 authClient 프로젝트에 존재)
-    const { data: profile, error: profileError } = await authClient
-        .from('users')
-        .select('role, office_address, phone, name')
-        .eq('id', user.id)
-        .single();
-
-    // profile이 없거나, role이 NULL이거나 비어있으면 접근 차단
-    if (profileError || !profile || !profile.role) {
-        let debugMsg = "알 수 없는 오류";
-        if (profileError) debugMsg = "DB 에러: " + JSON.stringify(profileError);
-        else if (!profile) debugMsg = "users 테이블에 해당 id(" + user.id + ")의 정보가 없습니다.";
-        else if (!profile.role) debugMsg = "role 값이 비어있습니다.";
-        
-        alert('전문가 승인이 필요합니다. 관리자 승인 후 이용 가능합니다.\n[디버그] ' + debugMsg);
-        await authClient.auth.signOut();
-        location.href = 'login.html';
-        return null;
-    }
-
-    // user 객체에 추가 정보를 함께 저장해둠 (나중에 권한 분리에 유용함)
-    user.role = profile.role;
-    user.office_address = profile.office_address;
-    user.phone = profile.phone;
-    user.name = profile.name || user.email;
-    window.currentUser = user;
-    return user;
-}
-
-/**
- * 로그아웃 수행
- */
-async function logout() {
-    await authClient.auth.signOut();
-    location.href = 'login.html';
-}
-
-// 전역 변수로 할당 (기존 코드와의 호환성을 위해)
-window.authClient = authClient;
-window.supabaseClient = supabaseClient;
-
-// ==========================================
-// 글로벌 UI 헬퍼 (토스트 알림 및 로딩 스피너)
-// ==========================================
+// ui-helper.js
 (function() {
+    // 1. CSS 동적 삽입
     const style = document.createElement('style');
     style.textContent = `
+        /* Toast Notification */
         .toast-container {
             position: fixed;
-            bottom: 80px;
+            bottom: 80px; /* 네비게이션 바 위쪽에 뜨도록 여백 확보 */
             left: 50%;
             transform: translateX(-50%);
             z-index: 9999;
@@ -111,6 +40,7 @@ window.supabaseClient = supabaseClient;
         .toast-msg.error { background: rgba(239, 68, 68, 0.95); }
         .toast-msg.success { background: rgba(16, 185, 129, 0.95); }
         
+        /* Full Screen Spinner */
         .spinner-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -141,6 +71,7 @@ window.supabaseClient = supabaseClient;
     `;
     document.head.appendChild(style);
 
+    // 2. DOM 요소 생성 (DOMContentLoaded 시점에 붙이기 위해 대기)
     window.addEventListener('DOMContentLoaded', () => {
         const toastContainer = document.createElement('div');
         toastContainer.className = 'toast-container';
@@ -149,6 +80,7 @@ window.supabaseClient = supabaseClient;
         window.showToast = function(message, type = 'info') {
             const toast = document.createElement('div');
             
+            // 에러나 성공 키워드를 분석해서 자동으로 색상 지정
             if (type === 'info') {
                 if (String(message).includes('실패') || String(message).includes('에러') || String(message).includes('오류')) {
                     type = 'error';
@@ -169,6 +101,7 @@ window.supabaseClient = supabaseClient;
             }, 3000);
         };
 
+        // 기본 alert() 함수를 가로채서 토스트 알림으로 둔갑시킵니다.
         window.alert = function(message) {
             if (window.showToast) {
                 window.showToast(message);
@@ -189,6 +122,7 @@ window.supabaseClient = supabaseClient;
             spinnerOverlay.classList.remove('show');
         };
 
+        // 모든 fetch 요청(Supabase 통신 포함)에 자동으로 로딩 스피너 적용
         const originalFetch = window.fetch;
         let activeRequests = 0;
 
