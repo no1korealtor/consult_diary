@@ -1522,7 +1522,8 @@ function toggleTipText(id, btn) {
             let mOpts = '<option value="">분</option>';
             for (let m = 0; m < 60; m += 10) {
                 const mm = String(m).padStart(2, '0');
-                mOpts += `<option value="${mm}">${mm}분</option>`;
+                const selected = (mm === '00') ? ' selected' : '';
+                mOpts += `<option value="${mm}"${selected}>${mm}분</option>`;
             }
             mSel.innerHTML = mOpts;
         }
