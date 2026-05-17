@@ -1486,34 +1486,39 @@ function toggleTipText(id, btn) {
 
         // Flatpickr 초기화 (10분 단위 설정)
         function initFlatpickr() {
-            if (typeof flatpickr === 'undefined') {
+            try {
+                if (typeof flatpickr === 'undefined') throw new Error('flatpickr undefined');
+                
+                const fpLocale = (flatpickr.l10ns && flatpickr.l10ns.ko) ? "ko" : "default";
+
+                flatpickr("#proposalDeadline", {
+                    enableTime: true,
+                    minuteIncrement: 10,
+                    locale: fpLocale,
+                    dateFormat: "Y-m-d\\TH:i"
+                });
+                
+                flatpickr("#meetingTime", {
+                    enableTime: true,
+                    noCalendar: true,
+                    dateFormat: "H:i",
+                    minuteIncrement: 10,
+                    locale: fpLocale
+                });
+            } catch (e) {
+                console.error("Flatpickr initialization failed:", e);
                 // flatpickr 로딩 실패 시 네이티브 UI로 fallback (먹통 방지)
                 const pDead = document.getElementById('proposalDeadline');
                 if (pDead) pDead.type = 'datetime-local';
                 const mTime = document.getElementById('meetingTime');
                 if (mTime) mTime.type = 'time';
-                return;
             }
-            flatpickr("#proposalDeadline", {
-                enableTime: true,
-                minuteIncrement: 10,
-                locale: "ko",
-                dateFormat: "Y-m-d\\TH:i"
-            });
-            
-            flatpickr("#meetingTime", {
-                enableTime: true,
-                noCalendar: true,
-                dateFormat: "H:i",
-                minuteIncrement: 10,
-                locale: "ko"
-            });
         }
         
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initFlatpickr);
         } else {
-            initFlatpickr();
+            setTimeout(initFlatpickr, 10);
         }
     </script>
 </body>

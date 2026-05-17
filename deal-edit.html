@@ -228,24 +228,28 @@
         init();
 
         function initFlatpickr() {
-            if (typeof flatpickr === 'undefined') {
+            try {
+                if (typeof flatpickr === 'undefined') throw new Error('flatpickr undefined');
+                const fpLocale = (flatpickr.l10ns && flatpickr.l10ns.ko) ? "ko" : "default";
+
+                flatpickr("#mTime", {
+                    enableTime: true,
+                    noCalendar: true,
+                    dateFormat: "H:i",
+                    minuteIncrement: 10,
+                    locale: fpLocale
+                });
+            } catch (e) {
+                console.error("Flatpickr initialization failed:", e);
                 const mTime = document.getElementById('mTime');
                 if (mTime) mTime.type = 'time';
-                return;
             }
-            flatpickr("#mTime", {
-                enableTime: true,
-                noCalendar: true,
-                dateFormat: "H:i",
-                minuteIncrement: 10,
-                locale: "ko"
-            });
         }
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initFlatpickr);
         } else {
-            initFlatpickr();
+            setTimeout(initFlatpickr, 10);
         }
     </script>
 <script>
