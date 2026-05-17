@@ -7,9 +7,6 @@
     <title>일정 등록</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/ko.min.js"></script>
     
     <!-- Tom Select 라이브러리 (검색형 드롭다운) -->
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
@@ -241,7 +238,10 @@
         </div>
         <div id="proposalFields" style="display: none; background: #fffbeb; padding: 12px; border-radius: 8px; border: 1px solid #fde68a; margin-top: 4px;">
             <label style="font-size: 12px; color: #d97706; margin-left: 4px; display: block; margin-bottom: 4px;">수요조사 마감일시 (이후 인원 미달시 자동 취소)</label>
-            <input type="text" id="proposalDeadline" placeholder="날짜 및 시간 선택" style="margin-bottom: 8px; border-color: #fde68a; background: #ffffff;">
+            <div style="display: flex; gap: 4px; margin-bottom: 8px;">
+                <input type="date" id="proposalDeadlineDate" style="flex: 1; border-color: #fde68a; background: #ffffff; padding: 12px; border-radius: 12px; font-size: 15px;">
+                <select id="proposalDeadlineTime" style="flex: 1; border-color: #fde68a; background: #ffffff; padding: 12px; border-radius: 12px; font-size: 15px; appearance: none;"></select>
+            </div>
             <label style="font-size: 12px; color: #d97706; margin-left: 4px; display: block; margin-bottom: 4px;">최소 참석 인원</label>
             <input type="number" id="proposalMinAtt" placeholder="예: 5" min="1" style="margin-bottom: 0; border-color: #fde68a; background: #ffffff;">
         </div>
@@ -273,7 +273,7 @@
         </div>
         <div id="timeCol" style="flex: 1; display: none;">
             <label style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block;">시간 지정</label>
-            <input type="text" id="meetingTime" placeholder="시간 선택" style="margin-top: 4px; margin-bottom: 0;">
+            <select id="meetingTime" style="margin-top: 4px; margin-bottom: 0; padding: 12px; border-radius: 12px; font-size: 15px; border: 1px solid #e2e8f0; appearance: none; background: white;"></select>
         </div>
     </div>
 
@@ -576,7 +576,9 @@
                         finalMemo += '[PRIVATE]';
                     } else if (currentMeetType === 'PROPOSAL') {
                         finalMemo += '[PROPOSAL]';
-                        const pDead = document.getElementById('proposalDeadline') ? document.getElementById('proposalDeadline').value : '';
+                        const pDeadDate = document.getElementById('proposalDeadlineDate') ? document.getElementById('proposalDeadlineDate').value : '';
+                        const pDeadTime = document.getElementById('proposalDeadlineTime') ? document.getElementById('proposalDeadlineTime').value : '';
+                        const pDead = (pDeadDate && pDeadTime) ? pDeadDate + 'T' + pDeadTime : '';
                         const pMin = document.getElementById('proposalMinAtt') ? document.getElementById('proposalMinAtt').value : '';
                         if(pDead) finalMemo += `[DEADLINE]${pDead}[/DEADLINE]`;
                         if(pMin) finalMemo += `[MIN_ATT]${pMin}[/MIN_ATT]`;
@@ -1484,44 +1486,26 @@ function toggleTipText(id, btn) {
             }).open();
         }
 
-        // Flatpickr 초기화 (10분 단위 설정)
-        function initFlatpickr() {
-            try {
-                if (typeof flatpickr === 'undefined') throw new Error('flatpickr undefined');
-                
-                const fpLocale = (flatpickr.l10ns && flatpickr.l10ns.ko) ? "ko" : "default";
-
-                flatpickr("#proposalDeadline", {
-                    enableTime: true,
-                    minuteIncrement: 10,
-                    locale: fpLocale,
-                    dateFormat: "Y-m-d\\TH:i",
-                    disableMobile: true
-                });
-                
-                flatpickr("#meetingTime", {
-                    enableTime: true,
-                    noCalendar: true,
-                    dateFormat: "H:i",
-                    minuteIncrement: 10,
-                    locale: fpLocale,
-                    disableMobile: true
-                });
-            } catch (e) {
-                console.error("Flatpickr initialization failed:", e);
-                // flatpickr 로딩 실패 시 네이티브 UI로 fallback (먹통 방지)
-                const pDead = document.getElementById('proposalDeadline');
-                if (pDead) pDead.type = 'datetime-local';
-                const mTime = document.getElementById('meetingTime');
-                if (mTime) mTime.type = 'time';
+        // 10분 단위 시간 옵션 생성
+        function generateTimeOptions() {
+            let options = '<option value="">시간 선택</option>';
+            for (let h = 0; h < 24; h++) {
+                for (let m = 0; m < 60; m += 10) {
+                    const hh = String(h).padStart(2, '0');
+                    const mm = String(m).padStart(2, '0');
+                    options += `<option value="${hh}:${mm}">${hh}:${mm}</option>`;
+                }
             }
+            return options;
         }
-        
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initFlatpickr);
-        } else {
-            setTimeout(initFlatpickr, 10);
-        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const timeOpts = generateTimeOptions();
+            const pTime = document.getElementById('proposalDeadlineTime');
+            if(pTime) pTime.innerHTML = timeOpts;
+            const mTime = document.getElementById('meetingTime');
+            if(mTime) mTime.innerHTML = timeOpts;
+        });
     </script>
 </body>
 </html>
