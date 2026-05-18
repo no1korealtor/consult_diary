@@ -46,12 +46,20 @@
         .chip.wolse { background: #fef3c7; color: #b45309; }
         .chip.neutral { background: #f1f5f9; color: #475569; }
 
-        /* Modal Styles */
         .modal-overlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: flex-end; z-index: 100;
         }
         .modal-content {
-            background: white; width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; padding: 24px; max-height: 85vh; overflow-y: auto; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out;
+            background: white; width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out;
+        }
+        .modal-header {
+            padding: 20px 24px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+        .modal-body {
+            padding: 24px; overflow-y: auto; flex: 1;
+        }
+        .modal-footer {
+            padding: 16px 24px; border-top: 1px solid #f1f5f9; flex-shrink: 0; background: white; padding-bottom: calc(16px + env(safe-area-inset-bottom));
         }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
@@ -105,128 +113,136 @@
 <!-- 매물 등록 모달 -->
 <div class="modal-overlay" id="propModal" onclick="closeModal(event, 'propModal')">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div class="modal-header">
             <h3 style="margin: 0; font-size: 18px; font-weight: 800;">🏢 새 매물 등록</h3>
-            <button onclick="document.getElementById('propModal').style.display='none'" style="background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer;">✕</button>
+            <button onclick="document.getElementById('propModal').style.display='none'" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; padding: 0 8px;">✕</button>
         </div>
         
-        <div class="form-group">
-            <label class="form-label">거래 종류 (다중 선택 가능)</label>
-            <div class="checkbox-group">
-                <label class="checkbox-label"><input type="checkbox" name="p_type" value="매매" onchange="togglePriceFields()">매매</label>
-                <label class="checkbox-label"><input type="checkbox" name="p_type" value="전세" onchange="togglePriceFields()">전세</label>
-                <label class="checkbox-label"><input type="checkbox" name="p_type" value="월세" onchange="togglePriceFields()">월세</label>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">거래 종류 (다중 선택 가능)</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" name="p_type" value="매매" onchange="togglePriceFields()">매매</label>
+                    <label class="checkbox-label"><input type="checkbox" name="p_type" value="전세" onchange="togglePriceFields()">전세</label>
+                    <label class="checkbox-label"><input type="checkbox" name="p_type" value="월세" onchange="togglePriceFields()">월세</label>
+                </div>
+            </div>
+            
+            <div class="form-group" id="wrap_p_sale" style="display: none;">
+                <label class="form-label">매매가 (만원)</label>
+                <input type="number" id="p_sale" class="form-input" placeholder="예: 50000">
+            </div>
+            <div class="form-group" id="wrap_p_dep" style="display: none;">
+                <label class="form-label">보증금/전세금 (만원)</label>
+                <input type="number" id="p_dep" class="form-input" placeholder="예: 10000">
+            </div>
+            <div class="form-group" id="wrap_p_rent" style="display: none;">
+                <label class="form-label">월세 (만원)</label>
+                <input type="number" id="p_rent" class="form-input" placeholder="예: 50">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">방 개수</label>
+                <input type="number" id="p_room" class="form-input" placeholder="예: 2">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">옵션/조건</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="p_pet">🐶 반려동물 가능</label>
+                    <label class="checkbox-label"><input type="checkbox" id="p_parking">🚗 주차 가능</label>
+                    <label class="checkbox-label"><input type="checkbox" id="p_loan">🏦 전세대출 가능</label>
+                    <label class="checkbox-label"><input type="checkbox" id="p_lh">🏢 LH/SH 가능</label>
+                    <label class="checkbox-label"><input type="checkbox" id="p_basement">🔻 지층(반지하)</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">입주 가능 시기</label>
+                <select id="p_occ_type" class="form-input" style="margin-bottom: 8px;" onchange="togglePropOcc()">
+                    <option value="즉시입주">즉시입주 가능</option>
+                    <option value="날짜협의">날짜협의 (조정 가능)</option>
+                    <option value="날짜확정">날짜확정 (특정일)</option>
+                    <option value="입주불가(세안고)">입주불가 (세안고 매매)</option>
+                </select>
+                <input type="date" id="p_occ_date" class="form-input" style="display: none;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">메모 (주소, 동호수, 특징 등)</label>
+                <textarea id="p_memo" class="form-input" rows="3" placeholder="내부 확인용 메모를 적어주세요"></textarea>
             </div>
         </div>
-        
-        <div class="form-group" id="wrap_p_sale" style="display: none;">
-            <label class="form-label">매매가 (만원)</label>
-            <input type="number" id="p_sale" class="form-input" placeholder="예: 50000">
-        </div>
-        <div class="form-group" id="wrap_p_dep" style="display: none;">
-            <label class="form-label">보증금/전세금 (만원)</label>
-            <input type="number" id="p_dep" class="form-input" placeholder="예: 10000">
-        </div>
-        <div class="form-group" id="wrap_p_rent" style="display: none;">
-            <label class="form-label">월세 (만원)</label>
-            <input type="number" id="p_rent" class="form-input" placeholder="예: 50">
-        </div>
 
-        <div class="form-group">
-            <label class="form-label">방 개수</label>
-            <input type="number" id="p_room" class="form-input" placeholder="예: 2">
+        <div class="modal-footer">
+            <button class="btn-primary" onclick="saveProperty()" style="margin: 0;">저장하기</button>
         </div>
-
-        <div class="form-group">
-            <label class="form-label">옵션/조건</label>
-            <div class="checkbox-group">
-                <label class="checkbox-label"><input type="checkbox" id="p_pet">🐶 반려동물 가능</label>
-                <label class="checkbox-label"><input type="checkbox" id="p_parking">🚗 주차 가능</label>
-                <label class="checkbox-label"><input type="checkbox" id="p_loan">🏦 전세대출 가능</label>
-                <label class="checkbox-label"><input type="checkbox" id="p_lh">🏢 LH/SH 가능</label>
-                <label class="checkbox-label"><input type="checkbox" id="p_basement">🔻 지층(반지하)</label>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">입주 가능 시기</label>
-            <select id="p_occ_type" class="form-input" style="margin-bottom: 8px;" onchange="togglePropOcc()">
-                <option value="즉시입주">즉시입주 가능</option>
-                <option value="날짜협의">날짜협의 (조정 가능)</option>
-                <option value="날짜확정">날짜확정 (특정일)</option>
-                <option value="입주불가(세안고)">입주불가 (세안고 매매)</option>
-            </select>
-            <input type="date" id="p_occ_date" class="form-input" style="display: none;">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">메모 (주소, 동호수, 특징 등)</label>
-            <textarea id="p_memo" class="form-input" rows="3" placeholder="내부 확인용 메모를 적어주세요"></textarea>
-        </div>
-
-        <button class="btn-primary" onclick="saveProperty()" style="margin-top: 24px;">저장하기</button>
     </div>
 </div>
 
 <!-- 손님 등록 모달 -->
 <div class="modal-overlay" id="clientModal" onclick="closeModal(event, 'clientModal')">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div class="modal-header">
             <h3 style="margin: 0; font-size: 18px; font-weight: 800;">🧑‍💼 새 손님 조건 등록</h3>
-            <button onclick="document.getElementById('clientModal').style.display='none'" style="background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer;">✕</button>
+            <button onclick="document.getElementById('clientModal').style.display='none'" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; padding: 0 8px;">✕</button>
         </div>
         
-        <div class="form-group">
-            <label class="form-label">손님 연락처 (또는 식별정보)</label>
-            <input type="text" id="c_phone" class="form-input" placeholder="연락처 뒤 4자리, 특징 등">
-        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">손님 연락처 (또는 식별정보)</label>
+                <input type="text" id="c_phone" class="form-input" placeholder="연락처 뒤 4자리, 특징 등">
+            </div>
 
-        <div class="form-group">
-            <label class="form-label">찾으시는 거래 종류 (다중 선택)</label>
-            <div class="checkbox-group">
-                <label class="checkbox-label"><input type="checkbox" name="c_type" value="매매" onchange="toggleClientPrice()">매매</label>
-                <label class="checkbox-label"><input type="checkbox" name="c_type" value="전세" onchange="toggleClientPrice()">전세</label>
-                <label class="checkbox-label"><input type="checkbox" name="c_type" value="월세" onchange="toggleClientPrice()">월세</label>
+            <div class="form-group">
+                <label class="form-label">찾으시는 거래 종류 (다중 선택)</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" name="c_type" value="매매" onchange="toggleClientPrice()">매매</label>
+                    <label class="checkbox-label"><input type="checkbox" name="c_type" value="전세" onchange="toggleClientPrice()">전세</label>
+                    <label class="checkbox-label"><input type="checkbox" name="c_type" value="월세" onchange="toggleClientPrice()">월세</label>
+                </div>
+            </div>
+            
+            <div class="form-group" id="wrap_c_budget" style="display: none;">
+                <label class="form-label">최대 가용 예산 (매매/보증금, 만원)</label>
+                <input type="number" id="c_budget" class="form-input" placeholder="예: 30000">
+            </div>
+            <div class="form-group" id="wrap_c_rent" style="display: none;">
+                <label class="form-label">최대 허용 월세 (만원)</label>
+                <input type="number" id="c_rent" class="form-input" placeholder="예: 100">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">필수 조건</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="c_pet">🐶 반려동물 필수</label>
+                    <label class="checkbox-label"><input type="checkbox" id="c_parking">🚗 주차 필수</label>
+                    <label class="checkbox-label"><input type="checkbox" id="c_loan">🏦 전세대출 필수</label>
+                    <label class="checkbox-label"><input type="checkbox" id="c_lh">🏢 LH/SH 필수</label>
+                    <label class="checkbox-label"><input type="checkbox" id="c_exclude_basement">🚫 지층 제외</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">희망 입주 시기</label>
+                <select id="c_occ_type" class="form-input" style="margin-bottom: 8px;" onchange="toggleClientOcc()">
+                    <option value="무관">무관 (아무때나)</option>
+                    <option value="날짜확정">날짜확정 (특정일)</option>
+                    <option value="시기조정가능">시기조정가능 (대략적인 시기)</option>
+                </select>
+                <input type="date" id="c_occ_date" class="form-input" style="display: none;">
+                <input type="text" id="c_occ_memo" class="form-input" style="display: none;" placeholder="예: 7월 중순에서 8월 말 사이">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">메모 (희망 지역, 층수 등)</label>
+                <textarea id="c_memo" class="form-input" rows="3" placeholder="기타 요구사항 메모"></textarea>
             </div>
         </div>
-        
-        <div class="form-group" id="wrap_c_budget" style="display: none;">
-            <label class="form-label">최대 가용 예산 (매매/보증금, 만원)</label>
-            <input type="number" id="c_budget" class="form-input" placeholder="예: 30000">
-        </div>
-        <div class="form-group" id="wrap_c_rent" style="display: none;">
-            <label class="form-label">최대 허용 월세 (만원)</label>
-            <input type="number" id="c_rent" class="form-input" placeholder="예: 100">
-        </div>
 
-        <div class="form-group">
-            <label class="form-label">필수 조건</label>
-            <div class="checkbox-group">
-                <label class="checkbox-label"><input type="checkbox" id="c_pet">🐶 반려동물 필수</label>
-                <label class="checkbox-label"><input type="checkbox" id="c_parking">🚗 주차 필수</label>
-                <label class="checkbox-label"><input type="checkbox" id="c_loan">🏦 전세대출 필수</label>
-                <label class="checkbox-label"><input type="checkbox" id="c_lh">🏢 LH/SH 필수</label>
-                <label class="checkbox-label"><input type="checkbox" id="c_exclude_basement">🚫 지층 제외</label>
-            </div>
+        <div class="modal-footer">
+            <button class="btn-primary" onclick="saveClient()" style="margin: 0; background: #10b981;">저장하기</button>
         </div>
-
-        <div class="form-group">
-            <label class="form-label">희망 입주 시기</label>
-            <select id="c_occ_type" class="form-input" style="margin-bottom: 8px;" onchange="toggleClientOcc()">
-                <option value="무관">무관 (아무때나)</option>
-                <option value="날짜확정">날짜확정 (특정일)</option>
-                <option value="시기조정가능">시기조정가능 (대략적인 시기)</option>
-            </select>
-            <input type="date" id="c_occ_date" class="form-input" style="display: none;">
-            <input type="text" id="c_occ_memo" class="form-input" style="display: none;" placeholder="예: 7월 중순에서 8월 말 사이">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">메모 (희망 지역, 층수 등)</label>
-            <textarea id="c_memo" class="form-input" rows="3" placeholder="기타 요구사항 메모"></textarea>
-        </div>
-
-        <button class="btn-primary" onclick="saveClient()" style="margin-top: 24px; background: #10b981;">저장하기</button>
     </div>
 </div>
 
