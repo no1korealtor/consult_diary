@@ -693,6 +693,33 @@
             loadDeals();
         };
 
+        window.cancelProposal = async function(dealId) {
+            if (!confirm('이 모임 제안을 취소하시겠습니까?')) return;
+
+            const { data: deal, error: fetchErr } = await supabaseClient
+                .from('deals')
+                .select('memo')
+                .eq('id', dealId)
+                .single();
+            
+            if (fetchErr || !deal) {
+                alert('모임 정보를 불러오지 못했습니다.'); return;
+            }
+
+            const newMemo = deal.memo + '\n[CANCELED]';
+            
+            const { error: updateErr } = await supabaseClient
+                .from('deals')
+                .update({ memo: newMemo })
+                .eq('id', dealId);
+
+            if (updateErr) {
+                alert('취소 처리에 실패했습니다: ' + updateErr.message); return;
+            }
+
+            loadDeals();
+        };
+
         window.hideProposal = function(dealId) {
             const key = 'hiddenProposals_' + window.currentUser.id;
             let hidden = JSON.parse(localStorage.getItem(key) || '[]');
@@ -861,6 +888,11 @@
                     rawMemo = rawMemo.replace('[PENDING_ADMIN]', '');
                 }
 
+                const isCanceled = rawMemo.includes('[CANCELED]');
+                if (isCanceled) {
+                    rawMemo = rawMemo.replace('[CANCELED]', '');
+                }
+
                 let monthStr = '미정';
                 let dateStr = '-';
                 let dayStr = '';
@@ -939,7 +971,7 @@
                         const attStr = attNames.length > 0 ? `<div style="font-size: 12px; color: #4f46e5; margin-top: 12px; padding: 0 4px; font-weight: 600;">✅ 참석자: ${attNames.join(', ')}</div>` : '';
                         const noStr = noNames.length > 0 ? `<div style="font-size: 12px; color: #64748b; margin-top: 4px; padding: 0 4px;">❌ 불참자: ${noNames.join(', ')}</div>` : '';
                         
-                        if (isProposal && mDeadline && mMinAtt && !isAutoCanceled) {
+                        if (isProposal && mDeadline && mMinAtt && !isAutoCanceled && !isCanceled) {
                             details += `
                             <div style="margin-top: 12px; padding: 10px; background: #fffbeb; border-radius: 8px; font-size: 12px; color: #d97706; font-weight: 600; border: 1px solid #fde68a;">
                                 ⏳ 수요조사 마감일: ${mDeadline.replace('T', ' ')} (최소 ${mMinAtt}명 필요)
@@ -947,7 +979,17 @@
                             `;
                         }
 
-                        if (isAutoCanceled) {
+                        if (isCanceled) {
+                            details += `
+                            <div style="margin-top: 16px; padding: 12px; background: #fee2e2; border-radius: 12px; text-align: center; color: #ef4444; font-weight: 800; font-size: 14px; border: 1px solid #fecaca;">
+                                ❌ 제안자가 취소하였습니다.<br>
+                            </div>
+                            <div style="margin-top: 12px;" onclick="event.stopPropagation()">
+                                <button type="button" onclick="hideProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">닫기</button>
+                            </div>
+                            `;
+                            details += `${attStr}${noStr}`;
+                        } else if (isAutoCanceled) {
                             details += `
                             <div style="margin-top: 16px; padding: 12px; background: #fee2e2; border-radius: 12px; text-align: center; color: #ef4444; font-weight: 800; font-size: 14px; border: 1px solid #fecaca;">
                                 ❌ 수요조사 마감 및 인원 미달로 자동 취소되었습니다.<br>
@@ -989,17 +1031,21 @@
                             isMinAttMet = false;
                         }
 
-                        if (isProposal && isMine && !isAutoCanceled) {
+                        if (isProposal && isMine && !isAutoCanceled && !isCanceled) {
                             if (isMinAttMet) {
                                 details += `
-                                <div style="margin-top: 12px;" onclick="event.stopPropagation()">
-                                    <button type="button" onclick="confirmProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fffbeb; color: #d97706; border: 1px solid #fde68a;">✅ 제안된 모임 확정하기</button>
+                                <div style="margin-top: 12px; display: flex; gap: 8px;" onclick="event.stopPropagation()">
+                                    <button type="button" onclick="confirmProposal('${deal.id}')" style="flex: 2; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fffbeb; color: #d97706; border: 1px solid #fde68a;">✅ 제안된 모임 확정하기</button>
+                                    <button type="button" onclick="cancelProposal('${deal.id}')" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 제안 취소</button>
                                 </div>
                                 `;
                             } else {
                                 details += `
                                 <div style="margin-top: 12px; padding: 10px; border-radius: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; text-align: center; color: #64748b; font-size: 13px; font-weight: 600;">
                                     ⏳ 최소 참석 인원(${mMinAtt}명) 충족 시 확정 버튼이 나타납니다.
+                                </div>
+                                <div style="margin-top: 8px;" onclick="event.stopPropagation()">
+                                    <button type="button" onclick="cancelProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 제안 취소</button>
                                 </div>
                                 `;
                             }
@@ -1026,6 +1072,8 @@
                     
                     if (isPrivateMeeting) {
                         typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #f3f4f6; color: #4b5563; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #e5e7eb;">🔒 개인 일정</span>`;
+                    } else if (isCanceled) {
+                        typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #fee2e2; color: #ef4444; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #fecaca;">❌ 제안 취소됨</span>`;
                     } else if (typeof isAutoCanceled !== 'undefined' && isAutoCanceled) {
                         typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #fee2e2; color: #ef4444; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #fecaca;">❌ 자동 취소됨</span>`;
                     } else if (isProposal) {
