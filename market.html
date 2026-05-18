@@ -142,7 +142,8 @@
             <div class="checkbox-group">
                 <label class="checkbox-label"><input type="checkbox" id="p_pet">🐶 반려동물 가능</label>
                 <label class="checkbox-label"><input type="checkbox" id="p_parking">🚗 주차 가능</label>
-                <label class="checkbox-label"><input type="checkbox" id="p_loan">🏦 대출/LH 가능</label>
+                <label class="checkbox-label"><input type="checkbox" id="p_loan">🏦 전세대출 가능</label>
+                <label class="checkbox-label"><input type="checkbox" id="p_lh">🏢 LH/SH 가능</label>
             </div>
         </div>
 
@@ -164,11 +165,8 @@
         </div>
         
         <div class="form-group">
-            <label class="form-label">손님 이름 / 연락처</label>
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="c_name" class="form-input" placeholder="이름 (예: 홍길동)" style="flex: 1;">
-                <input type="text" id="c_phone" class="form-input" placeholder="연락처 뒤 4자리 등" style="flex: 1;">
-            </div>
+            <label class="form-label">손님 연락처 (또는 식별정보)</label>
+            <input type="text" id="c_phone" class="form-input" placeholder="연락처 뒤 4자리, 특징 등">
         </div>
 
         <div class="form-group">
@@ -195,6 +193,7 @@
                 <label class="checkbox-label"><input type="checkbox" id="c_pet">🐶 반려동물 필수</label>
                 <label class="checkbox-label"><input type="checkbox" id="c_parking">🚗 주차 필수</label>
                 <label class="checkbox-label"><input type="checkbox" id="c_loan">🏦 전세대출 필수</label>
+                <label class="checkbox-label"><input type="checkbox" id="c_lh">🏢 LH/SH 필수</label>
             </div>
         </div>
 
@@ -305,7 +304,8 @@
             if (p.room_count) opts.push(`방 ${p.room_count}개`);
             if (p.pet_allowed) opts.push('🐶반려동물');
             if (p.parking_allowed) opts.push('🚗주차');
-            if (p.loan_sh_lh_allowed) opts.push('🏦대출가능');
+            if (p.loan_allowed || p.loan_sh_lh_allowed) opts.push('🏦대출가능');
+            if (p.lh_sh_allowed) opts.push('🏢LH/SH가능');
             
             html += `
             <div class="card">
@@ -339,7 +339,8 @@
             let reqs = [];
             if (c.need_pet) reqs.push('🐶반려동물 필수');
             if (c.need_parking) reqs.push('🚗주차 필수');
-            if (c.need_loan_sh_lh) reqs.push('🏦대출 필수');
+            if (c.need_loan || c.need_loan_sh_lh) reqs.push('🏦대출 필수');
+            if (c.need_lh_sh) reqs.push('🏢LH/SH 필수');
 
             // Find matches
             const matches = propertiesData.filter(p => {
@@ -360,7 +361,8 @@
                 // Option match
                 if (c.need_pet && !p.pet_allowed) return false;
                 if (c.need_parking && !p.parking_allowed) return false;
-                if (c.need_loan_sh_lh && !p.loan_sh_lh_allowed) return false;
+                if ((c.need_loan || c.need_loan_sh_lh) && !(p.loan_allowed || p.loan_sh_lh_allowed)) return false;
+                if (c.need_lh_sh && !p.lh_sh_allowed) return false;
                 
                 return true;
             });
@@ -368,7 +370,7 @@
             html += `
             <div class="card" style="border-left: 4px solid #10b981;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <div style="font-size: 16px; font-weight: 800; color: #065f46;">🧑‍💼 ${c.client_name ? c.client_name : '손님'} <span style="font-size:13px; color:#64748b; font-weight:600;">${c.client_phone || ''}</span></div>
+                    <div style="font-size: 16px; font-weight: 800; color: #065f46;">🧑‍💼 ${c.client_phone || '연락처 없음'}</div>
                     <span class="chip neutral">${c.status}</span>
                 </div>
                 <div style="margin-bottom: 8px;">${typeChips}</div>
@@ -410,7 +412,8 @@
             room_count: document.getElementById('p_room').value ? parseInt(document.getElementById('p_room').value) : null,
             pet_allowed: document.getElementById('p_pet').checked,
             parking_allowed: document.getElementById('p_parking').checked,
-            loan_sh_lh_allowed: document.getElementById('p_loan').checked,
+            loan_allowed: document.getElementById('p_loan').checked,
+            lh_sh_allowed: document.getElementById('p_lh').checked,
             memo: document.getElementById('p_memo').value
         };
 
@@ -423,11 +426,10 @@
     }
 
     async function saveClient() {
-        let name = document.getElementById('c_name').value.trim();
         const phone = document.getElementById('c_phone').value.trim();
         
-        if (!name && !phone) { alert('손님 이름이나 연락처 중 하나는 입력해주세요.'); return; }
-        if (!name) name = ''; // DB에는 빈 문자열로 저장
+        if (!phone) { alert('손님 연락처를 입력해주세요.'); return; }
+        const name = ''; // DB 호환용 빈 문자열
         
         const types = Array.from(document.querySelectorAll('input[name="c_type"]:checked')).map(el => el.value);
         if (types.length === 0) { alert('찾으시는 거래 종류를 선택해주세요.'); return; }
@@ -441,7 +443,8 @@
             max_monthly: document.getElementById('c_rent').value ? parseInt(document.getElementById('c_rent').value) : null,
             need_pet: document.getElementById('c_pet').checked,
             need_parking: document.getElementById('c_parking').checked,
-            need_loan_sh_lh: document.getElementById('c_loan').checked,
+            need_loan: document.getElementById('c_loan').checked,
+            need_lh_sh: document.getElementById('c_lh').checked,
             memo: document.getElementById('c_memo').value
         };
 
