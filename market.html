@@ -725,6 +725,16 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
             }
         }
 
+        const roomCount = document.getElementById('p_room').value ? parseInt(document.getElementById('p_room').value) : null;
+        if (roomCount !== null && roomCount >= 5) {
+            if (!confirm(`방 개수가 ${roomCount}개로 입력되었습니다. 정말 맞습니까?`)) return;
+        }
+
+        const deposit = document.getElementById('p_dep').value ? parseInt(document.getElementById('p_dep').value) : null;
+        if (deposit !== null && deposit <= 500) {
+            if (!confirm(`보증금이 ${deposit}만원으로 입력되었습니다. 단위(만원) 착오가 없는지 확인해주세요. 이대로 진행할까요?`)) return;
+        }
+
         const payload = {
             user_id: window.currentUser.id,
             address: fullAddress || null,
@@ -732,9 +742,9 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
             tenant_phone: document.getElementById('p_tenant_phone').value.trim() || null,
             deal_types: types,
             sale_price: document.getElementById('p_sale').value ? parseInt(document.getElementById('p_sale').value) : null,
-            deposit: document.getElementById('p_dep').value ? parseInt(document.getElementById('p_dep').value) : null,
+            deposit: deposit,
             monthly_rent: document.getElementById('p_rent').value ? parseInt(document.getElementById('p_rent').value) : null,
-            room_count: document.getElementById('p_room').value ? parseInt(document.getElementById('p_room').value) : null,
+            room_count: roomCount,
             pet_allowed: document.getElementById('p_pet').checked,
             parking_allowed: document.getElementById('p_parking').checked,
             loan_allowed: document.getElementById('p_loan').checked,
