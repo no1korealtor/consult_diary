@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS properties (
     parking_fee INTEGER, -- 주차비
     loan_allowed BOOLEAN, -- 전세대출 가능 여부
     lh_sh_allowed BOOLEAN, -- LH/SH 가능 여부
+    is_basement BOOLEAN DEFAULT FALSE, -- 지층/반지하 여부
     
     -- 상태 및 메모
     status TEXT DEFAULT '거래가능', -- '거래가능', '보류', '거래완료'
@@ -62,6 +63,7 @@ CREATE TABLE IF NOT EXISTS client_requests (
     need_parking BOOLEAN DEFAULT FALSE,
     need_loan BOOLEAN DEFAULT FALSE,
     need_lh_sh BOOLEAN DEFAULT FALSE,
+    need_exclude_basement BOOLEAN DEFAULT FALSE, -- 지층/반지하 제외 여부
     
     -- 상태 및 메모
     status TEXT DEFAULT '탐색중', -- '탐색중', '계약완료', '변심/종료'

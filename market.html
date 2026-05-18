@@ -144,6 +144,7 @@
                 <label class="checkbox-label"><input type="checkbox" id="p_parking">🚗 주차 가능</label>
                 <label class="checkbox-label"><input type="checkbox" id="p_loan">🏦 전세대출 가능</label>
                 <label class="checkbox-label"><input type="checkbox" id="p_lh">🏢 LH/SH 가능</label>
+                <label class="checkbox-label"><input type="checkbox" id="p_basement">🔻 지층(반지하)</label>
             </div>
         </div>
 
@@ -194,6 +195,7 @@
                 <label class="checkbox-label"><input type="checkbox" id="c_parking">🚗 주차 필수</label>
                 <label class="checkbox-label"><input type="checkbox" id="c_loan">🏦 전세대출 필수</label>
                 <label class="checkbox-label"><input type="checkbox" id="c_lh">🏢 LH/SH 필수</label>
+                <label class="checkbox-label"><input type="checkbox" id="c_exclude_basement">🚫 지층 제외</label>
             </div>
         </div>
 
@@ -306,6 +308,7 @@
             if (p.parking_allowed) opts.push('🚗주차');
             if (p.loan_allowed || p.loan_sh_lh_allowed) opts.push('🏦대출가능');
             if (p.lh_sh_allowed) opts.push('🏢LH/SH가능');
+            if (p.is_basement) opts.push('🔻지층');
             
             html += `
             <div class="card">
@@ -341,6 +344,7 @@
             if (c.need_parking) reqs.push('🚗주차 필수');
             if (c.need_loan || c.need_loan_sh_lh) reqs.push('🏦대출 필수');
             if (c.need_lh_sh) reqs.push('🏢LH/SH 필수');
+            if (c.need_exclude_basement) reqs.push('🚫지층 제외');
 
             // Find matches
             const matches = propertiesData.filter(p => {
@@ -363,6 +367,7 @@
                 if (c.need_parking && !p.parking_allowed) return false;
                 if ((c.need_loan || c.need_loan_sh_lh) && !(p.loan_allowed || p.loan_sh_lh_allowed)) return false;
                 if (c.need_lh_sh && !p.lh_sh_allowed) return false;
+                if (c.need_exclude_basement && p.is_basement) return false;
                 
                 return true;
             });
@@ -414,6 +419,7 @@
             parking_allowed: document.getElementById('p_parking').checked,
             loan_allowed: document.getElementById('p_loan').checked,
             lh_sh_allowed: document.getElementById('p_lh').checked,
+            is_basement: document.getElementById('p_basement').checked,
             memo: document.getElementById('p_memo').value
         };
 
@@ -445,6 +451,7 @@
             need_parking: document.getElementById('c_parking').checked,
             need_loan: document.getElementById('c_loan').checked,
             need_lh_sh: document.getElementById('c_lh').checked,
+            need_exclude_basement: document.getElementById('c_exclude_basement').checked,
             memo: document.getElementById('c_memo').value
         };
 
