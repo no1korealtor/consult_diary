@@ -323,58 +323,81 @@
 
         async function loadBuildings() {
 
-            const { data, error } =
-                await supabaseClient
-                    .from('buildings')
-                    .select('*')
-                    .eq('user_id', window.currentUser.id)
-                    .order('created_at', { ascending: false });
+            const p1 = supabaseClient.from('buildings').select('*').eq('user_id', window.currentUser.id).order('created_at', { ascending: false });
+            const p2 = supabaseClient.from('properties').select('id, address, deal_types, room_count').eq('user_id', window.currentUser.id).order('created_at', { ascending: false });
 
-            if (error) {
-                alert('건물 목록 로드 에러: ' + error.message);
-                console.log(error);
+            const [res1, res2] = await Promise.all([p1, p2]);
+
+            if (res1.error) {
+                alert('건물 목록 로드 에러: ' + res1.error.message);
+                console.log(res1.error);
                 return;
             }
 
-            const select =
-                document.getElementById('buildingSelect');
+            const select = document.getElementById('buildingSelect');
 
-            // 검색 가능한 드롭다운(Tom Select) 초기화 전 기존 객체 파괴
             if (window.buildingTomSelect) {
                 window.buildingTomSelect.destroy();
             }
                 
-            select.innerHTML = '<option value="">건물 선택</option>';
+            select.innerHTML = '<option value="">건물 또는 매물 검색 (예: 141-3)</option>';
 
-            data.forEach(building => {
-
-                const option =
-                    document.createElement('option');
-
-                option.value = building.id;
-
+            const optgroupB = document.createElement('optgroup');
+            optgroupB.label = "🏢 내 관리 건물 (임대/잔금 일정)";
+            res1.data.forEach(building => {
+                const option = document.createElement('option');
+                option.value = 'B_' + building.id;
                 let text = building.road_address;
                 if (building.jibun_address) {
                     text += ' (' + building.jibun_address + ')';
                 }
                 option.textContent = text;
-
-                select.appendChild(option);
-
+                optgroupB.appendChild(option);
             });
+            select.appendChild(optgroupB);
+
+            if (res2.data && res2.data.length > 0) {
+                const optgroupP = document.createElement('optgroup');
+                optgroupP.label = "🏠 내 매물장 (답사/미팅 일정)";
+                res2.data.forEach(prop => {
+                    const option = document.createElement('option');
+                    option.value = 'P_' + prop.id;
+                    const typeStr = (prop.deal_types || []).join('/');
+                    const roomStr = prop.room_count ? ` 방 ${prop.room_count}개` : '';
+                    option.textContent = `[매물] ${prop.address || '주소없음'} (${typeStr}${roomStr})`;
+                    optgroupP.appendChild(option);
+                });
+                select.appendChild(optgroupP);
+            }
 
             window.buildingTomSelect = new TomSelect("#buildingSelect", {
                 create: false,
-                placeholder: "건물명 또는 주소 검색...",
-                maxOptions: 100
+                placeholder: "건물명, 호수, 또는 매물 주소 검색...",
+                maxOptions: 100,
+                onChange: function(value) {
+                    const roomSelectEl = document.getElementById('roomSelect');
+                    const roomSelectBtn = roomSelectEl.nextElementSibling;
+                    const contractTypeEl = document.getElementById('contractType');
+
+                    if (value && value.startsWith('P_')) {
+                        roomSelectEl.style.display = 'none';
+                        if(roomSelectBtn && roomSelectBtn.tagName === 'BUTTON') roomSelectBtn.style.display = 'none';
+                        if (contractTypeEl.value !== '기타' && contractTypeEl.value !== '모임') {
+                            contractTypeEl.value = '기타';
+                        }
+                    } else {
+                        roomSelectEl.style.display = 'inline-block';
+                        if(roomSelectBtn && roomSelectBtn.tagName === 'BUTTON') roomSelectBtn.style.display = 'inline-block';
+                        loadRooms();
+                    }
+                }
             });
 
-            // 방금 등록한 건물이 있다면 자동 선택
             const lastBuildingId = sessionStorage.getItem('lastRegisteredBuildingId');
             if (lastBuildingId) {
-                window.buildingTomSelect.setValue(lastBuildingId);
-                sessionStorage.removeItem('lastRegisteredBuildingId'); // 사용 후 삭제
-                loadRooms(); // 호수 목록 자동 갱신
+                window.buildingTomSelect.setValue('B_' + lastBuildingId);
+                sessionStorage.removeItem('lastRegisteredBuildingId');
+                loadRooms();
             }
 
         }
@@ -424,8 +447,12 @@
 
         async function loadRooms() {
 
-            const buildingId =
-                document.getElementById('buildingSelect').value;
+            let buildingId = document.getElementById('buildingSelect').value;
+            if (buildingId && buildingId.startsWith('B_')) {
+                buildingId = buildingId.substring(2);
+            } else {
+                buildingId = '';
+            }
 
             const roomSelect =
                 document.getElementById('roomSelect');
@@ -525,11 +552,16 @@
 
         async function saveDeal() {
 
-            const buildingId =
-                document.getElementById('buildingSelect').value;
+            const buildingSelectVal = document.getElementById('buildingSelect').value;
+            let buildingId = '';
+            let propertyId = '';
+            if (buildingSelectVal.startsWith('B_')) {
+                buildingId = buildingSelectVal.substring(2);
+            } else if (buildingSelectVal.startsWith('P_')) {
+                propertyId = buildingSelectVal.substring(2);
+            }
 
-            const roomId =
-                document.getElementById('roomSelect').value;
+            const roomId = document.getElementById('roomSelect').value;
 
             const contractType =
                 document.getElementById('contractType').value;
@@ -543,11 +575,11 @@
             const status =
                 document.getElementById('status');
 
-            if (contractType !== '모임' && !buildingId) {
-                status.innerText = '건물을 선택해주세요.';
+            if (contractType !== '모임' && !buildingId && !propertyId) {
+                status.innerText = '건물 또는 매물을 선택해주세요.';
                 return;
             }
-            if (contractType !== '모임' && !roomId) {
+            if (contractType !== '모임' && buildingId && !roomId) {
                 status.innerText = '호수를 선택해주세요.';
                 return;
             }
@@ -621,8 +653,12 @@
                 user_id: window.currentUser.id
             };
             
-            if (contractType !== '모임' && buildingId) payload.building_id = buildingId;
-            if (contractType !== '모임' && roomId) payload.room_id = roomId;
+            if (contractType !== '모임') {
+                if (buildingId) payload.building_id = buildingId;
+                if (roomId) payload.room_id = roomId;
+                // Add property_id if it's a property
+                if (propertyId) payload.property_id = propertyId;
+            }
 
             const { data: savedData, error } =
                 await supabaseClient
