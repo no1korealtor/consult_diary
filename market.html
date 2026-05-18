@@ -200,7 +200,7 @@
         <div class="modal-body">
             <div class="form-group">
                 <label class="form-label">손님 연락처 (또는 식별정보)</label>
-                <input type="text" id="c_phone" class="form-input" placeholder="연락처 뒤 4자리, 특징 등">
+                <input type="text" id="c_phone" class="form-input" placeholder="연락처 뒤 4자리, 특징 등" oninput="this.value = formatPhoneNumber(this.value)">
             </div>
 
             <div class="form-group">
@@ -353,6 +353,25 @@
         renderClients();
     }
 
+    function formatPhoneNumber(number) {
+        if (!number) return '';
+        const cleaned = ('' + number).replace(/\D/g, '');
+        if (cleaned.length === 11) {
+            return cleaned.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+        } else if (cleaned.length === 10) {
+            if (cleaned.startsWith('02')) {
+                return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+            } else {
+                return cleaned.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+            }
+        } else if (cleaned.length === 9) {
+            return cleaned.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+        } else if (cleaned.length === 8 && !cleaned.startsWith('0')) {
+            return cleaned.replace(/(\d{4})(\d{4})/, '$1-$2'); // 1588-0000
+        }
+        return number;
+    }
+
     function formatMoney(val) {
         if (!val) return '0';
         if (val >= 10000) {
@@ -490,7 +509,7 @@
             <div class="card" style="border-left: 4px solid #10b981;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                     <div style="display: flex; align-items: center; gap: 6px;">
-                        <div style="font-size: 16px; font-weight: 800; color: #065f46;">🧑‍💼 ${c.client_phone || '연락처 없음'}</div>
+                        <div style="font-size: 16px; font-weight: 800; color: #065f46;">🧑‍💼 ${formatPhoneNumber(c.client_phone) || '연락처 없음'}</div>
                         <button onclick="copyClientToKakao('${c.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 2px;">
                             💬 공동중개 의뢰
                         </button>
@@ -547,7 +566,7 @@
         if (c.occupancy_type === '무관') occStr = '📅 입주시기 무관';
 
         const realtorName = window.currentUser?.name || '공인중개사사무소';
-        const realtorPhone = window.currentUser?.phone || '';
+        const realtorPhone = formatPhoneNumber(window.currentUser?.phone) || '';
         const phoneStr = realtorPhone ? ` (${realtorPhone})` : '';
 
         const text = `🏡 [공동중개 의뢰]
@@ -597,7 +616,7 @@
         if (p.occupancy_type === '즉시입주') occStr = '즉시 입주 가능';
 
         const realtorName = window.currentUser?.name || '공인중개사사무소';
-        const realtorPhone = window.currentUser?.phone || '';
+        const realtorPhone = formatPhoneNumber(window.currentUser?.phone) || '';
         const phoneStr = realtorPhone ? ` (${realtorPhone})` : '';
 
         const text = `🏡 [추천 매물 안내]
