@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>통합 장부 (매물/손님)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <link rel="stylesheet" href="nav.css">
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
@@ -121,7 +122,11 @@
         <div class="modal-body">
             <div class="form-group">
                 <label class="form-label">매물 주소 (필수/일정 연결용)</label>
-                <input type="text" id="p_address" class="form-input" placeholder="예: 성산동 123-4 (또는 한화아파트 101동 202호)">
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <input type="text" id="p_address_main" class="form-input" placeholder="주소를 검색하세요" readonly style="flex: 1; background-color: #f1f5f9; cursor: pointer;" onclick="execDaumPostcode()">
+                    <button type="button" onclick="execDaumPostcode()" style="background: #334155; color: white; border: none; border-radius: 12px; padding: 0 16px; font-weight: 700; cursor: pointer; white-space: nowrap;">검색</button>
+                </div>
+                <input type="text" id="p_address_detail" class="form-input" placeholder="상세주소 (예: 101동 202호)">
             </div>
             <div class="form-group">
                 <label class="form-label">거래 종류 (다중 선택 가능)</label>
@@ -310,6 +315,28 @@
         const val = document.getElementById('c_occ_type').value;
         document.getElementById('c_occ_date').style.display = (val === '날짜확정') ? 'block' : 'none';
         document.getElementById('c_occ_memo').style.display = (val === '시기조정가능') ? 'block' : 'none';
+    }
+
+    function execDaumPostcode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                let addr = data.roadAddress; // 도로명 주소
+                let extraAddr = '';
+
+                if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                    extraAddr += data.bname;
+                }
+                if(data.buildingName !== '' && data.apartment === 'Y'){
+                    extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+                if(extraAddr !== ''){
+                    extraAddr = ' (' + extraAddr + ')';
+                }
+                
+                document.getElementById('p_address_main').value = addr + extraAddr;
+                document.getElementById('p_address_detail').focus();
+            }
+        }).open();
     }
 
     async function loadData() {
@@ -630,9 +657,13 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
         const types = Array.from(document.querySelectorAll('input[name="p_type"]:checked')).map(el => el.value);
         if (types.length === 0) { alert('거래 종류를 선택해주세요.'); return; }
         
+        const addrMain = document.getElementById('p_address_main').value.trim();
+        const addrDetail = document.getElementById('p_address_detail').value.trim();
+        const fullAddress = (addrMain ? addrMain + ' ' : '') + addrDetail;
+
         const payload = {
             user_id: window.currentUser.id,
-            address: document.getElementById('p_address').value.trim() || null,
+            address: fullAddress || null,
             deal_types: types,
             sale_price: document.getElementById('p_sale').value ? parseInt(document.getElementById('p_sale').value) : null,
             deposit: document.getElementById('p_dep').value ? parseInt(document.getElementById('p_dep').value) : null,
