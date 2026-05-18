@@ -1,7 +1,7 @@
 -- properties (매물장) 테이블
 CREATE TABLE IF NOT EXISTS properties (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID, -- authClient의 users.id 저장 (DB 분리로 FK 제거)
     building_id UUID REFERENCES buildings(id) ON DELETE CASCADE,
     room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
     
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS properties (
 -- client_requests (손님 조건 장부) 테이블
 CREATE TABLE IF NOT EXISTS client_requests (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    user_id UUID, -- authClient의 users.id 저장 (DB 분리로 FK 제거)
     -- 손님 정보
     client_name TEXT NOT NULL,
     client_phone TEXT,
