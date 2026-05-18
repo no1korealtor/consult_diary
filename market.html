@@ -375,6 +375,11 @@
                 <div style="font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">📅 입주: ${occStr}</div>
                 <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px;">${opts.join(' · ')}</div>
                 ${p.memo ? `<div style="font-size: 14px; color: #334155; background: #f8fafc; padding: 10px; border-radius: 8px;">${p.memo}</div>` : ''}
+                <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+                    <button onclick="copyPropertyToKakao('${p.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                        💬 카톡용 복사
+                    </button>
+                </div>
             </div>
             `;
         });
@@ -456,9 +461,12 @@
                     ${matches.length > 0 ? `
                         <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
                             ${matches.map(m => `
-                                <div style="background: #eff6ff; padding: 10px; border-radius: 8px; border: 1px solid #bfdbfe;">
+                                <div style="background: #eff6ff; padding: 10px; border-radius: 8px; border: 1px solid #bfdbfe; position: relative;">
                                     <div style="font-size: 12px; font-weight: 700; color: #1d4ed8; margin-bottom: 2px;">[${m.deal_types.join('/')}] 방 ${m.room_count||0}개</div>
-                                    <div style="font-size: 14px; font-weight: 800; color: #1e3a8a;">${m.memo ? m.memo.substring(0,20)+'...' : '메모 없음'}</div>
+                                    <div style="font-size: 14px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px;">${m.memo ? m.memo.substring(0,30)+'...' : '메모 없음'}</div>
+                                    <button onclick="copyPropertyToKakao('${m.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 2px;">
+                                        💬 카톡 복사
+                                    </button>
                                 </div>
                             `).join('')}
                         </div>
@@ -468,6 +476,82 @@
             `;
         });
         list.innerHTML = html;
+    }
+
+    function copyPropertyToKakao(id, btnElem) {
+        const p = propertiesData.find(prop => prop.id === id);
+        if (!p) return;
+
+        let priceStr = [];
+        if (p.sale_price) priceStr.push(`매매 ${formatMoney(p.sale_price)}`);
+        if (p.deposit && !p.monthly_rent) priceStr.push(`전세 ${formatMoney(p.deposit)}`);
+        if (p.deposit && p.monthly_rent) priceStr.push(`월세 ${formatMoney(p.deposit)}/${p.monthly_rent}`);
+        
+        let opts = [];
+        if (p.room_count) opts.push(`방 ${p.room_count}개`);
+        if (p.pet_allowed) opts.push('반려동물 가능');
+        if (p.parking_allowed) opts.push('주차 가능');
+        if (p.loan_allowed || p.lh_sh_allowed) opts.push('대출 가능');
+        if (p.lh_sh_allowed) opts.push('LH/SH 가능');
+        if (p.is_basement) opts.push('지층(반지하)');
+        
+        let occStr = p.occupancy_type || '입주시기 미정';
+        if ((p.occupancy_type === '날짜확정' || p.occupancy_type === '날짜협의') && p.occupancy_date) {
+            occStr += ` (${p.occupancy_date})`;
+        }
+        if (p.occupancy_type === '즉시입주') occStr = '즉시 입주 가능';
+
+        const text = `🏡 [추천 매물 안내]
+손님께서 찾으시는 조건의 매물입니다!
+
+▪️ 종류: ${p.deal_types.join(', ')}
+▪️ 금액: ${priceStr.join(' / ')}
+▪️ 특징: ${opts.length > 0 ? opts.join(', ') : '특징 없음'}
+▪️ 입주: ${occStr}
+▪️ 코멘트: ${p.memo || '없음'}
+
+언제든 편하게 연락 주세요! 😊
+📞 신대림공인중개사사무소`;
+
+        // 복사 수행
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showCopySuccess(btnElem);
+            }).catch(err => {
+                fallbackCopyTextToClipboard(text, btnElem);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text, btnElem);
+        }
+    }
+
+    function fallbackCopyTextToClipboard(text, btnElem) {
+        let textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            let successful = document.execCommand('copy');
+            if (successful) showCopySuccess(btnElem);
+            else alert('복사에 실패했습니다.');
+        } catch (err) {
+            alert('복사를 지원하지 않는 브라우저입니다.');
+        }
+        document.body.removeChild(textArea);
+    }
+
+    function showCopySuccess(btnElem) {
+        const originalText = btnElem.innerHTML;
+        btnElem.innerHTML = '✅ 복사완료';
+        btnElem.style.background = '#e2e8f0';
+        setTimeout(() => {
+            btnElem.innerHTML = originalText;
+            btnElem.style.background = '#fee500';
+        }, 2000);
     }
 
     async function saveProperty() {
