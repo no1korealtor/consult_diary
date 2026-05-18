@@ -452,7 +452,10 @@
                     <div>${typeChips}</div>
                     <span class="chip neutral">${p.status}</span>
                 </div>
-                ${p.address ? `<div style="font-size: 15px; font-weight: 800; color: #065f46; margin-bottom: 6px;">📍 ${p.address}</div>` : ''}
+                ${p.address ? `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                    <div style="font-size: 15px; font-weight: 800; color: #065f46; word-break: keep-all;">📍 ${p.address}</div>
+                    <a href="https://map.kakao.com/link/search/${encodeURIComponent(p.address)}" target="_blank" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 2px; white-space: nowrap;">🗺️ 지도보기</a>
+                </div>` : ''}
                 ${phoneHtml}
                 <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">${priceStr.join(' / ')}</div>
                 <div style="font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">📅 입주: ${occStr}</div>
