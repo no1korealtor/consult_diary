@@ -98,7 +98,7 @@
 
     <!-- 매물장 탭 -->
     <div id="propertiesTab">
-        <button class="btn-primary" onclick="openModal('propModal')" style="margin-bottom: 20px;">+ 새 매물 등록하기</button>
+        <button class="btn-primary" onclick="openPropModal()" style="margin-bottom: 20px;">+ 새 매물 등록하기</button>
         <div id="propertiesList">
             <div style="text-align:center; padding: 40px 0; color: #94a3b8; font-weight: 700;">로딩 중...</div>
         </div>
@@ -106,7 +106,7 @@
 
     <!-- 손님 장부 탭 -->
     <div id="clientsTab" style="display: none;">
-        <button class="btn-primary" onclick="openModal('clientModal')" style="background: #10b981; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">+ 새 손님 등록하기</button>
+        <button class="btn-primary" onclick="openClientModal()" style="background: #10b981; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">+ 새 손님 등록하기</button>
         <div id="clientsList"></div>
     </div>
 </div>
@@ -120,6 +120,7 @@
         </div>
         
         <div class="modal-body">
+            <input type="hidden" id="p_id">
             <div class="form-group">
                 <label class="form-label">매물 주소 (필수/일정 연결용)</label>
                 <div style="display: flex; gap: 8px; margin-bottom: 8px;">
@@ -207,6 +208,7 @@
         </div>
         
         <div class="modal-body">
+            <input type="hidden" id="c_id">
             <div class="form-group">
                 <label class="form-label">손님 연락처 (또는 식별정보)</label>
                 <input type="text" id="c_phone" class="form-input" placeholder="연락처 뒤 4자리, 특징 등" oninput="this.value = formatPhoneNumber(this.value)">
@@ -460,10 +462,14 @@
             <div style="font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">📅 입주: ${occStr}</div>
             <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px;">${opts.join(' · ')}</div>
             ${p.memo ? `<div style="font-size: 14px; color: #334155; background: #e2e8f0; padding: 10px; border-radius: 8px;">${p.memo}</div>` : ''}
-            <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+            <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 6px;">
                 <button onclick="copyPropertyToKakao('${p.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
                     💬 카톡용 복사
                 </button>
+                ${!isMatched ? `
+                <button onclick="openPropModal('${p.id}')" style="background: #f1f5f9; color: #475569; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">✏️ 수정</button>
+                <button onclick="deleteProperty('${p.id}')" style="background: #fee2e2; color: #b91c1c; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer;">🗑️ 삭제</button>
+                ` : ''}
             </div>
             ${(() => {
                 if (isMatched && client) {
@@ -608,8 +614,10 @@
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <div style="font-size: 16px; font-weight: 800; color: #065f46;">🧑‍💼 ${formatPhoneNumber(c.client_phone) || '연락처 없음'}</div>
                         <button onclick="copyClientToKakao('${c.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 2px;">
-                            💬 공동중개 의뢰
+                            💬 의뢰
                         </button>
+                        <button onclick="openClientModal('${c.id}')" style="background: #f1f5f9; color: #475569; border: none; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer;">✏️ 수정</button>
+                        <button onclick="deleteClient('${c.id}')" style="background: #fee2e2; color: #b91c1c; border: none; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer;">🗑️ 삭제</button>
                     </div>
                     ${statusBadge}
                 </div>
@@ -769,6 +777,7 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
         const addrMain = document.getElementById('p_address_main').value.trim();
         const addrDetail = document.getElementById('p_address_detail').value.trim();
         const fullAddress = (addrMain ? addrMain + ' ' : '') + addrDetail;
+        const pid = document.getElementById('p_id').value;
 
         let types = [];
         if (checkedTypes.includes('매매')) types.push('매매');
@@ -811,16 +820,96 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
             memo: document.getElementById('p_memo').value
         };
 
-        const { error } = await supabaseClient.from('properties').insert(payload);
+        let error;
+        if (pid) {
+            const res = await supabaseClient.from('properties').update(payload).eq('id', pid);
+            error = res.error;
+        } else {
+            const res = await supabaseClient.from('properties').insert(payload);
+            error = res.error;
+        }
+
         if (error) { alert('저장 실패: ' + error.message); return; }
         
         document.getElementById('propModal').style.display = 'none';
-        alert('매물이 등록되었습니다.');
+        alert(pid ? '매물이 수정되었습니다.' : '매물이 등록되었습니다.');
         loadData();
+    }
+
+    async function deleteProperty(id) {
+        if (!confirm('정말 이 매물 기록을 삭제하시겠습니까?')) return;
+        const { error } = await supabaseClient.from('properties').delete().eq('id', id);
+        if (error) {
+            alert('삭제 실패: ' + error.message);
+            return;
+        }
+        alert('삭제되었습니다.');
+        loadData();
+    }
+
+    function openPropModal(id = null) {
+        const modal = document.getElementById('propModal');
+        const title = modal.querySelector('.modal-header h3');
+        const formIds = ['p_id', 'p_address_main', 'p_address_detail', 'p_owner_phone', 'p_tenant_phone', 'p_sale', 'p_dep', 'p_rent', 'p_room', 'p_pet', 'p_parking', 'p_loan', 'p_lh', 'p_basement', 'p_occ_date', 'p_memo'];
+        
+        formIds.forEach(fid => {
+            const el = document.getElementById(fid);
+            if (!el) return;
+            if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+            else el.value = '';
+        });
+        document.querySelectorAll('input[name="p_type"]').forEach(el => el.checked = false);
+        document.getElementById('p_occ_type').value = '입주시기 미정';
+
+        if (id) {
+            title.innerText = '🏢 매물 정보 수정';
+            const p = propertiesData.find(x => x.id === id);
+            if (p) {
+                document.getElementById('p_id').value = p.id;
+                // Parse address loosely
+                let addrMain = p.address || '';
+                let addrDetail = '';
+                // simplistic split if there's a space followed by a number/dong/ho
+                const lastSpace = addrMain.lastIndexOf(' ');
+                if (lastSpace > 0 && /\d/.test(addrMain.substring(lastSpace))) {
+                    addrDetail = addrMain.substring(lastSpace + 1);
+                    addrMain = addrMain.substring(0, lastSpace);
+                }
+                document.getElementById('p_address_main').value = addrMain;
+                document.getElementById('p_address_detail').value = addrDetail;
+                
+                document.getElementById('p_owner_phone').value = p.owner_phone || '';
+                document.getElementById('p_tenant_phone').value = p.tenant_phone || '';
+                
+                if (p.deal_types.includes('매매')) document.querySelector('input[name="p_type"][value="매매"]').checked = true;
+                if (p.deal_types.includes('전세') || p.deal_types.includes('월세')) document.querySelector('input[name="p_type"][value="전월세"]').checked = true;
+                
+                if (p.sale_price) document.getElementById('p_sale').value = p.sale_price;
+                if (p.deposit) document.getElementById('p_dep').value = p.deposit;
+                if (p.monthly_rent) document.getElementById('p_rent').value = p.monthly_rent;
+                if (p.room_count) document.getElementById('p_room').value = p.room_count;
+                
+                document.getElementById('p_pet').checked = !!p.pet_allowed;
+                document.getElementById('p_parking').checked = !!p.parking_allowed;
+                document.getElementById('p_loan').checked = !!p.loan_allowed;
+                document.getElementById('p_lh').checked = !!p.lh_sh_allowed;
+                document.getElementById('p_basement').checked = !!p.is_basement;
+                
+                if (p.occupancy_type) document.getElementById('p_occ_type').value = p.occupancy_type;
+                if (p.occupancy_date) document.getElementById('p_occ_date').value = p.occupancy_date;
+                if (p.memo) document.getElementById('p_memo').value = p.memo;
+            }
+        } else {
+            title.innerText = '🏢 새 매물 등록';
+        }
+        togglePriceFields();
+        togglePropOcc();
+        modal.style.display = 'flex';
     }
 
     async function saveClient() {
         const phone = document.getElementById('c_phone').value.trim();
+        const cid = document.getElementById('c_id').value;
         
         if (!phone) { alert('손님 연락처를 입력해주세요.'); return; }
         const name = ''; // DB 호환용 빈 문자열
@@ -847,12 +936,76 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
             memo: document.getElementById('c_memo').value
         };
 
-        const { error } = await supabaseClient.from('client_requests').insert(payload);
+        let error;
+        if (cid) {
+            const res = await supabaseClient.from('client_requests').update(payload).eq('id', cid);
+            error = res.error;
+        } else {
+            const res = await supabaseClient.from('client_requests').insert(payload);
+            error = res.error;
+        }
+
         if (error) { alert('저장 실패: ' + error.message); return; }
         
         document.getElementById('clientModal').style.display = 'none';
-        alert('손님 조건이 등록되었습니다.');
+        alert(cid ? '손님 정보가 수정되었습니다.' : '손님 조건이 등록되었습니다.');
         loadData();
+    }
+
+    async function deleteClient(id) {
+        if (!confirm('정말 이 손님 기록을 삭제하시겠습니까?')) return;
+        const { error } = await supabaseClient.from('client_requests').delete().eq('id', id);
+        if (error) {
+            alert('삭제 실패: ' + error.message);
+            return;
+        }
+        alert('삭제되었습니다.');
+        loadData();
+    }
+
+    function openClientModal(id = null) {
+        const modal = document.getElementById('clientModal');
+        const title = modal.querySelector('.modal-header h3');
+        const formIds = ['c_id', 'c_phone', 'c_budget', 'c_rent', 'c_room', 'c_pet', 'c_parking', 'c_loan', 'c_lh', 'c_exclude_basement', 'c_occ_date', 'c_occ_memo', 'c_memo'];
+        
+        formIds.forEach(fid => {
+            const el = document.getElementById(fid);
+            if (!el) return;
+            if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+            else el.value = '';
+        });
+        document.querySelectorAll('input[name="c_type"]').forEach(el => el.checked = false);
+        document.getElementById('c_occ_type').value = '무관';
+
+        if (id) {
+            title.innerText = '🧑‍💼 손님 조건 수정';
+            const c = clientsData.find(x => x.id === id);
+            if (c) {
+                document.getElementById('c_id').value = c.id;
+                document.getElementById('c_phone').value = c.client_phone || '';
+                c.target_types.forEach(t => {
+                    const cb = document.querySelector(`input[name="c_type"][value="${t}"]`);
+                    if (cb) cb.checked = true;
+                });
+                if (c.max_budget) document.getElementById('c_budget').value = c.max_budget;
+                if (c.max_monthly) document.getElementById('c_rent').value = c.max_monthly;
+                if (c.min_room_count) document.getElementById('c_room').value = c.min_room_count;
+                document.getElementById('c_pet').checked = !!c.need_pet;
+                document.getElementById('c_parking').checked = !!c.need_parking;
+                document.getElementById('c_loan').checked = !!c.need_loan;
+                document.getElementById('c_lh').checked = !!c.need_lh_sh;
+                document.getElementById('c_exclude_basement').checked = !!c.need_exclude_basement;
+                if (c.occupancy_type) document.getElementById('c_occ_type').value = c.occupancy_type;
+                if (c.occupancy_date) document.getElementById('c_occ_date').value = c.occupancy_date;
+                if (c.occupancy_period_memo) document.getElementById('c_occ_memo').value = c.occupancy_period_memo;
+                if (c.memo) document.getElementById('c_memo').value = c.memo;
+            }
+        } else {
+            title.innerText = '🧑‍💼 새 손님 조건 등록';
+        }
+        toggleClientPrice();
+        toggleClientOcc();
+        modal.style.display = 'flex';
     }
 
     async function checkAuthAndLoad() {
