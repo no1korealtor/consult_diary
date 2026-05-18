@@ -694,7 +694,8 @@
         };
 
         window.cancelProposal = async function(dealId) {
-            if (!confirm('이 모임 제안을 취소하시겠습니까?')) return;
+            const reason = prompt('모임을 취소하는 이유나 남기실 말씀을 적어주세요.\n(취소하시려면 내용을 비워두거나 입력 후 확인을 눌러주세요)');
+            if (reason === null) return; // 사용자가 취소를 누른 경우
 
             const { data: deal, error: fetchErr } = await supabaseClient
                 .from('deals')
@@ -706,7 +707,10 @@
                 alert('모임 정보를 불러오지 못했습니다.'); return;
             }
 
-            const newMemo = deal.memo + '\n[CANCELED]';
+            let newMemo = deal.memo + '\n[CANCELED]';
+            if (reason.trim() !== '') {
+                newMemo += `[CANCELED_REASON]${reason.trim()}[/CANCELED_REASON]`;
+            }
             
             const { error: updateErr } = await supabaseClient
                 .from('deals')
@@ -888,8 +892,17 @@
                     rawMemo = rawMemo.replace('[PENDING_ADMIN]', '');
                 }
 
-                const isCanceled = rawMemo.includes('[CANCELED]');
-                if (isCanceled) {
+                let cancelReason = '';
+                if (rawMemo.includes('[CANCELED_REASON]')) {
+                    const m = rawMemo.match(/\[CANCELED_REASON\](.*?)\[\/CANCELED_REASON\]/);
+                    if (m) {
+                        cancelReason = m[1];
+                        rawMemo = rawMemo.replace(m[0], '');
+                    }
+                }
+
+                const isCanceled = rawMemo.includes('[CANCELED]') || cancelReason !== '';
+                if (rawMemo.includes('[CANCELED]')) {
                     rawMemo = rawMemo.replace('[CANCELED]', '');
                 }
 
@@ -981,8 +994,9 @@
 
                         if (isCanceled) {
                             details += `
-                            <div style="margin-top: 16px; padding: 12px; background: #fee2e2; border-radius: 12px; text-align: center; color: #ef4444; font-weight: 800; font-size: 14px; border: 1px solid #fecaca;">
-                                ❌ 제안자가 취소하였습니다.<br>
+                            <div style="margin-top: 16px; padding: 12px; background: #fee2e2; border-radius: 12px; text-align: center; color: #ef4444; border: 1px solid #fecaca;">
+                                <div style="font-weight: 800; font-size: 14px;">❌ 제안자가 취소하였습니다.</div>
+                                ${cancelReason ? `<div style="margin-top: 8px; font-size: 13px; font-weight: 600; color: #b91c1c; background: #fef2f2; padding: 8px; border-radius: 8px; text-align: left;">💬 취소 사유: ${cancelReason}</div>` : ''}
                             </div>
                             <div style="margin-top: 12px;" onclick="event.stopPropagation()">
                                 <button type="button" onclick="hideProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">닫기</button>

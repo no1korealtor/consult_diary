@@ -268,8 +268,17 @@
                 rawMemo = rawMemo.replace(/\[PENDING_ADMIN\]/g, '');
             }
 
+            let cancelReason = '';
+            if (rawMemo.includes('[CANCELED_REASON]')) {
+                const m = rawMemo.match(/\[CANCELED_REASON\](.*?)\[\/CANCELED_REASON\]/);
+                if (m) {
+                    cancelReason = m[1];
+                    rawMemo = rawMemo.replace(m[0], '');
+                }
+            }
+
             let isCanceled = false;
-            if (rawMemo.includes('[CANCELED]')) {
+            if (rawMemo.includes('[CANCELED]') || cancelReason !== '') {
                 isCanceled = true;
                 rawMemo = rawMemo.replace(/\[CANCELED\]/g, '');
             }
@@ -358,7 +367,12 @@
                     titleHtml = titleHtml.replace('margin-bottom:4px;', 'margin-bottom:12px;');
                 }
                 
-                document.getElementById('memo').innerHTML = titleHtml + descHtml + meetInfoHtml;
+                let cancelHtml = '';
+                if (isCanceled && cancelReason) {
+                    cancelHtml = `<div style="margin-bottom: 16px; padding: 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #b91c1c; font-size: 14px; font-weight: 600;">💬 취소 사유: ${cancelReason}</div>`;
+                }
+                
+                document.getElementById('memo').innerHTML = titleHtml + descHtml + cancelHtml + meetInfoHtml;
             } else {
                 document.getElementById('dealTitle').innerText = (data.balance_date ? data.balance_date + ' ' : '') + data.contract_type;
 
