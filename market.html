@@ -368,7 +368,7 @@
             html += `
             <div class="card" style="border-left: 4px solid #10b981;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <div style="font-size: 16px; font-weight: 800; color: #065f46;">🧑‍💼 ${c.client_name} <span style="font-size:13px; color:#64748b; font-weight:600;">${c.client_phone || ''}</span></div>
+                    <div style="font-size: 16px; font-weight: 800; color: #065f46;">🧑‍💼 ${c.client_name ? c.client_name : '손님'} <span style="font-size:13px; color:#64748b; font-weight:600;">${c.client_phone || ''}</span></div>
                     <span class="chip neutral">${c.status}</span>
                 </div>
                 <div style="margin-bottom: 8px;">${typeChips}</div>
@@ -423,15 +423,19 @@
     }
 
     async function saveClient() {
-        const name = document.getElementById('c_name').value;
-        if (!name) { alert('손님 이름을 입력해주세요.'); return; }
+        let name = document.getElementById('c_name').value.trim();
+        const phone = document.getElementById('c_phone').value.trim();
+        
+        if (!name && !phone) { alert('손님 이름이나 연락처 중 하나는 입력해주세요.'); return; }
+        if (!name) name = ''; // DB에는 빈 문자열로 저장
+        
         const types = Array.from(document.querySelectorAll('input[name="c_type"]:checked')).map(el => el.value);
         if (types.length === 0) { alert('찾으시는 거래 종류를 선택해주세요.'); return; }
 
         const payload = {
             user_id: window.currentUser.id,
             client_name: name,
-            client_phone: document.getElementById('c_phone').value,
+            client_phone: phone,
             target_types: types,
             max_budget: document.getElementById('c_budget').value ? parseInt(document.getElementById('c_budget').value) : null,
             max_monthly: document.getElementById('c_rent').value ? parseInt(document.getElementById('c_rent').value) : null,
