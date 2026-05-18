@@ -1350,7 +1350,7 @@
 
                     if (dealMonth !== currentMonthLabel) {
                         currentMonthLabel = dealMonth;
-                        currentDateLabel = ''; // Reset date label on new month
+                        currentDateLabel = dealDate; // Set it to current deal's date so no line is drawn right under the month header
                         const dividerLi = document.createElement('li');
                         
                         if (isPast || dealMonth === '날짜 미정') {
@@ -1379,10 +1379,9 @@
                     if (!isPast && !isFarFuture && dealDate !== '미정' && dealDate !== currentDateLabel) {
                         currentDateLabel = dealDate;
                         const dateDividerLi = document.createElement('li');
-                        dateDividerLi.style.cssText = "margin: 20px 0 12px 0; display: flex; align-items: center;";
-                        dateDividerLi.innerHTML = `<div style="background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: 800; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">${dealDate}</div><div style="flex: 1; height: 1px; background: dashed 1px #e5e7eb; margin-left: 12px;"></div>`;
+                        dateDividerLi.style.cssText = "margin: 16px 0 16px 0; height: 1px; border-top: 2px dashed #e2e8f0;";
                         
-                        dateDividerLi.dataset.originalDisplay = 'flex';
+                        dateDividerLi.dataset.originalDisplay = 'block';
                         if (visibleCount >= 5) {
                             dateDividerLi.style.display = 'none';
                             dateDividerLi.classList.add('personal-hidden-item');
