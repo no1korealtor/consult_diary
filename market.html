@@ -507,7 +507,9 @@
                 if (c.target_types.includes('매매') && p.sale_price && p.sale_price <= c.max_budget) isBudgetOk = true;
                 if (c.target_types.includes('전세') && p.deposit && !p.monthly_rent && p.deposit <= c.max_budget) isBudgetOk = true;
                 if (c.target_types.includes('월세') && p.monthly_rent) {
-                    if (p.deposit <= c.max_budget && p.monthly_rent <= (c.max_monthly || 9999)) isBudgetOk = true;
+                    // 실무 반영: 월세는 심리적 저항선이 낮아 손님 최대 예산보다 +10만원까지 융통성 있게 매칭
+                    const flexibleMaxMonthly = c.max_monthly ? c.max_monthly + 10 : 9999;
+                    if (p.deposit <= c.max_budget && p.monthly_rent <= flexibleMaxMonthly) isBudgetOk = true;
                 }
                 if (!isBudgetOk) return false;
 
