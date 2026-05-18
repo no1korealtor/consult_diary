@@ -149,6 +149,17 @@
         </div>
 
         <div class="form-group">
+            <label class="form-label">입주 가능 시기</label>
+            <select id="p_occ_type" class="form-input" style="margin-bottom: 8px;" onchange="togglePropOcc()">
+                <option value="즉시입주">즉시입주 가능</option>
+                <option value="날짜협의">날짜협의 (조정 가능)</option>
+                <option value="날짜확정">날짜확정 (특정일)</option>
+                <option value="입주불가(세안고)">입주불가 (세안고 매매)</option>
+            </select>
+            <input type="date" id="p_occ_date" class="form-input" style="display: none;">
+        </div>
+
+        <div class="form-group">
             <label class="form-label">메모 (주소, 동호수, 특징 등)</label>
             <textarea id="p_memo" class="form-input" rows="3" placeholder="내부 확인용 메모를 적어주세요"></textarea>
         </div>
@@ -197,6 +208,17 @@
                 <label class="checkbox-label"><input type="checkbox" id="c_lh">🏢 LH/SH 필수</label>
                 <label class="checkbox-label"><input type="checkbox" id="c_exclude_basement">🚫 지층 제외</label>
             </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">희망 입주 시기</label>
+            <select id="c_occ_type" class="form-input" style="margin-bottom: 8px;" onchange="toggleClientOcc()">
+                <option value="무관">무관 (아무때나)</option>
+                <option value="날짜확정">날짜확정 (특정일)</option>
+                <option value="시기조정가능">시기조정가능 (대략적인 시기)</option>
+            </select>
+            <input type="date" id="c_occ_date" class="form-input" style="display: none;">
+            <input type="text" id="c_occ_memo" class="form-input" style="display: none;" placeholder="예: 7월 중순에서 8월 말 사이">
         </div>
 
         <div class="form-group">
@@ -259,6 +281,17 @@
         document.getElementById('wrap_c_rent').style.display = checked.includes('월세') ? 'block' : 'none';
     }
 
+    function togglePropOcc() {
+        const val = document.getElementById('p_occ_type').value;
+        document.getElementById('p_occ_date').style.display = (val === '날짜확정' || val === '날짜협의') ? 'block' : 'none';
+    }
+
+    function toggleClientOcc() {
+        const val = document.getElementById('c_occ_type').value;
+        document.getElementById('c_occ_date').style.display = (val === '날짜확정') ? 'block' : 'none';
+        document.getElementById('c_occ_memo').style.display = (val === '시기조정가능') ? 'block' : 'none';
+    }
+
     async function loadData() {
         // Load Properties
         const { data: props, error: e1 } = await supabaseClient.from('properties').select('*').order('created_at', { ascending: false });
@@ -310,6 +343,12 @@
             if (p.lh_sh_allowed) opts.push('🏢LH/SH가능');
             if (p.is_basement) opts.push('🔻지층');
             
+            let occStr = p.occupancy_type || '입주시기 미정';
+            if ((p.occupancy_type === '날짜확정' || p.occupancy_type === '날짜협의') && p.occupancy_date) {
+                occStr += ` (${p.occupancy_date})`;
+            }
+            if (p.occupancy_type === '즉시입주') occStr = '🏃즉시입주';
+            
             html += `
             <div class="card">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
@@ -317,6 +356,7 @@
                     <span class="chip neutral">${p.status}</span>
                 </div>
                 <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">${priceStr.join(' / ')}</div>
+                <div style="font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">📅 입주: ${occStr}</div>
                 <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px;">${opts.join(' · ')}</div>
                 ${p.memo ? `<div style="font-size: 14px; color: #334155; background: #f8fafc; padding: 10px; border-radius: 8px;">${p.memo}</div>` : ''}
             </div>
@@ -346,6 +386,11 @@
             if (c.need_lh_sh) reqs.push('🏢LH/SH 필수');
             if (c.need_exclude_basement) reqs.push('🚫지층 제외');
 
+            let occStr = c.occupancy_type || '무관';
+            if (c.occupancy_type === '날짜확정' && c.occupancy_date) occStr = `📅 ${c.occupancy_date} 입주확정`;
+            if (c.occupancy_type === '시기조정가능' && c.occupancy_period_memo) occStr = `📅 시기조정 (${c.occupancy_period_memo})`;
+            if (c.occupancy_type === '무관') occStr = '📅 입주시기 무관';
+
             // Find matches
             const matches = propertiesData.filter(p => {
                 if (p.status !== '거래가능') return false;
@@ -369,6 +414,10 @@
                 if (c.need_lh_sh && !p.lh_sh_allowed) return false;
                 if (c.need_exclude_basement && p.is_basement) return false;
                 
+                // If property is '입주불가(세안고)' and client wants Jeonse or Wolse, filter it out.
+                // Or if client wants Maemae but actually needs to move in (날짜확정 or 시기조정가능), filter it out.
+                if (p.occupancy_type === '입주불가(세안고)' && c.occupancy_type !== '무관') return false;
+                
                 return true;
             });
 
@@ -380,6 +429,7 @@
                 </div>
                 <div style="margin-bottom: 8px;">${typeChips}</div>
                 <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">💰 예산: ${budgetStr}</div>
+                <div style="font-size: 14px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">${occStr}</div>
                 ${reqs.length > 0 ? `<div style="font-size: 13px; font-weight: 600; color: #ef4444; margin-bottom: 8px;">⚠️ 조건: ${reqs.join(' · ')}</div>` : ''}
                 ${c.memo ? `<div style="font-size: 13px; color: #475569; margin-bottom: 12px;">📝 ${c.memo}</div>` : ''}
                 
@@ -420,6 +470,8 @@
             loan_allowed: document.getElementById('p_loan').checked,
             lh_sh_allowed: document.getElementById('p_lh').checked,
             is_basement: document.getElementById('p_basement').checked,
+            occupancy_type: document.getElementById('p_occ_type').value,
+            occupancy_date: document.getElementById('p_occ_date').value || null,
             memo: document.getElementById('p_memo').value
         };
 
@@ -452,6 +504,9 @@
             need_loan: document.getElementById('c_loan').checked,
             need_lh_sh: document.getElementById('c_lh').checked,
             need_exclude_basement: document.getElementById('c_exclude_basement').checked,
+            occupancy_type: document.getElementById('c_occ_type').value,
+            occupancy_date: document.getElementById('c_occ_date').value || null,
+            occupancy_period_memo: document.getElementById('c_occ_memo').value,
             memo: document.getElementById('c_memo').value
         };
 
