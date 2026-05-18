@@ -121,6 +121,14 @@
         
         <div class="modal-body">
             <input type="hidden" id="p_id">
+            <div class="form-group" id="wrap_p_status" style="display: none;">
+                <label class="form-label">매물 상태</label>
+                <select id="p_status" class="form-input" style="font-weight: bold;">
+                    <option value="거래가능">거래가능 (진행중)</option>
+                    <option value="보류">보류</option>
+                    <option value="거래종료">거래종료 (계약완료/취소 등)</option>
+                </select>
+            </div>
             <div class="form-group">
                 <label class="form-label">매물 주소 (필수/일정 연결용)</label>
                 <div style="display: flex; gap: 8px; margin-bottom: 8px;">
@@ -209,6 +217,14 @@
         
         <div class="modal-body">
             <input type="hidden" id="c_id">
+            <div class="form-group" id="wrap_c_status" style="display: none;">
+                <label class="form-label">손님 상태</label>
+                <select id="c_status" class="form-input" style="font-weight: bold;">
+                    <option value="탐색중">탐색중 (진행중)</option>
+                    <option value="계약완료">계약완료</option>
+                    <option value="변경/종료">변경/종료 (연락처 변경/의뢰 취소 등)</option>
+                </select>
+            </div>
             <div class="form-group">
                 <label class="form-label">손님 연락처 (또는 식별정보)</label>
                 <input type="text" id="c_phone" class="form-input" placeholder="연락처 뒤 4자리, 특징 등" oninput="this.value = formatPhoneNumber(this.value)">
@@ -447,11 +463,18 @@
 
         const mapBtn = p.address ? `<a href="https://map.kakao.com/link/search/${encodeURIComponent(p.address)}" target="_blank" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 2px; white-space: nowrap;">🗺️ 지도보기</a>` : '';
 
+        const isClosed = p.status === '거래종료';
+        const cardStyle = isMatched 
+            ? 'style="border: 2px solid #3b82f6; background: #f8fafc; padding: 12px; margin-bottom: 8px;"' 
+            : (isClosed ? 'style="opacity: 0.6; position: relative;"' : 'style="position: relative;"');
+        const strikethroughHtml = isClosed ? `<div style="position: absolute; top: 50%; left: 12px; right: 12px; height: 2px; background: #ef4444; transform: translateY(-50%); z-index: 10; pointer-events: none;"></div>` : '';
+
         return `
-        <div class="card" ${isMatched ? 'style="border: 2px solid #3b82f6; background: #f8fafc; padding: 12px; margin-bottom: 8px;"' : ''}>
+        <div class="card" ${cardStyle}>
+            ${strikethroughHtml}
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                <div>${typeChips}</div>
-                ${!isMatched ? `<span class="chip neutral">${p.status}</span>` : ''}
+                <div style="position: relative; z-index: 11;">${typeChips}</div>
+                ${!isMatched ? `<span class="chip neutral" style="position: relative; z-index: 11;">${p.status}</span>` : ''}
             </div>
             ${p.address ? `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                 <div style="font-size: 15px; font-weight: 800; color: #065f46; word-break: keep-all;">📍 ${p.address}</div>
@@ -608,9 +631,14 @@
                 statusBadge = `<span class="chip" style="background:#dbeafe; color:#1d4ed8;">🤝 계약완료</span>`;
             }
 
+            const isClientClosed = c.status !== '탐색중';
+            const cardStyle = isClientClosed ? 'style="border-left: 4px solid #94a3b8; opacity: 0.6; position: relative;"' : 'style="border-left: 4px solid #10b981; position: relative;"';
+            const strikethroughHtml = isClientClosed ? `<div style="position: absolute; top: 120px; left: 12px; right: 12px; height: 2px; background: #ef4444; z-index: 10; pointer-events: none;"></div>` : '';
+
             html += `
-            <div class="card" style="border-left: 4px solid #10b981;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <div class="card" ${cardStyle}>
+                ${strikethroughHtml}
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; position: relative; z-index: 11;">
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <div style="font-size: 16px; font-weight: 800; color: #065f46;">🧑‍💼 ${formatPhoneNumber(c.client_phone) || '연락처 없음'}</div>
                         <button onclick="copyClientToKakao('${c.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 2px;">
@@ -819,6 +847,12 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
             occupancy_date: document.getElementById('p_occ_date').value || null,
             memo: document.getElementById('p_memo').value
         };
+        
+        if (pid) {
+            payload.status = document.getElementById('p_status').value;
+        } else {
+            payload.status = '거래가능';
+        }
 
         let error;
         if (pid) {
@@ -898,9 +932,12 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
                 if (p.occupancy_type) document.getElementById('p_occ_type').value = p.occupancy_type;
                 if (p.occupancy_date) document.getElementById('p_occ_date').value = p.occupancy_date;
                 if (p.memo) document.getElementById('p_memo').value = p.memo;
+                document.getElementById('p_status').value = p.status || '거래가능';
+                document.getElementById('wrap_p_status').style.display = 'block';
             }
         } else {
             title.innerText = '🏢 새 매물 등록';
+            document.getElementById('wrap_p_status').style.display = 'none';
         }
         togglePriceFields();
         togglePropOcc();
@@ -935,6 +972,12 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
             occupancy_period_memo: document.getElementById('c_occ_memo').value,
             memo: document.getElementById('c_memo').value
         };
+        
+        if (cid) {
+            payload.status = document.getElementById('c_status').value;
+        } else {
+            payload.status = '탐색중';
+        }
 
         let error;
         if (cid) {
@@ -999,9 +1042,12 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
                 if (c.occupancy_date) document.getElementById('c_occ_date').value = c.occupancy_date;
                 if (c.occupancy_period_memo) document.getElementById('c_occ_memo').value = c.occupancy_period_memo;
                 if (c.memo) document.getElementById('c_memo').value = c.memo;
+                document.getElementById('c_status').value = c.status || '탐색중';
+                document.getElementById('wrap_c_status').style.display = 'block';
             }
         } else {
             title.innerText = '🧑‍💼 새 손님 조건 등록';
+            document.getElementById('wrap_c_status').style.display = 'none';
         }
         toggleClientPrice();
         toggleClientOcc();
