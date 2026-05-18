@@ -148,7 +148,7 @@
             </div>
             
             <div class="form-group" id="wrap_p_sale" style="display: none;">
-                <label class="form-label">매매가 (만원)</label>
+                <label class="form-label">매도가 (만원)</label>
                 <input type="number" id="p_sale" class="form-input" placeholder="예: 50000">
             </div>
             <div class="form-group" id="wrap_p_dep" style="display: none;">
@@ -306,8 +306,23 @@
     function togglePriceFields() {
         const checked = Array.from(document.querySelectorAll('input[name="p_type"]:checked')).map(el => el.value);
         document.getElementById('wrap_p_sale').style.display = checked.includes('매매') ? 'block' : 'none';
-        document.getElementById('wrap_p_dep').style.display = (checked.includes('전세') || checked.includes('월세')) ? 'block' : 'none';
-        document.getElementById('wrap_p_rent').style.display = checked.includes('월세') ? 'block' : 'none';
+        
+        // 매매 안고 파는 경우(기존 세입자)를 위해 보증금은 하나라도 선택되면 표시
+        document.getElementById('wrap_p_dep').style.display = (checked.length > 0) ? 'block' : 'none';
+        
+        // 월세 입력칸은 월세 또는 매매 선택 시 표시
+        document.getElementById('wrap_p_rent').style.display = (checked.includes('월세') || checked.includes('매매')) ? 'block' : 'none';
+
+        // 라벨 동적 변경
+        const depLabel = document.querySelector('#wrap_p_dep .form-label');
+        const rentLabel = document.querySelector('#wrap_p_rent .form-label');
+        if (checked.includes('매매') && !checked.includes('전세') && !checked.includes('월세')) {
+            depLabel.textContent = '보증금/전세금 (안고 파는 경우, 기존 세입자)';
+            rentLabel.textContent = '월세 (안고 파는 경우, 기존 세입자)';
+        } else {
+            depLabel.textContent = '보증금/전세금 (만원)';
+            rentLabel.textContent = '월세 (만원)';
+        }
     }
 
     function toggleClientPrice() {
@@ -407,7 +422,7 @@
             }).join('');
             
             let priceStr = [];
-            if (p.sale_price) priceStr.push(`매매 ${formatMoney(p.sale_price)}`);
+            if (p.sale_price) priceStr.push(`매도 ${formatMoney(p.sale_price)}`);
             if (p.deposit && !p.monthly_rent) priceStr.push(`전세 ${formatMoney(p.deposit)}`);
             if (p.deposit && p.monthly_rent) priceStr.push(`월세 ${formatMoney(p.deposit)}/${p.monthly_rent}`);
             
@@ -615,7 +630,7 @@
         if (!p) return;
 
         let priceStr = [];
-        if (p.sale_price) priceStr.push(`매매 ${formatMoney(p.sale_price)}`);
+        if (p.sale_price) priceStr.push(`매도 ${formatMoney(p.sale_price)}`);
         if (p.deposit && !p.monthly_rent) priceStr.push(`전세 ${formatMoney(p.deposit)}`);
         if (p.deposit && p.monthly_rent) priceStr.push(`월세 ${formatMoney(p.deposit)}/${p.monthly_rent}`);
         
