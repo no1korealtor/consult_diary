@@ -71,6 +71,7 @@ CREATE TABLE IF NOT EXISTS client_requests (
     -- 상태 및 메모
     status TEXT DEFAULT '탐색중', -- '탐색중', '계약완료', '변심/종료'
     memo TEXT,
+    viewed_properties JSONB DEFAULT '[]'::jsonb, -- 집을 보여준 매물 기록 [{ property_id: 'uuid', viewed_at: 'timestamp' }]
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

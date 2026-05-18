@@ -406,7 +406,7 @@
         return `${val}만`;
     }
 
-    function createPropertyCard(p, isMatched = false) {
+    function createPropertyCard(p, isMatched = false, client = null) {
         let typeChips = p.deal_types.map(t => {
             let cls = t==='매매' ? 'sale' : (t==='전세' ? 'jeonse' : 'wolse');
             return `<span class="chip ${cls}">${t}</span>`;
@@ -460,8 +460,55 @@
                     💬 카톡용 복사
                 </button>
             </div>
+            ${(() => {
+                if (isMatched && client) {
+                    const viewedList = client.viewed_properties || [];
+                    const viewedItem = viewedList.find(v => v.property_id === p.id);
+                    const isViewed = !!viewedItem;
+                    const viewedAtStr = isViewed ? new Date(viewedItem.viewed_at).toLocaleDateString() : '';
+                    
+                    return `
+                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center;">
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: ${isViewed ? '#10b981' : '#64748b'}; cursor: pointer;">
+                            <input type="checkbox" onchange="toggleViewedProperty('${client.id}', '${p.id}', this.checked)" ${isViewed ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: #10b981;">
+                            ${isViewed ? '✅ 집 보여줌' : '집 보여줌 (체크 시 저장)'}
+                        </label>
+                        ${isViewed ? `<span style="font-size: 11px; color: #94a3b8;">${viewedAtStr} 방문</span>` : ''}
+                    </div>
+                    `;
+                }
+                return '';
+            })()}
         </div>
         `;
+    }
+
+    async function toggleViewedProperty(clientId, propertyId, isChecked) {
+        const client = clientsData.find(c => c.id === clientId);
+        if (!client) return;
+
+        let viewedList = client.viewed_properties || [];
+        if (isChecked) {
+            if (!viewedList.find(v => v.property_id === propertyId)) {
+                viewedList.push({ property_id: propertyId, viewed_at: new Date().toISOString() });
+            }
+        } else {
+            viewedList = viewedList.filter(v => v.property_id !== propertyId);
+        }
+
+        // Optimistic update
+        client.viewed_properties = viewedList;
+        renderClients();
+
+        try {
+            const { error } = await supabaseClient.from('client_requests').update({ viewed_properties: viewedList }).eq('id', clientId);
+            if (error) {
+                console.error(error);
+                alert('방문 기록 저장 중 오류가 발생했습니다.');
+            }
+        } catch(e) {
+            console.error(e);
+        }
     }
 
     function renderProperties() {
@@ -571,7 +618,7 @@
                     </div>
                     ${matches.length > 0 ? `
                         <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
-                            ${matches.map(m => createPropertyCard(m, true)).join('')}
+                            ${matches.map(m => createPropertyCard(m, true, c)).join('')}
                         </div>
                     ` : `<div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">조건에 딱 맞는 매물이 아직 없습니다.</div>`}
                 </div>
