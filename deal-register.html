@@ -231,6 +231,26 @@
         <option value="모임" style="display: none;">모임</option>
     </select>
 
+    <div id="jangumTasks" style="display: none; background: #f8fafc; padding: 12px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #e2e8f0; margin-top: 8px;">
+        <div style="font-size: 13px; font-weight: 800; color: #475569; margin-bottom: 12px;">✅ 잔금 추가 업무</div>
+        <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #1e293b; cursor: pointer;">
+            <input type="checkbox" id="chkTime" style="width: 18px; height: 18px; accent-color: #3b82f6;">
+            잔금 시간 잡기
+        </label>
+        <div id="jangumTimeOptions" style="display: none; margin-left: 26px; margin-bottom: 16px; flex-wrap: wrap; gap: 4px;">
+            <input type="date" id="jangumTimeDate" style="flex: 1 1 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 4px;">
+            <div style="display: flex; gap: 4px; width: 100%;">
+                <select id="jangumTimeAmPm" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; appearance: none; background: white;"><option value="AM" selected>오전</option><option value="PM">오후</option></select>
+                <select id="jangumTimeHour" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; appearance: none; background: white;"></select>
+                <select id="jangumTimeMinute" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; appearance: none; background: white;"></select>
+            </div>
+        </div>
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #1e293b; cursor: pointer;">
+            <input type="checkbox" id="chkUtil" style="width: 18px; height: 18px; accent-color: #3b82f6;">
+            공과금 정산
+        </label>
+    </div>
+
     <input type="text" id="meetingName" placeholder="📌 모임 이름 (예: 마포구 협회 정기모임)" style="display: none; margin-bottom: 12px; font-weight: 800; border-color: #bfdbfe;">
 
     <div id="meetSubTabs" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 6px; margin-bottom: 16px; flex-direction: column; gap: 4px;">
@@ -647,6 +667,26 @@
                     // Fallback just in case
                     finalMemo += '[PRIVATE]';
                 }
+            } else if (contractType === '잔금') {
+                const chkTime = document.getElementById('chkTime')?.checked;
+                const chkUtil = document.getElementById('chkUtil')?.checked;
+                if (chkTime) {
+                    const d = document.getElementById('jangumTimeDate')?.value;
+                    const ap = document.getElementById('jangumTimeAmPm')?.value;
+                    const h = document.getElementById('jangumTimeHour')?.value;
+                    const m = document.getElementById('jangumTimeMinute')?.value;
+                    if (d && ap && h && m) {
+                        let hh = parseInt(h, 10);
+                        if (ap === 'PM' && hh < 12) hh += 12;
+                        if (ap === 'AM' && hh === 12) hh = 0;
+                        const timeStr = `${d} ${String(hh).padStart(2, '0')}:${m}`;
+                        finalMemo += `\n[TASK:잔금시간] ${timeStr}`;
+                    }
+                }
+                if (chkUtil) {
+                    finalMemo += `\n[TASK:공과금정산] 대상`;
+                }
+            }
                 
                 if (memo.trim()) {
                     finalMemo += `\n${memo.trim()}`;
@@ -911,6 +951,17 @@
                     if (m) { mMinAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
                 
+                let tJangumTime = null;
+                let tUtil = false;
+                if (rawMemo.includes('[TASK:잔금시간]')) {
+                    const m = rawMemo.match(/\[TASK:잔금시간\]\s*(.*?)(?=\n|$)/);
+                    if (m) { tJangumTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                if (rawMemo.includes('[TASK:공과금정산]')) {
+                    const m = rawMemo.match(/\[TASK:공과금정산\]\s*(.*?)(?=\n|$)/);
+                    if (m) { tUtil = true; rawMemo = rawMemo.replace(m[0], ''); }
+                }
+                
                 const isPrivateMeeting = rawMemo.includes('[PRIVATE]');
                 if (isPrivateMeeting) {
                     rawMemo = rawMemo.replace('[PRIVATE]', '');
@@ -1163,6 +1214,19 @@
                     const rName = deal.rooms ? deal.rooms.room_name : '';
                     locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📍 ${bName} <span style="color: #3b82f6;">${rName}</span></div>`;
                     typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800;">${deal.contract_type}</span>`;
+                    
+                    if (tJangumTime || tUtil) {
+                        let tasksHtml = `<div style="margin-top: 8px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13px;">`;
+                        tasksHtml += `<div style="font-weight: 800; color: #475569; margin-bottom: 6px;">✅ 잔금 추가 업무</div>`;
+                        if (tJangumTime) {
+                            tasksHtml += `<div style="color: #1e293b; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;"><input type="checkbox" checked disabled style="accent-color: #3b82f6;"> 시간 지정: <span style="color:#2563eb;">${tJangumTime}</span></div>`;
+                        }
+                        if (tUtil) {
+                            tasksHtml += `<div style="color: #1e293b; font-weight: 600; display: flex; align-items: center; gap: 6px;"><input type="checkbox" checked disabled style="accent-color: #3b82f6;"> 공과금 정산 대상</div>`;
+                        }
+                        tasksHtml += `</div>`;
+                        locationHtml += tasksHtml;
+                    }
                 }
                 
                 const dDayText = getDDay(deal.balance_date);
@@ -1718,6 +1782,35 @@ function toggleTipText(id, btn) {
         window.addEventListener('DOMContentLoaded', () => {
             populateTimeSelects('propTime');
             populateTimeSelects('meetTime');
+            populateTimeSelects('jangumTime');
+
+            const jHour = document.getElementById('jangumTimeHour');
+            if (jHour) jHour.value = '11';
+
+            const cType = document.getElementById('contractType');
+            const jTasks = document.getElementById('jangumTasks');
+            if (cType && jTasks) {
+                cType.addEventListener('change', (e) => {
+                    jTasks.style.display = e.target.value === '잔금' ? 'block' : 'none';
+                });
+            }
+
+            const cTime = document.getElementById('chkTime');
+            const jOpts = document.getElementById('jangumTimeOptions');
+            const bDate = document.getElementById('balanceDate');
+            if (cTime && jOpts && bDate) {
+                cTime.addEventListener('change', (e) => {
+                    jOpts.style.display = e.target.checked ? 'flex' : 'none';
+                    if (e.target.checked && bDate.value) {
+                        document.getElementById('jangumTimeDate').value = bDate.value;
+                    }
+                });
+                bDate.addEventListener('change', (e) => {
+                    if (cTime.checked) {
+                        document.getElementById('jangumTimeDate').value = e.target.value;
+                    }
+                });
+            }
         });
     </script>
 </body>
