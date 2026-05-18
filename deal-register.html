@@ -324,7 +324,7 @@
         async function loadBuildings() {
 
             const p1 = supabaseClient.from('buildings').select('*').eq('user_id', window.currentUser.id).order('created_at', { ascending: false });
-            const p2 = supabaseClient.from('properties').select('id, address, deal_types, room_count').eq('user_id', window.currentUser.id).order('created_at', { ascending: false });
+            const p2 = supabaseClient.from('properties').select('id, address, deal_types, room_count, memo').eq('user_id', window.currentUser.id).order('created_at', { ascending: false });
 
             const [res1, res2] = await Promise.all([p1, p2]);
 
@@ -364,7 +364,13 @@
                     option.value = 'P_' + prop.id;
                     const typeStr = (prop.deal_types || []).join('/');
                     const roomStr = prop.room_count ? ` 방 ${prop.room_count}개` : '';
-                    option.textContent = `[매물] ${prop.address || '주소없음'} (${typeStr}${roomStr})`;
+                    let memoStr = '';
+                    if (prop.memo) {
+                        memoStr = ` | 📝 ${prop.memo.replace(/\n/g, ' ').replace(/\\[SETTLED_DATE\\].*?\\[\\/SETTLED_DATE\\]/g, '').substring(0, 30)}`;
+                    }
+                    option.textContent = `[매물] ${prop.address || '주소없음'} (${typeStr}${roomStr})${memoStr}`;
+                    // Add full memo as a data attribute so TomSelect can search it fully
+                    option.setAttribute('data-fulltext', (prop.address || '') + ' ' + (prop.memo || ''));
                     optgroupP.appendChild(option);
                 });
                 select.appendChild(optgroupP);
@@ -372,8 +378,9 @@
 
             window.buildingTomSelect = new TomSelect("#buildingSelect", {
                 create: false,
-                placeholder: "건물명, 호수, 또는 매물 주소 검색...",
+                placeholder: "건물명, 지번, 또는 메모(특징) 검색...",
                 maxOptions: 100,
+                searchField: ['text', 'fulltext'],
                 onChange: function(value) {
                     const roomSelectEl = document.getElementById('roomSelect');
                     const roomSelectBtn = roomSelectEl.nextElementSibling;
