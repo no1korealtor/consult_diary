@@ -120,6 +120,10 @@
         
         <div class="modal-body">
             <div class="form-group">
+                <label class="form-label">매물 주소 (필수/일정 연결용)</label>
+                <input type="text" id="p_address" class="form-input" placeholder="예: 성산동 123-4 (또는 한화아파트 101동 202호)">
+            </div>
+            <div class="form-group">
                 <label class="form-label">거래 종류 (다중 선택 가능)</label>
                 <div class="checkbox-group">
                     <label class="checkbox-label"><input type="checkbox" name="p_type" value="매매" onchange="togglePriceFields()">매매</label>
@@ -371,6 +375,7 @@
                     <div>${typeChips}</div>
                     <span class="chip neutral">${p.status}</span>
                 </div>
+                ${p.address ? `<div style="font-size: 15px; font-weight: 800; color: #065f46; margin-bottom: 6px;">📍 ${p.address}</div>` : ''}
                 <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">${priceStr.join(' / ')}</div>
                 <div style="font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">📅 입주: ${occStr}</div>
                 <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px;">${opts.join(' · ')}</div>
@@ -572,7 +577,7 @@
 손님께서 찾으시는 조건의 매물입니다!
 
 ▪️ 종류: ${p.deal_types.join(', ')}
-▪️ 금액: ${priceStr.join(' / ')}
+${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.join(' / ')}
 ▪️ 특징: ${opts.length > 0 ? opts.join(', ') : '특징 없음'}
 ▪️ 입주: ${occStr}
 ▪️ 코멘트: ${p.memo || '없음'}
@@ -627,6 +632,7 @@
         
         const payload = {
             user_id: window.currentUser.id,
+            address: document.getElementById('p_address').value.trim() || null,
             deal_types: types,
             sale_price: document.getElementById('p_sale').value ? parseInt(document.getElementById('p_sale').value) : null,
             deposit: document.getElementById('p_dep').value ? parseInt(document.getElementById('p_dep').value) : null,

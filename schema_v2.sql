@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS properties (
     user_id UUID, -- authClient의 users.id 저장 (DB 분리로 FK 제거)
     building_id UUID REFERENCES buildings(id) ON DELETE CASCADE,
     room_id UUID REFERENCES rooms(id) ON DELETE CASCADE,
+    address TEXT, -- 빠른 매물 등록을 위한 텍스트 주소/동호수
     
     -- 거래 종류 및 금액
     deal_types TEXT[] NOT NULL DEFAULT '{}', -- ['매매', '전세', '월세'] 등 다중 선택
