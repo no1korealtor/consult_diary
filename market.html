@@ -260,12 +260,14 @@
 
     async function loadData() {
         // Load Properties
-        const { data: props } = await authClient.from('properties').select('*').order('created_at', { ascending: false });
+        const { data: props, error: e1 } = await supabaseClient.from('properties').select('*').order('created_at', { ascending: false });
+        if (e1) console.error(e1);
         propertiesData = props || [];
         renderProperties();
 
         // Load Clients
-        const { data: clients } = await authClient.from('client_requests').select('*').order('created_at', { ascending: false });
+        const { data: clients, error: e2 } = await supabaseClient.from('client_requests').select('*').order('created_at', { ascending: false });
+        if (e2) console.error(e2);
         clientsData = clients || [];
         renderClients();
     }
@@ -412,7 +414,7 @@
             memo: document.getElementById('p_memo').value
         };
 
-        const { error } = await authClient.from('properties').insert(payload);
+        const { error } = await supabaseClient.from('properties').insert(payload);
         if (error) { alert('저장 실패: ' + error.message); return; }
         
         document.getElementById('propModal').style.display = 'none';
@@ -439,7 +441,7 @@
             memo: document.getElementById('c_memo').value
         };
 
-        const { error } = await authClient.from('client_requests').insert(payload);
+        const { error } = await supabaseClient.from('client_requests').insert(payload);
         if (error) { alert('저장 실패: ' + error.message); return; }
         
         document.getElementById('clientModal').style.display = 'none';
@@ -454,7 +456,13 @@
         }
     }
     
-    // Auth Check is triggered by window pageshow
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || window.performance && window.performance.navigation.type === 2) {
+            checkAuthAndLoad();
+        }
+    });
+
+    checkAuthAndLoad();
 </script>
 </body>
 </html>
