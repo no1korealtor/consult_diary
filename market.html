@@ -142,8 +142,7 @@
                 <label class="form-label">거래 종류 (다중 선택 가능)</label>
                 <div class="checkbox-group">
                     <label class="checkbox-label"><input type="checkbox" name="p_type" value="매매" onchange="togglePriceFields()">매매</label>
-                    <label class="checkbox-label"><input type="checkbox" name="p_type" value="전세" onchange="togglePriceFields()">전세</label>
-                    <label class="checkbox-label"><input type="checkbox" name="p_type" value="월세" onchange="togglePriceFields()">월세</label>
+                    <label class="checkbox-label"><input type="checkbox" name="p_type" value="전월세" onchange="togglePriceFields()">전/월세(임대)</label>
                 </div>
             </div>
             
@@ -310,13 +309,13 @@
         // 매매 안고 파는 경우(기존 세입자)를 위해 보증금은 하나라도 선택되면 표시
         document.getElementById('wrap_p_dep').style.display = (checked.length > 0) ? 'block' : 'none';
         
-        // 월세 입력칸은 월세 또는 매매 선택 시 표시
-        document.getElementById('wrap_p_rent').style.display = (checked.includes('월세') || checked.includes('매매')) ? 'block' : 'none';
+        // 월세 입력칸은 전월세 또는 매매 선택 시 표시
+        document.getElementById('wrap_p_rent').style.display = (checked.includes('전월세') || checked.includes('매매')) ? 'block' : 'none';
 
         // 라벨 동적 변경
         const depLabel = document.querySelector('#wrap_p_dep .form-label');
         const rentLabel = document.querySelector('#wrap_p_rent .form-label');
-        if (checked.includes('매매') && !checked.includes('전세') && !checked.includes('월세')) {
+        if (checked.includes('매매') && !checked.includes('전월세')) {
             depLabel.textContent = '보증금/전세금 (안고 파는 경우, 기존 세입자)';
             rentLabel.textContent = '월세 (안고 파는 경우, 기존 세입자)';
         } else {
@@ -706,12 +705,23 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
     }
 
     async function saveProperty() {
-        const types = Array.from(document.querySelectorAll('input[name="p_type"]:checked')).map(el => el.value);
-        if (types.length === 0) { alert('거래 종류를 선택해주세요.'); return; }
+        const checkedTypes = Array.from(document.querySelectorAll('input[name="p_type"]:checked')).map(el => el.value);
+        if (checkedTypes.length === 0) { alert('거래 종류를 선택해주세요.'); return; }
         
         const addrMain = document.getElementById('p_address_main').value.trim();
         const addrDetail = document.getElementById('p_address_detail').value.trim();
         const fullAddress = (addrMain ? addrMain + ' ' : '') + addrDetail;
+
+        let types = [];
+        if (checkedTypes.includes('매매')) types.push('매매');
+        if (checkedTypes.includes('전월세')) {
+            const rentVal = document.getElementById('p_rent').value ? parseInt(document.getElementById('p_rent').value) : 0;
+            if (rentVal === 0) {
+                types.push('전세');
+            } else {
+                types.push('월세');
+            }
+        }
 
         const payload = {
             user_id: window.currentUser.id,
