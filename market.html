@@ -406,6 +406,64 @@
         return `${val}만`;
     }
 
+    function createPropertyCard(p, isMatched = false) {
+        let typeChips = p.deal_types.map(t => {
+            let cls = t==='매매' ? 'sale' : (t==='전세' ? 'jeonse' : 'wolse');
+            return `<span class="chip ${cls}">${t}</span>`;
+        }).join('');
+        
+        let priceStr = [];
+        if (p.sale_price) priceStr.push(`매도 ${formatMoney(p.sale_price)}`);
+        if (p.deposit && !p.monthly_rent) priceStr.push(`전세 ${formatMoney(p.deposit)}`);
+        if (p.deposit && p.monthly_rent) priceStr.push(`월세 ${formatMoney(p.deposit)}/${p.monthly_rent}`);
+        
+        let opts = [];
+        if (p.room_count) opts.push(`방 ${p.room_count}개`);
+        if (p.pet_allowed) opts.push('🐶반려동물');
+        if (p.parking_allowed) opts.push('🚗주차');
+        if (p.loan_allowed || p.loan_sh_lh_allowed) opts.push('🏦대출가능');
+        if (p.lh_sh_allowed) opts.push('🏢LH/SH가능');
+        if (p.is_basement) opts.push('🔻지층');
+        
+        let occStr = p.occupancy_type || '입주시기 미정';
+        if ((p.occupancy_type === '날짜확정' || p.occupancy_type === '날짜협의') && p.occupancy_date) {
+            occStr += ` (${p.occupancy_date})`;
+        }
+        if (p.occupancy_type === '즉시입주') occStr = '🏃즉시입주';
+        
+        let phoneHtml = '';
+        if (p.owner_phone || p.tenant_phone) {
+            let ownerStr = p.owner_phone ? `주인: ${formatPhoneNumber(p.owner_phone)}` : '';
+            let tenantStr = p.tenant_phone ? `방문: ${formatPhoneNumber(p.tenant_phone)}` : (p.owner_phone ? '방문: 주인과 동일' : '');
+            phoneHtml = `<div style="font-size: 13px; font-weight: 700; color: #b91c1c; margin-bottom: 6px; background: #fee2e2; padding: 6px; border-radius: 6px;">📞 ${[ownerStr, tenantStr].filter(Boolean).join(' | ')}</div>`;
+        }
+
+        const mapBtn = p.address ? `<a href="https://map.kakao.com/link/search/${encodeURIComponent(p.address)}" target="_blank" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 2px; white-space: nowrap;">🗺️ 지도보기</a>` : '';
+
+        return `
+        <div class="card" ${isMatched ? 'style="border: 2px solid #3b82f6; background: #f8fafc; padding: 12px; margin-bottom: 8px;"' : ''}>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <div>${typeChips}</div>
+                ${!isMatched ? `<span class="chip neutral">${p.status}</span>` : ''}
+            </div>
+            ${p.address ? `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                <div style="font-size: 15px; font-weight: 800; color: #065f46; word-break: keep-all;">📍 ${p.address}</div>
+                ${mapBtn}
+            </div>` : ''}
+            ${phoneHtml}
+            <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">${priceStr.join(' / ')}</div>
+            <div style="font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">📅 입주: ${occStr}</div>
+            <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px;">${opts.join(' · ')}</div>
+            ${p.memo ? `<div style="font-size: 14px; color: #334155; background: #e2e8f0; padding: 10px; border-radius: 8px;">${p.memo}</div>` : ''}
+            <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
+                <button onclick="copyPropertyToKakao('${p.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    💬 카톡용 복사
+                </button>
+            </div>
+        </div>
+        `;
+    }
+
     function renderProperties() {
         const list = document.getElementById('propertiesList');
         if (propertiesData.length === 0) {
@@ -415,59 +473,7 @@
         
         let html = '';
         propertiesData.forEach(p => {
-            let typeChips = p.deal_types.map(t => {
-                let cls = t==='매매' ? 'sale' : (t==='전세' ? 'jeonse' : 'wolse');
-                return `<span class="chip ${cls}">${t}</span>`;
-            }).join('');
-            
-            let priceStr = [];
-            if (p.sale_price) priceStr.push(`매도 ${formatMoney(p.sale_price)}`);
-            if (p.deposit && !p.monthly_rent) priceStr.push(`전세 ${formatMoney(p.deposit)}`);
-            if (p.deposit && p.monthly_rent) priceStr.push(`월세 ${formatMoney(p.deposit)}/${p.monthly_rent}`);
-            
-            let opts = [];
-            if (p.room_count) opts.push(`방 ${p.room_count}개`);
-            if (p.pet_allowed) opts.push('🐶반려동물');
-            if (p.parking_allowed) opts.push('🚗주차');
-            if (p.loan_allowed || p.loan_sh_lh_allowed) opts.push('🏦대출가능');
-            if (p.lh_sh_allowed) opts.push('🏢LH/SH가능');
-            if (p.is_basement) opts.push('🔻지층');
-            
-            let occStr = p.occupancy_type || '입주시기 미정';
-            if ((p.occupancy_type === '날짜확정' || p.occupancy_type === '날짜협의') && p.occupancy_date) {
-                occStr += ` (${p.occupancy_date})`;
-            }
-            if (p.occupancy_type === '즉시입주') occStr = '🏃즉시입주';
-            
-            let phoneHtml = '';
-            if (p.owner_phone || p.tenant_phone) {
-                let ownerStr = p.owner_phone ? `주인: ${formatPhoneNumber(p.owner_phone)}` : '';
-                let tenantStr = p.tenant_phone ? `방문: ${formatPhoneNumber(p.tenant_phone)}` : (p.owner_phone ? '방문: 주인과 동일' : '');
-                phoneHtml = `<div style="font-size: 13px; font-weight: 700; color: #b91c1c; margin-bottom: 6px; background: #fee2e2; padding: 6px; border-radius: 6px;">📞 ${[ownerStr, tenantStr].filter(Boolean).join(' | ')}</div>`;
-            }
-
-            html += `
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                    <div>${typeChips}</div>
-                    <span class="chip neutral">${p.status}</span>
-                </div>
-                ${p.address ? `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                    <div style="font-size: 15px; font-weight: 800; color: #065f46; word-break: keep-all;">📍 ${p.address}</div>
-                    <a href="https://map.kakao.com/link/search/${encodeURIComponent(p.address)}" target="_blank" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 2px; white-space: nowrap;">🗺️ 지도보기</a>
-                </div>` : ''}
-                ${phoneHtml}
-                <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">${priceStr.join(' / ')}</div>
-                <div style="font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">📅 입주: ${occStr}</div>
-                <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px;">${opts.join(' · ')}</div>
-                ${p.memo ? `<div style="font-size: 14px; color: #334155; background: #f8fafc; padding: 10px; border-radius: 8px;">${p.memo}</div>` : ''}
-                <div style="margin-top: 10px; display: flex; justify-content: flex-end;">
-                    <button onclick="copyPropertyToKakao('${p.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                        💬 카톡용 복사
-                    </button>
-                </div>
-            </div>
-            `;
+            html += createPropertyCard(p, false);
         });
         list.innerHTML = html;
     }
@@ -565,15 +571,7 @@
                     </div>
                     ${matches.length > 0 ? `
                         <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
-                            ${matches.map(m => `
-                                <div style="background: #eff6ff; padding: 10px; border-radius: 8px; border: 1px solid #bfdbfe; position: relative;">
-                                    <div style="font-size: 12px; font-weight: 700; color: #1d4ed8; margin-bottom: 2px;">[${m.deal_types.join('/')}] 방 ${m.room_count||0}개</div>
-                                    <div style="font-size: 14px; font-weight: 800; color: #1e3a8a; margin-bottom: 8px;">${m.memo ? m.memo.substring(0,30)+'...' : '메모 없음'}</div>
-                                    <button onclick="copyPropertyToKakao('${m.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 2px;">
-                                        💬 카톡 복사
-                                    </button>
-                                </div>
-                            `).join('')}
+                            ${matches.map(m => createPropertyCard(m, true)).join('')}
                         </div>
                     ` : `<div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">조건에 딱 맞는 매물이 아직 없습니다.</div>`}
                 </div>
