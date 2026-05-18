@@ -6,6 +6,8 @@
     <title>통합 장부 (매물/손님)</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <link rel="stylesheet" href="nav.css">
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
@@ -126,14 +128,24 @@
                 <select id="p_status" class="form-input" style="font-weight: bold;">
                     <option value="거래가능">거래가능 (진행중)</option>
                     <option value="보류">보류</option>
-                    <option value="거래종료">거래종료 (계약완료/취소 등)</option>
+                    <option value="거래종료(자체)">🤝 거래종료 (우리 사무실에서 계약)</option>
+                    <option value="거래종료(타부동산)">🏢 거래종료 (타부동산 계약 / 취소)</option>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">매물 주소 (필수/일정 연결용)</label>
+                <label class="form-label">매물 주소 (건물/호수 선택)</label>
+                <div style="margin-bottom: 8px;">
+                    <select id="p_building_room_select" class="form-input">
+                        <option value="">마스터 주소 풀에서 검색 (입력 시 자동완성)</option>
+                    </select>
+                </div>
+                <input type="hidden" id="p_building_id">
+                <input type="hidden" id="p_room_id">
+                
+                <label class="form-label" style="font-size: 12px; color: #64748b; margin-top: 8px;">위 검색에 없는 신규 주소인 경우에만 아래에서 검색하세요.</label>
                 <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                    <input type="text" id="p_address_main" class="form-input" placeholder="주소를 검색하세요" readonly style="flex: 1; background-color: #f1f5f9; cursor: pointer;" onclick="execDaumPostcode()">
-                    <button type="button" onclick="execDaumPostcode()" style="background: #334155; color: white; border: none; border-radius: 12px; padding: 0 16px; font-weight: 700; cursor: pointer; white-space: nowrap;">검색</button>
+                    <input type="text" id="p_address_main" class="form-input" placeholder="새로운 주소 검색 (우편번호 API)" readonly style="flex: 1; background-color: #f1f5f9; cursor: pointer;" onclick="execDaumPostcode()">
+                    <button type="button" onclick="execDaumPostcode()" style="background: #3b82f6; color: white; border: none; border-radius: 12px; padding: 0 16px; font-weight: 700; cursor: pointer; white-space: nowrap;">새 주소 검색</button>
                 </div>
                 <input type="text" id="p_address_detail" class="form-input" placeholder="상세주소 (예: 101동 202호)">
             </div>
@@ -221,8 +233,9 @@
                 <label class="form-label">손님 상태</label>
                 <select id="c_status" class="form-input" style="font-weight: bold;">
                     <option value="탐색중">탐색중 (진행중)</option>
-                    <option value="계약완료">계약완료</option>
-                    <option value="변경/종료">변경/종료 (연락처 변경/의뢰 취소 등)</option>
+                    <option value="계약완료(자체)">🤝 계약완료 (우리 사무실에서 계약)</option>
+                    <option value="계약완료(타부동산)">🏢 계약완료 (다른 곳에서 계약)</option>
+                    <option value="변경/종료">❌ 단순 변심 / 의뢰 취소</option>
                 </select>
             </div>
             <div class="form-group">
@@ -370,13 +383,12 @@
                 let roadAddr = data.roadAddress || data.autoRoadAddress || '';
                 let jibunAddr = data.jibunAddress || data.autoJibunAddress || '';
                 
-                // 만약 Daum API가 지번을 명시적으로 안 주는데 기본 주소가 지번형태라면
+                if (!roadAddr) roadAddr = data.address;
                 if (!jibunAddr && data.userSelectedType === 'J') {
                     jibunAddr = data.address;
                 }
                 
                 let extraAddr = '';
-
                 if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
                     extraAddr += data.bname;
                 }
@@ -388,7 +400,7 @@
                 }
                 
                 let finalAddr = roadAddr + extraAddr;
-                if (jibunAddr) {
+                if (jibunAddr && finalAddr.indexOf(jibunAddr) === -1) {
                     finalAddr += ` [지번: ${jibunAddr}]`;
                 }
                 
@@ -410,6 +422,68 @@
         if (e2) console.error(e2);
         clientsData = clients || [];
         renderClients();
+    }
+
+    async function loadBuildingsAndRooms() {
+        const { data: buildings } = await supabaseClient.from('buildings').select('*').eq('user_id', window.currentUser.id);
+        const { data: rooms } = await supabaseClient.from('rooms').select('*').eq('user_id', window.currentUser.id);
+        
+        if (!buildings || !rooms) return;
+
+        const select = document.getElementById('p_building_room_select');
+        select.innerHTML = '<option value="">일정 장부에서 주소 불러오기 (선택사항)</option>';
+
+        buildings.forEach(b => {
+            const bRooms = rooms.filter(r => r.building_id === b.id);
+            const bAddr = b.road_address + (b.jibun_address ? ` [지번: ${b.jibun_address}]` : '');
+            
+            const optB = document.createElement('option');
+            optB.value = b.id + '|';
+            optB.textContent = `[건물전체] ${bAddr}`;
+            select.appendChild(optB);
+
+            bRooms.forEach(r => {
+                const optR = document.createElement('option');
+                optR.value = b.id + '|' + r.id;
+                optR.textContent = `${bAddr} ${r.room_name}`;
+                select.appendChild(optR);
+            });
+        });
+
+        if (window.propAddressTomSelect) {
+            window.propAddressTomSelect.destroy();
+        }
+        
+        window.propAddressTomSelect = new TomSelect("#p_building_room_select", {
+            create: false,
+            placeholder: "일정 장부에서 주소 검색...",
+            maxOptions: 100,
+            onChange: function(value) {
+                if (!value) {
+                    document.getElementById('p_building_id').value = '';
+                    document.getElementById('p_room_id').value = '';
+                    return;
+                }
+                const [bId, rId] = value.split('|');
+                document.getElementById('p_building_id').value = bId;
+                document.getElementById('p_room_id').value = rId;
+
+                const b = buildings.find(x => x.id === bId);
+                const r = rooms.find(x => x.id === rId);
+
+                let mainAddr = b.road_address;
+                if (b.jibun_address) {
+                    mainAddr += ` [지번: ${b.jibun_address}]`;
+                }
+                
+                document.getElementById('p_address_main').value = mainAddr;
+                document.getElementById('p_address_detail').value = r ? r.room_name : '';
+                
+                if (b && b.owner_phone && !document.getElementById('p_owner_phone').value) {
+                    document.getElementById('p_owner_phone').value = formatPhoneNumber(b.owner_phone);
+                }
+            }
+        });
     }
 
     function formatPhoneNumber(number) {
@@ -473,24 +547,44 @@
             phoneHtml = `<div style="font-size: 13px; font-weight: 700; color: #b91c1c; margin-bottom: 6px; background: #fee2e2; padding: 6px; border-radius: 6px;">📞 ${[ownerStr, tenantStr].filter(Boolean).join(' | ')}</div>`;
         }
 
-        const mapBtn = p.address ? `<a href="https://map.kakao.com/link/search/${encodeURIComponent(p.address)}" target="_blank" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 2px; white-space: nowrap;">🗺️ 지도보기</a>` : '';
+        let displayAddr = p.address || '';
+        let mapAddr = p.address || '';
+        if (displayAddr.includes('[지번:')) {
+            displayAddr = displayAddr.replace(/\[지번:\s*(.*?)\]/g, '<span style="display:block; font-size:13px; color:#64748b; font-weight:normal; margin-top:2px;">(지번: $1)</span>');
+            mapAddr = p.address.replace(/\[지번:\s*(.*?)\]/g, '').trim();
+        }
 
-        const isClosed = p.status === '거래종료';
+        const mapBtn = p.address ? `<a href="https://map.kakao.com/link/search/${encodeURIComponent(mapAddr)}" target="_blank" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 2px; white-space: nowrap;">🗺️ 지도보기</a>` : '';
+
+        const isClosed = p.status.includes('거래종료');
         const cardStyle = isMatched 
             ? 'style="border: 2px solid #3b82f6; background: #f8fafc; padding: 12px; margin-bottom: 8px;"' 
             : (isClosed ? 'style="opacity: 0.6; position: relative;"' : 'style="position: relative;"');
         const strikethroughHtml = isClosed ? `<div style="position: absolute; top: 50%; left: 12px; right: 12px; height: 2px; background: #ef4444; transform: translateY(-50%); z-index: 10; pointer-events: none;"></div>` : '';
+
+        let pStatusBadge = '';
+        if (!isMatched) {
+            if (p.status === '거래가능') {
+                pStatusBadge = `<span class="chip neutral" style="position: relative; z-index: 11; background:#f1f5f9; color:#475569;">${p.status}</span>`;
+            } else if (p.status.includes('거래종료(자체)')) {
+                pStatusBadge = `<span class="chip" style="position: relative; z-index: 11; background:#dbeafe; color:#1d4ed8;">🤝 거래종료 (자체)</span>`;
+            } else if (p.status.includes('거래종료')) {
+                pStatusBadge = `<span class="chip" style="position: relative; z-index: 11; background:#fee2e2; color:#b91c1c;">🏢 거래종료 (타부동산)</span>`;
+            } else {
+                pStatusBadge = `<span class="chip neutral" style="position: relative; z-index: 11;">${p.status}</span>`;
+            }
+        }
 
         return `
         <div class="card" ${cardStyle}>
             ${strikethroughHtml}
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
                 <div style="position: relative; z-index: 11;">${typeChips}</div>
-                ${!isMatched ? `<span class="chip neutral" style="position: relative; z-index: 11;">${p.status}</span>` : ''}
+                ${pStatusBadge}
             </div>
-            ${p.address ? `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                <div style="font-size: 15px; font-weight: 800; color: #065f46; word-break: keep-all;">📍 ${p.address}</div>
-                ${mapBtn}
+            ${p.address ? `<div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px;">
+                <div style="font-size: 15px; font-weight: 800; color: #065f46; word-break: keep-all; flex:1;">📍 ${displayAddr}</div>
+                <div style="margin-left:8px;">${mapBtn}</div>
             </div>` : ''}
             ${phoneHtml}
             <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">${priceStr.join(' / ')}</div>
@@ -639,8 +733,12 @@
                 } else {
                     statusBadge = `<span class="chip neutral" style="background:#f1f5f9; color:#475569;">🔍 탐색중</span>`;
                 }
-            } else if (c.status === '계약완료') {
-                statusBadge = `<span class="chip" style="background:#dbeafe; color:#1d4ed8;">🤝 계약완료</span>`;
+            } else if (c.status === '계약완료' || c.status === '계약완료(자체)') {
+                statusBadge = `<span class="chip" style="background:#dbeafe; color:#1d4ed8;">🤝 계약완료 (자체)</span>`;
+            } else if (c.status === '계약완료(타부동산)') {
+                statusBadge = `<span class="chip" style="background:#f3e8ff; color:#7e22ce;">🏢 계약완료 (타부동산)</span>`;
+            } else if (c.status === '변경/종료') {
+                statusBadge = `<span class="chip" style="background:#fee2e2; color:#b91c1c;">❌ 의뢰 종료</span>`;
             }
 
             const isClientClosed = c.status !== '탐색중';
@@ -840,8 +938,46 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
             if (!confirm(`보증금이 ${deposit}만원으로 입력되었습니다. 단위(만원) 착오가 없는지 확인해주세요. 이대로 진행할까요?`)) return;
         }
 
+        let bId = document.getElementById('p_building_id').value;
+        let rId = document.getElementById('p_room_id').value;
+
+        // 마스터 주소 풀 연동: 선택하지 않고 직접 주소를 입력한 경우 (신규 건물)
+        if (!bId && addrMain) {
+            let road = addrMain.replace(/\[지번:.*?\]/g, '').trim();
+            let jibun = '';
+            const match = addrMain.match(/\[지번:\s*(.*?)\]/);
+            if (match) jibun = match[1];
+
+            const { data: newB, error: errB } = await supabaseClient.from('buildings').insert({
+                user_id: window.currentUser.id,
+                road_address: road,
+                jibun_address: jibun || null,
+                building_name: '', 
+                owner_phone: document.getElementById('p_owner_phone').value.trim() || null
+            }).select();
+
+            if (errB) { alert('새 건물 풀(Pool) 등록 실패: ' + errB.message); return; }
+            if (newB && newB.length > 0) {
+                bId = newB[0].id;
+                
+                // 호수도 기본 생성 (건물전체 혹은 상세주소)
+                const roomName = addrDetail || '건물전체';
+                const { data: newR, error: errR } = await supabaseClient.from('rooms').insert({
+                    user_id: window.currentUser.id,
+                    building_id: bId,
+                    room_name: roomName
+                }).select();
+                
+                if (!errR && newR && newR.length > 0) {
+                    rId = newR[0].id;
+                }
+            }
+        }
+
         const payload = {
             user_id: window.currentUser.id,
+            building_id: bId || null,
+            room_id: rId || null,
             address: fullAddress || null,
             owner_phone: document.getElementById('p_owner_phone').value.trim() || null,
             tenant_phone: document.getElementById('p_tenant_phone').value.trim() || null,
@@ -903,7 +1039,7 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
     function openPropModal(id = null) {
         const modal = document.getElementById('propModal');
         const title = modal.querySelector('.modal-header h3');
-        const formIds = ['p_id', 'p_address_main', 'p_address_detail', 'p_owner_phone', 'p_tenant_phone', 'p_sale', 'p_dep', 'p_rent', 'p_room', 'p_pet', 'p_parking', 'p_loan', 'p_lh', 'p_basement', 'p_occ_date', 'p_memo'];
+        const formIds = ['p_id', 'p_address_main', 'p_address_detail', 'p_building_id', 'p_room_id', 'p_owner_phone', 'p_tenant_phone', 'p_sale', 'p_dep', 'p_rent', 'p_room', 'p_pet', 'p_parking', 'p_loan', 'p_lh', 'p_basement', 'p_occ_date', 'p_memo'];
         
         formIds.forEach(fid => {
             const el = document.getElementById(fid);
@@ -913,12 +1049,23 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
         });
         document.querySelectorAll('input[name="p_type"]').forEach(el => el.checked = false);
         document.getElementById('p_occ_type').value = '입주시기 미정';
+        
+        if (window.propAddressTomSelect) {
+            window.propAddressTomSelect.clear(true);
+        }
 
         if (id) {
             title.innerText = '🏢 매물 정보 수정';
             const p = propertiesData.find(x => x.id === id);
             if (p) {
                 document.getElementById('p_id').value = p.id;
+                document.getElementById('p_building_id').value = p.building_id || '';
+                document.getElementById('p_room_id').value = p.room_id || '';
+                
+                if (window.propAddressTomSelect && p.building_id) {
+                    window.propAddressTomSelect.setValue(p.building_id + '|' + (p.room_id || ''), true);
+                }
+
                 // Parse address loosely
                 let addrMain = p.address || '';
                 let addrDetail = '';
@@ -1097,6 +1244,7 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
         const user = await requireAuth();
         if (user) {
             loadData();
+            loadBuildingsAndRooms();
         }
     }
     
