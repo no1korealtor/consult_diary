@@ -1031,21 +1031,29 @@
                             isMinAttMet = false;
                         }
 
-                        if (isProposal && isMine && !isAutoCanceled && !isCanceled) {
-                            if (isMinAttMet) {
-                                details += `
-                                <div style="margin-top: 12px; display: flex; gap: 8px;" onclick="event.stopPropagation()">
-                                    <button type="button" onclick="confirmProposal('${deal.id}')" style="flex: 2; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fffbeb; color: #d97706; border: 1px solid #fde68a;">✅ 제안된 모임 확정하기</button>
-                                    <button type="button" onclick="cancelProposal('${deal.id}')" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 제안 취소</button>
-                                </div>
-                                `;
+                        if (isMine && !isAutoCanceled && !isCanceled) {
+                            if (isProposal) {
+                                if (isMinAttMet) {
+                                    details += `
+                                    <div style="margin-top: 12px; display: flex; gap: 8px;" onclick="event.stopPropagation()">
+                                        <button type="button" onclick="confirmProposal('${deal.id}')" style="flex: 2; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fffbeb; color: #d97706; border: 1px solid #fde68a;">✅ 제안된 모임 확정하기</button>
+                                        <button type="button" onclick="cancelProposal('${deal.id}')" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 제안 취소</button>
+                                    </div>
+                                    `;
+                                } else {
+                                    details += `
+                                    <div style="margin-top: 12px; padding: 10px; border-radius: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; text-align: center; color: #64748b; font-size: 13px; font-weight: 600;">
+                                        ⏳ 최소 참석 인원(${mMinAtt}명) 충족 시 확정 버튼이 나타납니다.
+                                    </div>
+                                    <div style="margin-top: 8px;" onclick="event.stopPropagation()">
+                                        <button type="button" onclick="cancelProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 제안 취소</button>
+                                    </div>
+                                    `;
+                                }
                             } else {
                                 details += `
-                                <div style="margin-top: 12px; padding: 10px; border-radius: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; text-align: center; color: #64748b; font-size: 13px; font-weight: 600;">
-                                    ⏳ 최소 참석 인원(${mMinAtt}명) 충족 시 확정 버튼이 나타납니다.
-                                </div>
-                                <div style="margin-top: 8px;" onclick="event.stopPropagation()">
-                                    <button type="button" onclick="cancelProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 제안 취소</button>
+                                <div style="margin-top: 12px;" onclick="event.stopPropagation()">
+                                    <button type="button" onclick="cancelProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 모임 취소</button>
                                 </div>
                                 `;
                             }
