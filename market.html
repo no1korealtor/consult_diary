@@ -951,9 +951,7 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
             const { data: newB, error: errB } = await supabaseClient.from('buildings').insert({
                 user_id: window.currentUser.id,
                 road_address: road,
-                jibun_address: jibun || null,
-                building_name: '', 
-                owner_phone: document.getElementById('p_owner_phone').value.trim() || null
+                jibun_address: jibun || null
             }).select();
 
             if (errB) { alert('새 건물 풀(Pool) 등록 실패: ' + errB.message); return; }
