@@ -128,6 +128,16 @@
                 </div>
                 <input type="text" id="p_address_detail" class="form-input" placeholder="상세주소 (예: 101동 202호)">
             </div>
+            <div style="display: flex; gap: 8px;">
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">매도/임대인 연락처</label>
+                    <input type="text" id="p_owner_phone" class="form-input" placeholder="010-0000-0000" oninput="this.value = formatPhoneNumber(this.value)">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">방문 예약 (세입자 등)</label>
+                    <input type="text" id="p_tenant_phone" class="form-input" placeholder="기본: 매도/임대인 동일" oninput="this.value = formatPhoneNumber(this.value)">
+                </div>
+            </div>
             <div class="form-group">
                 <label class="form-label">거래 종류 (다중 선택 가능)</label>
                 <div class="checkbox-group">
@@ -415,6 +425,13 @@
             }
             if (p.occupancy_type === '즉시입주') occStr = '🏃즉시입주';
             
+            let phoneHtml = '';
+            if (p.owner_phone || p.tenant_phone) {
+                let ownerStr = p.owner_phone ? `주인: ${formatPhoneNumber(p.owner_phone)}` : '';
+                let tenantStr = p.tenant_phone ? `방문: ${formatPhoneNumber(p.tenant_phone)}` : (p.owner_phone ? '방문: 주인과 동일' : '');
+                phoneHtml = `<div style="font-size: 13px; font-weight: 700; color: #b91c1c; margin-bottom: 6px; background: #fee2e2; padding: 6px; border-radius: 6px;">📞 ${[ownerStr, tenantStr].filter(Boolean).join(' | ')}</div>`;
+            }
+
             html += `
             <div class="card">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
@@ -422,6 +439,7 @@
                     <span class="chip neutral">${p.status}</span>
                 </div>
                 ${p.address ? `<div style="font-size: 15px; font-weight: 800; color: #065f46; margin-bottom: 6px;">📍 ${p.address}</div>` : ''}
+                ${phoneHtml}
                 <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">${priceStr.join(' / ')}</div>
                 <div style="font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">📅 입주: ${occStr}</div>
                 <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px;">${opts.join(' · ')}</div>
@@ -683,6 +701,8 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
         const payload = {
             user_id: window.currentUser.id,
             address: fullAddress || null,
+            owner_phone: document.getElementById('p_owner_phone').value.trim() || null,
+            tenant_phone: document.getElementById('p_tenant_phone').value.trim() || null,
             deal_types: types,
             sale_price: document.getElementById('p_sale').value ? parseInt(document.getElementById('p_sale').value) : null,
             deposit: document.getElementById('p_dep').value ? parseInt(document.getElementById('p_dep').value) : null,

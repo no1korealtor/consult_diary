@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS properties (
     is_basement BOOLEAN DEFAULT FALSE, -- 지층/반지하 여부
     
     -- 상태 및 메모
+    owner_phone TEXT, -- 매도인/임대인 연락처
+    tenant_phone TEXT, -- 방문 예약 연락처 (현재 세입자 등)
     status TEXT DEFAULT '거래가능', -- '거래가능', '보류', '거래완료'
     memo TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
