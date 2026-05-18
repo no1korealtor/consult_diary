@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합 장부 (매물/손님)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="nav.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+        body {
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f8fafc;
+            padding: 24px 16px;
+            max-width: 480px;
+            margin: auto;
+            color: #0f172a;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        .main-content { flex: 1; }
+        h2 { font-size: 22px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; }
+        
+        .tab-btn {
+            flex: 1; padding: 12px; border-radius: 12px; border: none; background: #e2e8f0; color: #64748b; font-weight: 800; font-size: 15px; cursor: pointer; transition: all 0.2s;
+        }
+        .tab-btn.active { background: #0f172a; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        
+        .card {
+            background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .btn-primary {
+            background: #3b82f6; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 15px; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        }
+
+        .chip {
+            display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 4px; margin-bottom: 4px;
+        }
+        .chip.sale { background: #dbeafe; color: #1d4ed8; }
+        .chip.jeonse { background: #dcfce7; color: #15803d; }
+        .chip.wolse { background: #fef3c7; color: #b45309; }
+        .chip.neutral { background: #f1f5f9; color: #475569; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: flex-end; z-index: 100;
+        }
+        .modal-content {
+            background: white; width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; padding: 24px; max-height: 85vh; overflow-y: auto; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; font-weight: 800; color: #475569; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; background: #f8fafc; outline: none; box-sizing: border-box; }
+        .form-input:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        
+        .checkbox-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .checkbox-label {
+            display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: #f1f5f9; border-radius: 10px; font-size: 14px; font-weight: 700; color: #475569; cursor: pointer; border: 1px solid transparent; transition: 0.2s;
+        }
+        .checkbox-label input[type="checkbox"] { display: none; }
+        .checkbox-label:has(input:checked) { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+        
+        .matching-section {
+            margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h2 style="margin: 0;">📋 통합 장부</h2>
+        <button type="button" onclick="logout()" style="background: white; border: 1px solid #e5e7eb; font-size: 13px; cursor: pointer; padding: 6px 10px; border-radius: 8px; color: #4b5563; font-weight: 700;">
+            🚪 로그아웃
+        </button>
+    </div>
+
+    <div style="display: flex; gap: 8px; margin-bottom: 20px;">
+        <button class="tab-btn active" id="tabProperties" onclick="switchTab('properties')">🏢 매물장</button>
+        <button class="tab-btn" id="tabClients" onclick="switchTab('clients')">🧑‍💼 손님 장부</button>
+    </div>
+
+    <!-- 매물장 탭 -->
+    <div id="propertiesTab">
+        <button class="btn-primary" onclick="openModal('propModal')" style="margin-bottom: 20px;">+ 새 매물 등록하기</button>
+        <div id="propertiesList">
+            <div style="text-align:center; padding: 40px 0; color: #94a3b8; font-weight: 700;">로딩 중...</div>
+        </div>
+    </div>
+
+    <!-- 손님 장부 탭 -->
+    <div id="clientsTab" style="display: none;">
+        <button class="btn-primary" onclick="openModal('clientModal')" style="background: #10b981; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">+ 새 손님 등록하기</button>
+        <div id="clientsList"></div>
+    </div>
+</div>
+
+<!-- 매물 등록 모달 -->
+<div class="modal-overlay" id="propModal" onclick="closeModal(event, 'propModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800;">🏢 새 매물 등록</h3>
+            <button onclick="document.getElementById('propModal').style.display='none'" style="background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer;">✕</button>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">거래 종류 (다중 선택 가능)</label>
+            <div class="checkbox-group">
+                <label class="checkbox-label"><input type="checkbox" name="p_type" value="매매" onchange="togglePriceFields()">매매</label>
+                <label class="checkbox-label"><input type="checkbox" name="p_type" value="전세" onchange="togglePriceFields()">전세</label>
+                <label class="checkbox-label"><input type="checkbox" name="p_type" value="월세" onchange="togglePriceFields()">월세</label>
+            </div>
+        </div>
+        
+        <div class="form-group" id="wrap_p_sale" style="display: none;">
+            <label class="form-label">매매가 (만원)</label>
+            <input type="number" id="p_sale" class="form-input" placeholder="예: 50000">
+        </div>
+        <div class="form-group" id="wrap_p_dep" style="display: none;">
+            <label class="form-label">보증금/전세금 (만원)</label>
+            <input type="number" id="p_dep" class="form-input" placeholder="예: 10000">
+        </div>
+        <div class="form-group" id="wrap_p_rent" style="display: none;">
+            <label class="form-label">월세 (만원)</label>
+            <input type="number" id="p_rent" class="form-input" placeholder="예: 50">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">방 개수</label>
+            <input type="number" id="p_room" class="form-input" placeholder="예: 2">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">옵션/조건</label>
+            <div class="checkbox-group">
+                <label class="checkbox-label"><input type="checkbox" id="p_pet">🐶 반려동물 가능</label>
+                <label class="checkbox-label"><input type="checkbox" id="p_parking">🚗 주차 가능</label>
+                <label class="checkbox-label"><input type="checkbox" id="p_loan">🏦 대출/LH 가능</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">메모 (주소, 동호수, 특징 등)</label>
+            <textarea id="p_memo" class="form-input" rows="3" placeholder="내부 확인용 메모를 적어주세요"></textarea>
+        </div>
+
+        <button class="btn-primary" onclick="saveProperty()" style="margin-top: 24px;">저장하기</button>
+    </div>
+</div>
+
+<!-- 손님 등록 모달 -->
+<div class="modal-overlay" id="clientModal" onclick="closeModal(event, 'clientModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800;">🧑‍💼 새 손님 조건 등록</h3>
+            <button onclick="document.getElementById('clientModal').style.display='none'" style="background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer;">✕</button>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">손님 이름 / 연락처</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="c_name" class="form-input" placeholder="이름 (예: 홍길동)" style="flex: 1;">
+                <input type="text" id="c_phone" class="form-input" placeholder="연락처 뒤 4자리 등" style="flex: 1;">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">찾으시는 거래 종류 (다중 선택)</label>
+            <div class="checkbox-group">
+                <label class="checkbox-label"><input type="checkbox" name="c_type" value="매매" onchange="toggleClientPrice()">매매</label>
+                <label class="checkbox-label"><input type="checkbox" name="c_type" value="전세" onchange="toggleClientPrice()">전세</label>
+                <label class="checkbox-label"><input type="checkbox" name="c_type" value="월세" onchange="toggleClientPrice()">월세</label>
+            </div>
+        </div>
+        
+        <div class="form-group" id="wrap_c_budget" style="display: none;">
+            <label class="form-label">최대 가용 예산 (매매/보증금, 만원)</label>
+            <input type="number" id="c_budget" class="form-input" placeholder="예: 30000">
+        </div>
+        <div class="form-group" id="wrap_c_rent" style="display: none;">
+            <label class="form-label">최대 허용 월세 (만원)</label>
+            <input type="number" id="c_rent" class="form-input" placeholder="예: 100">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">필수 조건</label>
+            <div class="checkbox-group">
+                <label class="checkbox-label"><input type="checkbox" id="c_pet">🐶 반려동물 필수</label>
+                <label class="checkbox-label"><input type="checkbox" id="c_parking">🚗 주차 필수</label>
+                <label class="checkbox-label"><input type="checkbox" id="c_loan">🏦 전세대출 필수</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">메모 (희망 지역, 층수 등)</label>
+            <textarea id="c_memo" class="form-input" rows="3" placeholder="기타 요구사항 메모"></textarea>
+        </div>
+
+        <button class="btn-primary" onclick="saveClient()" style="margin-top: 24px; background: #10b981;">저장하기</button>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <a href="deal-register.html" class="nav-item">
+        <span class="nav-icon">🏠</span>
+        <span>일정</span>
+    </a>
+    <a href="market.html" class="nav-item active">
+        <span class="nav-icon">📋</span>
+        <span>장부</span>
+    </a>
+    <a href="contacts.html" class="nav-item">
+        <span class="nav-icon">👥</span>
+        <span>연락처</span>
+    </a>
+    <a href="manual.html" class="nav-item">
+        <span class="nav-icon">📖</span>
+        <span>설명서</span>
+    </a>
+    <a href="profile-edit.html" class="nav-item">
+        <span class="nav-icon">👤</span>
+        <span>내정보</span>
+    </a>
+</nav>
+
+<script src="auth-helper.js"></script>
+<script>
+    let propertiesData = [];
+    let clientsData = [];
+
+    function switchTab(tabName) {
+        document.getElementById('propertiesTab').style.display = tabName === 'properties' ? 'block' : 'none';
+        document.getElementById('clientsTab').style.display = tabName === 'clients' ? 'block' : 'none';
+        document.getElementById('tabProperties').className = tabName === 'properties' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('tabClients').className = tabName === 'clients' ? 'tab-btn active' : 'tab-btn';
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(e, id) { if(e.target.id === id) document.getElementById(id).style.display = 'none'; }
+
+    function togglePriceFields() {
+        const checked = Array.from(document.querySelectorAll('input[name="p_type"]:checked')).map(el => el.value);
+        document.getElementById('wrap_p_sale').style.display = checked.includes('매매') ? 'block' : 'none';
+        document.getElementById('wrap_p_dep').style.display = (checked.includes('전세') || checked.includes('월세')) ? 'block' : 'none';
+        document.getElementById('wrap_p_rent').style.display = checked.includes('월세') ? 'block' : 'none';
+    }
+
+    function toggleClientPrice() {
+        const checked = Array.from(document.querySelectorAll('input[name="c_type"]:checked')).map(el => el.value);
+        document.getElementById('wrap_c_budget').style.display = checked.length > 0 ? 'block' : 'none';
+        document.getElementById('wrap_c_rent').style.display = checked.includes('월세') ? 'block' : 'none';
+    }
+
+    async function loadData() {
+        // Load Properties
+        const { data: props } = await authClient.from('properties').select('*').order('created_at', { ascending: false });
+        propertiesData = props || [];
+        renderProperties();
+
+        // Load Clients
+        const { data: clients } = await authClient.from('client_requests').select('*').order('created_at', { ascending: false });
+        clientsData = clients || [];
+        renderClients();
+    }
+
+    function formatMoney(val) {
+        if (!val) return '0';
+        if (val >= 10000) {
+            const uk = Math.floor(val / 10000);
+            const man = val % 10000;
+            return man > 0 ? `${uk}억 ${man}만` : `${uk}억`;
+        }
+        return `${val}만`;
+    }
+
+    function renderProperties() {
+        const list = document.getElementById('propertiesList');
+        if (propertiesData.length === 0) {
+            list.innerHTML = `<div style="text-align:center; padding: 40px 0; color: #94a3b8;">등록된 매물이 없습니다.</div>`;
+            return;
+        }
+        
+        let html = '';
+        propertiesData.forEach(p => {
+            let typeChips = p.deal_types.map(t => {
+                let cls = t==='매매' ? 'sale' : (t==='전세' ? 'jeonse' : 'wolse');
+                return `<span class="chip ${cls}">${t}</span>`;
+            }).join('');
+            
+            let priceStr = [];
+            if (p.sale_price) priceStr.push(`매매 ${formatMoney(p.sale_price)}`);
+            if (p.deposit && !p.monthly_rent) priceStr.push(`전세 ${formatMoney(p.deposit)}`);
+            if (p.deposit && p.monthly_rent) priceStr.push(`월세 ${formatMoney(p.deposit)}/${p.monthly_rent}`);
+            
+            let opts = [];
+            if (p.room_count) opts.push(`방 ${p.room_count}개`);
+            if (p.pet_allowed) opts.push('🐶반려동물');
+            if (p.parking_allowed) opts.push('🚗주차');
+            if (p.loan_sh_lh_allowed) opts.push('🏦대출가능');
+            
+            html += `
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <div>${typeChips}</div>
+                    <span class="chip neutral">${p.status}</span>
+                </div>
+                <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">${priceStr.join(' / ')}</div>
+                <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px;">${opts.join(' · ')}</div>
+                ${p.memo ? `<div style="font-size: 14px; color: #334155; background: #f8fafc; padding: 10px; border-radius: 8px;">${p.memo}</div>` : ''}
+            </div>
+            `;
+        });
+        list.innerHTML = html;
+    }
+
+    function renderClients() {
+        const list = document.getElementById('clientsList');
+        if (clientsData.length === 0) {
+            list.innerHTML = `<div style="text-align:center; padding: 40px 0; color: #94a3b8;">등록된 손님이 없습니다.</div>`;
+            return;
+        }
+        
+        let html = '';
+        clientsData.forEach(c => {
+            let typeChips = c.target_types.map(t => `<span class="chip neutral" style="background:#e2e8f0; color:#334155;">${t} 찾음</span>`).join('');
+            
+            let budgetStr = `최대 ${formatMoney(c.max_budget)}`;
+            if (c.max_monthly) budgetStr += ` (월세 최대 ${c.max_monthly}만)`;
+
+            let reqs = [];
+            if (c.need_pet) reqs.push('🐶반려동물 필수');
+            if (c.need_parking) reqs.push('🚗주차 필수');
+            if (c.need_loan_sh_lh) reqs.push('🏦대출 필수');
+
+            // Find matches
+            const matches = propertiesData.filter(p => {
+                if (p.status !== '거래가능') return false;
+                // Type match
+                const typeMatch = p.deal_types.some(pt => c.target_types.includes(pt));
+                if (!typeMatch) return false;
+                
+                // Budget match
+                let isBudgetOk = false;
+                if (c.target_types.includes('매매') && p.sale_price && p.sale_price <= c.max_budget) isBudgetOk = true;
+                if (c.target_types.includes('전세') && p.deposit && !p.monthly_rent && p.deposit <= c.max_budget) isBudgetOk = true;
+                if (c.target_types.includes('월세') && p.monthly_rent) {
+                    if (p.deposit <= c.max_budget && p.monthly_rent <= (c.max_monthly || 9999)) isBudgetOk = true;
+                }
+                if (!isBudgetOk) return false;
+
+                // Option match
+                if (c.need_pet && !p.pet_allowed) return false;
+                if (c.need_parking && !p.parking_allowed) return false;
+                if (c.need_loan_sh_lh && !p.loan_sh_lh_allowed) return false;
+                
+                return true;
+            });
+
+            html += `
+            <div class="card" style="border-left: 4px solid #10b981;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="font-size: 16px; font-weight: 800; color: #065f46;">🧑‍💼 ${c.client_name} <span style="font-size:13px; color:#64748b; font-weight:600;">${c.client_phone || ''}</span></div>
+                    <span class="chip neutral">${c.status}</span>
+                </div>
+                <div style="margin-bottom: 8px;">${typeChips}</div>
+                <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">💰 예산: ${budgetStr}</div>
+                ${reqs.length > 0 ? `<div style="font-size: 13px; font-weight: 600; color: #ef4444; margin-bottom: 8px;">⚠️ 조건: ${reqs.join(' · ')}</div>` : ''}
+                ${c.memo ? `<div style="font-size: 13px; color: #475569; margin-bottom: 12px;">📝 ${c.memo}</div>` : ''}
+                
+                <div class="matching-section">
+                    <div style="font-size: 13px; font-weight: 800; color: #3b82f6; display: flex; align-items: center; gap: 4px;">
+                        ✨ 매칭된 매물 (${matches.length}건)
+                    </div>
+                    ${matches.length > 0 ? `
+                        <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
+                            ${matches.map(m => `
+                                <div style="background: #eff6ff; padding: 10px; border-radius: 8px; border: 1px solid #bfdbfe;">
+                                    <div style="font-size: 12px; font-weight: 700; color: #1d4ed8; margin-bottom: 2px;">[${m.deal_types.join('/')}] 방 ${m.room_count||0}개</div>
+                                    <div style="font-size: 14px; font-weight: 800; color: #1e3a8a;">${m.memo ? m.memo.substring(0,20)+'...' : '메모 없음'}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : `<div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">조건에 딱 맞는 매물이 아직 없습니다.</div>`}
+                </div>
+            </div>
+            `;
+        });
+        list.innerHTML = html;
+    }
+
+    async function saveProperty() {
+        const types = Array.from(document.querySelectorAll('input[name="p_type"]:checked')).map(el => el.value);
+        if (types.length === 0) { alert('거래 종류를 선택해주세요.'); return; }
+        
+        const payload = {
+            user_id: window.currentUser.id,
+            deal_types: types,
+            sale_price: document.getElementById('p_sale').value ? parseInt(document.getElementById('p_sale').value) : null,
+            deposit: document.getElementById('p_dep').value ? parseInt(document.getElementById('p_dep').value) : null,
+            monthly_rent: document.getElementById('p_rent').value ? parseInt(document.getElementById('p_rent').value) : null,
+            room_count: document.getElementById('p_room').value ? parseInt(document.getElementById('p_room').value) : null,
+            pet_allowed: document.getElementById('p_pet').checked,
+            parking_allowed: document.getElementById('p_parking').checked,
+            loan_sh_lh_allowed: document.getElementById('p_loan').checked,
+            memo: document.getElementById('p_memo').value
+        };
+
+        const { error } = await authClient.from('properties').insert(payload);
+        if (error) { alert('저장 실패: ' + error.message); return; }
+        
+        document.getElementById('propModal').style.display = 'none';
+        alert('매물이 등록되었습니다.');
+        loadData();
+    }
+
+    async function saveClient() {
+        const name = document.getElementById('c_name').value;
+        if (!name) { alert('손님 이름을 입력해주세요.'); return; }
+        const types = Array.from(document.querySelectorAll('input[name="c_type"]:checked')).map(el => el.value);
+        if (types.length === 0) { alert('찾으시는 거래 종류를 선택해주세요.'); return; }
+
+        const payload = {
+            user_id: window.currentUser.id,
+            client_name: name,
+            client_phone: document.getElementById('c_phone').value,
+            target_types: types,
+            max_budget: document.getElementById('c_budget').value ? parseInt(document.getElementById('c_budget').value) : null,
+            max_monthly: document.getElementById('c_rent').value ? parseInt(document.getElementById('c_rent').value) : null,
+            need_pet: document.getElementById('c_pet').checked,
+            need_parking: document.getElementById('c_parking').checked,
+            need_loan_sh_lh: document.getElementById('c_loan').checked,
+            memo: document.getElementById('c_memo').value
+        };
+
+        const { error } = await authClient.from('client_requests').insert(payload);
+        if (error) { alert('저장 실패: ' + error.message); return; }
+        
+        document.getElementById('clientModal').style.display = 'none';
+        alert('손님 조건이 등록되었습니다.');
+        loadData();
+    }
+
+    async function checkAuthAndLoad() {
+        const user = await requireAuth();
+        if (user) {
+            loadData();
+        }
+    }
+    
+    // Auth Check is triggered by window pageshow
+</script>
+</body>
+</html>
