@@ -514,6 +514,10 @@
         if (c.occupancy_type === '시기조정가능' && c.occupancy_period_memo) occStr = `📅 시기조정 (${c.occupancy_period_memo})`;
         if (c.occupancy_type === '무관') occStr = '📅 입주시기 무관';
 
+        const realtorName = window.currentUser?.name || '공인중개사사무소';
+        const realtorPhone = window.currentUser?.phone || '';
+        const phoneStr = realtorPhone ? ` (${realtorPhone})` : '';
+
         const text = `🏡 [공동중개 의뢰]
 손님께서 찾으시는 조건입니다. 조건에 맞는 매물 있으시면 편하게 연락 부탁드립니다! 🙏
 
@@ -524,7 +528,7 @@
 ▪️ 추가 코멘트: ${c.memo || '없음'}
 
 언제든 편하게 연락 주세요! 😊
-📞 신대림공인중개사사무소`;
+📞 ${realtorName}${phoneStr}`;
 
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(() => {
@@ -560,6 +564,10 @@
         }
         if (p.occupancy_type === '즉시입주') occStr = '즉시 입주 가능';
 
+        const realtorName = window.currentUser?.name || '공인중개사사무소';
+        const realtorPhone = window.currentUser?.phone || '';
+        const phoneStr = realtorPhone ? ` (${realtorPhone})` : '';
+
         const text = `🏡 [추천 매물 안내]
 손님께서 찾으시는 조건의 매물입니다!
 
@@ -570,7 +578,7 @@
 ▪️ 코멘트: ${p.memo || '없음'}
 
 언제든 편하게 연락 주세요! 😊
-📞 신대림공인중개사사무소`;
+📞 ${realtorName}${phoneStr}`;
 
         // 복사 수행
         if (navigator.clipboard && window.isSecureContext) {
