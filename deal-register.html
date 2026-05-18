@@ -1031,7 +1031,8 @@
                             isMinAttMet = false;
                         }
 
-                        if (isMine && !isAutoCanceled && !isCanceled) {
+                        const canCancel = isMine || (window.currentUser && window.currentUser.role === 'admin');
+                        if (canCancel && !isAutoCanceled && !isCanceled) {
                             if (isProposal) {
                                 if (isMinAttMet) {
                                     details += `
