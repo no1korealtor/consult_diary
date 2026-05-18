@@ -367,8 +367,14 @@
     function execDaumPostcode() {
         new daum.Postcode({
             oncomplete: function(data) {
-                let roadAddr = data.roadAddress || '';
+                let roadAddr = data.roadAddress || data.autoRoadAddress || '';
                 let jibunAddr = data.jibunAddress || data.autoJibunAddress || '';
+                
+                // 만약 Daum API가 지번을 명시적으로 안 주는데 기본 주소가 지번형태라면
+                if (!jibunAddr && data.userSelectedType === 'J') {
+                    jibunAddr = data.address;
+                }
+                
                 let extraAddr = '';
 
                 if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
