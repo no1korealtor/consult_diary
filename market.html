@@ -367,7 +367,8 @@
     function execDaumPostcode() {
         new daum.Postcode({
             oncomplete: function(data) {
-                let addr = data.roadAddress; // 도로명 주소
+                let roadAddr = data.roadAddress || '';
+                let jibunAddr = data.jibunAddress || data.autoJibunAddress || '';
                 let extraAddr = '';
 
                 if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
@@ -380,7 +381,12 @@
                     extraAddr = ' (' + extraAddr + ')';
                 }
                 
-                document.getElementById('p_address_main').value = addr + extraAddr;
+                let finalAddr = roadAddr + extraAddr;
+                if (jibunAddr) {
+                    finalAddr += ` [지번: ${jibunAddr}]`;
+                }
+                
+                document.getElementById('p_address_main').value = finalAddr;
                 document.getElementById('p_address_detail').focus();
             }
         }).open();
