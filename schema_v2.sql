@@ -73,12 +73,15 @@ CREATE TABLE IF NOT EXISTS client_requests (
 );
 
 -- RLS (Row Level Security) 설정
--- 매물장과 손님장부 테이블 모두, 로그인한 사용자(authenticated)라면 누구나 읽고 쓸 수 있도록 허용합니다.
+-- 매물장과 손님장부 테이블 모두 누구나 읽고 쓸 수 있도록 허용합니다. (인증은 authClient에서 처리하므로 DB 프로젝트에서는 anon 권한 허용)
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE client_requests ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow all operations for authenticated users on properties" 
-ON properties FOR ALL TO authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow all operations for authenticated users on properties" ON properties;
+DROP POLICY IF EXISTS "Allow all operations for authenticated users on client_requests" ON client_requests;
 
-CREATE POLICY "Allow all operations for authenticated users on client_requests" 
-ON client_requests FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all operations on properties" 
+ON properties FOR ALL USING (true) WITH CHECK (true);
+
+CREATE POLICY "Allow all operations on client_requests" 
+ON client_requests FOR ALL USING (true) WITH CHECK (true);
