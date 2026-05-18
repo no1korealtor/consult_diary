@@ -484,7 +484,7 @@
             <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">${priceStr.join(' / ')}</div>
             <div style="font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">📅 입주: ${occStr}</div>
             <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px;">${opts.join(' · ')}</div>
-            ${p.memo ? `<div style="font-size: 14px; color: #334155; background: #e2e8f0; padding: 10px; border-radius: 8px;">${p.memo}</div>` : ''}
+            ${p.memo ? `<div style="font-size: 14px; color: #334155; background: #e2e8f0; padding: 10px; border-radius: 8px;">${p.memo.replace(/\\[SETTLED_DATE\\].*?\\[\\/SETTLED_DATE\\]/g, '').trim()}</div>` : ''}
             <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 6px;">
                 <button onclick="copyPropertyToKakao('${p.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px;">
                     💬 카톡용 복사
@@ -653,7 +653,7 @@
                 <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">💰 예산: ${budgetStr}</div>
                 <div style="font-size: 14px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">${occStr}</div>
                 ${reqs.length > 0 ? `<div style="font-size: 13px; font-weight: 600; color: #ef4444; margin-bottom: 8px;">⚠️ 조건: ${reqs.join(' · ')}</div>` : ''}
-                ${c.memo ? `<div style="font-size: 13px; color: #475569; margin-bottom: 12px;">📝 ${c.memo}</div>` : ''}
+                ${c.memo ? `<div style="font-size: 13px; color: #475569; margin-bottom: 12px;">📝 ${c.memo.replace(/\\[SETTLED_DATE\\].*?\\[\\/SETTLED_DATE\\]/g, '').trim()}</div>` : ''}
                 
                 <div class="matching-section">
                     <div style="font-size: 13px; font-weight: 800; color: #3b82f6; display: flex; align-items: center; gap: 4px;">

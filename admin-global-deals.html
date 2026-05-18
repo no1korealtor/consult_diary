@@ -521,8 +521,9 @@
                 };
                 
                 let memoHtml = '';
-                if (rawMemo.trim()) {
-                    memoHtml = `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${rawMemo.trim()}</div>`;
+                let cleanedMemo = rawMemo.replace(/\\[SETTLED_DATE\\].*?\\[\\/SETTLED_DATE\\]/g, '').trim();
+                if (cleanedMemo) {
+                    memoHtml = `<div style="color: #9ca3af; font-size: 13px; margin-top: 6px; background: #f8fafc; padding: 6px 10px; border-radius: 6px;">📝 ${cleanedMemo}</div>`;
                 }
                 if (linkUrl) {
                     memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 6px; font-size: 13px; color: #3b82f6; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; padding: 4px 8px; background: #eff6ff; border-radius: 6px;">${linkName}</div>`;

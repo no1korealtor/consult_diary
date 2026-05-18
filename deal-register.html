@@ -798,11 +798,13 @@
                     id,
                     user_id,
                     building_id,
+                    property_id,
                     contract_type,
                     balance_date,
                     memo,
                     buildings ( jibun_address, road_address ),
                     rooms ( room_name ),
+                    properties ( address ),
                     deal_attendances ( user_id, status )
                 `)
                 .or(`user_id.eq.${window.currentUser.id},building_id.is.null`)
@@ -1197,8 +1199,9 @@
                 }
                 
                 let memoHtml = '';
-                if (rawMemo.trim()) {
-                    memoHtml = `<div style="color: #6b7280; font-size: 13px; margin-top: 6px; display: flex; gap: 6px; align-items: flex-start;"><span style="font-size: 14px; line-height: 1.4;">📝</span><span style="flex:1; line-height: 1.4; word-break: keep-all;">${rawMemo.trim()}</span></div>`;
+                let cleanedMemo = rawMemo.replace(/\\[SETTLED_DATE\\].*?\\[\\/SETTLED_DATE\\]/g, '').trim();
+                if (cleanedMemo) {
+                    memoHtml = `<div style="color: #6b7280; font-size: 13px; margin-top: 6px; display: flex; gap: 6px; align-items: flex-start;"><span style="font-size: 14px; line-height: 1.4;">📝</span><span style="flex:1; line-height: 1.4; word-break: keep-all;">${cleanedMemo}</span></div>`;
                 }
                 if (linkUrl) {
                     memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 12px; font-size: 13px; color: #475569; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 12px; background: #f1f5f9; border-radius: 8px; transition: 0.2s;">🔗 ${linkName}</div>`;
