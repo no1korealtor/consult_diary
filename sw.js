@@ -1,4 +1,4 @@
-const CACHE_NAME = 'consult-diary-v25';
+const CACHE_NAME = 'consult-diary-v26';
 
 // 기본적으로 캐싱할 에셋 목록 (오프라인에서도 화면을 보여주기 위해)
 const urlsToCache = [

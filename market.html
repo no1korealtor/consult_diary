@@ -231,6 +231,11 @@
             </div>
 
             <div class="form-group">
+                <label class="form-label">최소 방 개수</label>
+                <input type="number" id="c_room" class="form-input" placeholder="예: 2 (원룸이면 1)" min="1">
+            </div>
+
+            <div class="form-group">
                 <label class="form-label">필수 조건</label>
                 <div class="checkbox-group">
                     <label class="checkbox-label"><input type="checkbox" id="c_pet">🐶 반려동물 필수</label>
@@ -540,6 +545,7 @@
             if (c.max_monthly) budgetStr += ` (월세 최대 ${c.max_monthly}만)`;
 
             let reqs = [];
+            if (c.min_room_count) reqs.push(`방 ${c.min_room_count}개 이상`);
             if (c.need_pet) reqs.push('🐶반려동물 필수');
             if (c.need_parking) reqs.push('🚗주차 필수');
             if (c.need_loan || c.need_loan_sh_lh) reqs.push('🏦대출 필수');
@@ -570,6 +576,7 @@
                 if (!isBudgetOk) return false;
 
                 // Option match
+                if (c.min_room_count && (!p.room_count || p.room_count < c.min_room_count)) return false;
                 if (c.need_pet && !p.pet_allowed) return false;
                 if (c.need_parking && !p.parking_allowed) return false;
                 if ((c.need_loan || c.need_loan_sh_lh) && !(p.loan_allowed || p.loan_sh_lh_allowed)) return false;
@@ -636,6 +643,7 @@
         if (c.max_monthly) budgetStr += ` (월세 최대 ${c.max_monthly}만)`;
 
         let reqs = [];
+        if (c.min_room_count) reqs.push(`방 ${c.min_room_count}개 이상`);
         if (c.need_pet) reqs.push('🐶반려동물 가능');
         if (c.need_parking) reqs.push('🚗주차 필수');
         if (c.need_loan || c.need_loan_sh_lh) reqs.push('🏦대출 가능해야 함');
@@ -827,6 +835,7 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
             target_types: types,
             max_budget: document.getElementById('c_budget').value ? parseInt(document.getElementById('c_budget').value) : null,
             max_monthly: document.getElementById('c_rent').value ? parseInt(document.getElementById('c_rent').value) : null,
+            min_room_count: document.getElementById('c_room').value ? parseInt(document.getElementById('c_room').value) : null,
             need_pet: document.getElementById('c_pet').checked,
             need_parking: document.getElementById('c_parking').checked,
             need_loan: document.getElementById('c_loan').checked,
