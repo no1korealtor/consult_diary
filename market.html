@@ -288,6 +288,10 @@
                 <input type="text" id="c_occ_memo" class="form-input" style="display: none;" placeholder="예: 7월 중순에서 8월 말 사이">
             </div>
 
+            <div class="form-group">
+                <label class="form-label">문의 매물 링크 (네이버 부동산 등)</label>
+                <input type="text" id="c_naver_url" class="form-input" placeholder="URL을 붙여넣으세요 (선택사항)">
+            </div>
             <div class="form-group" style="margin-bottom: 0;">
                 <label class="form-label">메모 (희망 지역, 층수 등)</label>
                 <textarea id="c_memo" class="form-input" rows="3" placeholder="기타 요구사항 메모"></textarea>
@@ -763,7 +767,29 @@
                 <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">💰 예산: ${budgetStr}</div>
                 <div style="font-size: 14px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">${occStr}</div>
                 ${reqs.length > 0 ? `<div style="font-size: 13px; font-weight: 600; color: #ef4444; margin-bottom: 8px;">⚠️ 조건: ${reqs.join(' · ')}</div>` : ''}
-                ${c.memo ? `<div style="font-size: 13px; color: #475569; margin-bottom: 12px;">📝 ${c.memo.replace(/\\[SETTLED_DATE\\].*?\\[\\/SETTLED_DATE\\]/g, '').trim()}</div>` : ''}
+                
+                ${(function() {
+                    let displayMemo = '';
+                    let inquiryLink = '';
+                    if (c.memo) {
+                        displayMemo = c.memo.replace(/\\[SETTLED_DATE\\].*?\\[\\/SETTLED_DATE\\]/g, '').trim();
+                        if (displayMemo.includes('[문의링크]')) {
+                            const m = displayMemo.match(/\[문의링크\]\s*(.*?)(?=\n|$)/);
+                            if (m) {
+                                inquiryLink = m[1];
+                                displayMemo = displayMemo.replace(m[0], '').trim();
+                            }
+                        }
+                    }
+                    let html = '';
+                    if (inquiryLink) {
+                        html += `<div style="font-size: 13px; font-weight: 800; margin-bottom: 8px; background: #eff6ff; padding: 8px; border-radius: 8px; border: 1px solid #bfdbfe;"><a href="${inquiryLink}" target="_blank" style="color: #1d4ed8; text-decoration: none; display: flex; align-items: center; gap: 4px;">🔗 네이버 부동산 (문의 매물) 바로가기</a></div>`;
+                    }
+                    if (displayMemo) {
+                        html += `<div style="font-size: 13px; color: #475569; margin-bottom: 12px; white-space: pre-wrap;">📝 ${displayMemo}</div>`;
+                    }
+                    return html;
+                })()}
                 
                 <div class="matching-section">
                     <div style="font-size: 13px; font-weight: 800; color: #3b82f6; display: flex; align-items: center; gap: 4px;">
@@ -1134,7 +1160,14 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
             occupancy_type: document.getElementById('c_occ_type').value,
             occupancy_date: document.getElementById('c_occ_date').value || null,
             occupancy_period_memo: document.getElementById('c_occ_memo').value,
-            memo: document.getElementById('c_memo').value
+            memo: (function() {
+                let m = document.getElementById('c_memo').value.trim();
+                const url = document.getElementById('c_naver_url').value.trim();
+                if (url) {
+                    m = "[문의링크] ${url}\n\n" + m;
+                }
+                return m;
+            })()
         };
         
         if (cid) {
@@ -1193,7 +1226,7 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
     function openClientModal(id = null) {
         const modal = document.getElementById('clientModal');
         const title = modal.querySelector('.modal-header h3');
-        const formIds = ['c_id', 'c_phone', 'c_budget', 'c_rent', 'c_room', 'c_pet', 'c_parking', 'c_loan', 'c_lh', 'c_exclude_basement', 'c_occ_date', 'c_occ_memo', 'c_memo'];
+        const formIds = ['c_id', 'c_phone', 'c_budget', 'c_rent', 'c_room', 'c_pet', 'c_parking', 'c_loan', 'c_lh', 'c_exclude_basement', 'c_occ_date', 'c_occ_memo', 'c_memo', 'c_naver_url'];
         
         formIds.forEach(fid => {
             const el = document.getElementById(fid);
@@ -1225,7 +1258,19 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
                 if (c.occupancy_type) document.getElementById('c_occ_type').value = c.occupancy_type;
                 if (c.occupancy_date) document.getElementById('c_occ_date').value = c.occupancy_date;
                 if (c.occupancy_period_memo) document.getElementById('c_occ_memo').value = c.occupancy_period_memo;
-                if (c.memo) document.getElementById('c_memo').value = c.memo;
+                
+                let extractedMemo = c.memo || '';
+                let extractedUrl = '';
+                if (extractedMemo.includes('[문의링크]')) {
+                    const m = extractedMemo.match(/\[문의링크\]\s*(.*?)(?=\n|$)/);
+                    if (m) {
+                        extractedUrl = m[1];
+                        extractedMemo = extractedMemo.replace(m[0], '').trim();
+                    }
+                }
+                document.getElementById('c_naver_url').value = extractedUrl;
+                document.getElementById('c_memo').value = extractedMemo;
+                
                 document.getElementById('c_status').value = c.status || '탐색중';
                 document.getElementById('wrap_c_status').style.display = 'block';
             }
@@ -1256,3 +1301,4 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
 </script>
 </body>
 </html>
+
