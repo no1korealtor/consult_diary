@@ -871,7 +871,14 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
     }
 
     async function deleteProperty(id) {
-        if (!confirm('정말 이 매물 기록을 삭제하시겠습니까?')) return;
+        const p = propertiesData.find(x => x.id === id);
+        if (!p) return;
+        const confirmText = prompt(`정말 이 매물 기록을 삭제하시겠습니까?\n삭제하시려면 '삭제'라고 입력해주세요.\n(매물 주소: ${p.address || '주소없음'})`);
+        if (confirmText !== '삭제') {
+            if (confirmText !== null) alert('입력이 일치하지 않아 취소되었습니다.');
+            return;
+        }
+        
         const { error } = await supabaseClient.from('properties').delete().eq('id', id);
         if (error) {
             alert('삭제 실패: ' + error.message);
@@ -996,7 +1003,27 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
     }
 
     async function deleteClient(id) {
-        if (!confirm('정말 이 손님 기록을 삭제하시겠습니까?')) return;
+        const c = clientsData.find(x => x.id === id);
+        if (!c) return;
+        
+        // Extract numbers from phone for easier typing
+        const phoneNumbersOnly = (c.client_phone || '').replace(/[^0-9]/g, '');
+        const last4 = phoneNumbersOnly.slice(-4);
+        
+        const confirmText = prompt(`정말 이 손님 기록을 삭제하시겠습니까?\n삭제하시려면 손님 연락처 뒷 4자리(${last4})를 입력해주세요.\n(전화번호 없는 손님은 '삭제' 입력)`);
+        
+        if (last4) {
+            if (confirmText !== last4) {
+                if (confirmText !== null) alert('입력한 번호가 일치하지 않아 취소되었습니다.');
+                return;
+            }
+        } else {
+            if (confirmText !== '삭제') {
+                if (confirmText !== null) alert('입력이 일치하지 않아 취소되었습니다.');
+                return;
+            }
+        }
+        
         const { error } = await supabaseClient.from('client_requests').delete().eq('id', id);
         if (error) {
             alert('삭제 실패: ' + error.message);
