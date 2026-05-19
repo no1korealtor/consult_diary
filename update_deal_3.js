@@ -1,14 +1,14 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 
 const filePath = path.join(__dirname, 'deal-register.html');
 let content = fs.readFileSync(filePath, 'utf8');
 
 const target1 = `            const createDealListItem = (deal, isGlobal) => {
-                let rawMemo = deal.memo || '';
+                let rawMemo = schedule.memo || '';
                 let linkUrl = null;`;
 const rep1 = `            const createDealListItem = (deal, isGlobal) => {
-                let rawMemo = deal.memo || '';
+                let rawMemo = schedule.memo || '';
                 let isDone = false;
                 if (rawMemo.includes('[DONE]')) {
                     isDone = true;
@@ -20,11 +20,11 @@ const rep1 = `            const createDealListItem = (deal, isGlobal) => {
 if (content.includes(target1)) content = content.replace(target1, rep1);
 else console.log('target1 not found');
 
-const target2 = `                const dDayText = getDDay(deal.balance_date);
+const target2 = `                const dDayText = getDDay(schedule.schedule_date);
                 let dDayHtml = '';
                 let isUrgent = false;
                 if (dDayText) {`;
-const rep2 = `                const dDayText = getDDay(deal.balance_date);
+const rep2 = `                const dDayText = getDDay(schedule.schedule_date);
                 let dDayHtml = '';
                 let isUrgent = false;
                 if (isDone) {
@@ -58,3 +58,4 @@ else console.log('target4 not found');
 
 fs.writeFileSync(filePath, content, 'utf8');
 console.log('Done JS!');
+

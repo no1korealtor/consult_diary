@@ -247,11 +247,11 @@
             status.innerText = '저장 완료! 이전 화면으로 돌아갑니다...';
 
             const urlParams = new URLSearchParams(window.location.search);
-            const dealId = urlParams.get('deal_id');
+            const scheduleId = urlParams.get('schedule_id');
             
             setTimeout(() => {
-                if (dealId) {
-                    location.href = 'deal-detail.html?id=' + dealId;
+                if (scheduleId) {
+                    location.href = 'deal-detail.html?id=' + scheduleId;
                 } else {
                     if (document.referrer) {
                         location.href = document.referrer;

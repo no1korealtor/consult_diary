@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -219,7 +219,7 @@
                     location.href = 'contacts.html';
                     return;
                 }
-                loadDeals();
+                loadschedules();
             }
         }
 
@@ -304,25 +304,25 @@
 
             // building_id 와 room_id 를 보내지 않고 저장 (전체 공지)
             const payload = {
-                contract_type: contractType,
-                balance_date: finalBalanceDate,
+                schedule_type: contractType,
+                schedule_date: finalBalanceDate,
                 memo: finalMemo,
                 user_id: window.currentUser.id
             };
 
-            if (window.editingDealId) {
-                const { error } = await supabaseClient.from('deals').update(payload).eq('id', window.editingDealId);
+            if (window.editingscheduleId) {
+                const { error } = await supabaseClient.from('schedules').update(payload).eq('id', window.editingscheduleId);
                 if (error) {
                     status.innerText = '에러: ' + error.message;
                     return;
                 }
                 status.innerText = '수정 완료!';
-                window.editingDealId = null;
+                window.editingscheduleId = null;
                 const btn = document.getElementById('saveBtn');
                 btn.innerText = '전체 일정 등록';
                 btn.style.backgroundColor = '#3b82f6';
             } else {
-                const { error } = await supabaseClient.from('deals').insert([payload]);
+                const { error } = await supabaseClient.from('schedules').insert([payload]);
                 if (error) {
                     status.innerText = '에러: ' + error.message;
                     return;
@@ -337,7 +337,7 @@
             document.getElementById('urlNameInput').value = '';
             document.getElementById('memo').value = '';
             
-            loadDeals();
+            loadschedules();
         }
 
         function getDDay(dateString) {
@@ -355,46 +355,46 @@
             return `D+${Math.abs(diffDays)}`;
         }
 
-        async function loadDeals() {
+        async function loadschedules() {
             const list = document.getElementById('dealList');
             list.innerHTML = '<li>로딩 중...</li>';
 
             window.deleteDeal = async function(id) {
                 if (!confirm('이 전체 일정을 정말 삭제하시겠습니까?')) return;
-                const { error } = await supabaseClient.from('deals').delete().eq('id', id);
+                const { error } = await supabaseClient.from('schedules').delete().eq('id', id);
                 if (error) {
                     alert('삭제 중 오류가 발생했습니다: ' + error.message);
                 } else {
-                    loadDeals();
+                    loadschedules();
                 }
             };
 
             // 전사 일정만 조회 (building_id가 null인 항목)
             let { data, error } = await supabaseClient
-                .from('deals')
+                .from('schedules')
                 .select(`
                     id,
-                    contract_type,
-                    balance_date,
+                    schedule_type,
+                    schedule_date,
                     memo,
                     users ( name )
                 `)
                 .is('building_id', null)
-                .order('balance_date', { ascending: false })
+                .order('schedule_date', { ascending: false })
                 .limit(50);
 
             if (error) {
                 console.warn('users join failed, falling back:', error.message);
                 const fallback = await supabaseClient
-                    .from('deals')
+                    .from('schedules')
                     .select(`
                         id,
-                        contract_type,
-                        balance_date,
+                        schedule_type,
+                        schedule_date,
                         memo
                     `)
                     .is('building_id', null)
-                    .order('balance_date', { ascending: false })
+                    .order('schedule_date', { ascending: false })
                     .limit(50);
                 
                 if (fallback.error) {
@@ -407,7 +407,7 @@
 
             if (data) {
                 data = data.filter(deal => {
-                    const rawMemo = deal.memo || '';
+                    const rawMemo = schedule.memo || '';
                     const isPrivate = rawMemo.includes('[PRIVATE]');
                     const isProposal = rawMemo.includes('[PROPOSAL]');
                     return !isPrivate && !isProposal;
@@ -422,10 +422,10 @@
 
             // 오늘 날짜 기준으로 가장 가까운 순서대로 정렬
             data.sort((a, b) => {
-                if (!a.balance_date) return 1;
-                if (!b.balance_date) return -1;
-                const dateA = new Date(a.balance_date);
-                const dateB = new Date(b.balance_date);
+                if (!a.schedule_date) return 1;
+                if (!b.schedule_date) return -1;
+                const dateA = new Date(a.schedule_date);
+                const dateB = new Date(b.schedule_date);
                 const today = new Date();
                 today.setHours(0,0,0,0);
                 
@@ -435,9 +435,9 @@
             });
 
             data.forEach(deal => {
-                const uName = deal.users && deal.users.name ? deal.users.name : '관리자';
+                const uName = schedule.users && schedule.users.name ? schedule.users.name : '관리자';
                 
-                let rawMemo = deal.memo || '';
+                let rawMemo = schedule.memo || '';
                 let linkUrl = null;
                 let startDt = null;
                 
@@ -480,14 +480,14 @@
                     if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
 
-                let dateDisplay = deal.balance_date || '날짜 미정';
-                if (startDt && deal.balance_date) {
-                    dateDisplay = `${startDt} ~ ${deal.balance_date}`;
+                let dateDisplay = schedule.schedule_date || '날짜 미정';
+                if (startDt && schedule.schedule_date) {
+                    dateDisplay = `${startDt} ~ ${schedule.schedule_date}`;
                 } else if (startDt) {
                     dateDisplay = `${startDt} ~ 날짜 미정`;
                 }
 
-                const dDayText = getDDay(deal.balance_date);
+                const dDayText = getDDay(schedule.schedule_date);
                 let dDayHtml = '';
                 if (dDayText) {
                     let badgeBg = '#f3f4f6', badgeColor = '#6b7280'; // Past
@@ -500,19 +500,19 @@
                 const li = document.createElement('li');
                 li.className = 'deal-item';
                 li.onclick = () => {
-                    document.getElementById('contractType').value = deal.contract_type || '';
-                    document.getElementById('balanceDate').value = deal.balance_date || '';
+                    document.getElementById('contractType').value = schedule.schedule_type || '';
+                    document.getElementById('balanceDate').value = schedule.schedule_date || '';
                     document.getElementById('startDate').value = startDt || '';
                     document.getElementById('urlInput').value = linkUrl || '';
                     document.getElementById('memo').value = rawMemo.trim() || '';
-                    if (deal.balance_date && mTime) {
-                        document.getElementById('meetingDateTime').value = deal.balance_date + 'T' + mTime;
+                    if (schedule.schedule_date && mTime) {
+                        document.getElementById('meetingDateTime').value = schedule.schedule_date + 'T' + mTime;
                     }
                     document.getElementById('meetingLocation').value = mLoc || '';
                     if(mAtt) document.getElementById('meetingAttendance').value = mAtt;
                     checkMeetingType();
                     
-                    window.editingDealId = deal.id;
+                    window.editingscheduleId = schedule.id;
                     const btn = document.getElementById('saveBtn');
                     btn.innerText = '전체 일정 수정하기 (취소하려면 새로고침)';
                     btn.style.backgroundColor = '#10b981';
@@ -531,7 +531,7 @@
 
                 let approveBtnHtml = '';
                 if (isPendingAdmin) {
-                    approveBtnHtml = `<button onclick="event.stopPropagation(); approveDeal('${deal.id}')" style="margin-left: 8px; width: auto; padding: 4px 8px; font-size: 12px; font-weight: 600; background: #10b981; color: white; border-radius: 6px; margin-bottom: 0; box-shadow: none;">승인하기</button>`;
+                    approveBtnHtml = `<button onclick="event.stopPropagation(); approveDeal('${schedule.id}')" style="margin-left: 8px; width: auto; padding: 4px 8px; font-size: 12px; font-weight: 600; background: #10b981; color: white; border-radius: 6px; margin-bottom: 0; box-shadow: none;">승인하기</button>`;
                 }
 
                 li.innerHTML = `
@@ -542,9 +542,9 @@
                         ${isPendingAdmin ? '<span style="background: #fee2e2; color: #ef4444; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 8px;">승인 대기중</span>' : ''}
                         <span style="color: #6b7280; font-size: 13px; margin-left: auto;">${dateDisplay}</span>
                         ${approveBtnHtml}
-                        <button onclick="event.stopPropagation(); deleteDeal('${deal.id}')" style="margin-left: 8px; width: auto; padding: 4px 8px; font-size: 12px; font-weight: 600; background: #fee2e2; color: #ef4444; border-radius: 6px; margin-bottom: 0; box-shadow: none;">삭제</button>
+                        <button onclick="event.stopPropagation(); deleteDeal('${schedule.id}')" style="margin-left: 8px; width: auto; padding: 4px 8px; font-size: 12px; font-weight: 600; background: #fee2e2; color: #ef4444; border-radius: 6px; margin-bottom: 0; box-shadow: none;">삭제</button>
                     </div>
-                    <div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 ${deal.contract_type} ${mAtt ? `<span style="background: ${mAtt === '참석' ? '#dcfce7' : (mAtt === '미정' ? '#fef3c7' : '#fee2e2')}; color: ${mAtt === '참석' ? '#16a34a' : (mAtt === '미정' ? '#d97706' : '#dc2626')}; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">[${mAtt}]</span>` : ''}</div>
+                    <div style="margin-bottom: 4px; color: #1f2937; font-size: 15px; font-weight: 600;">📢 ${schedule.schedule_type} ${mAtt ? `<span style="background: ${mAtt === '참석' ? '#dcfce7' : (mAtt === '미정' ? '#fef3c7' : '#fee2e2')}; color: ${mAtt === '참석' ? '#16a34a' : (mAtt === '미정' ? '#d97706' : '#dc2626')}; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">[${mAtt}]</span>` : ''}</div>
                     ${(mTime || mLoc) ? `<div style="font-size:13px; color:#6b7280; margin-bottom:4px;">${[mTime, mLoc ? `<span onclick="window.open('https://map.kakao.com/link/search/${encodeURIComponent(mLoc)}', '_blank'); event.stopPropagation();" style="color: #2563eb; cursor: pointer; text-decoration: underline;">${mLoc}</span>` : null].filter(Boolean).join(' · ')}</div>` : ''}
                     ${memoHtml}
                 `;
@@ -554,16 +554,16 @@
 
         checkAuthAndLoad();
 
-        window.approveDeal = async function(dealId) {
+        window.approveDeal = async function(scheduleId) {
             if (!confirm('이 모임 일정을 공식 전체 일정으로 승인하시겠습니까?')) return;
-            const { data: deal, error: fetchErr } = await supabaseClient.from('deals').select('memo').eq('id', dealId).single();
+            const { data: deal, error: fetchErr } = await supabaseClient.from('schedules').select('memo').eq('id', scheduleId).single();
             if (deal) {
-                const newMemo = (deal.memo || '').replace('[PENDING_ADMIN]', '');
-                const { error } = await supabaseClient.from('deals').update({ memo: newMemo }).eq('id', dealId);
+                const newMemo = (schedule.memo || '').replace('[PENDING_ADMIN]', '');
+                const { error } = await supabaseClient.from('schedules').update({ memo: newMemo }).eq('id', scheduleId);
                 if (error) {
                     alert('승인 중 오류가 발생했습니다: ' + error.message);
                 } else {
-                    loadDeals();
+                    loadschedules();
                 }
             }
         };
@@ -583,3 +583,4 @@
 </script>
 </body>
 </html>
+

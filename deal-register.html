@@ -461,7 +461,7 @@
                     document.getElementById('inline-profile-warning').style.display = 'block';
                 }
                 loadBuildings();
-                loadDeals();
+                loadschedules();
                 if(typeof loadTips === 'function') loadTips();
             }
         }
@@ -613,7 +613,10 @@
 
             status.innerText = '저장 중...';
             
-            let finalMemo = memo;
+            let finalMemo = memo.trim();
+            let pTime = null, pLocBase = null, pLocDetail = null, pAtt = null, pUrl = null, pUrlName = null;
+            let isProposal = false, pDead = null, pMin = null;
+            
             if (contractType === '모임') {
                 const mNameElem = document.getElementById('meetingName');
                 if (mNameElem && !mNameElem.value.trim()) {
@@ -633,39 +636,27 @@
                     return String(hh).padStart(2, '0') + ':' + min;
                 }
 
-                finalMemo = mName;
-                const mTime = getTimeFromSelects('meetTime');
-                const mLocBase = document.getElementById('meetingLocation').value;
-                const mLocDetail = document.getElementById('meetingLocationDetail') ? document.getElementById('meetingLocationDetail').value.trim() : '';
-                const mLoc = mLocBase + (mLocDetail ? ' ' + mLocDetail : '');
-                const mAtt = document.getElementById('meetingAttendance').value;
-                const mUrl = document.getElementById('meetingUrl').value;
-                const mUrlName = document.getElementById('meetingUrlName').value;
-                if(mUrlName && mUrl) {
-                    finalMemo += `[URL]${mUrl}|${mUrlName}[/URL]`;
-                } else if(mUrl) {
-                    finalMemo += `[URL]${mUrl}[/URL]`;
-                }
-
-                if(mTime) finalMemo += `[TIME]${mTime}[/TIME]`;
-                if(mLoc) finalMemo += `[LOC]${mLoc}[/LOC]`;
-                if(mAtt) finalMemo += `[ATT]${mAtt}[/ATT]`;
+                if (mName) finalMemo = mName + (finalMemo ? '\n' + finalMemo : '');
+                
+                pTime = getTimeFromSelects('meetTime') || null;
+                pLocBase = document.getElementById('meetingLocation').value || null;
+                pLocDetail = document.getElementById('meetingLocationDetail') ? document.getElementById('meetingLocationDetail').value.trim() : null;
+                pAtt = document.getElementById('meetingAttendance') ? document.getElementById('meetingAttendance').value : null;
+                pUrl = document.getElementById('meetingUrl') ? document.getElementById('meetingUrl').value : null;
+                pUrlName = document.getElementById('meetingUrlName') ? document.getElementById('meetingUrlName').value : null;
 
                 if (typeof currentMeetType !== 'undefined') {
                     if (currentMeetType === 'PRIVATE') {
-                        finalMemo += '[PRIVATE]';
+                        finalMemo += '\n[PRIVATE]';
                     } else if (currentMeetType === 'PROPOSAL') {
-                        finalMemo += '[PROPOSAL]';
+                        isProposal = true;
                         const pDeadDate = document.getElementById('proposalDeadlineDate') ? document.getElementById('proposalDeadlineDate').value : '';
                         const pDeadTime = getTimeFromSelects('propTime');
-                        const pDead = (pDeadDate && pDeadTime) ? pDeadDate + 'T' + pDeadTime : '';
-                        const pMin = document.getElementById('proposalMinAtt') ? document.getElementById('proposalMinAtt').value : '';
-                        if(pDead) finalMemo += `[DEADLINE]${pDead}[/DEADLINE]`;
-                        if(pMin) finalMemo += `[MIN_ATT]${pMin}[/MIN_ATT]`;
+                        pDead = (pDeadDate && pDeadTime) ? pDeadDate + 'T' + pDeadTime + ':00' : null;
+                        pMin = document.getElementById('proposalMinAtt') ? parseInt(document.getElementById('proposalMinAtt').value) : null;
                     }
                 } else {
-                    // Fallback just in case
-                    finalMemo += '[PRIVATE]';
+                    finalMemo += '\n[PRIVATE]';
                 }
             } else if (contractType === '잔금') {
                 const chkTime = document.getElementById('chkTime')?.checked;
@@ -687,14 +678,18 @@
                     finalMemo += `\n[TASK:공과금정산] 대상`;
                 }
             }
-                
-            if (memo.trim()) {
-                finalMemo += `\n${memo.trim()}`;
-            }
 
             const payload = {
-                contract_type: contractType,
-                balance_date: balanceDate ? balanceDate : null,
+                schedule_type: contractType,
+                schedule_date: balanceDate ? balanceDate : null,
+                schedule_time: pTime,
+                location: pLocBase,
+                location_detail: pLocDetail,
+                url: pUrl,
+                url_name: pUrlName,
+                is_proposal: isProposal,
+                proposal_deadline: pDead,
+                min_attendance: pMin,
                 memo: finalMemo,
                 user_id: window.currentUser.id
             };
@@ -708,7 +703,7 @@
 
             const { data: savedData, error } =
                 await supabaseClient
-                    .from('deals')
+                    .from('schedules')
                     .insert([payload])
                     .select();
 
@@ -721,99 +716,99 @@
             }
 
             if (savedData && savedData.length > 0) {
-                const newDealId = savedData[0].id;
+                const newscheduleId = savedData[0].id;
                 const mAtt = document.getElementById('meetingAttendance') ? document.getElementById('meetingAttendance').value : null;
                 // If it is a shared meeting (PROPOSAL or CONFIRMED) and user has selected attendance, save the vote
                 if (contractType === '모임' && typeof currentMeetType !== 'undefined' && currentMeetType !== 'PRIVATE' && mAtt) {
-                    await window.setAttendance(newDealId, mAtt);
+                    await window.setAttendance(newscheduleId, mAtt);
                 }
             }
 
             status.innerText = '저장 완료';
             document.getElementById('memo').value = '';
-            loadDeals();
+            loadschedules();
             if(typeof loadTips === 'function') loadTips();
 
         }
 
-        window.setAttendance = async function(dealId, status) {
+        window.setAttendance = async function(scheduleId, status) {
             const { error } = await supabaseClient
-                .from('deal_attendances')
-                .upsert({ deal_id: dealId, user_id: window.currentUser.id, status: status }, { onConflict: 'deal_id,user_id' });
+                .from('schedule_attendances')
+                .upsert({ schedule_id: scheduleId, user_id: window.currentUser.id, status: status }, { onConflict: 'schedule_id,user_id' });
             if (error) {
                 alert('투표 저장에 실패했습니다: ' + error.message);
                 return;
             }
-            loadDeals();
+            loadschedules();
                 if(typeof loadTips === 'function') loadTips();
         };
 
-        window.confirmProposal = async function(dealId) {
+        window.confirmProposal = async function(scheduleId) {
             if (!confirm('이 모임을 확정 제안하시겠습니까? (관리자 승인 대기 상태로 전환됩니다)')) return;
 
             const { data: deal, error: fetchErr } = await supabaseClient
-                .from('deals')
+                .from('schedules')
                 .select('memo')
-                .eq('id', dealId)
+                .eq('id', scheduleId)
                 .single();
             
             if (fetchErr || !deal) {
                 alert('모임 정보를 불러오지 못했습니다.'); return;
             }
 
-            const newMemo = (deal.memo || '').replace('[PROPOSAL]', '[PENDING_ADMIN]');
+            const newMemo = (schedule.memo || '').replace('[PROPOSAL]', '[PENDING_ADMIN]');
             
             const { error: updateErr } = await supabaseClient
-                .from('deals')
+                .from('schedules')
                 .update({ memo: newMemo })
-                .eq('id', dealId);
+                .eq('id', scheduleId);
 
             if (updateErr) {
                 alert('확정 처리에 실패했습니다: ' + updateErr.message); return;
             }
 
-            loadDeals();
+            loadschedules();
         };
 
-        window.cancelProposal = async function(dealId) {
+        window.cancelProposal = async function(scheduleId) {
             const reason = prompt('모임을 취소하는 이유나 남기실 말씀을 적어주세요.\n(취소하시려면 내용을 비워두거나 입력 후 확인을 눌러주세요)');
             if (reason === null) return; // 사용자가 취소를 누른 경우
 
             const { data: deal, error: fetchErr } = await supabaseClient
-                .from('deals')
+                .from('schedules')
                 .select('memo')
-                .eq('id', dealId)
+                .eq('id', scheduleId)
                 .single();
             
             if (fetchErr || !deal) {
                 alert('모임 정보를 불러오지 못했습니다.'); return;
             }
 
-            let newMemo = deal.memo + '\n[CANCELED]';
+            let newMemo = schedule.memo + '\n[CANCELED]';
             if (reason.trim() !== '') {
                 newMemo += `[CANCELED_REASON]${reason.trim()}[/CANCELED_REASON]`;
             }
             
             const { error: updateErr } = await supabaseClient
-                .from('deals')
+                .from('schedules')
                 .update({ memo: newMemo })
-                .eq('id', dealId);
+                .eq('id', scheduleId);
 
             if (updateErr) {
                 alert('취소 처리에 실패했습니다: ' + updateErr.message); return;
             }
 
-            loadDeals();
+            loadschedules();
         };
 
-        window.hideProposal = function(dealId) {
+        window.hideProposal = function(scheduleId) {
             const key = 'hiddenProposals_' + window.currentUser.id;
             let hidden = JSON.parse(localStorage.getItem(key) || '[]');
-            if (!hidden.includes(dealId)) {
-                hidden.push(dealId);
+            if (!hidden.includes(scheduleId)) {
+                hidden.push(scheduleId);
                 localStorage.setItem(key, JSON.stringify(hidden));
             }
-            loadDeals();
+            loadschedules();
         };
 
         function getDDay(dateString) {
@@ -831,7 +826,7 @@
             return `D+${Math.abs(diffDays)}`;
         }
 
-        async function loadDeals() {
+        async function loadschedules() {
             const list = document.getElementById('dealList');
             const personalMoreBtn = document.getElementById('personalDealsMoreBtn');
             const personalCount = document.getElementById('personalDealsCount');
@@ -839,14 +834,14 @@
             list.innerHTML = '<li>로딩 중...</li>';
 
             const { data, error } = await supabaseClient
-                .from('deals')
+                .from('schedules')
                 .select(`
                     id,
                     user_id,
                     building_id,
                     property_id,
-                    contract_type,
-                    balance_date,
+                    schedule_type,
+                    schedule_date,
                     memo,
                     buildings ( jibun_address, road_address ),
                     rooms ( room_name ),
@@ -854,7 +849,7 @@
                     deal_attendances ( user_id, status )
                 `)
                 .or(`user_id.eq.${window.currentUser.id},building_id.is.null`)
-                .order('balance_date', { ascending: false }) // Fetch recent & upcoming
+                .order('schedule_date', { ascending: false }) // Fetch recent & upcoming
                 .limit(50);
 
             if (error) {
@@ -869,18 +864,18 @@
             
             if (data) {
                 allDeals = data.filter(deal => {
-                    const isMine = deal.user_id === window.currentUser.id;
-                    const isPrivate = (deal.memo || '').includes('[PRIVATE]');
+                    const isMine = schedule.user_id === window.currentUser.id;
+                    const isPrivate = (schedule.memo || '').includes('[PRIVATE]');
                     if (isPrivate && !isMine) return false;
                     return true;
                 });
             }
 
             const sortByDate = (a, b) => {
-                if (!a.balance_date) return 1;
-                if (!b.balance_date) return -1;
-                const dateA = new Date(a.balance_date);
-                const dateB = new Date(b.balance_date);
+                if (!a.schedule_date) return 1;
+                if (!b.schedule_date) return -1;
+                const dateA = new Date(a.schedule_date);
+                const dateB = new Date(b.schedule_date);
                 const today = new Date();
                 today.setHours(0,0,0,0);
                 
@@ -901,12 +896,11 @@
 
             // 공통 렌더링 함수
             const createDealListItem = (deal, isGlobal) => {
-                let rawMemo = deal.memo || '';
-                let linkUrl = null;
-                let startDt = null;
+                let rawMemo = schedule.memo || '';
+                let linkUrl = schedule.url || null;
+                let linkName = schedule.url_name || '관련 링크';
                 
-                let linkName = '관련 링크';
-                if (rawMemo.includes('[URL]')) {
+                if (!linkUrl && rawMemo.includes('[URL]')) {
                     const m = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
                     if (m) { 
                         let urlData = m[1];
@@ -920,18 +914,24 @@
                         rawMemo = rawMemo.replace(m[0], ''); 
                     }
                 }
+
+                let startDt = null;
                 if (rawMemo.includes('[START]')) {
                     const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
                     if (m) { startDt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
                 
-                let mTime = null, mLoc = null, mAtt = null;
+                let mTime = schedule.schedule_time ? schedule.schedule_time.substring(0, 5) : null;
+                let mLoc = schedule.location || null;
+                if (schedule.location_detail) mLoc += ' ' + schedule.location_detail;
+                let mAtt = null;
                 let myAtt = null;
-                if (rawMemo.includes('[TIME]')) {
+
+                if (!mTime && rawMemo.includes('[TIME]')) {
                     const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
                     if (m) { mTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
-                if (rawMemo.includes('[LOC]')) {
+                if (!mLoc && rawMemo.includes('[LOC]')) {
                     const m = rawMemo.match(/\[LOC\](.*?)\[\/LOC\]/);
                     if (m) { mLoc = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
@@ -940,12 +940,14 @@
                     if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
 
-                let mDeadline = null, mMinAtt = null;
-                if (rawMemo.includes('[DEADLINE]')) {
+                let mDeadline = schedule.proposal_deadline || null;
+                let mMinAtt = schedule.min_attendance || null;
+                
+                if (!mDeadline && rawMemo.includes('[DEADLINE]')) {
                     const m = rawMemo.match(/\[DEADLINE\](.*?)\[\/DEADLINE\]/);
                     if (m) { mDeadline = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
-                if (rawMemo.includes('[MIN_ATT]')) {
+                if (!mMinAtt && rawMemo.includes('[MIN_ATT]')) {
                     const m = rawMemo.match(/\[MIN_ATT\](.*?)\[\/MIN_ATT\]/);
                     if (m) { mMinAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
@@ -965,19 +967,19 @@
                 if (isPrivateMeeting) {
                     rawMemo = rawMemo.replace('[PRIVATE]', '');
                 }
-                const isProposal = rawMemo.includes('[PROPOSAL]');
-                if (isProposal) {
+                const isProposal = schedule.is_proposal || rawMemo.includes('[PROPOSAL]');
+                if (rawMemo.includes('[PROPOSAL]')) {
                     rawMemo = rawMemo.replace('[PROPOSAL]', '');
                 }
                 
-                const isMine = deal.user_id === window.currentUser.id;
-                const isSharedMeeting = deal.contract_type === '모임' && !isPrivateMeeting;
+                const isMine = schedule.user_id === window.currentUser.id;
+                const isSharedMeeting = schedule.schedule_type === '모임' && !isPrivateMeeting;
                 
                 let isHiddenProposal = false;
                 if (isSharedMeeting && !isMine) {
                     const key = 'hiddenProposals_' + window.currentUser.id;
                     const hiddenProposals = JSON.parse(localStorage.getItem(key) || '[]');
-                    if (hiddenProposals.includes(deal.id)) {
+                    if (hiddenProposals.includes(schedule.id)) {
                         isHiddenProposal = true;
                     }
                 }
@@ -1005,8 +1007,8 @@
                 let dateStr = '-';
                 let dayStr = '';
 
-                if (deal.balance_date) {
-                    const d = new Date(deal.balance_date);
+                if (schedule.schedule_date) {
+                    const d = new Date(schedule.schedule_date);
                     if (!isNaN(d.getTime())) {
                         monthStr = (d.getMonth() + 1) + '월';
                         dateStr = d.getDate().toString();
@@ -1016,7 +1018,7 @@
                 }
 
                 let rangeHtml = '';
-                if (startDt && deal.balance_date) {
+                if (startDt && schedule.schedule_date) {
                     rangeHtml = `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px; font-weight: 600;">🗓️ 시작일: ${startDt}</div>`;
                 } else if (startDt) {
                     rangeHtml = `<div style="font-size: 12px; color: #6b7280; margin-bottom: 4px; font-weight: 600;">🗓️ 시작일: ${startDt}</div>`;
@@ -1026,7 +1028,7 @@
                 let typeBadgeHtml = '';
                 
                 const isMeetingTag = mTime || mLoc || mAtt;
-                if (deal.contract_type === '모임' || (isGlobal && isMeetingTag)) {
+                if (schedule.schedule_type === '모임' || (isGlobal && isMeetingTag)) {
                     const timeStr = mTime ? `${mTime}` : '';
                     let locStr = '';
                     if (mLoc) {
@@ -1046,8 +1048,8 @@
                     let noCount = 0;
                     let attNames = [];
                     let noNames = [];
-                    if (deal.deal_attendances) {
-                        const attendances = deal.deal_attendances;
+                    if (schedule.deal_attendances) {
+                        const attendances = schedule.deal_attendances;
                         const myRec = attendances.find(a => a.user_id === window.currentUser.id);
                         if (myRec) myAtt = myRec.status;
                         
@@ -1094,7 +1096,7 @@
                                 ${cancelReason ? `<div style="margin-top: 8px; font-size: 13px; font-weight: 600; color: #b91c1c; background: #fef2f2; padding: 8px; border-radius: 8px; text-align: left;">💬 취소 사유: ${cancelReason}</div>` : ''}
                             </div>
                             <div style="margin-top: 12px;" onclick="event.stopPropagation()">
-                                <button type="button" onclick="hideProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">닫기</button>
+                                <button type="button" onclick="hideProposal('${schedule.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; border: none; background: #f1f5f9; color: #64748b;">닫기</button>
                             </div>
                             `;
                             details += `${attStr}${noStr}`;
@@ -1109,15 +1111,15 @@
                         } else {
                             details += `
                             <div style="display: flex; gap: 10px; margin-top: 16px;" onclick="event.stopPropagation()">
-                                <button type="button" onclick="setAttendance('${deal.id}', '참석')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '참석' ? '#4f46e5' : '#f1f5f9'}; color: ${myAtt === '참석' ? 'white' : '#64748b'};">👍 참석 ${attCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${attCount}</span>` : ''}</button>
-                                <button type="button" onclick="setAttendance('${deal.id}', '불참')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '불참' ? '#e2e8f0' : '#f8fafc'}; color: ${myAtt === '불참' ? '#475569' : '#94a3b8'};">✋ 불참 ${noCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${noCount}</span>` : ''}</button>
+                                <button type="button" onclick="setAttendance('${schedule.id}', '참석')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '참석' ? '#4f46e5' : '#f1f5f9'}; color: ${myAtt === '참석' ? 'white' : '#64748b'};">👍 참석 ${attCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${attCount}</span>` : ''}</button>
+                                <button type="button" onclick="setAttendance('${schedule.id}', '불참')" style="flex: 1; padding: 14px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; border: none; background: ${myAtt === '불참' ? '#e2e8f0' : '#f8fafc'}; color: ${myAtt === '불참' ? '#475569' : '#94a3b8'};">✋ 불참 ${noCount > 0 ? `<span style="opacity: 0.8; font-weight: 600; font-size: 13px; margin-left: 2px;">${noCount}</span>` : ''}</button>
                             </div>
                             `;
 
                             if (myAtt === '불참' && !isMine) {
                                 details += `
                                 <div style="margin-top: 12px; text-align: right;" onclick="event.stopPropagation()">
-                                    <button type="button" onclick="hideProposal('${deal.id}')" style="background: none; border: none; font-size: 13px; color: #94a3b8; text-decoration: underline; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">👁️ 내 일정에서 숨기기</button>
+                                    <button type="button" onclick="hideProposal('${schedule.id}')" style="background: none; border: none; font-size: 13px; color: #94a3b8; text-decoration: underline; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">👁️ 내 일정에서 숨기기</button>
                                 </div>
                                 `;
                             }
@@ -1129,8 +1131,8 @@
                         }
 
                         if (!isPrivateMeeting && window.allUsersMap) {
-                            const uName = window.allUsersMap[deal.user_id] || '알 수 없음';
-                            const uPhoneRaw = window.allUsersPhoneMap ? window.allUsersPhoneMap[deal.user_id] : null;
+                            const uName = window.allUsersMap[schedule.user_id] || '알 수 없음';
+                            const uPhoneRaw = window.allUsersPhoneMap ? window.allUsersPhoneMap[schedule.user_id] : null;
                             const uPhone = uPhoneRaw ? ` (<a href="tel:${uPhoneRaw}" style="color: #3b82f6; text-decoration: none;">${uPhoneRaw}</a>)` : '';
                             details += `<div style="font-size: 12px; color: #6b7280; margin-top: 12px; text-align: right; font-weight: 600;">제안자: ${uName}${uPhone}</div>`;
                         }
@@ -1146,8 +1148,8 @@
                                 if (isMinAttMet) {
                                     details += `
                                     <div style="margin-top: 12px; display: flex; gap: 8px;" onclick="event.stopPropagation()">
-                                        <button type="button" onclick="confirmProposal('${deal.id}')" style="flex: 2; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fffbeb; color: #d97706; border: 1px solid #fde68a;">✅ 제안된 모임 확정하기</button>
-                                        <button type="button" onclick="cancelProposal('${deal.id}')" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 제안 취소</button>
+                                        <button type="button" onclick="confirmProposal('${schedule.id}')" style="flex: 2; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fffbeb; color: #d97706; border: 1px solid #fde68a;">✅ 제안된 모임 확정하기</button>
+                                        <button type="button" onclick="cancelProposal('${schedule.id}')" style="flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 제안 취소</button>
                                     </div>
                                     `;
                                 } else {
@@ -1156,14 +1158,14 @@
                                         ⏳ 최소 참석 인원(${mMinAtt}명) 충족 시 확정 버튼이 나타납니다.
                                     </div>
                                     <div style="margin-top: 8px;" onclick="event.stopPropagation()">
-                                        <button type="button" onclick="cancelProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 제안 취소</button>
+                                        <button type="button" onclick="cancelProposal('${schedule.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 제안 취소</button>
                                     </div>
                                     `;
                                 }
                             } else {
                                 details += `
                                 <div style="margin-top: 12px;" onclick="event.stopPropagation()">
-                                    <button type="button" onclick="cancelProposal('${deal.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 모임 취소</button>
+                                    <button type="button" onclick="cancelProposal('${schedule.id}')" style="width: 100%; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; background: #fef2f2; color: #ef4444; border: 1px solid #fecaca;">❌ 모임 취소</button>
                                 </div>
                                 `;
                             }
@@ -1203,16 +1205,16 @@
                     }
                     rawMemo = ''; // Hide memo
                 } else if (isGlobal) {
-                    locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📢 ${deal.contract_type}</div>`;
+                    locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📢 ${schedule.schedule_type}</div>`;
                     typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800;">전체 공지</span>`;
                 } else {
-                    let bName = deal.buildings.road_address;
-                    if (deal.buildings.jibun_address) {
-                        bName += ' (' + deal.buildings.jibun_address + ')';
+                    let bName = schedule.buildings.road_address;
+                    if (schedule.buildings.jibun_address) {
+                        bName += ' (' + schedule.buildings.jibun_address + ')';
                     }
-                    const rName = deal.rooms ? deal.rooms.room_name : '';
+                    const rName = schedule.rooms ? schedule.rooms.room_name : '';
                     locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📍 ${bName} <span style="color: #3b82f6;">${rName}</span></div>`;
-                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800;">${deal.contract_type}</span>`;
+                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800;">${schedule.schedule_type}</span>`;
                     
                     if (tJangumTime || tUtil) {
                         let tasksHtml = `<div style="margin-top: 8px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13px;">`;
@@ -1228,7 +1230,7 @@
                     }
                 }
                 
-                const dDayText = getDDay(deal.balance_date);
+                const dDayText = getDDay(schedule.schedule_date);
                 let dDayHtml = '';
                 let isUrgent = false;
                 if (dDayText) {
@@ -1257,7 +1259,7 @@
                 
                 if (isMine) {
                     li.style.cursor = 'pointer';
-                    li.onclick = () => location.href = 'deal-detail.html?id=' + deal.id;
+                    li.onclick = () => location.href = 'deal-detail.html?id=' + schedule.id;
                 } else {
                     li.style.cursor = 'default';
                 }
@@ -1327,8 +1329,8 @@
                     let mNum = '';
                     let isFarFuture = false;
 
-                    if (deal.balance_date) {
-                        const d = new Date(deal.balance_date);
+                    if (schedule.schedule_date) {
+                        const d = new Date(schedule.schedule_date);
                         if (!isNaN(d.getTime())) {
                             const today = new Date();
                             today.setHours(0,0,0,0);
@@ -1389,7 +1391,7 @@
                         list.appendChild(dateDividerLi);
                     }
 
-                    const li = createDealListItem(deal, !deal.buildings && !deal.building_id);
+                    const li = createDealListItem(deal, !schedule.buildings && !schedule.building_id);
                     li.dataset.originalDisplay = 'block';
                     
                     const isHiddenProp = li.dataset.isHiddenProposal === 'true';
@@ -1832,3 +1834,4 @@ function toggleTipText(id, btn) {
     </script>
 </body>
 </html>
+

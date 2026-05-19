@@ -1,1 +1,2 @@
-const { createClient } = require('@supabase/supabase-js'); const supabase = createClient('https://clzrbyplzjdrrscctcsl.supabase.co', 'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k'); async function test() { const { data, error } = await supabase.from('deals').select('*').limit(1); console.log(Object.keys(data[0] || {})); } test();
+﻿const { createClient } = require('@supabase/supabase-js'); const supabase = createClient('https://clzrbyplzjdrrscctcsl.supabase.co', 'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k'); async function test() { const { data, error } = await supabase.from('schedules').select('*').limit(1); console.log(Object.keys(data[0] || {})); } test();
+

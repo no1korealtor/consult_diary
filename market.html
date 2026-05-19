@@ -81,6 +81,17 @@
         .matching-section {
             margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e2e8f0;
         }
+
+        .filter-btn {
+            padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; color: #475569; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s;
+        }
+        .filter-btn.active {
+            background: #3b82f6; color: white; border-color: #3b82f6;
+        }
+        .filter-container {
+            display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; white-space: nowrap; padding-bottom: 4px; scrollbar-width: none;
+        }
+        .filter-container::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
@@ -110,7 +121,15 @@
 
     <!-- 매물장 탭 -->
     <div id="propertiesTab">
-        <button class="btn-primary" onclick="openPropModal()" style="margin-bottom: 20px;">+ 새 매물 등록하기</button>
+        <button class="btn-primary" onclick="openPropModal()" style="margin-bottom: 16px;">+ 새 매물 등록하기</button>
+        
+        <div class="filter-container" id="propFilterContainer">
+            <button class="filter-btn active" onclick="setPropFilter('all', this)">전체</button>
+            <button class="filter-btn" onclick="setPropFilter('거래가능', this)">🟢 거래가능</button>
+            <button class="filter-btn" onclick="setPropFilter('보류', this)">🟡 보류</button>
+            <button class="filter-btn" onclick="setPropFilter('거래종료', this)">🔴 거래종료</button>
+        </div>
+
         <div id="propertiesList">
             <div style="text-align:center; padding: 40px 0; color: #94a3b8; font-weight: 700;">로딩 중...</div>
         </div>
@@ -118,7 +137,15 @@
 
     <!-- 손님 장부 탭 -->
     <div id="clientsTab" style="display: none;">
-        <button class="btn-primary" onclick="openClientModal()" style="background: #10b981; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">+ 새 손님 등록하기</button>
+        <button class="btn-primary" onclick="openClientModal()" style="background: #10b981; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">+ 새 손님 등록하기</button>
+        
+        <div class="filter-container" id="clientFilterContainer">
+            <button class="filter-btn active" onclick="setClientFilter('all', this)">전체</button>
+            <button class="filter-btn" onclick="setClientFilter('탐색중', this)">🟢 탐색중</button>
+            <button class="filter-btn" onclick="setClientFilter('계약완료', this)">🤝 계약완료</button>
+            <button class="filter-btn" onclick="setClientFilter('변경/종료', this)">❌ 종료</button>
+        </div>
+
         <div id="clientsList"></div>
     </div>
 </div>
@@ -337,6 +364,23 @@
 <script>
     let propertiesData = [];
     let clientsData = [];
+    
+    let currentPropFilter = 'all';
+    let currentClientFilter = 'all';
+
+    function setPropFilter(filter, btn) {
+        currentPropFilter = filter;
+        document.querySelectorAll('#propFilterContainer .filter-btn').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        renderProperties();
+    }
+    
+    function setClientFilter(filter, btn) {
+        currentClientFilter = filter;
+        document.querySelectorAll('#clientFilterContainer .filter-btn').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        renderClients();
+    }
 
     function switchTab(tabName) {
         document.getElementById('propertiesTab').style.display = tabName === 'properties' ? 'block' : 'none';
@@ -663,13 +707,23 @@
 
     function renderProperties() {
         const list = document.getElementById('propertiesList');
-        if (propertiesData.length === 0) {
-            list.innerHTML = `<div style="text-align:center; padding: 40px 0; color: #94a3b8;">등록된 매물이 없습니다.</div>`;
+        
+        let filteredData = propertiesData;
+        if (currentPropFilter !== 'all') {
+            if (currentPropFilter === '거래종료') {
+                filteredData = propertiesData.filter(p => p.status.includes('거래종료'));
+            } else {
+                filteredData = propertiesData.filter(p => p.status === currentPropFilter);
+            }
+        }
+        
+        if (filteredData.length === 0) {
+            list.innerHTML = `<div style="text-align:center; padding: 40px 0; color: #94a3b8;">해당 조건의 매물이 없습니다.</div>`;
             return;
         }
         
         let html = '';
-        propertiesData.forEach(p => {
+        filteredData.forEach(p => {
             html += createPropertyCard(p, false);
         });
         list.innerHTML = html;
@@ -677,13 +731,23 @@
 
     function renderClients() {
         const list = document.getElementById('clientsList');
-        if (clientsData.length === 0) {
-            list.innerHTML = `<div style="text-align:center; padding: 40px 0; color: #94a3b8;">등록된 손님이 없습니다.</div>`;
+        
+        let filteredData = clientsData;
+        if (currentClientFilter !== 'all') {
+            if (currentClientFilter === '계약완료') {
+                filteredData = clientsData.filter(c => c.status.includes('계약완료'));
+            } else {
+                filteredData = clientsData.filter(c => c.status === currentClientFilter);
+            }
+        }
+        
+        if (filteredData.length === 0) {
+            list.innerHTML = `<div style="text-align:center; padding: 40px 0; color: #94a3b8;">해당 조건의 손님이 없습니다.</div>`;
             return;
         }
         
         let html = '';
-        clientsData.forEach(c => {
+        filteredData.forEach(c => {
             let typeChips = c.target_types.map(t => `<span class="chip neutral" style="background:#e2e8f0; color:#334155;">${t} 찾음</span>`).join('');
             
             let budgetStr = `최대 ${formatMoney(c.max_budget)}`;

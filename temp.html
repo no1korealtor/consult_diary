@@ -176,7 +176,7 @@
             const user = await requireAuth();
             if (user) {
                 loadBuildings();
-                loadDeals();
+                loadschedules();
             }
         }
 
@@ -258,13 +258,13 @@
 
             const { error } =
                 await supabaseClient
-                    .from('deals')
+                    .from('schedules')
                     .insert([
                         {
                             building_id: buildingId,
                             room_id: roomId,
-                            contract_type: contractType,
-                            balance_date: balanceDate,
+                            schedule_type: contractType,
+                            schedule_date: balanceDate,
                             memo: memo,
                             user_id: window.currentUser.id
                         }
@@ -280,20 +280,20 @@
 
             status.innerText = '????꾨즺';
             document.getElementById('memo').value = '';
-            loadDeals();
+            loadschedules();
 
         }
 
-        async function loadDeals() {
+        async function loadschedules() {
             const list = document.getElementById('dealList');
             list.innerHTML = '<li>濡쒕뵫 以?..</li>';
 
             const { data, error } = await supabaseClient
-                .from('deals')
+                .from('schedules')
                 .select(`
                     id,
-                    contract_type,
-                    balance_date,
+                    schedule_type,
+                    schedule_date,
                     memo,
                     buildings ( road_address ),
                     rooms ( room_name )
@@ -315,8 +315,8 @@
             }
 
             data.forEach(deal => {
-                const bName = deal.buildings ? deal.buildings.road_address : '?????녿뒗 嫄대Ъ';
-                const rName = deal.rooms ? deal.rooms.room_name : '?????녿뒗 ?몄닔';
+                const bName = schedule.buildings ? schedule.buildings.road_address : '?????녿뒗 嫄대Ъ';
+                const rName = schedule.rooms ? schedule.rooms.room_name : '?????녿뒗 ?몄닔';
                 
                 const li = document.createElement('li');
                 li.style.border = '1px solid #ddd';
@@ -325,13 +325,13 @@
                 li.style.borderRadius = '5px';
                 li.style.cursor = 'pointer';
                 li.onclick = () => {
-                    location.href = 'deal-detail.html?id=' + deal.id;
+                    location.href = 'deal-detail.html?id=' + schedule.id;
                 };
                 
                 li.innerHTML = `
-                    <div style="font-weight: bold; margin-bottom: 5px;">${deal.balance_date || '?좎쭨 誘몄젙'} - ${deal.contract_type}</div>
+                    <div style="font-weight: bold; margin-bottom: 5px;">${schedule.schedule_date || '?좎쭨 誘몄젙'} - ${schedule.schedule_type}</div>
                     <div style="margin-bottom: 5px;">${bName} ${rName}</div>
-                    <div style="color: gray; font-size: 14px;">${deal.memo || ''}</div>
+                    <div style="color: gray; font-size: 14px;">${schedule.memo || ''}</div>
                 `;
                 list.appendChild(li);
             });
@@ -355,3 +355,4 @@
 </body>
 
 </html>
+

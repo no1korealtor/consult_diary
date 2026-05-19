@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -207,14 +207,14 @@
                 window.location.search
             );
 
-        const dealId =
+        const scheduleId =
             params.get('id');
 
         async function loadDeal() {
 
             const { data, error } =
                 await supabaseClient
-                    .from('deals')
+                    .from('schedules')
                     .select(`
                         *,
                         buildings (
@@ -226,7 +226,7 @@
                             room_name
                         )
                     `)
-                    .eq('id', dealId)
+                    .eq('id', scheduleId)
                     .eq('user_id', window.currentUser.id)
                     .single();
 
@@ -338,7 +338,7 @@
                 if (m) { mMinAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
             }
 
-            if (data.contract_type === '모임' || !data.building_id) {
+            if (data.schedule_type === '모임' || !data.building_id) {
                 let meetTitle = '모임';
                 if (isPrivateMeeting) meetTitle = '개인 일정';
                 else if (isCanceled) meetTitle = '❌ 취소된 모임';
@@ -346,7 +346,7 @@
                 else if (isPendingAdmin) meetTitle = '⏳ 승인 대기중';
                 else meetTitle = '✅ 확정 모임';
 
-                document.getElementById('dealTitle').innerText = (data.balance_date ? data.balance_date + ' ' : '') + meetTitle;
+                document.getElementById('dealTitle').innerText = (data.schedule_date ? data.schedule_date + ' ' : '') + meetTitle;
                 document.getElementById('address').innerText = mLoc || '장소 미정';
                 document.getElementById('pwdRow').style.display = 'none';
                 
@@ -374,7 +374,7 @@
                 
                 document.getElementById('memo').innerHTML = titleHtml + descHtml + cancelHtml + meetInfoHtml;
             } else {
-                document.getElementById('dealTitle').innerText = (data.balance_date ? data.balance_date + ' ' : '') + data.contract_type;
+                document.getElementById('dealTitle').innerText = (data.schedule_date ? data.schedule_date + ' ' : '') + data.schedule_type;
 
                 let finalAddress = data.buildings ? data.buildings.road_address : '장소 없음';
                 if (data.buildings && data.buildings.jibun_address) {
@@ -500,14 +500,14 @@
 
         function goSettlement() {
             if (window.currentBuildingId && window.currentRoomId) {
-                location.href = 'meter-register.html?building_id=' + window.currentBuildingId + '&room_id=' + window.currentRoomId + '&deal_id=' + dealId;
+                location.href = 'meter-register.html?building_id=' + window.currentBuildingId + '&room_id=' + window.currentRoomId + '&schedule_id=' + scheduleId;
             } else {
                 alert('일정 정보를 불러오는 중입니다.');
             }
         }
 
         function editDeal() {
-            location.href = 'deal-edit.html?id=' + dealId;
+            location.href = 'deal-edit.html?id=' + scheduleId;
         }
 
         async function deleteDeal() {
@@ -519,9 +519,9 @@
 
             const { error } =
                 await supabaseClient
-                    .from('deals')
+                    .from('schedules')
                     .delete()
-                    .eq('id', dealId);
+                    .eq('id', scheduleId);
 
             if (error) {
 
@@ -541,7 +541,7 @@
             const ok = confirm(window.currentDealIsDone ? '완료 처리를 취소하시겠습니까?' : '이 일정을 완료 처리하시겠습니까?');
             if (!ok) return;
 
-            const { data, error: fetchErr } = await supabaseClient.from('deals').select('memo').eq('id', dealId).single();
+            const { data, error: fetchErr } = await supabaseClient.from('schedules').select('memo').eq('id', scheduleId).single();
             if (fetchErr) { alert(fetchErr.message); return; }
 
             let newMemo = data.memo || '';
@@ -551,7 +551,7 @@
                 newMemo = '[DONE]' + newMemo;
             }
 
-            const { error } = await supabaseClient.from('deals').update({ memo: newMemo }).eq('id', dealId);
+            const { error } = await supabaseClient.from('schedules').update({ memo: newMemo }).eq('id', scheduleId);
             if (error) { alert(error.message); return; }
 
             alert(window.currentDealIsDone ? '완료 취소되었습니다.' : '일정이 완료 처리되었습니다.');
@@ -563,7 +563,7 @@
             const ok = confirm(isSettled ? '정산 완료를 취소하시겠습니까?' : '정산을 완료 처리하시겠습니까?');
             if (!ok) return;
 
-            const { data, error: fetchErr } = await supabaseClient.from('deals').select('memo').eq('id', dealId).single();
+            const { data, error: fetchErr } = await supabaseClient.from('schedules').select('memo').eq('id', scheduleId).single();
             if (fetchErr) { alert(fetchErr.message); return; }
 
             let newMemo = data.memo || '';
@@ -575,7 +575,7 @@
                 newMemo = `[SETTLED_DATE]${dString}[/SETTLED_DATE]` + newMemo;
             }
 
-            const { error } = await supabaseClient.from('deals').update({ memo: newMemo }).eq('id', dealId);
+            const { error } = await supabaseClient.from('schedules').update({ memo: newMemo }).eq('id', scheduleId);
             if (error) { alert(error.message); return; }
 
             alert(isSettled ? '정산 완료가 취소되었습니다.' : '정산 완료 처리되었습니다.');
@@ -607,3 +607,4 @@
 </body>
 
 </html>
+

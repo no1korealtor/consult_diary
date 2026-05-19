@@ -54,6 +54,22 @@ async function requireAuth(bypassProfileCheck = false) {
     user.phone = profile.phone;
     user.name = profile.name || user.email;
     window.currentUser = user;
+    
+    // Inject Admin Nav button if admin
+    if (user.role === 'admin') {
+        setTimeout(() => {
+            const nav = document.querySelector('.bottom-nav');
+            if (nav && !document.getElementById('adminNavBtn')) {
+                const adminBtn = document.createElement('a');
+                adminBtn.href = 'admin-center.html';
+                adminBtn.className = 'nav-item' + (location.pathname.includes('admin-') ? ' active' : '');
+                adminBtn.id = 'adminNavBtn';
+                adminBtn.innerHTML = '<span class="nav-icon">⚙️</span><span>관리자</span>';
+                nav.appendChild(adminBtn);
+            }
+        }, 100);
+    }
+    
     return user;
 }
 

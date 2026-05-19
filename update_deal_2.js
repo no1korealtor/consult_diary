@@ -1,4 +1,4 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 
 const filePath = 'deal-register.html';
 let content = fs.readFileSync(filePath, 'utf-8');
@@ -15,8 +15,8 @@ const target1 = `            if (!buildingId) {
             status.innerText = '저장 중...';
             
             const payload = {
-                contract_type: contractType,
-                balance_date: balanceDate ? balanceDate : null,
+                schedule_type: contractType,
+                schedule_date: balanceDate ? balanceDate : null,
                 memo: memo,
                 user_id: window.currentUser.id
             };
@@ -48,8 +48,8 @@ const replacement1 = `            if (contractType !== '모임' && !buildingId) 
             }
 
             const payload = {
-                contract_type: contractType,
-                balance_date: balanceDate ? balanceDate : null,
+                schedule_type: contractType,
+                schedule_date: balanceDate ? balanceDate : null,
                 memo: finalMemo,
                 user_id: window.currentUser.id
             };
@@ -81,7 +81,7 @@ if (content.includes(target2)) {
     console.log("Target 2 not found");
 }
 
-const target3 = `                let rawMemo = deal.memo || '';
+const target3 = `                let rawMemo = schedule.memo || '';
                 let linkUrl = null;
                 let startDt = null;
                 
@@ -94,7 +94,7 @@ const target3 = `                let rawMemo = deal.memo || '';
                     if (m) { startDt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }`;
 
-const replacement3 = `                let rawMemo = deal.memo || '';
+const replacement3 = `                let rawMemo = schedule.memo || '';
                 let linkUrl = null;
                 let startDt = null;
                 let mTime = null, mLoc = null, mAtt = null;
@@ -134,7 +134,7 @@ const target4 = `                let locationHtml = '';
 const replacement4 = `                let locationHtml = '';
                 let typeBadgeHtml = '';
                 
-                if (deal.contract_type === '모임') {
+                if (schedule.schedule_type === '모임') {
                     const timeStr = mTime ? \`\${mTime}\` : '';
                     let locStr = '';
                     if (mLoc) {
@@ -165,3 +165,4 @@ if (content.includes(target4)) {
 
 fs.writeFileSync(filePath, content, 'utf-8');
 console.log("Updated HTML!");
+
