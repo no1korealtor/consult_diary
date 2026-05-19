@@ -629,7 +629,27 @@
             }
         }
 
-        return `
+        let isViewed = false;
+        let viewedAtStr = '';
+        if (isMatched && client) {
+            const viewedList = client.viewed_properties || [];
+            const viewedItem = viewedList.find(v => v.property_id === p.id);
+            if (viewedItem) {
+                isViewed = true;
+                const d = new Date(viewedItem.viewed_at);
+                viewedAtStr = `${d.getMonth()+1}/${d.getDate()}`;
+            }
+        }
+
+        let jibunOnly = '';
+        if (p.address && p.address.includes('[지번:')) {
+            const match = p.address.match(/\[지번:\s*(.*?)\]/);
+            if (match) jibunOnly = match[1];
+        } else {
+            jibunOnly = p.address || '주소 없음';
+        }
+
+        let innerCardHtml = `
         <div class="card" ${cardStyle}>
             ${strikethroughHtml}
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
@@ -704,6 +724,20 @@
             })()}
         </div>
         `;
+        
+        if (isMatched && isViewed) {
+            return `
+            <details style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px;">
+                <summary style="font-size: 14px; font-weight: 700; color: #475569; cursor: pointer; outline: none;">
+                    ✅ ${jibunOnly} <span style="float: right; font-size: 12px; font-weight: 600; color: #64748b; margin-top: 2px;">${viewedAtStr} 방문</span>
+                </summary>
+                <div style="margin-top: 10px;">
+                    ${innerCardHtml}
+                </div>
+            </details>
+            `;
+        }
+        return innerCardHtml;
     }
 
     async function toggleViewedProperty(clientId, propertyId, isChecked) {
