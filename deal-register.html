@@ -1333,21 +1333,21 @@
                             <span>세부 할 일</span>
                             <span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 12px; font-size: 12px;">${tasks.filter(t => t.is_completed).length} / ${tasks.length}</span>
                         </div>
-                        <button type="button" onclick="addTask('${schedule.id}')" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2); transition: 0.2s;">+ 추가</button>
+                        <button type="button" onclick="addTask('${schedule.id}')" style="width: auto !important; margin: 0 !important; background: #3b82f6 !important; color: white !important; padding: 6px 12px !important; border-radius: 8px !important; font-size: 12px !important; font-weight: 800 !important;">+ 추가</button>
                     </div>`;
                     
                     if (tasks.length > 0) {
                         checklistHtml += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
                         tasks.forEach(t => {
                             checklistHtml += `
-                            <div style="display: flex; align-items: center; padding: 12px; background: ${t.is_completed ? '#f8fafc' : '#ffffff'}; border: 1px solid ${t.is_completed ? '#e2e8f0' : '#e5e7eb'}; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); transition: 0.2s;">
-                                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1; min-width: 0;">
-                                    <input type="checkbox" ${t.is_completed ? 'checked' : ''} onchange="toggleTask('${t.id}', this.checked)" style="flex-shrink: 0; width: 18px; height: 18px; accent-color: #3b82f6; cursor: pointer; margin: 0;">
-                                    <span style="font-size: 14px; color: ${t.is_completed ? '#9ca3af' : '#374151'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'}; word-break: keep-all; font-weight: ${t.is_completed ? '500' : '700'}; line-height: 1.4;">
+                            <div style="display: flex; align-items: flex-start; padding: 12px; background: ${t.is_completed ? '#f8fafc' : '#ffffff'}; border: 1px solid ${t.is_completed ? '#e2e8f0' : '#e5e7eb'}; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; flex: 1; min-width: 0; margin: 0 !important;">
+                                    <input type="checkbox" ${t.is_completed ? 'checked' : ''} onchange="toggleTask('${t.id}', this.checked)" style="width: 18px !important; height: 18px !important; margin: 2px 0 0 0 !important; padding: 0 !important; flex-shrink: 0 !important; accent-color: #3b82f6;">
+                                    <span style="font-size: 14px; color: ${t.is_completed ? '#9ca3af' : '#374151'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'}; word-break: keep-all; font-weight: ${t.is_completed ? '500' : '700'}; line-height: 1.4; display: block; width: 100%;">
                                         ${t.task_content}
                                     </span>
                                 </label>
-                                <button type="button" onclick="deleteTask('${t.id}')" style="flex-shrink: 0; background: #fee2e2; border: none; font-size: 12px; color: #ef4444; cursor: pointer; padding: 6px 10px; border-radius: 6px; font-weight: 800; margin-left: 12px; transition: 0.2s;" title="삭제">✕</button>
+                                <button type="button" onclick="deleteTask('${t.id}')" style="width: auto !important; margin: 0 0 0 10px !important; padding: 6px 10px !important; flex-shrink: 0 !important; background: #fee2e2 !important; color: #ef4444 !important; font-size: 12px !important; font-weight: 800 !important; border-radius: 6px !important;" title="삭제">✕</button>
                             </div>
                             `;
                         });
