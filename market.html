@@ -466,12 +466,12 @@
 
     async function loadData() {
         // Load Properties
-        const { data: props, error: e1 } = await supabaseClient.from('properties').select('*').order('created_at', { ascending: false });
+        const { data: props, error: e1 } = await supabaseClient.from('properties').select('*').eq('user_id', window.currentUser.id).order('created_at', { ascending: false });
         if (e1) console.error(e1);
         propertiesData = props || [];
 
         // Load Clients
-        const { data: clients, error: e2 } = await supabaseClient.from('client_requests').select('*').order('created_at', { ascending: false });
+        const { data: clients, error: e2 } = await supabaseClient.from('client_requests').select('*').eq('user_id', window.currentUser.id).order('created_at', { ascending: false });
         if (e2) console.error(e2);
         clientsData = clients || [];
         
@@ -692,10 +692,10 @@
                     '</div>';
                 }
                 if (!isMatched && matchedClients && matchedClients.length > 0) {
-                    let matchHtml = '<div class="matching-section" style="margin-top: 12px; border-top: 1px dashed #cbd5e1; padding-top: 12px;">' +
-                        '<div style="font-size: 13px; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 4px; margin-bottom: 8px;">' +
+                    let matchHtml = '<details class="matching-section" style="margin-top: 12px; border-top: 1px dashed #cbd5e1; padding-top: 12px;" open>' +
+                        '<summary style="font-size: 13px; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 4px; margin-bottom: 8px; cursor: pointer; outline: none;">' +
                             '✨ 매칭 및 보여준 손님 (' + matchedClients.length + '명)' +
-                        '</div>' +
+                        '</summary>' +
                         '<div style="display: flex; flex-direction: column; gap: 6px;">';
                         
                     matchHtml += matchedClients.map(c => {
@@ -719,7 +719,7 @@
                         return cHtml;
                     }).join('');
                     
-                    matchHtml += '</div></div>';
+                    matchHtml += '</div></details>';
                     return matchHtml;
                 }
                 return '';
@@ -734,6 +734,11 @@
                 </summary>
                 <div style="margin-top: 10px;">
                     ${innerCardHtml}
+                    <div style="text-align: center; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #cbd5e1;">
+                        <button onclick="this.closest('details').removeAttribute('open')" style="background: white; border: 1px solid #cbd5e1; border-radius: 8px; color: #475569; font-size: 13px; font-weight: 700; cursor: pointer; padding: 6px 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                            ▲ 닫기
+                        </button>
+                    </div>
                 </div>
             </details>
             `;
@@ -927,16 +932,16 @@
                 ${reqs.length > 0 ? `<div style="font-size: 13px; font-weight: 600; color: #ef4444; margin-bottom: 8px;">⚠️ 조건: ${reqs.join(' · ')}</div>` : ''}
                 ${c.memo ? `<div style="font-size: 13px; color: #475569; margin-bottom: 12px;">📝 ${c.memo.replace(/\\[SETTLED_DATE\\].*?\\[\\/SETTLED_DATE\\]/g, '').trim()}</div>` : ''}
                 
-                <div class="matching-section">
-                    <div style="font-size: 13px; font-weight: 800; color: #3b82f6; display: flex; align-items: center; gap: 4px;">
+                <details class="matching-section" open>
+                    <summary style="font-size: 13px; font-weight: 800; color: #3b82f6; display: flex; align-items: center; gap: 4px; cursor: pointer; outline: none; margin-bottom: 8px;">
                         ✨ 매칭된 매물 (${matches.length}건)
-                    </div>
+                    </summary>
                     ${matches.length > 0 ? `
                         <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
                             ${matches.map(m => createPropertyCard(m, true, c)).join('')}
                         </div>
                     ` : `<div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">조건에 딱 맞는 매물이 아직 없습니다.</div>`}
-                </div>
+                </details>
             </div>
             `;
         });
@@ -1403,6 +1408,7 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
     async function checkAuthAndLoad() {
         const user = await requireAuth();
         if (user) {
+            document.getElementById('welcomeMessage').innerText = (user.name || '전문가') + '님 환영합니다!';
             loadData();
             loadBuildingsAndRooms();
         }

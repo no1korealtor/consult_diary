@@ -902,9 +902,12 @@
             list.innerHTML = '';
             
             let allDeals = [];
-            
+            const hiddenKey = 'hiddenProposals_' + window.currentUser.id;
+            const hiddenProposals = JSON.parse(localStorage.getItem(hiddenKey) || '[]');
+
             if (data) {
                 allDeals = data.filter(schedule => {
+                    if (hiddenProposals.includes(schedule.id)) return false;
                     const isMine = schedule.user_id === window.currentUser.id;
                     const isPrivate = (schedule.memo || '').includes('[PRIVATE]');
                     if (isPrivate && !isMine) return false;

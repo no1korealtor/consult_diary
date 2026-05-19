@@ -216,6 +216,7 @@
         async function checkAuthAndLoad() {
             const user = await requireAuth();
             if (user) {
+                document.getElementById('welcomeMessage').innerText = (user.name || '전문가') + '님 환영합니다!';
                 loadUsers();
             }
         }
