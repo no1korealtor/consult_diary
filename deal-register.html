@@ -895,7 +895,7 @@
             allDeals.sort(sortByDate);
 
             // 공통 렌더링 함수
-            const createDealListItem = (deal, isGlobal) => {
+            const createDealListItem = (schedule, isGlobal) => {
                 let rawMemo = schedule.memo || '';
                 let linkUrl = schedule.url || null;
                 let linkName = schedule.url_name || '관련 링크';
