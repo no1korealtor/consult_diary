@@ -661,44 +661,44 @@
                     const isViewed = !!viewedItem;
                     const viewedAtStr = isViewed ? new Date(viewedItem.viewed_at).toLocaleDateString() : '';
                     
-                    return `
-                    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center;">
-                        <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: ${isViewed ? '#10b981' : '#64748b'}; cursor: pointer;">
-                            <input type="checkbox" onchange="toggleViewedProperty('${client.id}', '${p.id}', this.checked)" ${isViewed ? 'checked' : ''} style="width: 16px; height: 16px; accent-color: #10b981;">
-                            ${isViewed ? '✅ 집 보여줌' : '집 보여줌 (체크 시 저장)'}
-                        </label>
-                        ${isViewed ? `<span style="font-size: 11px; color: #94a3b8;">${viewedAtStr} 방문</span>` : ''}
-                    </div>
-                    `;
+                    return '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center;">' +
+                        '<label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: ' + (isViewed ? '#10b981' : '#64748b') + '; cursor: pointer;">' +
+                            '<input type="checkbox" onchange="toggleViewedProperty(\'' + client.id + '\', \'' + p.id + '\', this.checked)" ' + (isViewed ? 'checked' : '') + ' style="width: 16px; height: 16px; accent-color: #10b981;">' +
+                            (isViewed ? '✅ 집 보여줌' : '집 보여줌 (체크 시 저장)') +
+                        '</label>' +
+                        (isViewed ? '<span style="font-size: 11px; color: #94a3b8;">' + viewedAtStr + ' 방문</span>' : '') +
+                    '</div>';
                 }
                 if (!isMatched && matchedClients && matchedClients.length > 0) {
-                    return `
-                    <div class="matching-section" style="margin-top: 12px; border-top: 1px dashed #cbd5e1; padding-top: 12px;">
-                        <div style="font-size: 13px; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 4px; margin-bottom: 8px;">
-                            ✨ 조건이 맞는 손님 (${matchedClients.length}명)
-                        </div>
-                        <div style="display: flex; flex-direction: column; gap: 6px;">
-                            ${matchedClients.map(c => {
-                                const viewedList = c.viewed_properties || [];
-                                const viewedItem = viewedList.find(v => v.property_id === p.id);
-                                const isViewed = !!viewedItem;
-                                
-                                return \`
-                                <div style="display: flex; justify-content: space-between; align-items: center; background: ${isViewed ? '#f1f5f9' : '#fff'}; border: 1px solid ${isViewed ? '#cbd5e1' : '#bae6fd'}; padding: 8px 10px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s;" onmousedown="this.style.opacity='0.7'" onmouseup="this.style.opacity='1'" onclick="switchTab('clients'); setClientFilter('탐색중', null); setTimeout(() => openClientModal('${c.id}'), 100);">
-                                    <div>
-                                        <span style="font-weight: 800; color: #0f172a;">🧑‍💼 ${formatPhoneNumber(c.client_phone)}</span>
-                                        <span style="color: #64748b; margin-left: 4px; font-size: 12px; font-weight: 600;">최대 ${formatMoney(c.max_budget)}</span>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 8px;" onclick="event.stopPropagation()">
-                                        ${isViewed ? \`<span style="font-size: 11px; color: #10b981; font-weight: 800; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">✅ 보여줌</span>\` : ''}
-                                        <button onclick="copyClientToKakao('${c.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">💬 카톡</button>
-                                    </div>
-                                </div>
-                                \`;
-                            }).join('')}
-                        </div>
-                    </div>
-                    \`;
+                    let matchHtml = '<div class="matching-section" style="margin-top: 12px; border-top: 1px dashed #cbd5e1; padding-top: 12px;">' +
+                        '<div style="font-size: 13px; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 4px; margin-bottom: 8px;">' +
+                            '✨ 조건이 맞는 손님 (' + matchedClients.length + '명)' +
+                        '</div>' +
+                        '<div style="display: flex; flex-direction: column; gap: 6px;">';
+                        
+                    matchHtml += matchedClients.map(c => {
+                        const viewedList = c.viewed_properties || [];
+                        const viewedItem = viewedList.find(v => v.property_id === p.id);
+                        const isViewed = !!viewedItem;
+                        
+                        let cHtml = '<div style="display: flex; justify-content: space-between; align-items: center; background: ' + (isViewed ? '#f1f5f9' : '#fff') + '; border: 1px solid ' + (isViewed ? '#cbd5e1' : '#bae6fd') + '; padding: 8px 10px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s;" onmousedown="this.style.opacity=\'0.7\'" onmouseup="this.style.opacity=\'1\'" onclick="switchTab(\'clients\'); setClientFilter(\'탐색중\', null); setTimeout(() => openClientModal(\'' + c.id + '\'), 100);">' +
+                            '<div>' +
+                                '<span style="font-weight: 800; color: #0f172a;">🧑‍💼 ' + formatPhoneNumber(c.client_phone) + '</span>' +
+                                '<span style="color: #64748b; margin-left: 4px; font-size: 12px; font-weight: 600;">최대 ' + formatMoney(c.max_budget) + '</span>' +
+                            '</div>' +
+                            '<div style="display: flex; align-items: center; gap: 8px;" onclick="event.stopPropagation()">';
+                        
+                        if (isViewed) {
+                            cHtml += '<span style="font-size: 11px; color: #10b981; font-weight: 800; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">✅ 보여줌</span>';
+                        }
+                        cHtml += '<button onclick="copyClientToKakao(\'' + c.id + '\', this)" style="background: #fee500; color: #371d1e; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">💬 카톡</button>' +
+                            '</div>' +
+                        '</div>';
+                        return cHtml;
+                    }).join('');
+                    
+                    matchHtml += '</div></div>';
+                    return matchHtml;
                 }
                 return '';
             })()}

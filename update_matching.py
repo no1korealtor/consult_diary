@@ -27,22 +27,22 @@ def update_file(filepath):
                                 const viewedItem = viewedList.find(v => v.property_id === p.id);
                                 const isViewed = !!viewedItem;
                                 
-                                return \`
+                                return `
                                 <div style="display: flex; justify-content: space-between; align-items: center; background: ${isViewed ? '#f1f5f9' : '#fff'}; border: 1px solid ${isViewed ? '#cbd5e1' : '#bae6fd'}; padding: 8px 10px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s;" onmousedown="this.style.opacity='0.7'" onmouseup="this.style.opacity='1'" onclick="switchTab('clients'); setClientFilter('탐색중', null); setTimeout(() => openClientModal('${c.id}'), 100);">
                                     <div>
                                         <span style="font-weight: 800; color: #0f172a;">🧑‍💼 ${formatPhoneNumber(c.client_phone)}</span>
                                         <span style="color: #64748b; margin-left: 4px; font-size: 12px; font-weight: 600;">최대 ${formatMoney(c.max_budget)}</span>
                                     </div>
                                     <div style="display: flex; align-items: center; gap: 8px;" onclick="event.stopPropagation()">
-                                        ${isViewed ? \`<span style="font-size: 11px; color: #10b981; font-weight: 800; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">✅ 보여줌</span>\` : ''}
+                                        ${isViewed ? `<span style="font-size: 11px; color: #10b981; font-weight: 800; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">✅ 보여줌</span>` : ''}
                                         <button onclick="copyClientToKakao('${c.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">💬 카톡</button>
                                     </div>
                                 </div>
-                                \`;
+                                `;
                             }).join('')}
                         </div>
                     </div>
-                    \`;
+                    `;
                 }
                 return '';
             })()}"""
