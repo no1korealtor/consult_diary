@@ -42,8 +42,17 @@
 
     <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
         <span>👥 회원 승인 및 소속 관리</span>
-        <button onclick="manageGroups()" style="font-size: 12px; padding: 6px 12px; background: #1e293b; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">그룹 신설/수정</button>
+        <button onclick="toggleGroupManager()" style="font-size: 12px; padding: 6px 12px; background: #1e293b; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">그룹 신설/삭제</button>
     </h3>
+
+    <div id="groupManager" class="card" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; margin-bottom: 16px; padding: 16px;">
+        <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #334155;">현재 등록된 그룹</h4>
+        <div id="groupList" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;"></div>
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="newGroupName" placeholder="새 그룹 이름" style="flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; outline: none;">
+            <button onclick="createGroup()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; width: auto;">추가</button>
+        </div>
+    </div>
     
     <div class="card">
         <ul id="userList" style="list-style: none; padding: 0; margin: 0;"></ul>
@@ -58,16 +67,52 @@
             if (data) allGroups = data;
         }
 
-        async function manageGroups() {
-            const name = prompt("새로 만들 그룹/지부 이름을 입력하세요 (취소하려면 빈칸):");
-            if (name && name.trim()) {
-                const { error } = await authClient.from('groups').insert({ name: name.trim() });
-                if (error) alert("그룹 생성 실패: " + error.message);
-                else {
-                    alert("새 그룹이 생성되었습니다.");
-                    await fetchGroups();
-                    loadUsers();
-                }
+        function toggleGroupManager() {
+            const el = document.getElementById('groupManager');
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                renderGroupManager();
+            } else {
+                el.style.display = 'none';
+            }
+        }
+
+        function renderGroupManager() {
+            const list = document.getElementById('groupList');
+            list.innerHTML = '';
+            if (allGroups.length === 0) {
+                list.innerHTML = '<span style="font-size: 13px; color: #94a3b8;">등록된 그룹이 없습니다.</span>';
+                return;
+            }
+            allGroups.forEach(g => {
+                const badge = document.createElement('div');
+                badge.style.cssText = "background: white; border: 1px solid #cbd5e1; padding: 4px 8px 4px 12px; border-radius: 16px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; color: #334155;";
+                badge.innerHTML = `${g.name} <button onclick="deleteGroup('${g.id}', '${g.name}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0 4px; font-size: 16px; font-weight: bold; line-height: 1;">&times;</button>`;
+                list.appendChild(badge);
+            });
+        }
+
+        async function createGroup() {
+            const name = document.getElementById('newGroupName').value.trim();
+            if (!name) return;
+            const { error } = await authClient.from('groups').insert({ name });
+            if (error) alert("그룹 생성 실패: " + error.message);
+            else {
+                document.getElementById('newGroupName').value = '';
+                await fetchGroups();
+                renderGroupManager();
+                loadUsers();
+            }
+        }
+
+        async function deleteGroup(id, name) {
+            if (!confirm(`정말 '${name}' 그룹을 삭제하시겠습니까?\n이 그룹에 속한 회원의 소속 정보도 함께 지워집니다.`)) return;
+            const { error } = await authClient.from('groups').delete().eq('id', id);
+            if (error) alert("삭제 실패: " + error.message);
+            else {
+                await fetchGroups();
+                renderGroupManager();
+                loadUsers();
             }
         }
 
