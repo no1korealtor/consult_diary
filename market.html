@@ -738,6 +738,9 @@
         if (p.status !== '거래가능') return false;
         if (c.status !== '탐색중') return false;
         
+        if (!p.deal_types || !Array.isArray(p.deal_types)) return false;
+        if (!c.target_types || !Array.isArray(c.target_types)) return false;
+        
         const typeMatch = p.deal_types.some(pt => c.target_types.includes(pt));
         if (!typeMatch) return false;
         
