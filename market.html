@@ -692,7 +692,7 @@
                 if (!isMatched && matchedClients && matchedClients.length > 0) {
                     let matchHtml = '<div class="matching-section" style="margin-top: 12px; border-top: 1px dashed #cbd5e1; padding-top: 12px;">' +
                         '<div style="font-size: 13px; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 4px; margin-bottom: 8px;">' +
-                            '✨ 조건이 맞는 손님 (' + matchedClients.length + '명)' +
+                            '✨ 매칭 및 보여준 손님 (' + matchedClients.length + '명)' +
                         '</div>' +
                         '<div style="display: flex; flex-direction: column; gap: 6px;">';
                         
@@ -833,8 +833,15 @@
         
         let html = '';
         filteredData.forEach(p => {
-            const matchedClients = (p.status === '거래가능') ? clientsData.filter(c => isMatch(p, c)) : [];
-            html += createPropertyCard(p, false, null, matchedClients);
+            const matched = (p.status === '거래가능') ? clientsData.filter(c => isMatch(p, c)) : [];
+            const viewed = clientsData.filter(c => c.viewed_properties && c.viewed_properties.some(v => v.property_id === p.id));
+            
+            let combinedClients = [...viewed];
+            matched.forEach(mc => {
+                if (!combinedClients.find(c => c.id === mc.id)) combinedClients.push(mc);
+            });
+            
+            html += createPropertyCard(p, false, null, combinedClients);
         });
         list.innerHTML = html;
     }
