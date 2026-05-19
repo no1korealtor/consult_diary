@@ -745,18 +745,29 @@
         if (!typeMatch) return false;
         
         let isBudgetOk = false;
-        if (c.target_types.includes('매매') && p.sale_price && p.sale_price <= c.max_budget) isBudgetOk = true;
-        if (c.target_types.includes('전세') && p.deposit && !p.monthly_rent && p.deposit <= c.max_budget) isBudgetOk = true;
-        if (c.target_types.includes('월세') && p.monthly_rent) {
-            const flexibleMaxMonthly = c.max_monthly ? c.max_monthly + 10 : 9999;
-            if (p.deposit <= c.max_budget && p.monthly_rent <= flexibleMaxMonthly) isBudgetOk = true;
+        const pSale = p.sale_price || 0;
+        const pDep = p.deposit || 0;
+        const pRent = p.monthly_rent || 0;
+        
+        const cBudget = c.max_budget || 9999999;
+        const flexRent = c.max_monthly ? c.max_monthly + 10 : 9999999;
+        
+        if (c.target_types.includes('매매') && p.deal_types.includes('매매')) {
+            if (pSale > 0 && pSale <= cBudget) isBudgetOk = true;
         }
+        if (c.target_types.includes('전세') && p.deal_types.includes('전세')) {
+            if (pDep > 0 && pRent === 0 && pDep <= cBudget) isBudgetOk = true;
+        }
+        if (c.target_types.includes('월세') && p.deal_types.includes('월세')) {
+            if (pDep <= cBudget && pRent > 0 && pRent <= flexRent) isBudgetOk = true;
+        }
+        
         if (!isBudgetOk) return false;
 
         if (c.min_room_count && (!p.room_count || p.room_count < c.min_room_count)) return false;
         if (c.need_pet && !p.pet_allowed) return false;
         if (c.need_parking && !p.parking_allowed) return false;
-        if ((c.need_loan || c.need_loan_sh_lh) && !(p.loan_allowed || p.loan_sh_lh_allowed)) return false;
+        if (c.need_loan && !p.loan_allowed) return false;
         if (c.need_lh_sh && !p.lh_sh_allowed) return false;
         if (c.need_exclude_basement && p.is_basement) return false;
         
