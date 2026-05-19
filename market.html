@@ -764,7 +764,8 @@
         
         if (!isBudgetOk) return false;
 
-        if (c.min_room_count && p.room_count && p.room_count < c.min_room_count) return false;
+        // 방 개수는 실무상 호환성(1.5룸 등)이 높으므로 자동 필터링에서 제외 (화면 표시용으로만 사용)
+        // if (c.min_room_count && p.room_count && p.room_count < c.min_room_count) return false;
         if (c.need_pet && !p.pet_allowed) return false;
         if (c.need_parking && !p.parking_allowed) return false;
         if (c.need_loan && !p.loan_allowed) return false;
