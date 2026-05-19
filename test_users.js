@@ -1,13 +1,21 @@
-﻿const { createClient } = require('@supabase/supabase-js');
-const fs = require('fs');
+const { createClient } = require('@supabase/supabase-js');
 
-const html = fs.readFileSync('auth-helper.js', 'utf8');
-const urlMatch = html.match(/AUTH_URL\s*=\s*['"]([^'"]+)['"]/);
-const keyMatch = html.match(/AUTH_KEY\s*=\s*['"]([^'"]+)['"]/);
+const AUTH_URL = 'https://yqolkvmrfvumpwlxjimp.supabase.co';
+const AUTH_KEY = 'sb_publishable_Y3waCN-Y0LA26BC80eUO-g_Njmuq1Hu';
 
-if (urlMatch && keyMatch) {
-    const supabase = createClient(urlMatch[1], keyMatch[1]);
-    supabase.from('users').select('id, name').then(res => {
-        console.log(res);
-    });
+const authClient = createClient(AUTH_URL, AUTH_KEY);
+
+async function test() {
+    const { data, error } = await authClient
+        .from('users')
+        .select(`
+            id, name, phone, office_address, role,
+            user_groups ( group_id, status, group_role, groups ( name ) )
+        `)
+        .order('name');
+        
+    console.log("Error:", error);
+    console.log("Data count:", data ? data.length : 0);
 }
+
+test();

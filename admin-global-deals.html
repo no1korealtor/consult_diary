@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -406,7 +406,7 @@
             }
 
             if (data) {
-                data = data.filter(deal => {
+                data = data.filter(schedule => {
                     const rawMemo = schedule.memo || '';
                     const isPrivate = rawMemo.includes('[PRIVATE]');
                     const isProposal = rawMemo.includes('[PROPOSAL]');
@@ -434,7 +434,7 @@
                 return diffA - diffB;
             });
 
-            data.forEach(deal => {
+            data.forEach(schedule => {
                 const uName = schedule.users && schedule.users.name ? schedule.users.name : '관리자';
                 
                 let rawMemo = schedule.memo || '';

@@ -846,7 +846,7 @@
                     buildings ( jibun_address, road_address ),
                     rooms ( room_name ),
                     properties ( address ),
-                    deal_attendances ( user_id, status )
+                    schedule_attendances ( user_id, status )
                 `)
                 .or(`user_id.eq.${window.currentUser.id},building_id.is.null`)
                 .order('schedule_date', { ascending: false }) // Fetch recent & upcoming
@@ -863,7 +863,7 @@
             let allDeals = [];
             
             if (data) {
-                allDeals = data.filter(deal => {
+                allDeals = data.filter(schedule => {
                     const isMine = schedule.user_id === window.currentUser.id;
                     const isPrivate = (schedule.memo || '').includes('[PRIVATE]');
                     if (isPrivate && !isMine) return false;
@@ -1048,8 +1048,8 @@
                     let noCount = 0;
                     let attNames = [];
                     let noNames = [];
-                    if (schedule.deal_attendances) {
-                        const attendances = schedule.deal_attendances;
+                    if (schedule.schedule_attendances) {
+                        const attendances = schedule.schedule_attendances;
                         const myRec = attendances.find(a => a.user_id === window.currentUser.id);
                         if (myRec) myAtt = myRec.status;
                         
@@ -1322,7 +1322,7 @@
                 let currentDateLabel = '';
                 let visibleCount = 0;
 
-                allDeals.forEach((deal) => {
+                allDeals.forEach((schedule) => {
                     let dealMonth = '날짜 미정';
                     let dealDate = '미정';
                     let isPast = false;
@@ -1391,7 +1391,7 @@
                         list.appendChild(dateDividerLi);
                     }
 
-                    const li = createDealListItem(deal, !schedule.buildings && !schedule.building_id);
+                    const li = createDealListItem(schedule, !schedule.buildings && !schedule.building_id);
                     li.dataset.originalDisplay = 'block';
                     
                     const isHiddenProp = li.dataset.isHiddenProposal === 'true';
