@@ -569,7 +569,7 @@
         return `${val}만`;
     }
 
-    function createPropertyCard(p, isMatched = false, client = null) {
+    function createPropertyCard(p, isMatched = false, client = null, matchedClients = []) {
         let typeChips = p.deal_types.map(t => {
             let cls = t==='매매' ? 'sale' : (t==='전세' ? 'jeonse' : 'wolse');
             return `<span class="chip ${cls}">${t}</span>`;
@@ -671,6 +671,35 @@
                     </div>
                     `;
                 }
+                if (!isMatched && matchedClients && matchedClients.length > 0) {
+                    return `
+                    <div class="matching-section" style="margin-top: 12px; border-top: 1px dashed #cbd5e1; padding-top: 12px;">
+                        <div style="font-size: 13px; font-weight: 800; color: #10b981; display: flex; align-items: center; gap: 4px; margin-bottom: 8px;">
+                            ✨ 조건이 맞는 손님 (${matchedClients.length}명)
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            ${matchedClients.map(c => {
+                                const viewedList = c.viewed_properties || [];
+                                const viewedItem = viewedList.find(v => v.property_id === p.id);
+                                const isViewed = !!viewedItem;
+                                
+                                return \`
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: ${isViewed ? '#f1f5f9' : '#fff'}; border: 1px solid ${isViewed ? '#cbd5e1' : '#bae6fd'}; padding: 8px 10px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s;" onmousedown="this.style.opacity='0.7'" onmouseup="this.style.opacity='1'" onclick="switchTab('clients'); setClientFilter('탐색중', null); setTimeout(() => openClientModal('${c.id}'), 100);">
+                                    <div>
+                                        <span style="font-weight: 800; color: #0f172a;">🧑‍💼 ${formatPhoneNumber(c.client_phone)}</span>
+                                        <span style="color: #64748b; margin-left: 4px; font-size: 12px; font-weight: 600;">최대 ${formatMoney(c.max_budget)}</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;" onclick="event.stopPropagation()">
+                                        ${isViewed ? \`<span style="font-size: 11px; color: #10b981; font-weight: 800; background: #dcfce7; padding: 2px 6px; border-radius: 4px;">✅ 보여줌</span>\` : ''}
+                                        <button onclick="copyClientToKakao('${c.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">💬 카톡</button>
+                                    </div>
+                                </div>
+                                \`;
+                            }).join('')}
+                        </div>
+                    </div>
+                    \`;
+                }
                 return '';
             })()}
         </div>
@@ -705,6 +734,34 @@
         }
     }
 
+    function isMatch(p, c) {
+        if (p.status !== '거래가능') return false;
+        if (c.status !== '탐색중') return false;
+        
+        const typeMatch = p.deal_types.some(pt => c.target_types.includes(pt));
+        if (!typeMatch) return false;
+        
+        let isBudgetOk = false;
+        if (c.target_types.includes('매매') && p.sale_price && p.sale_price <= c.max_budget) isBudgetOk = true;
+        if (c.target_types.includes('전세') && p.deposit && !p.monthly_rent && p.deposit <= c.max_budget) isBudgetOk = true;
+        if (c.target_types.includes('월세') && p.monthly_rent) {
+            const flexibleMaxMonthly = c.max_monthly ? c.max_monthly + 10 : 9999;
+            if (p.deposit <= c.max_budget && p.monthly_rent <= flexibleMaxMonthly) isBudgetOk = true;
+        }
+        if (!isBudgetOk) return false;
+
+        if (c.min_room_count && (!p.room_count || p.room_count < c.min_room_count)) return false;
+        if (c.need_pet && !p.pet_allowed) return false;
+        if (c.need_parking && !p.parking_allowed) return false;
+        if ((c.need_loan || c.need_loan_sh_lh) && !(p.loan_allowed || p.loan_sh_lh_allowed)) return false;
+        if (c.need_lh_sh && !p.lh_sh_allowed) return false;
+        if (c.need_exclude_basement && p.is_basement) return false;
+        
+        if (p.occupancy_type === '입주불가(세안고)' && c.occupancy_type !== '무관') return false;
+        
+        return true;
+    }
+
     function renderProperties() {
         const list = document.getElementById('propertiesList');
         
@@ -724,7 +781,8 @@
         
         let html = '';
         filteredData.forEach(p => {
-            html += createPropertyCard(p, false);
+            const matchedClients = (p.status === '거래가능') ? clientsData.filter(c => isMatch(p, c)) : [];
+            html += createPropertyCard(p, false, null, matchedClients);
         });
         list.innerHTML = html;
     }
@@ -767,37 +825,7 @@
             if (c.occupancy_type === '무관') occStr = '📅 입주시기 무관';
 
             // Find matches
-            const matches = propertiesData.filter(p => {
-                if (p.status !== '거래가능') return false;
-                // Type match
-                const typeMatch = p.deal_types.some(pt => c.target_types.includes(pt));
-                if (!typeMatch) return false;
-                
-                // Budget match
-                let isBudgetOk = false;
-                if (c.target_types.includes('매매') && p.sale_price && p.sale_price <= c.max_budget) isBudgetOk = true;
-                if (c.target_types.includes('전세') && p.deposit && !p.monthly_rent && p.deposit <= c.max_budget) isBudgetOk = true;
-                if (c.target_types.includes('월세') && p.monthly_rent) {
-                    // 실무 반영: 월세는 심리적 저항선이 낮아 손님 최대 예산보다 +10만원까지 융통성 있게 매칭
-                    const flexibleMaxMonthly = c.max_monthly ? c.max_monthly + 10 : 9999;
-                    if (p.deposit <= c.max_budget && p.monthly_rent <= flexibleMaxMonthly) isBudgetOk = true;
-                }
-                if (!isBudgetOk) return false;
-
-                // Option match
-                if (c.min_room_count && (!p.room_count || p.room_count < c.min_room_count)) return false;
-                if (c.need_pet && !p.pet_allowed) return false;
-                if (c.need_parking && !p.parking_allowed) return false;
-                if ((c.need_loan || c.need_loan_sh_lh) && !(p.loan_allowed || p.loan_sh_lh_allowed)) return false;
-                if (c.need_lh_sh && !p.lh_sh_allowed) return false;
-                if (c.need_exclude_basement && p.is_basement) return false;
-                
-                // If property is '입주불가(세안고)' and client wants Jeonse or Wolse, filter it out.
-                // Or if client wants Maemae but actually needs to move in (날짜확정 or 시기조정가능), filter it out.
-                if (p.occupancy_type === '입주불가(세안고)' && c.occupancy_type !== '무관') return false;
-                
-                return true;
-            });
+            const matches = propertiesData.filter(p => isMatch(p, c));
 
             // 상태 뱃지 동적 생성
             let statusBadge = `<span class="chip neutral">${c.status}</span>`;
