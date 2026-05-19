@@ -466,6 +466,46 @@
             }
         }
 
+        window.addTask = async function(scheduleId) {
+            const content = prompt("추가할 할 일을 입력하세요:\\n(예: 잔금 확인, 수도요금 정산, 열쇠 교부 등)");
+            if (!content || !content.trim()) return;
+
+            const { error } = await supabaseClient
+                .from('schedule_tasks')
+                .insert({ schedule_id: scheduleId, task_content: content.trim() });
+                
+            if (error) {
+                alert("할 일 추가 중 오류 발생: " + error.message);
+                return;
+            }
+            loadschedules();
+        };
+
+        window.toggleTask = async function(taskId, isCompleted) {
+            const { error } = await supabaseClient
+                .from('schedule_tasks')
+                .update({ is_completed: isCompleted })
+                .eq('id', taskId);
+                
+            if (error) {
+                alert("상태 변경 중 오류 발생: " + error.message);
+            }
+            loadschedules();
+        };
+
+        window.deleteTask = async function(taskId) {
+            if (!confirm("이 할 일을 삭제하시겠습니까?")) return;
+            const { error } = await supabaseClient
+                .from('schedule_tasks')
+                .delete()
+                .eq('id', taskId);
+                
+            if (error) {
+                alert("삭제 중 오류 발생: " + error.message);
+            }
+            loadschedules();
+        };
+
         window.addEventListener('pageshow', function(event) {
             if (event.persisted || window.performance && window.performance.navigation.type === 2) {
                 checkAuthAndLoad();
@@ -846,7 +886,8 @@
                     buildings ( jibun_address, road_address ),
                     rooms ( room_name ),
                     properties ( address ),
-                    schedule_attendances ( user_id, status )
+                    schedule_attendances ( user_id, status ),
+                    schedule_tasks ( id, task_content, is_completed, created_at )
                 `)
                 .or(`user_id.eq.${window.currentUser.id},building_id.is.null`)
                 .order('schedule_date', { ascending: false }) // Fetch recent & upcoming
@@ -1279,6 +1320,35 @@
                     memoHtml += `<div onclick="window.open('${linkUrl}', '_blank'); event.stopPropagation();" style="margin-top: 12px; font-size: 13px; color: #475569; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 12px; background: #f1f5f9; border-radius: 8px; transition: 0.2s;">🔗 ${linkName}</div>`;
                 }
 
+                let checklistHtml = '';
+                if (!isGlobal && (isMine || (window.currentUser && window.currentUser.role === 'admin'))) {
+                    let tasks = schedule.schedule_tasks || [];
+                    tasks.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+                    
+                    checklistHtml += `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1;" onclick="event.stopPropagation()">`;
+                    checklistHtml += `<div style="font-size: 13px; font-weight: 800; color: #475569; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">`;
+                    checklistHtml += `<span>✅ 세부 할 일 (${tasks.filter(t => t.is_completed).length}/${tasks.length})</span>`;
+                    checklistHtml += `<button type="button" onclick="addTask('${schedule.id}')" style="background: none; border: none; font-size: 12px; font-weight: 700; color: #3b82f6; cursor: pointer; padding: 4px;">+ 할 일 추가</button>`;
+                    checklistHtml += `</div>`;
+                    
+                    if (tasks.length > 0) {
+                        checklistHtml += `<div style="display: flex; flex-direction: column; gap: 4px;">`;
+                        tasks.forEach(t => {
+                            checklistHtml += `
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; padding: 6px 8px; background: ${t.is_completed ? '#f8fafc' : '#fff'}; border: 1px solid ${t.is_completed ? '#e2e8f0' : '#cbd5e1'}; border-radius: 8px;">
+                                <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: ${t.is_completed ? '#94a3b8' : '#334155'}; cursor: pointer; flex: 1; text-decoration: ${t.is_completed ? 'line-through' : 'none'}; word-break: break-all; font-weight: ${t.is_completed ? '500' : '600'};">
+                                    <input type="checkbox" ${t.is_completed ? 'checked' : ''} onchange="toggleTask('${t.id}', this.checked)" style="margin-top: 2px; accent-color: #3b82f6; width: 14px; height: 14px; cursor: pointer;">
+                                    ${t.task_content}
+                                </label>
+                                <button type="button" onclick="deleteTask('${t.id}')" style="background: none; border: none; font-size: 12px; color: #ef4444; cursor: pointer; padding: 0 4px; font-weight: bold; opacity: 0.6;" title="삭제">✕</button>
+                            </div>
+                            `;
+                        });
+                        checklistHtml += `</div>`;
+                    }
+                    checklistHtml += `</div>`;
+                }
+
                 li.style.position = 'relative';
                 
                 li.innerHTML = `
@@ -1296,6 +1366,7 @@
                             ${rangeHtml}
                             ${locationHtml}
                             ${memoHtml}
+                            ${checklistHtml}
                         </div>
                     </div>
                 `;
