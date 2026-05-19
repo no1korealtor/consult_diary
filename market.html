@@ -833,7 +833,7 @@
         
         let html = '';
         filteredData.forEach(p => {
-            const matched = (p.status === '거래가능') ? clientsData.filter(c => isMatch(p, c)) : [];
+            const matched = ((p.status || '').trim() === '거래가능') ? clientsData.filter(c => isMatch(p, c)) : [];
             const viewed = clientsData.filter(c => c.viewed_properties && c.viewed_properties.some(v => v.property_id === p.id));
             
             let combinedClients = [...viewed];
