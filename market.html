@@ -570,7 +570,7 @@
     }
 
     function createPropertyCard(p, isMatched = false, client = null, matchedClients = []) {
-        let typeChips = p.deal_types.map(t => {
+        let typeChips = (p.deal_types || []).map(t => {
             let cls = t==='매매' ? 'sale' : (t==='전세' ? 'jeonse' : 'wolse');
             return `<span class="chip ${cls}">${t}</span>`;
         }).join('');
@@ -809,7 +809,7 @@
         
         let html = '';
         filteredData.forEach(c => {
-            let typeChips = c.target_types.map(t => `<span class="chip neutral" style="background:#e2e8f0; color:#334155;">${t} 찾음</span>`).join('');
+            let typeChips = (c.target_types || []).map(t => `<span class="chip neutral" style="background:#e2e8f0; color:#334155;">${t} 찾음</span>`).join('');
             
             let budgetStr = `최대 ${formatMoney(c.max_budget)}`;
             if (c.max_monthly) budgetStr += ` (월세 최대 ${c.max_monthly}만)`;
@@ -913,7 +913,7 @@
         const text = `🏡 [공동중개 의뢰]
 손님께서 찾으시는 조건입니다. 조건에 맞는 매물 있으시면 편하게 연락 부탁드립니다! 🙏
 
-▪️ 찾는 거래: ${c.target_types.join(', ')}
+▪️ 찾는 거래: ${(c.target_types || []).join(', ')}
 ▪️ 예산: ${budgetStr}
 ▪️ 입주 시기: ${occStr}
 ▪️ 필요 조건: ${reqs.length > 0 ? reqs.join(', ') : '특별한 조건 없음'}
@@ -963,7 +963,7 @@
         const text = `🏡 [추천 매물 안내]
 손님께서 찾으시는 조건의 매물입니다!
 
-▪️ 종류: ${p.deal_types.join(', ')}
+▪️ 종류: ${(p.deal_types || []).join(', ')}
 ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.join(' / ')}
 ▪️ 특징: ${opts.length > 0 ? opts.join(', ') : '특징 없음'}
 ▪️ 입주: ${occStr}
