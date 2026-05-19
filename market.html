@@ -469,12 +469,14 @@
         const { data: props, error: e1 } = await supabaseClient.from('properties').select('*').order('created_at', { ascending: false });
         if (e1) console.error(e1);
         propertiesData = props || [];
-        renderProperties();
 
         // Load Clients
         const { data: clients, error: e2 } = await supabaseClient.from('client_requests').select('*').order('created_at', { ascending: false });
         if (e2) console.error(e2);
         clientsData = clients || [];
+        
+        // Render both now that BOTH data arrays are fully loaded
+        renderProperties();
         renderClients();
     }
 
@@ -724,21 +726,6 @@
             })()}
         </div>
         `;
-        
-        if (p.deposit === 1000 && p.monthly_rent === 40) {
-            let debugLog = `[디버그] matchedClients.length = ${matchedClients.length}<br>`;
-            debugLog += `p.status = '${p.status}'<br>`;
-            const c = clientsData.find(x => x.client_phone && x.client_phone.includes('2940'));
-            if (c) {
-                debugLog += `client found: ${c.client_phone}<br>`;
-                debugLog += `isMatch = ${isMatch(p, c)}<br>`;
-                debugLog += `c.viewed_properties = ${JSON.stringify(c.viewed_properties)}<br>`;
-            } else {
-                debugLog += `client 2940 NOT FOUND in clientsData<br>`;
-            }
-            innerCardHtml += `<div style="background: red; color: white; padding: 10px; margin-top: 10px; font-weight: bold; font-size: 14px; border-radius: 8px;">${debugLog}</div>`;
-        }
-        
         if (isMatched && isViewed) {
             return `
             <details style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px;">
