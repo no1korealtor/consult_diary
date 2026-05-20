@@ -185,6 +185,7 @@
                     <button type="button" onclick="execDaumPostcode()" style="background: #3b82f6; color: white; border: none; border-radius: 12px; padding: 0 16px; font-weight: 700; cursor: pointer; white-space: nowrap;">새 주소 검색</button>
                 </div>
                 <input type="text" id="p_address_detail" class="form-input" placeholder="상세주소 (예: 101동 202호)">
+                <input type="text" id="p_nickname" class="form-input" placeholder="건물/매물 별명 (예: 감나무집) - 외부에 안 보임" style="margin-top: 8px; background-color: #fef3c7;">
             </div>
             <div style="display: flex; gap: 8px;">
                 <div class="form-group" style="flex: 1;">
@@ -659,7 +660,7 @@
                 ${pStatusBadge}
             </div>
             ${p.address ? `<div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px;">
-                <div style="font-size: 15px; font-weight: 800; color: #065f46; word-break: keep-all; flex:1;">📍 ${displayAddr}</div>
+                <div style="font-size: 15px; font-weight: 800; color: #065f46; word-break: keep-all; flex:1;">📍 ${displayAddr} ${p.nickname ? '<span style="font-size: 11px; color: #b45309; background: #fef3c7; padding: 2px 6px; border-radius: 4px; margin-left: 4px; vertical-align: middle;">🏷️ ' + p.nickname + '</span>' : ''}</div>
                 <div style="margin-left:8px;">${mapBtn}</div>
             </div>` : ''}
             ${phoneHtml}
@@ -1092,6 +1093,7 @@ ${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr
         
         const addrMain = document.getElementById('p_address_main').value.trim();
         const addrDetail = document.getElementById('p_address_detail').value.trim();
+        const nickname = document.getElementById('p_nickname').value.trim();
         const fullAddress = (addrMain ? addrMain + ' ' : '') + addrDetail;
         const pid = document.getElementById('p_id').value;
 
@@ -1155,6 +1157,7 @@ ${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr
             building_id: bId || null,
             room_id: rId || null,
             address: fullAddress || null,
+            nickname: nickname || null,
             owner_phone: document.getElementById('p_owner_phone').value.trim() || null,
             tenant_phone: document.getElementById('p_tenant_phone').value.trim() || null,
             deal_types: types,
@@ -1215,7 +1218,7 @@ ${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr
     function openPropModal(id = null) {
         const modal = document.getElementById('propModal');
         const title = modal.querySelector('.modal-header h3');
-        const formIds = ['p_id', 'p_address_main', 'p_address_detail', 'p_building_id', 'p_room_id', 'p_owner_phone', 'p_tenant_phone', 'p_sale', 'p_dep', 'p_rent', 'p_room', 'p_pet', 'p_parking', 'p_loan', 'p_lh', 'p_basement', 'p_occ_date', 'p_memo'];
+        const formIds = ['p_id', 'p_address_main', 'p_address_detail', 'p_nickname', 'p_building_id', 'p_room_id', 'p_owner_phone', 'p_tenant_phone', 'p_sale', 'p_dep', 'p_rent', 'p_room', 'p_pet', 'p_parking', 'p_loan', 'p_lh', 'p_basement', 'p_occ_date', 'p_memo'];
         
         formIds.forEach(fid => {
             const el = document.getElementById(fid);
@@ -1253,6 +1256,7 @@ ${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr
                 }
                 document.getElementById('p_address_main').value = addrMain;
                 document.getElementById('p_address_detail').value = addrDetail;
+                document.getElementById('p_nickname').value = p.nickname || '';
                 
                 document.getElementById('p_owner_phone').value = p.owner_phone || '';
                 document.getElementById('p_tenant_phone').value = p.tenant_phone || '';
