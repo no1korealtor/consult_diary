@@ -972,6 +972,9 @@
         const realtorPhone = formatPhoneNumber(window.currentUser?.phone) || '';
         const phoneStr = realtorPhone ? ` (${realtorPhone})` : '';
 
+        // 카톡 전송용 블라인드 처리 (메모의 개인정보 등)
+        let safeMemo = c.memo ? c.memo.replace(/010[-.\s]?[0-9]{4}[-.\s]?[0-9]{4}/g, '010-****-****').replace(/(비번|비밀번호|현관|도어락)[^\d]*[0-9]{3,}/g, '$1 ****') : '없음';
+
         const text = `🏡 [공동중개 의뢰]
 손님께서 찾으시는 조건입니다. 조건에 맞는 매물 있으시면 편하게 연락 부탁드립니다! 🙏
 
@@ -979,7 +982,7 @@
 ▪️ 예산: ${budgetStr}
 ▪️ 입주 시기: ${occStr}
 ▪️ 필요 조건: ${reqs.length > 0 ? reqs.join(', ') : '특별한 조건 없음'}
-▪️ 추가 코멘트: ${c.memo || '없음'}
+▪️ 추가 코멘트: ${safeMemo}
 
 언제든 편하게 연락 주세요! 😊
 📞 신대림공인중개사사무소 ${realtorName}${phoneStr}`;
@@ -1022,14 +1025,18 @@
         const realtorPhone = formatPhoneNumber(window.currentUser?.phone) || '';
         const phoneStr = realtorPhone ? ` (${realtorPhone})` : '';
 
+        // 카톡 전송용 블라인드 처리 (주소의 숫자, 메모의 개인정보 등)
+        let safeAddress = p.address ? p.address.replace(/[0-9]+/g, 'O') : '';
+        let safeMemo = p.memo ? p.memo.replace(/010[-.\s]?[0-9]{4}[-.\s]?[0-9]{4}/g, '010-****-****').replace(/(비번|비밀번호|현관|도어락)[^\d]*[0-9]{3,}/g, '$1 ****') : '없음';
+
         const text = `🏡 [추천 매물 안내]
 손님께서 찾으시는 조건의 매물입니다!
 
 ▪️ 종류: ${(p.deal_types || []).join(', ')}
-${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.join(' / ')}
+${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr.join(' / ')}
 ▪️ 특징: ${opts.length > 0 ? opts.join(', ') : '특징 없음'}
 ▪️ 입주: ${occStr}
-▪️ 코멘트: ${p.memo || '없음'}
+▪️ 코멘트: ${safeMemo}
 
 언제든 편하게 연락 주세요! 😊
 📞 신대림공인중개사사무소 ${realtorName}${phoneStr}`;
