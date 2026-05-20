@@ -191,28 +191,36 @@
                         road_address: roadAddress,
                         jibun_address: jibunAddress,
                         entrance_password: entrancePassword,
-                        user_id: window.currentUser.id
+                        user_id: window.currentUser.id,
+                        office_id: window.currentUser.office_id
                     }
                 ])
                 .select();
 
             if (error) {
-
-                if (
-                    error.message.includes(
-                        'unique_user_road_address'
-                    )
-                ) {
-
-                    status.innerText =
-                        '이미 등록된 주소입니다.';
-
-                    return;
+                if (error.message.includes('unique_user_road_address') || error.code === '23505') {
+                    // Fetch existing building ID
+                    const { data: existingB } = await supabaseClient.from('buildings')
+                        .select('id')
+                        .eq('road_address', roadAddress)
+                        .eq('office_id', window.currentUser.office_id)
+                        .limit(1);
+                    
+                    if (existingB && existingB.length > 0) {
+                        sessionStorage.setItem('lastRegisteredBuildingId', existingB[0].id);
+                        status.innerText = '이미 등록된 건물입니다. 이전 화면으로 돌아갑니다...';
+                        setTimeout(() => {
+                            if (document.referrer) {
+                                location.href = document.referrer;
+                            } else {
+                                history.back();
+                            }
+                        }, 1500);
+                        return;
+                    }
                 }
 
-                status.innerText =
-                    '에러: ' + error.message;
-
+                status.innerText = '에러: ' + error.message;
                 return;
             }
 

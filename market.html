@@ -1160,20 +1160,47 @@ ${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr
                 jibun_address: jibun || null
             }).select();
 
-            if (errB) { alert('새 건물 풀(Pool) 등록 실패: ' + errB.message); return; }
-            if (newB && newB.length > 0) {
+            if (errB) {
+                if (errB.message.includes('unique_user_road_address') || errB.code === '23505') {
+                    const { data: existingB } = await supabaseClient.from('buildings')
+                        .select('id')
+                        .eq('road_address', road)
+                        .eq('office_id', window.currentUser.office_id)
+                        .limit(1);
+                    if (existingB && existingB.length > 0) {
+                        bId = existingB[0].id;
+                    } else {
+                        alert('새 건물 풀(Pool) 등록 실패: ' + errB.message); return;
+                    }
+                } else {
+                    alert('새 건물 풀(Pool) 등록 실패: ' + errB.message); return;
+                }
+            } else if (newB && newB.length > 0) {
                 bId = newB[0].id;
-                
+            }
+
+            if (bId) {
                 // 호수도 기본 생성 (건물전체 혹은 상세주소)
                 const roomName = addrDetail || '건물전체';
-                const { data: newR, error: errR } = await supabaseClient.from('rooms').insert({
-                    user_id: window.currentUser.id, office_id: window.currentUser.office_id,
-                    building_id: bId,
-                    room_name: roomName
-                }).select();
+                const { data: existingR } = await supabaseClient.from('rooms')
+                    .select('id')
+                    .eq('building_id', bId)
+                    .eq('room_name', roomName)
+                    .eq('office_id', window.currentUser.office_id)
+                    .limit(1);
                 
-                if (!errR && newR && newR.length > 0) {
-                    rId = newR[0].id;
+                if (existingR && existingR.length > 0) {
+                    rId = existingR[0].id;
+                } else {
+                    const { data: newR, error: errR } = await supabaseClient.from('rooms').insert({
+                        user_id: window.currentUser.id, office_id: window.currentUser.office_id,
+                        building_id: bId,
+                        room_name: roomName
+                    }).select();
+                    
+                    if (!errR && newR && newR.length > 0) {
+                        rId = newR[0].id;
+                    }
                 }
             }
         }
