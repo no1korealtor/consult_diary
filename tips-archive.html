@@ -66,7 +66,7 @@
                 const { data: savedData } = await supabaseClient
                     .from('user_tip_status')
                     .select('tip_id')
-                    .eq('user_id', window.currentUser.id)
+                    .eq('office_id', window.currentUser.office_id)
                     .eq('is_saved', true);
                     
                 if (savedData) {

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -122,7 +122,7 @@
                 await supabaseClient
                     .from('buildings')
                     .select('*')
-                    .eq('user_id', window.currentUser.id)
+                    .eq('office_id', window.currentUser.office_id)
                     .order('created_at', { ascending: false });
 
             if (error) {
@@ -202,7 +202,7 @@
                     .from('rooms')
                     .select('*')
                     .eq('building_id', buildingId)
-                    .eq('user_id', window.currentUser.id);
+                    .eq('office_id', window.currentUser.office_id);
 
             if (error) {
                 console.log(error);
@@ -266,7 +266,7 @@
                             schedule_type: contractType,
                             schedule_date: balanceDate,
                             memo: memo,
-                            user_id: window.currentUser.id
+                            user_id: window.currentUser.id, office_id: window.currentUser.office_id
                         }
                     ]);
 
@@ -298,7 +298,7 @@
                     buildings ( road_address ),
                     rooms ( room_name )
                 `)
-                .eq('user_id', window.currentUser.id)
+                .eq('office_id', window.currentUser.office_id)
                 .order('created_at', { ascending: false })
                 .limit(10);
 

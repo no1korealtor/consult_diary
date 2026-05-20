@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -227,7 +227,7 @@
                         )
                     `)
                     .eq('id', scheduleId)
-                    .eq('user_id', window.currentUser.id)
+                    .eq('office_id', window.currentUser.office_id)
                     .single();
 
             if (error) {
@@ -411,7 +411,7 @@
                 .from('utility_meters')
                 .select('*')
                 .eq('room_id', roomId)
-                .eq('user_id', window.currentUser.id);
+                .eq('office_id', window.currentUser.office_id);
 
             if (error) {
                 document.getElementById('meterInfo').style.display = 'block';
@@ -474,7 +474,7 @@
                 .from('buildings')
                 .update({ entrance_password: newPwd })
                 .eq('id', window.currentBuildingId)
-                .eq('user_id', window.currentUser.id);
+                .eq('office_id', window.currentUser.office_id);
                 
             if (error) {
                 alert('비밀번호 변경 실패: ' + error.message);

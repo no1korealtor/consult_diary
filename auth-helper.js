@@ -48,11 +48,19 @@ async function requireAuth(bypassProfileCheck = false) {
         return null;
     }
 
+    // 데이터 DB(supabaseClient)에서 office_id를 추가로 가져옵니다.
+    const { data: dataProfile } = await supabaseClient
+        .from('users')
+        .select('office_id')
+        .eq('id', user.id)
+        .single();
+
     // user 객체에 추가 정보를 함께 저장해둠 (나중에 권한 분리에 유용함)
     user.role = profile.role;
     user.office_address = profile.office_address;
     user.phone = profile.phone;
     user.name = profile.name || user.email;
+    user.office_id = (dataProfile && dataProfile.office_id) ? dataProfile.office_id : user.id;
     window.currentUser = user;
     
     // Inject Admin Nav button if admin

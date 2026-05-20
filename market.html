@@ -466,12 +466,12 @@
 
     async function loadData() {
         // Load Properties
-        const { data: props, error: e1 } = await supabaseClient.from('properties').select('*').eq('user_id', window.currentUser.id).order('created_at', { ascending: false });
+        const { data: props, error: e1 } = await supabaseClient.from('properties').select('*').eq('office_id', window.currentUser.office_id).order('created_at', { ascending: false });
         if (e1) console.error(e1);
         propertiesData = props || [];
 
         // Load Clients
-        const { data: clients, error: e2 } = await supabaseClient.from('client_requests').select('*').eq('user_id', window.currentUser.id).order('created_at', { ascending: false });
+        const { data: clients, error: e2 } = await supabaseClient.from('client_requests').select('*').eq('office_id', window.currentUser.office_id).order('created_at', { ascending: false });
         if (e2) console.error(e2);
         clientsData = clients || [];
         
@@ -481,8 +481,8 @@
     }
 
     async function loadBuildingsAndRooms() {
-        const { data: buildings } = await supabaseClient.from('buildings').select('*').eq('user_id', window.currentUser.id);
-        const { data: rooms } = await supabaseClient.from('rooms').select('*').eq('user_id', window.currentUser.id);
+        const { data: buildings } = await supabaseClient.from('buildings').select('*').eq('office_id', window.currentUser.office_id);
+        const { data: rooms } = await supabaseClient.from('rooms').select('*').eq('office_id', window.currentUser.office_id);
         
         if (!buildings || !rooms) return;
 
@@ -1116,7 +1116,7 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
             if (match) jibun = match[1];
 
             const { data: newB, error: errB } = await supabaseClient.from('buildings').insert({
-                user_id: window.currentUser.id,
+                user_id: window.currentUser.id, office_id: window.currentUser.office_id,
                 road_address: road,
                 jibun_address: jibun || null
             }).select();
@@ -1128,7 +1128,7 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
                 // 호수도 기본 생성 (건물전체 혹은 상세주소)
                 const roomName = addrDetail || '건물전체';
                 const { data: newR, error: errR } = await supabaseClient.from('rooms').insert({
-                    user_id: window.currentUser.id,
+                    user_id: window.currentUser.id, office_id: window.currentUser.office_id,
                     building_id: bId,
                     room_name: roomName
                 }).select();
@@ -1140,7 +1140,7 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
         }
 
         const payload = {
-            user_id: window.currentUser.id,
+            user_id: window.currentUser.id, office_id: window.currentUser.office_id,
             building_id: bId || null,
             room_id: rId || null,
             address: fullAddress || null,
@@ -1286,7 +1286,7 @@ ${p.address ? `▪️ 위치: ${p.address}\n` : ''}▪️ 금액: ${priceStr.joi
         if (types.length === 0) { alert('찾으시는 거래 종류를 선택해주세요.'); return; }
 
         const payload = {
-            user_id: window.currentUser.id,
+            user_id: window.currentUser.id, office_id: window.currentUser.office_id,
             client_name: name,
             client_phone: phone,
             target_types: types,

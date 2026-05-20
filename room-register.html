@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -69,7 +69,7 @@
                 await supabaseClient
                     .from('buildings')
                     .select('*')
-                    .eq('user_id', window.currentUser.id)
+                    .eq('office_id', window.currentUser.office_id)
                     .order('created_at', { ascending: false });
 
             if (error) {
@@ -156,7 +156,7 @@
                         {
                             building_id: buildingId,
                             room_name: roomName,
-                            user_id: window.currentUser.id
+                            user_id: window.currentUser.id, office_id: window.currentUser.office_id
                         }
                     ])
                     .select();

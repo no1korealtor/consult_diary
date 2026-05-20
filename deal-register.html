@@ -343,8 +343,8 @@
 
         async function loadBuildings() {
 
-            const p1 = supabaseClient.from('buildings').select('*').eq('user_id', window.currentUser.id).order('created_at', { ascending: false });
-            const p2 = supabaseClient.from('properties').select('id, address, deal_types, room_count, memo').eq('user_id', window.currentUser.id).order('created_at', { ascending: false });
+            const p1 = supabaseClient.from('buildings').select('*').eq('office_id', window.currentUser.office_id).order('created_at', { ascending: false });
+            const p2 = supabaseClient.from('properties').select('id, address, deal_types, room_count, memo').eq('office_id', window.currentUser.office_id).order('created_at', { ascending: false });
 
             const [res1, res2] = await Promise.all([p1, p2]);
 
@@ -532,7 +532,7 @@
                     .from('rooms')
                     .select('*')
                     .eq('building_id', buildingId)
-                    .eq('user_id', window.currentUser.id);
+                    .eq('office_id', window.currentUser.office_id);
 
             if (error) {
                 console.log(error);
@@ -731,7 +731,7 @@
                 proposal_deadline: pDead,
                 min_attendance: pMin,
                 memo: finalMemo,
-                user_id: window.currentUser.id
+                user_id: window.currentUser.id, office_id: window.currentUser.office_id
             };
             
             if (contractType !== '모임') {
@@ -774,7 +774,7 @@
         window.setAttendance = async function(scheduleId, status) {
             const { error } = await supabaseClient
                 .from('schedule_attendances')
-                .upsert({ schedule_id: scheduleId, user_id: window.currentUser.id, status: status }, { onConflict: 'schedule_id,user_id' });
+                .upsert({ schedule_id: scheduleId, user_id: window.currentUser.id, office_id: window.currentUser.office_id, status: status }, { onConflict: 'schedule_id,user_id' });
             if (error) {
                 alert('투표 저장에 실패했습니다: ' + error.message);
                 return;
@@ -908,7 +908,7 @@
             if (data) {
                 allDeals = data.filter(schedule => {
                     if (hiddenProposals.includes(schedule.id)) return false;
-                    const isMine = schedule.user_id === window.currentUser.id;
+                    const isMine = schedule.user_id === window.currentUser.id || window.currentUser.role === 'broker';
                     const isPrivate = (schedule.memo || '').includes('[PRIVATE]');
                     if (isPrivate && !isMine) return false;
                     return true;
@@ -1016,7 +1016,7 @@
                     rawMemo = rawMemo.replace('[PROPOSAL]', '');
                 }
                 
-                const isMine = schedule.user_id === window.currentUser.id;
+                const isMine = schedule.user_id === window.currentUser.id || window.currentUser.role === 'broker';
                 const isSharedMeeting = schedule.schedule_type === '모임' && !isPrivateMeeting;
                 
                 let isHiddenProposal = false;
@@ -1691,7 +1691,7 @@ async function loadTips() {
         const { data: hidden } = await supabaseClient
             .from("user_tip_status")
             .select("tip_id")
-            .eq("user_id", window.currentUser.id)
+            .eq("office_id", window.currentUser.office_id)
             .eq("is_hidden", true);
             
         if (!error && tips) {
@@ -1734,7 +1734,7 @@ async function saveCurrentTip(e) {
     
     // DB에 스크랩(저장) 처리 기록 (is_hidden = true, is_saved = true)
     const { error } = await supabaseClient.from("user_tip_status").upsert({
-        user_id: window.currentUser.id,
+        user_id: window.currentUser.id, office_id: window.currentUser.office_id,
         tip_id: currentTip.id,
         is_hidden: true,
         is_saved: true
@@ -1757,7 +1757,7 @@ async function hideCurrentTip(e) {
     
     // DB에 숨김 처리 기록
     const { error } = await supabaseClient.from("user_tip_status").upsert({
-        user_id: window.currentUser.id,
+        user_id: window.currentUser.id, office_id: window.currentUser.office_id,
         tip_id: currentTip.id,
         is_hidden: true
     }, { onConflict: "user_id,tip_id" });
