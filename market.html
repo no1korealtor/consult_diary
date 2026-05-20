@@ -1034,6 +1034,11 @@
                         <button onclick="copyClientToKakao('${c.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 2px;">
                             💬 의뢰
                         </button>
+                        ${c.status === '탐색중' ? 
+                            `<button onclick="closeClient('${c.id}')" style="background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer;">🔒 종결</button>`
+                            : 
+                            `<button onclick="reopenClient('${c.id}')" style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer;">🔓 탐색중 전환</button>`
+                        }
                         <button onclick="openClientModal('${c.id}')" style="background: #f1f5f9; color: #475569; border: none; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer;">✏️ 수정</button>
                         <button onclick="deleteClient('${c.id}')" style="background: #fee2e2; color: #b91c1c; border: none; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer;">🗑️ 삭제</button>
                     </div>
@@ -1497,6 +1502,26 @@ ${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr
         
         document.getElementById('clientModal').style.display = 'none';
         alert(cid ? '손님 정보가 수정되었습니다.' : '손님 조건이 등록되었습니다.');
+        loadData();
+    }
+
+    async function closeClient(id) {
+        if (!confirm('이 손님을 변심/종료(종결) 상태로 변경하시겠습니까?\n매칭에서 제외되지만 데이터는 보존됩니다.')) return;
+        const { error } = await supabaseClient.from('client_requests').update({ status: '변경/종료' }).eq('id', id);
+        if (error) {
+            alert('종결 처리 실패: ' + error.message);
+            return;
+        }
+        loadData();
+    }
+    
+    async function reopenClient(id) {
+        if (!confirm('이 손님을 다시 탐색중 상태로 복구하시겠습니까?')) return;
+        const { error } = await supabaseClient.from('client_requests').update({ status: '탐색중' }).eq('id', id);
+        if (error) {
+            alert('복구 처리 실패: ' + error.message);
+            return;
+        }
         loadData();
     }
 
