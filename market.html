@@ -339,6 +339,27 @@
     </div>
 </div>
 
+<!-- 빠른 일정 등록 모달 -->
+<div class="modal-overlay" id="quickScheduleModal" style="display:none;" onmousedown="closeModal(event, 'quickScheduleModal')">
+    <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #1e293b;">📅 집 보기 약속 잡기</h3>
+            <button type="button" onclick="document.getElementById('quickScheduleModal').style.display='none'" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; padding: 0 8px;">✕</button>
+        </div>
+        <input type="hidden" id="qs_building_id">
+        <input type="hidden" id="qs_room_id">
+        <div class="form-group">
+            <label class="form-label">방문 일시</label>
+            <input type="datetime-local" id="qs_date" class="form-input">
+        </div>
+        <div class="form-group">
+            <label class="form-label">메모 (선택)</label>
+            <textarea id="qs_memo" class="form-input" placeholder="예: 건물 앞 만나기로 함" style="height: 80px;"></textarea>
+        </div>
+        <button type="button" class="btn-primary" onclick="saveQuickSchedule()">일정 장부에 저장하기</button>
+    </div>
+</div>
+
 <nav class="bottom-nav">
     <a href="deal-register.html" class="nav-item">
         <span class="nav-icon">🏠</span>
@@ -691,7 +712,10 @@
                             '<input type="checkbox" onchange="toggleViewedProperty(\'' + client.id + '\', \'' + p.id + '\', this.checked)" ' + (isViewed ? 'checked' : '') + ' style="width: 16px; height: 16px; accent-color: #10b981;">' +
                             (isViewed ? '✅ 집 보여줌' : '집 보여줌 (체크 시 저장)') +
                         '</label>' +
-                        (isViewed ? '<span style="font-size: 11px; color: #94a3b8;">' + viewedAtStr + ' 방문</span>' : '') +
+                        '<div style="display: flex; align-items: center; gap: 8px;">' +
+                            '<button type="button" onclick="event.stopPropagation(); openQuickSchedule(\'' + (p.building_id || '') + '\', \'' + (p.room_id || '') + '\', \'' + formatPhoneNumber(client.client_phone) + '\')" style="background: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);">📅 약속잡기</button>' +
+                            (isViewed ? '<span style="font-size: 11px; color: #94a3b8;">' + viewedAtStr + ' 방문</span>' : '') +
+                        '</div>' +
                     '</div>';
                 }
                 if (!isMatched && matchedClients && matchedClients.length > 0) {
@@ -1420,6 +1444,71 @@ ${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr
         toggleClientPrice();
         toggleClientOcc();
         modal.style.display = 'flex';
+    }
+
+    function openQuickSchedule(bId, rId, clientPhone) {
+        if (!bId) {
+            alert('이 매물은 아직 마스터 주소(건물)가 등록되지 않아 일정을 추가할 수 없습니다.\n매물 수정을 눌러서 주소를 다시 설정해주세요.');
+            return;
+        }
+        document.getElementById('qs_building_id').value = bId;
+        document.getElementById('qs_room_id').value = rId;
+        
+        // 기본 시간을 현재 시간 기준 다음 정각으로 세팅
+        const now = new Date();
+        now.setHours(now.getHours() + 1);
+        now.setMinutes(0);
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('qs_date').value = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+        
+        document.getElementById('qs_memo').value = '🧑‍💼 손님(' + clientPhone + ')과 집 보기 약속';
+        document.getElementById('quickScheduleModal').style.display = 'flex';
+    }
+
+    async function saveQuickSchedule() {
+        const bId = document.getElementById('qs_building_id').value;
+        const rId = document.getElementById('qs_room_id').value;
+        const dateVal = document.getElementById('qs_date').value;
+        const memo = document.getElementById('qs_memo').value;
+
+        if (!dateVal) {
+            alert('방문 일시를 선택해주세요.');
+            return;
+        }
+
+        const btn = document.querySelector('#quickScheduleModal .btn-primary');
+        btn.innerText = '저장 중...';
+        btn.disabled = true;
+
+        try {
+            const [datePart, timePart] = dateVal.split('T');
+            const timeStr = timePart ? `[${timePart}] ` : '';
+
+            const { error } = await supabaseClient.from('schedules').insert([{
+                building_id: bId,
+                room_id: rId || null,
+                schedule_type: '집보기',
+                schedule_date: datePart,
+                memo: timeStr + memo,
+                user_id: window.currentUser.id, 
+                office_id: window.currentUser.office_id
+            }]);
+
+            if (error) throw error;
+            
+            alert('일정 장부에 성공적으로 저장되었습니다!');
+            document.getElementById('quickScheduleModal').style.display = 'none';
+        } catch(e) {
+            console.error(e);
+            alert('저장 실패: ' + e.message);
+        } finally {
+            btn.innerText = '일정 장부에 저장하기';
+            btn.disabled = false;
+        }
     }
 
     async function checkAuthAndLoad() {
