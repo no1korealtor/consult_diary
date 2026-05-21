@@ -94,6 +94,7 @@
         }
         .filter-container::-webkit-scrollbar { display: none; }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -122,7 +123,10 @@
 
     <!-- 매물장 탭 -->
     <div id="propertiesTab">
-        <button class="btn-primary" onclick="openPropModal()" style="margin-bottom: 16px;">+ 새 매물 등록하기</button>
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <button class="btn-primary" onclick="openPropModal()" style="margin: 0; flex: 1;">+ 새 매물 등록하기</button>
+            <button id="excelPropBtn" onclick="downloadPropertiesExcel()" style="display: none; background: #16a34a; color: white; border: none; padding: 0 16px; border-radius: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);">엑셀 ⬇️</button>
+        </div>
         
         <div class="filter-container" id="propFilterContainer">
             <button class="filter-btn active" onclick="setPropFilter('all', this)">전체</button>
@@ -138,7 +142,10 @@
 
     <!-- 손님 장부 탭 -->
     <div id="clientsTab" style="display: none;">
-        <button class="btn-primary" onclick="openClientModal()" style="background: #10b981; margin-bottom: 16px; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">+ 새 손님 등록하기</button>
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <button class="btn-primary" onclick="openClientModal()" style="background: #10b981; margin: 0; flex: 1; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">+ 새 손님 등록하기</button>
+            <button id="excelClientBtn" onclick="downloadClientsExcel()" style="display: none; background: #16a34a; color: white; border: none; padding: 0 16px; border-radius: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);">엑셀 ⬇️</button>
+        </div>
         
         <div class="filter-container" id="clientFilterContainer">
             <button class="filter-btn active" onclick="setClientFilter('all', this)">전체</button>
@@ -501,6 +508,77 @@
         // Render both now that BOTH data arrays are fully loaded
         renderProperties();
         renderClients();
+
+        if (window.currentUser && window.currentUser.role === 'admin') {
+            const btn1 = document.getElementById('excelPropBtn');
+            const btn2 = document.getElementById('excelClientBtn');
+            if (btn1) btn1.style.display = 'block';
+            if (btn2) btn2.style.display = 'block';
+        }
+    }
+
+    function downloadPropertiesExcel() {
+        if (!propertiesData || propertiesData.length === 0) {
+            alert("다운로드할 매물 데이터가 없습니다."); return;
+        }
+        
+        const rows = propertiesData.map(p => ({
+            "등록일": new Date(p.created_at).toLocaleDateString(),
+            "상태": p.status,
+            "거래종류": (p.deal_types || []).join(', '),
+            "매도가(만)": p.sale_price || '',
+            "보증금(만)": p.deposit || '',
+            "월세(만)": p.monthly_rent || '',
+            "주소": p.address || '',
+            "별명": p.nickname || '',
+            "방수": p.room_count || '',
+            "매도/임대인 연락처": p.owner_phone || '',
+            "세입자 연락처": p.tenant_phone || '',
+            "입주시기": p.occupancy_type + (p.occupancy_date ? ` (${p.occupancy_date})` : ''),
+            "옵션/조건": [
+                p.pet_allowed ? '반려동물' : '',
+                p.parking_allowed ? '주차' : '',
+                p.loan_allowed ? '대출가능' : '',
+                p.lh_sh_allowed ? 'LH/SH' : '',
+                p.is_basement ? '반지하' : ''
+            ].filter(Boolean).join(', '),
+            "메모": p.memo || ''
+        }));
+        
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "매물목록");
+        XLSX.writeFile(wb, "매물장부_백업.xlsx");
+    }
+
+    function downloadClientsExcel() {
+        if (!clientsData || clientsData.length === 0) {
+            alert("다운로드할 손님 데이터가 없습니다."); return;
+        }
+        
+        const rows = clientsData.map(c => ({
+            "등록일": new Date(c.created_at).toLocaleDateString(),
+            "상태": c.status,
+            "찾는종류": (c.target_types || []).join(', '),
+            "최대예산/보증금(만)": c.max_budget || '',
+            "최대월세(만)": c.max_monthly || '',
+            "손님 연락처": c.client_phone || '',
+            "최소방수": c.min_room_count || '',
+            "희망입주시기": c.occupancy_type + (c.occupancy_date ? ` (${c.occupancy_date})` : '') + (c.occupancy_period_memo ? ` (${c.occupancy_period_memo})` : ''),
+            "필수조건": [
+                c.need_pet ? '반려동물' : '',
+                c.need_parking ? '주차' : '',
+                c.need_loan ? '대출필수' : '',
+                c.need_lh_sh ? 'LH/SH' : '',
+                c.need_exclude_basement ? '지층제외' : ''
+            ].filter(Boolean).join(', '),
+            "메모": c.memo || ''
+        }));
+        
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "손님목록");
+        XLSX.writeFile(wb, "손님장부_백업.xlsx");
     }
 
     async function loadBuildingsAndRooms() {
