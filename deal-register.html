@@ -925,12 +925,26 @@
             loadschedules();
         };
 
-        window.hideProposal = function(scheduleId) {
-            const key = 'hiddenProposals_' + window.currentUser.id;
-            let hidden = JSON.parse(localStorage.getItem(key) || '[]');
-            if (!hidden.includes(scheduleId)) {
-                hidden.push(scheduleId);
-                localStorage.setItem(key, JSON.stringify(hidden));
+        window.hideProposal = async function(scheduleId) {
+            const { data: schedule, error: fetchErr } = await supabaseClient
+                .from('schedules')
+                .select('memo')
+                .eq('id', scheduleId)
+                .single();
+                
+            if (fetchErr || !schedule) {
+                alert('일정 정보를 불러오지 못했습니다.'); return;
+            }
+            
+            const newMemo = (schedule.memo || '') + '\n[HIDDEN:' + window.currentUser.id + ']';
+            
+            const { error } = await supabaseClient
+                .from('schedules')
+                .update({ memo: newMemo })
+                .eq('id', scheduleId);
+                
+            if (error) {
+                alert('숨김 처리에 실패했습니다.'); return;
             }
             loadschedules();
         };
@@ -986,12 +1000,10 @@
             list.innerHTML = '';
             
             let allDeals = [];
-            const hiddenKey = 'hiddenProposals_' + window.currentUser.id;
-            const hiddenProposals = JSON.parse(localStorage.getItem(hiddenKey) || '[]');
 
             if (data) {
                 allDeals = data.filter(schedule => {
-                    if (hiddenProposals.includes(schedule.id)) return false;
+                    if ((schedule.memo || '').includes('[HIDDEN:' + window.currentUser.id + ']')) return false;
                     const isMine = schedule.user_id === window.currentUser.id || window.currentUser.role === 'broker';
                     const isPrivate = (schedule.memo || '').includes('[PRIVATE]');
                     if (isPrivate && !isMine) return false;
@@ -1105,9 +1117,7 @@
                 
                 let isHiddenProposal = false;
                 if (isSharedMeeting && !isMine) {
-                    const key = 'hiddenProposals_' + window.currentUser.id;
-                    const hiddenProposals = JSON.parse(localStorage.getItem(key) || '[]');
-                    if (hiddenProposals.includes(schedule.id)) {
+                    if (rawMemo.includes('[HIDDEN:' + window.currentUser.id + ']')) {
                         isHiddenProposal = true;
                     }
                 }
