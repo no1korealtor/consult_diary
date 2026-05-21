@@ -566,23 +566,31 @@
         });
     }
 
-    function formatPhoneNumber(number) {
+    function formatPhoneNumber(number, ownerId) {
         if (!number) return '';
         const cleaned = ('' + number).replace(/\D/g, '');
+        let formatted = number;
         if (cleaned.length === 11) {
-            return cleaned.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+            formatted = cleaned.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
         } else if (cleaned.length === 10) {
             if (cleaned.startsWith('02')) {
-                return cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+                formatted = cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
             } else {
-                return cleaned.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+                formatted = cleaned.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
             }
         } else if (cleaned.length === 9) {
-            return cleaned.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+            formatted = cleaned.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
         } else if (cleaned.length === 8 && !cleaned.startsWith('0')) {
-            return cleaned.replace(/(\d{4})(\d{4})/, '$1-$2'); // 1588-0000
+            formatted = cleaned.replace(/(\d{4})(\d{4})/, '$1-$2'); // 1588-0000
         }
-        return number;
+        
+        if (window.currentUser && window.currentUser.role === 'admin') return formatted;
+        if (ownerId && window.currentUser && window.currentUser.id === ownerId) return formatted;
+        
+        if (formatted.includes('-')) {
+            return formatted.replace(/(?<=\d{2,3}-)\d{3,4}(?=-\d{4})/, '****');
+        }
+        return formatted;
     }
 
     function formatMoney(val) {
@@ -595,7 +603,12 @@
         return `${val}만`;
     }
 
-    function createPropertyCard(p, isMatched = false, client = null, matchedClients = []) {
+    function createPropertyCard(p_orig, isMatched = false, client = null, matchedClients = []) {
+        let p = { ...p_orig };
+        if (window.formatAddress) p.address = window.formatAddress(p.address, p.user_id);
+        p.owner_phone = formatPhoneNumber(p.owner_phone, p.user_id);
+        p.tenant_phone = formatPhoneNumber(p.tenant_phone, p.user_id);
+        
         let typeChips = (p.deal_types || []).map(t => {
             let cls = t==='매매' ? 'sale' : (t==='전세' ? 'jeonse' : 'wolse');
             return `<span class="chip ${cls}">${t}</span>`;
@@ -983,7 +996,9 @@
         }
         
         let html = '';
-        filteredData.forEach(c => {
+        filteredData.forEach(c_orig => {
+            let c = { ...c_orig };
+            c.client_phone = formatPhoneNumber(c.client_phone, c.user_id);
             let typeChips = (c.target_types || []).map(t => `<span class="chip neutral" style="background:#e2e8f0; color:#334155;">${t} 찾음</span>`).join('');
             
             let budgetStr = `최대 ${formatMoney(c.max_budget)}`;

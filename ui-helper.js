@@ -145,3 +145,6 @@
         };
     });
 })();
+
+window.formatPhone = function(phone, ownerId) { if (!phone) return ''; if (window.currentUser && (window.currentUser.role === 'admin' || window.currentUser.id === ownerId)) return phone; if (phone.includes('-')) return phone.replace(/(?<=\d{2,3}-)\d{3,4}(?=-\d{4})/, '****'); if (phone.length >= 10) return phone.substring(0,3) + '-****-' + phone.substring(phone.length-4); return '***-****-****'; }; 
+window.formatAddress = function(address, ownerId) { if (!address) return ''; if (window.currentUser && (window.currentUser.role === 'admin' || window.currentUser.id === ownerId)) return address; return address.replace(/\d+동|\d+호/g, '***'); };

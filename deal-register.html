@@ -437,7 +437,9 @@
                     if (prop.memo) {
                         memoStr = ` | 📝 ${prop.memo.replace(/\n/g, ' ').replace(/\\[SETTLED_DATE\\].*?\\[\\/SETTLED_DATE\\]/g, '').substring(0, 30)}`;
                     }
-                    option.textContent = `[매물] ${prop.address || '주소없음'} (${typeStr}${roomStr})${memoStr}`;
+                    let displayAddr = prop.address || '주소없음';
+                    if (window.formatAddress) displayAddr = window.formatAddress(displayAddr, prop.user_id);
+                    option.textContent = `[매물] ${displayAddr} (${typeStr}${roomStr})${memoStr}`;
                     option.setAttribute('data-fulltext', (prop.address || '') + ' ' + (prop.memo || ''));
                     optgroupP.appendChild(option);
                 });
@@ -1338,6 +1340,7 @@
                     if (schedule.buildings.jibun_address) {
                         bName += ' (' + schedule.buildings.jibun_address + ')';
                     }
+                    if (window.formatAddress) bName = window.formatAddress(bName, schedule.user_id);
                     const rName = schedule.rooms ? schedule.rooms.room_name : '';
                     locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📍 ${bName} <span style="color: #3b82f6;">${rName}</span></div>`;
                     typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800;">${schedule.schedule_type}</span>`;
