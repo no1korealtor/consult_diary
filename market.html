@@ -711,9 +711,17 @@
         }).join('');
         
         let priceStr = [];
-        if (p.sale_price) priceStr.push(`매도 ${formatMoney(p.sale_price)}`);
-        if (p.deposit && !p.monthly_rent) priceStr.push(`전세 ${formatMoney(p.deposit)}`);
-        if (p.deposit && p.monthly_rent) priceStr.push(`월세 ${formatMoney(p.deposit)}/${p.monthly_rent}`);
+        if (p.deal_types && p.deal_types.includes('매매') && p.sale_price && p.deposit) {
+            let actualInvest = p.sale_price - p.deposit;
+            let subStr = `실투 ${formatMoney(actualInvest)}`;
+            if (p.monthly_rent) subStr += ` / 월 ${p.monthly_rent}만`;
+            if (p.occupancy_date) subStr += ` 만기 ${p.occupancy_date}`;
+            priceStr.push(`매도 ${formatMoney(p.sale_price)} <span style="font-size: 13px; color: #ef4444; font-weight: 800;">(${subStr})</span>`);
+        } else {
+            if (p.sale_price) priceStr.push(`매도 ${formatMoney(p.sale_price)}`);
+            if (p.deposit && !p.monthly_rent) priceStr.push(`전세 ${formatMoney(p.deposit)}`);
+            if (p.deposit && p.monthly_rent) priceStr.push(`월세 ${formatMoney(p.deposit)}/${p.monthly_rent}`);
+        }
         
         let p_rooms_tag = '';
         if (p.memo && p.memo.includes('[ROOM:')) {
@@ -1294,9 +1302,17 @@
         if (!p) return;
 
         let priceStr = [];
-        if (p.sale_price) priceStr.push(`매도 ${formatMoney(p.sale_price)}`);
-        if (p.deposit && !p.monthly_rent) priceStr.push(`전세 ${formatMoney(p.deposit)}`);
-        if (p.deposit && p.monthly_rent) priceStr.push(`월세 ${formatMoney(p.deposit)}/${p.monthly_rent}`);
+        if (p.deal_types && p.deal_types.includes('매매') && p.sale_price && p.deposit) {
+            let actualInvest = p.sale_price - p.deposit;
+            let subStr = `실투 ${formatMoney(actualInvest)}`;
+            if (p.monthly_rent) subStr += ` / 월 ${p.monthly_rent}만`;
+            if (p.occupancy_date) subStr += ` 만기 ${p.occupancy_date}`;
+            priceStr.push(`매도 ${formatMoney(p.sale_price)} (${subStr})`);
+        } else {
+            if (p.sale_price) priceStr.push(`매도 ${formatMoney(p.sale_price)}`);
+            if (p.deposit && !p.monthly_rent) priceStr.push(`전세 ${formatMoney(p.deposit)}`);
+            if (p.deposit && p.monthly_rent) priceStr.push(`월세 ${formatMoney(p.deposit)}/${p.monthly_rent}`);
+        }
         
         let p_rooms_tag = '';
         if (p.memo && p.memo.includes('[ROOM:')) {
