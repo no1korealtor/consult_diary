@@ -13,7 +13,7 @@ def modify_file(filepath):
     # 2. Add Checklist HTML logic just after memoHtml rendering
     checklist_logic = """
                 let checklistHtml = '';
-                if (!isGlobal && (isMine || (window.currentUser && window.currentUser.role === 'admin'))) {
+                if (isMine || (window.currentUser && window.currentUser.role === 'admin')) {
                     let tasks = schedule.schedule_tasks || [];
                     tasks.sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
                     
