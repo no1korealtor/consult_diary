@@ -304,6 +304,7 @@
                     <label class="checkbox-label"><input type="checkbox" name="c_type" value="매매" onchange="toggleClientPrice()">매매</label>
                     <label class="checkbox-label"><input type="checkbox" name="c_type" value="전세" onchange="toggleClientPrice()">전세</label>
                     <label class="checkbox-label"><input type="checkbox" name="c_type" value="월세" onchange="toggleClientPrice()">월세</label>
+                    <label class="checkbox-label"><input type="checkbox" name="c_type" value="갭투/투자" onchange="toggleClientPrice()">갭투/투자</label>
                 </div>
             </div>
             
@@ -1011,7 +1012,11 @@
         if (!p.deal_types || !Array.isArray(p.deal_types)) return false;
         if (!c.target_types || !Array.isArray(c.target_types)) return false;
         
-        const typeMatch = p.deal_types.some(pt => c.target_types.includes(pt));
+        const typeMatch = p.deal_types.some(pt => {
+            if (c.target_types.includes(pt)) return true;
+            if (pt === '매매' && c.target_types.includes('갭투/투자')) return true;
+            return false;
+        });
         if (!typeMatch) return false;
         
         let isBudgetOk = false;
@@ -1023,7 +1028,7 @@
         const cMaxMonthly = parseInt(c.max_monthly) || 0;
         const flexRent = cMaxMonthly > 0 ? cMaxMonthly + 10 : 9999999;
         
-        if (c.target_types.includes('매매') && p.deal_types.includes('매매')) {
+        if ((c.target_types.includes('매매') || c.target_types.includes('갭투/투자')) && p.deal_types.includes('매매')) {
             if (pSale > 0 && pSale <= cBudget) isBudgetOk = true;
         }
         if (c.target_types.includes('전세') && p.deal_types.includes('전세')) {
