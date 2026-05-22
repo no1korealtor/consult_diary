@@ -130,8 +130,8 @@
         </div>
         
         <div class="filter-container" id="propFilterContainer">
-            <button class="filter-btn active" onclick="setPropFilter('all', this)">전체</button>
-            <button class="filter-btn" onclick="setPropFilter('거래가능', this)">🟢 거래가능</button>
+            <button class="filter-btn" onclick="setPropFilter('all', this)">전체</button>
+            <button class="filter-btn active" onclick="setPropFilter('거래가능', this)">🟢 거래가능</button>
             <button class="filter-btn" onclick="setPropFilter('보류', this)">🟡 보류</button>
             <button class="filter-btn" onclick="setPropFilter('거래종료', this)">🔴 거래종료</button>
         </div>
@@ -149,8 +149,8 @@
         </div>
         
         <div class="filter-container" id="clientFilterContainer">
-            <button class="filter-btn active" onclick="setClientFilter('all', this)">전체</button>
-            <button class="filter-btn" onclick="setClientFilter('탐색중', this)">🟢 탐색중</button>
+            <button class="filter-btn" onclick="setClientFilter('all', this)">전체</button>
+            <button class="filter-btn active" onclick="setClientFilter('탐색중', this)">🟢 탐색중</button>
             <button class="filter-btn" onclick="setClientFilter('계약완료', this)">🤝 계약완료</button>
             <button class="filter-btn" onclick="setClientFilter('변경/종료', this)">❌ 종료</button>
         </div>
@@ -414,8 +414,8 @@
     let propertiesData = [];
     let clientsData = [];
     
-    let currentPropFilter = 'all';
-    let currentClientFilter = 'all';
+    let currentPropFilter = '거래가능';
+    let currentClientFilter = '탐색중';
 
     function setPropFilter(filter, btn) {
         currentPropFilter = filter;
