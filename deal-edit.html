@@ -6,6 +6,8 @@
     <title>일정 수정</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <link rel="stylesheet" href="nav.css">
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
@@ -34,10 +36,17 @@
         <div id="buildingRoomText" style="margin-bottom: 8px; font-weight: bold; color: #4b5563; font-size: 15px;">불러오는 중...</div>
         <div class="notice">💡 건물이나 호수를 변경해야 한다면 기존 일정을 삭제하고 새로 등록해 주세요.</div>
         
+        <div id="clientSelectContainer" style="margin-bottom: 16px;">
+            <select id="clientSelect" placeholder="손님 선택 (전화번호 뒷자리 등)">
+                <option value="">손님 선택 안함</option>
+            </select>
+        </div>
+
         <select id="contractType" style="margin-bottom: 12px;">
             <option value="정산">정산</option>
             <option value="잔금">잔금</option>
             <option value="계약">계약</option>
+            <option value="집보여주기">집보여주기</option>
             <option value="기타">기타</option>
         </select>
         
@@ -95,10 +104,12 @@
                 alert('일정을 불러오지 못했습니다.');
                 return;
             }
+            loadClients(data.client_id);
 
             if (data.schedule_type === '모임' || !data.buildings) {
                 document.getElementById('buildingRoomText').innerText = `👥 모임 일정 수정`;
                 document.getElementById('contractType').style.display = 'none';
+                if(document.getElementById('clientSelectContainer')) document.getElementById('clientSelectContainer').style.display = 'none';
                 document.getElementById('balanceDateLabel').style.display = 'block';
                 document.querySelector('.notice').innerText = "💡 장소, 시간, 링크 및 메모를 수정할 수 있습니다.";
                 document.getElementById('meetingEditFields').style.display = 'block';
@@ -230,6 +241,8 @@
 
             if (contractType !== undefined) payload.schedule_type = contractType;
             if (balanceDate !== undefined) payload.schedule_date = balanceDate ? balanceDate : null;
+            const clientId = document.getElementById('clientSelect') ? document.getElementById('clientSelect').value : null;
+            payload.client_id = clientId || null;
 
             const { error } = await supabaseClient
                 .from('schedules')
@@ -244,6 +257,26 @@
             status.innerText = '수정 완료';
             alert('일정이 성공적으로 수정되었습니다.');
             location.href = 'deal-detail.html?id=' + scheduleId;
+        }
+
+        async function loadClients(currentClientId) {
+            const select = document.getElementById('clientSelect');
+            if (window.clientTomSelect) window.clientTomSelect.destroy();
+            select.innerHTML = '<option value="">손님 검색 (전화번호 뒤 4자리 등)</option>';
+            const { data, error } = await supabaseClient.from('client_requests').select('id, client_phone, memo').eq('office_id', window.currentUser.office_id).order('created_at', { ascending: false });
+            if (error) return;
+            data.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = `${window.formatPhoneNumber(c.client_phone)} ${c.memo ? '(' + c.memo.substring(0, 15) + ')' : ''}`;
+                select.appendChild(opt);
+            });
+            window.clientTomSelect = new TomSelect('#clientSelect', {
+                create: false, sortField: { field: 'text', direction: 'asc' }, maxOptions: null, placeholder: "손님 선택 (전화번호 뒷자리 등)"
+            });
+            if (currentClientId) {
+                window.clientTomSelect.setValue(currentClientId);
+            }
         }
 
         async function init() {
