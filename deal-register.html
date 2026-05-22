@@ -1013,6 +1013,8 @@
                     buildings ( jibun_address, road_address ),
                     rooms ( room_name ),
                     properties ( address ),
+                    client_id,
+                    client_requests ( client_phone, memo ),
                     schedule_attendances ( user_id, status ),
                     schedule_tasks ( id, task_content, is_completed, created_at )
                 `)
@@ -1398,6 +1400,14 @@
                     }
                 }
                 
+                let clientHtml = '';
+                if (schedule.client_requests && schedule.client_requests.client_phone) {
+                    const phone = schedule.client_requests.client_phone.replace(/[^0-9]/g, '').replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+                    let cmemo = schedule.client_requests.memo || '';
+                    if (cmemo) cmemo = ` (${cmemo.substring(0, 15)})`;
+                    clientHtml = `<div style="font-size: 13px; color: #10b981; font-weight: 700; margin-top: 4px; display:flex; align-items:center; gap:4px;">🧑‍💼 손님: ${phone}${cmemo}</div>`;
+                }
+
                 const dDayText = getDDay(schedule.schedule_date);
                 let dDayHtml = '';
                 let isUrgent = false;
@@ -1499,6 +1509,7 @@
                             </div>
                             ${rangeHtml}
                             ${locationHtml}
+                            ${clientHtml}
                             ${memoHtml}
                             ${checklistHtml}
                         </div>

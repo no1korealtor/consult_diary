@@ -153,6 +153,11 @@
             <div class="info" id="entrancePassword" style="color: #ef4444; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="promptEditPassword()"></div>
         </div>
 
+        <div class="info-row" id="clientRow" style="display: none;">
+            <div class="info-icon">🧑‍💼</div>
+            <div class="info" id="clientInfo" style="color: #10b981; font-weight: 700;"></div>
+        </div>
+
         <div class="info-row" id="contactRow" style="display: none;">
             <div class="info-icon">📞</div>
             <div class="info" id="contact" style="color: #3b82f6; font-weight: 600;"></div>
@@ -224,6 +229,10 @@
                         ),
                         rooms (
                             room_name
+                        ),
+                        client_requests (
+                            client_phone,
+                            memo
                         )
                     `)
                     .eq('id', scheduleId)
@@ -396,6 +405,16 @@
                    finalMemoHtml += `<div style="margin-top:12px;">🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6; font-weight:bold;">${linkName}</a></div>`;
                 }
                 document.getElementById('memo').innerHTML = finalMemoHtml || '';
+            }
+
+            if (data.client_requests && data.client_requests.client_phone) {
+                const phone = data.client_requests.client_phone.replace(/[^0-9]/g, '').replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+                let cmemo = data.client_requests.memo || '';
+                if (cmemo) cmemo = ` (${cmemo.substring(0, 15)})`;
+                document.getElementById('clientInfo').innerText = `${phone}${cmemo}`;
+                document.getElementById('clientRow').style.display = 'flex';
+            } else {
+                document.getElementById('clientRow').style.display = 'none';
             }
 
             window.currentBuildingId = data.building_id;
