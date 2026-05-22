@@ -403,7 +403,8 @@
             data.forEach(c => {
                 const opt = document.createElement('option');
                 opt.value = c.id;
-                opt.textContent = `${window.formatPhoneNumber(c.client_phone)} ${c.memo ? '(' + c.memo.substring(0, 15) + ')' : ''}`;
+                const phone = c.client_phone ? c.client_phone.replace(/[^0-9]/g, '').replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3') : '';
+                opt.textContent = `${phone} ${c.memo ? '(' + c.memo.substring(0, 15) + ')' : ''}`;
                 select.appendChild(opt);
             });
             window.clientTomSelect = new TomSelect('#clientSelect', {
