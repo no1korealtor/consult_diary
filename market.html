@@ -1949,6 +1949,13 @@ ${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr
             document.getElementById('welcomeMessage').innerText = (user.name || '전문가') + '님 환영합니다!';
             loadData();
             loadBuildingsAndRooms();
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('tab') === 'clients') {
+                switchTab('clients');
+                if (urlParams.get('action') === 'new') {
+                    setTimeout(openClientModal, 500);
+                }
+            }
         }
     }
     

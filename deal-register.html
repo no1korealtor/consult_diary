@@ -269,10 +269,18 @@
         </div>
     </div>
 
+    <div id="clientSelectContainer" style="margin-bottom: 16px; margin-top: 16px;">
+        <select id="clientSelect" placeholder="손님 선택 (전화번호 뒷자리 등)">
+            <option value="">손님 선택 안함</option>
+        </select>
+        <button type="button" onclick="location.href='market.html?tab=clients&action=new'" style="width:100%; padding:10px; margin-top:8px; border-radius:8px; font-weight:bold; background:#f1f5f9; color:#3b82f6; border:1px solid #cbd5e1; cursor:pointer; font-size: 13px;">+ 손님을 찾을 수 없나요? 손님 장부에서 새로 등록하기</button>
+    </div>
+
     <select id="contractType">
         <option value="정산">정산</option>
         <option value="잔금">잔금</option>
         <option value="계약">계약</option>
+        <option value="집보여주기">집보여주기</option>
         <option value="기타">기타</option>
         <option value="모임" style="display: none;">모임</option>
     </select>
@@ -385,6 +393,23 @@
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <script src="auth-helper.js"></script>
     <script>
+
+        async function loadClients() {
+            const select = document.getElementById('clientSelect');
+            if (window.clientTomSelect) window.clientTomSelect.destroy();
+            select.innerHTML = '<option value="">손님 검색 (전화번호 뒤 4자리 등)</option>';
+            const { data, error } = await supabaseClient.from('client_requests').select('id, client_phone, memo').eq('office_id', window.currentUser.office_id).order('created_at', { ascending: false });
+            if (error) return;
+            data.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = `${window.formatPhoneNumber(c.client_phone)} ${c.memo ? '(' + c.memo.substring(0, 15) + ')' : ''}`;
+                select.appendChild(opt);
+            });
+            window.clientTomSelect = new TomSelect('#clientSelect', {
+                create: false, sortField: { field: 'text', direction: 'asc' }, maxOptions: null, placeholder: "손님 선택 (전화번호 뒷자리 등)"
+            });
+        }
 
         async function loadBuildings() {
 
@@ -540,6 +565,7 @@
                     document.getElementById('inline-profile-warning').style.display = 'block';
                 }
                 loadBuildings();
+                loadClients();
                 loadschedules();
                 if(typeof loadTips === 'function') loadTips();
             }
@@ -823,6 +849,8 @@
                 if (buildingId) payload.building_id = buildingId;
                 if (roomId) payload.room_id = roomId;
                 if (propertyId) payload.property_id = propertyId;
+                const clientId = document.getElementById('clientSelect') ? document.getElementById('clientSelect').value : null;
+                if (clientId) payload.client_id = clientId;
             }
 
             const { data: savedData, error } =
