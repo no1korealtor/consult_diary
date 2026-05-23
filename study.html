@@ -30,6 +30,12 @@
         .word {
             font-size: 32px;
             font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .hanja {
+            font-size: 24px;
+            color: #555;
             margin-bottom: 16px;
         }
 
@@ -113,7 +119,7 @@
                 return
             }
 
-            words = data
+            words = data.slice(0, 4)
             renderCard()
         }
 
@@ -130,6 +136,7 @@
         <div class="card">
 
           <div class="word">${word.word}</div>
+          <div class="hanja">${word.hanja || ''}</div>
 
           <div class="subject">${word.subject}</div>
 
@@ -168,4 +175,5 @@
     </script>
 
 </body>
+
 </html>
