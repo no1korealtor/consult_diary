@@ -39,6 +39,13 @@
             margin-bottom: 14px;
         }
 
+        .irregular {
+            font-size: 20px;
+            color: #e74c3c;
+            margin-bottom: 14px;
+            font-weight: 500;
+        }
+
         .subject {
             display: inline-block;
             background: #ffd6e7;
@@ -164,6 +171,7 @@
         <div class="card">
           ${word.image_url ? `<img src="${word.image_url}" class="word-image" />` : ''}
           <div class="word">${word.word}</div>
+          ${word.irregular ? `<div class="irregular">${word.irregular}</div>` : ''}
           <div class="hanja">${word.hanja || ''}</div>
 
           <div class="subject">${word.subject}</div>

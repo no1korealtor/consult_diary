@@ -78,6 +78,7 @@
     <input id="hanja" placeholder="한자 (없으면 비워도 됨)" />
     <input id="subject" placeholder="과목" />
     <input id="category" placeholder="분류" />
+    <input id="irregular" placeholder="불규칙 변화 (예: go - went - gone, foot - feet 등)" />
     <textarea id="meaning" placeholder="뜻"></textarea>
     <textarea id="example" placeholder="예문"></textarea>
     <input id="image_url" placeholder="이미지 URL 주소 (선택사항, 닻 사진 등 인터넷 주소)" />
@@ -134,6 +135,7 @@
             document.getElementById('hanja').value = item.hanja || '';
             document.getElementById('subject').value = item.subject || '';
             document.getElementById('category').value = item.category || '';
+            document.getElementById('irregular').value = item.irregular || '';
             document.getElementById('meaning').value = item.meaning || '';
             document.getElementById('example').value = item.example || '';
             document.getElementById('image_url').value = item.image_url || '';
@@ -152,6 +154,7 @@
             document.getElementById('hanja').value = '';
             document.getElementById('subject').value = '';
             document.getElementById('category').value = '';
+            document.getElementById('irregular').value = '';
             document.getElementById('meaning').value = '';
             document.getElementById('example').value = '';
             document.getElementById('image_url').value = '';
@@ -168,6 +171,7 @@
             const hanja = document.getElementById('hanja').value;
             const subject = document.getElementById('subject').value;
             const category = document.getElementById('category').value;
+            const irregular = document.getElementById('irregular').value;
             const meaning = document.getElementById('meaning').value;
             const example = document.getElementById('example').value;
             const image_url = document.getElementById('image_url').value;
@@ -177,7 +181,7 @@
                 return;
             }
 
-            const payload = { word, hanja, subject, category, meaning, example, image_url };
+            const payload = { word, hanja, subject, category, irregular, meaning, example, image_url };
 
             let error;
             if (id) {
