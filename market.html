@@ -883,16 +883,16 @@
                             (isViewed ? '✅ 집 보여줌 완료 (' + formatPhoneNumber(client.client_phone) + ')' : '집 보여줌 체크 (' + formatPhoneNumber(client.client_phone) + ')') +
                         '</label>' +
                         '<div style="display: flex; align-items: center; gap: 8px;">' +
-                            (isScheduled ?
-                                (isViewed ? 
-                                    '<span style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 11px; display: flex; align-items: center; gap: 4px;">일정 완료</span>'
-                                    :
-                                    '<button type="button" onclick="event.stopPropagation(); openQuickSchedule(\'' + (p.building_id || '') + '\', \'' + (p.room_id || '') + '\', \'' + formatPhoneNumber(client.client_phone) + '\', \'' + client.id + '\', \'' + p.id + '\')" style="background: #fef3c7; color: #d97706; border: 1px solid #fde68a; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 11px; cursor: pointer; box-shadow: 0 2px 4px rgba(217, 119, 6, 0.1);">' + scheduledAtStr + '</button>'
-                                )
+                            (isViewed ? 
+                                ''
                                 :
-                                '<button type="button" onclick="event.stopPropagation(); openQuickSchedule(\'' + (p.building_id || '') + '\', \'' + (p.room_id || '') + '\', \'' + formatPhoneNumber(client.client_phone) + '\', \'' + client.id + '\', \'' + p.id + '\')" style="background: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);">약속잡기</button>'
+                                (isScheduled ?
+                                    '<button type="button" onclick="event.stopPropagation(); openQuickSchedule(\\'' + (p.building_id || '') + '\\', \\'' + (p.room_id || '') + '\\', \\'' + formatPhoneNumber(client.client_phone) + '\\', \\'' + client.id + '\\', \\'' + p.id + '\\')" style="background: #fef3c7; color: #d97706; border: 1px solid #fde68a; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 11px; cursor: pointer; box-shadow: 0 2px 4px rgba(217, 119, 6, 0.1);">' + scheduledAtStr + '</button>'
+                                    :
+                                    '<button type="button" onclick="event.stopPropagation(); openQuickSchedule(\\'' + (p.building_id || '') + '\\', \\'' + (p.room_id || '') + '\\', \\'' + formatPhoneNumber(client.client_phone) + '\\', \\'' + client.id + '\\', \\'' + p.id + '\\')" style="background: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);">약속잡기</button>'
+                                )
                             ) +
-                            (isViewed && !isScheduled ? '<span style="font-size: 11px; color: #94a3b8;">' + viewedAtStr + ' 방문</span>' : '') +
+                            (isViewed ? '<span style="font-size: 11px; color: #94a3b8;">' + viewedAtStr + ' 방문</span>' : '') +
                         '</div>' +
                     '</div>';
                 }
