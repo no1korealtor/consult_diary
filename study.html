@@ -105,8 +105,13 @@
         )
 
         let words = []
-        let currentIndex = 0
+        let currentWord = null
         let meaningVisible = false
+
+        // 과목별 그룹화를 위한 변수들
+        let wordsBySubject = {}
+        let subjects = []
+        let currentSubjectIndex = 0
 
         async function loadWords() {
             const { data, error } = await supabaseClient
@@ -119,7 +124,22 @@
                 return
             }
 
-            words = data.slice(0, 4)
+            words = data
+
+            // 1. 단어들을 과목별로 묶어줍니다
+            words.forEach(w => {
+                const subj = w.subject || '기타'
+                if (!wordsBySubject[subj]) {
+                    wordsBySubject[subj] = []
+                }
+                wordsBySubject[subj].push(w)
+            })
+
+            // 2. 존재하는 과목 리스트를 저장합니다
+            subjects = Object.keys(wordsBySubject)
+
+            // 3. 무작위 첫 단어 뽑기
+            pickNextWord()
             renderCard()
         }
 
@@ -129,7 +149,7 @@
                 return
             }
 
-            const word = words[currentIndex]
+            const word = currentWord
             const cardContainer = document.getElementById('card')
 
             cardContainer.innerHTML = `
@@ -160,14 +180,25 @@
             renderCard()
         }
 
-        function nextWord() {
-            meaningVisible = false
-            currentIndex++
+        function pickNextWord() {
+            if (subjects.length === 0) return
 
-            if (currentIndex >= words.length) {
-                currentIndex = 0
+            // 1. 과목을 순차적으로 하나씩 돌아가며 고릅니다 (과목 균형 유지)
+            const subj = subjects[currentSubjectIndex]
+            currentSubjectIndex++
+            if (currentSubjectIndex >= subjects.length) {
+                currentSubjectIndex = 0
             }
 
+            // 2. 선택된 과목의 단어들 중에서 '랜덤'으로 하나를 뽑습니다.
+            const list = wordsBySubject[subj]
+            const randomIndex = Math.floor(Math.random() * list.length)
+            currentWord = list[randomIndex]
+        }
+
+        function nextWord() {
+            meaningVisible = false
+            pickNextWord()
             renderCard()
         }
 
