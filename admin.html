@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+
+    <title>공부 추가</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f5f6fb;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 24px;
+        }
+
+        input,
+        textarea {
+
+            width: 100%;
+
+            padding: 16px;
+
+            margin-bottom: 16px;
+
+            border-radius: 14px;
+
+            border: 1px solid #ddd;
+
+            font-size: 16px;
+
+            box-sizing: border-box;
+        }
+
+        button {
+
+            background: #222;
+
+            color: white;
+
+            border: none;
+
+            padding: 16px 20px;
+
+            border-radius: 14px;
+
+            font-size: 16px;
+
+            cursor: pointer;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <h1>공부 추가</h1>
+
+    <input id="word" placeholder="단어" />
+
+    <input id="hanja" placeholder="한자 (없으면 비워도 됨)" />
+
+    <input id="subject" placeholder="과목" />
+
+    <input id="category" placeholder="분류" />
+
+    <textarea id="meaning" placeholder="뜻"></textarea>
+
+    <textarea id="example" placeholder="예문"></textarea>
+
+    <button onclick="saveWord()">
+        공부 추가
+    </button>
+
+    <script>
+
+        const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
+
+        const supabaseKey = 'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k'
+
+        const supabaseClient = window.supabase.createClient(
+            supabaseUrl,
+            supabaseKey
+        )
+
+        async function saveWord() {
+
+            const word =
+                document.getElementById('word').value
+
+            const hanja =
+                document.getElementById('hanja').value
+
+            const subject =
+                document.getElementById('subject').value
+
+            const category =
+                document.getElementById('category').value
+
+            const meaning =
+                document.getElementById('meaning').value
+
+            const example =
+                document.getElementById('example').value
+
+            const { error } = await supabaseClient
+                .from('study_words')
+                .insert([
+                    {
+                        word,
+                        hanja,
+                        subject,
+                        category,
+                        meaning,
+                        example
+                    }
+                ])
+
+            if (error) {
+
+                alert('저장 실패')
+
+                console.log(error)
+
+            } else {
+
+                alert('저장 완료!')
+
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
