@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>오늘 공부</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f5f6fb;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 24px;
+            color: #333;
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .word {
+            font-size: 30px;
+            font-weight: bold;
+            margin-bottom: 14px;
+            color: #222;
+        }
+
+        .subject {
+            display: inline-block;
+            background: #ffd6e7;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .category {
+            color: #666;
+            font-size: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>오늘 단어</h1>
+
+    <div id="word-list"></div>
+
+    <script>
+        const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
+        const supabaseKey = 'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k'
+
+        const supabaseClient = window.supabase.createClient(
+            supabaseUrl,
+            supabaseKey
+        )
+
+        async function loadWords() {
+
+            const { data, error } = await supabaseClient
+                .from('study_words')
+                .select('*')
+                .order('created_at', { ascending: false })
+
+            if (error) {
+                console.log(error)
+                return
+            }
+
+            const list = document.getElementById('word-list')
+
+            data.forEach(word => {
+
+                const card = document.createElement('div')
+                card.className = 'card'
+
+                card.innerHTML = `
+          <div class="word">${word.word}</div>
+          <div class="subject">${word.subject}</div>
+          <div class="category">${word.category}</div>
+        `
+
+                list.appendChild(card)
+            })
+        }
+
+        loadWords()
+    </script>
+
+</body>
+
+</html>

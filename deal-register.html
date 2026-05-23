@@ -387,6 +387,10 @@
         저장
     </button>
 
+    <button type="button" class="btn-primary" onclick="saveWord()" style="background-color: #10b981; margin-top: 12px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">
+        단어 저장 테스트 (study_words)
+    </button>
+
     <div id="status"></div>
 </div>
 
@@ -728,6 +732,25 @@
 
 
 
+
+        async function saveWord() {
+            const { error } = await window.supabaseClient
+                .from('study_words')
+                .insert([
+                    {
+                        word: '자화자찬',
+                        subject: '국어',
+                        category: '한자어'
+                    }
+                ]);
+
+            if (error) {
+                alert('저장 실패: ' + error.message);
+                console.error(error);
+            } else {
+                alert('저장 완료!');
+            }
+        }
 
         async function saveDeal() {
 
