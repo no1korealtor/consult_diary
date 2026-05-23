@@ -74,6 +74,8 @@
 
     <textarea id="example" placeholder="예문"></textarea>
 
+    <input id="image_url" placeholder="이미지 URL 주소 (선택사항, 닻 사진 등 인터넷 주소)" />
+
     <button onclick="saveWord()">
         공부 추가
     </button>
@@ -109,6 +111,9 @@
             const example =
                 document.getElementById('example').value
 
+            const image_url =
+                document.getElementById('image_url').value
+
             const { error } = await supabaseClient
                 .from('study_words')
                 .insert([
@@ -118,7 +123,8 @@
                         subject,
                         category,
                         meaning,
-                        example
+                        example,
+                        image_url
                     }
                 ])
 

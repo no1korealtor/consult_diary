@@ -82,6 +82,14 @@
             cursor: pointer;
         }
 
+        .word-image {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 14px;
+            margin-bottom: 16px;
+        }
+
         .hidden {
             display: none !important;
         }
@@ -154,7 +162,7 @@
 
             cardContainer.innerHTML = `
         <div class="card">
-
+          ${word.image_url ? `<img src="${word.image_url}" class="word-image" />` : ''}
           <div class="word">${word.word}</div>
           <div class="hanja">${word.hanja || ''}</div>
 
