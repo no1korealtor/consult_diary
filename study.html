@@ -53,6 +53,19 @@
             color: #666;
             font-size: 18px;
         }
+
+        .meaning {
+            margin-top: 14px;
+            font-size: 18px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .example {
+            margin-top: 10px;
+            color: #777;
+            line-height: 1.7;
+        }
     </style>
 </head>
 
@@ -91,10 +104,24 @@
                 card.className = 'card'
 
                 card.innerHTML = `
-          <div class="word">${word.word}</div>
-          <div class="subject">${word.subject}</div>
-          <div class="category">${word.category}</div>
-        `
+                    <div class="word">${word.word}</div>
+
+                    <div class="subject">
+                        ${word.subject}
+                    </div>
+
+                    <div class="category">
+                        ${word.category}
+                    </div>
+
+                    <div class="meaning">
+                        ${word.meaning || ''}
+                    </div>
+
+                    <div class="example">
+                        ${word.example || ''}
+                    </div>
+                `
 
                 list.appendChild(card)
             })
