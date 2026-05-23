@@ -6,109 +6,266 @@
     <title>오늘 공부</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@400;600;700&display=swap');
+
         body {
-            font-family: sans-serif;
-            background: #f5f6fb;
+            font-family: 'Nunito', 'Jua', sans-serif;
+            background: linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%);
+            background-attachment: fixed;
             padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
         }
 
         h1 {
-            font-size: 32px;
+            font-size: 36px;
             margin-bottom: 24px;
-            color: #333;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Jua', sans-serif;
+            text-align: center;
+        }
+
+        .last-updated {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            font-family: 'Nunito', sans-serif;
+            font-weight: 600;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        #card-wrapper {
+            width: 100%;
+            max-width: 480px;
         }
 
         .card {
-            background: white;
-            border-radius: 24px;
-            padding: 24px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 36px;
+            padding: 36px 24px;
+            box-shadow: 0 15px 35px rgba(255, 175, 189, 0.4), 
+                        inset 0 0 0 4px rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
         }
 
         .word {
-            font-size: 32px;
-            font-weight: bold;
+            font-family: 'Jua', sans-serif;
+            font-size: 48px;
+            color: #ff758c;
             margin-bottom: 8px;
+            text-align: center;
+            letter-spacing: 2px;
         }
 
         .hanja {
-            font-size: 24px;
-            color: #555;
-            margin-bottom: 14px;
+            font-size: 20px;
+            color: #b2bec3;
+            margin-bottom: 16px;
+            text-align: center;
         }
 
         .irregular {
-            font-size: 20px;
-            color: #e74c3c;
-            margin-bottom: 14px;
-            font-weight: 500;
+            font-size: 18px;
+            color: #ff9a9e;
+            margin-bottom: 20px;
+            font-weight: bold;
+            text-align: center;
+            background: #fff0f5;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .tags {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
         }
 
         .subject {
-            display: inline-block;
-            background: #ffd6e7;
-            padding: 6px 14px;
+            background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
+            color: white;
+            padding: 8px 18px;
             border-radius: 999px;
-            font-size: 14px;
-            margin-bottom: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(142, 197, 252, 0.3);
         }
 
         .category {
-            color: #666;
-            font-size: 18px;
-            margin-bottom: 18px;
+            background: linear-gradient(120deg, #f6d365 0%, #fda085 100%);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 999px;
+            font-size: 15px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(253, 160, 133, 0.3);
         }
 
         .meaning {
-            margin-top: 10px;
-            font-size: 18px;
+            margin-top: 16px;
+            font-size: 24px;
             line-height: 1.6;
+            color: #2d3436;
+            text-align: center;
+            font-weight: bold;
+            font-family: 'Jua', sans-serif;
         }
 
         .example {
-            margin-top: 14px;
-            color: #777;
+            margin-top: 20px;
+            color: #636e72;
             line-height: 1.7;
+            background: #f8f9fa;
+            padding: 18px;
+            border-radius: 20px;
+            font-size: 16px;
+            text-align: center;
+            border: 2px dashed #ffeaa7;
         }
 
         .buttons {
-            margin-top: 28px;
+            margin-top: 36px;
             display: flex;
             gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         button {
             border: none;
-            background: #222;
-            color: white;
-            padding: 14px 20px;
-            border-radius: 14px;
-            font-size: 16px;
+            padding: 16px 24px;
+            border-radius: 999px;
+            font-size: 17px;
+            font-weight: bold;
             cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            font-family: 'Nunito', 'Jua', sans-serif;
+            color: white;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
         }
+
+        button:active {
+            transform: scale(0.92);
+        }
+
+        .btn-meaning { background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); color: #4a69bd; }
+        .btn-test { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); color: #d63031; }
+        .btn-next { background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); color: #009432; }
+        .btn-submit { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .btn-cancel { background: #dfe6e9; color: #636e72; box-shadow: none; }
 
         .word-image {
             width: 100%;
-            max-height: 200px;
+            height: 200px;
             object-fit: cover;
-            border-radius: 14px;
-            margin-bottom: 16px;
+            border-radius: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
         }
 
         .hidden {
             display: none !important;
         }
-    </style>
 
+        /* Test Mode Styles */
+        .test-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #6c5ce7;
+            margin-bottom: 24px;
+            text-align: center;
+            font-family: 'Jua', sans-serif;
+        }
+
+        .meaning-hint {
+            font-size: 26px;
+            font-weight: bold;
+            color: #2d3436;
+            margin: 24px 0;
+            padding: 24px;
+            background: #fff;
+            border-radius: 24px;
+            border: 3px solid #ff758c;
+            text-align: center;
+            font-family: 'Jua', sans-serif;
+            box-shadow: 0 10px 20px rgba(255, 117, 140, 0.15);
+        }
+
+        .irregular-hint {
+            font-size: 18px;
+            color: #ff758c;
+            margin-bottom: 24px;
+            text-align: center;
+            font-weight: bold;
+            background: #fff0f5;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .input-group {
+            margin: 28px 0;
+        }
+
+        #test-input {
+            width: 100%;
+            padding: 20px;
+            font-size: 24px;
+            border: 3px solid #ffeaa7;
+            border-radius: 24px;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.3s;
+            text-align: center;
+            font-family: 'Nunito', sans-serif;
+            color: #2d3436;
+            background: #fff9e6;
+            font-weight: bold;
+        }
+
+        #test-input:focus {
+            border-color: #ff758c;
+            background: #fff;
+            box-shadow: 0 0 0 6px rgba(255, 117, 140, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            font-family: 'Jua', sans-serif;
+            font-size: 28px;
+            color: #ff758c;
+        }
+    </style>
 </head>
 
 <body>
 
-    <h1>오늘 단어</h1>
+    <h1>
+        🌸 오늘의 단어장 🌸
+        <span id="last-updated" class="last-updated"></span>
+    </h1>
 
-    <div id="card"></div>
+    <div id="card-wrapper"></div>
 
     <script>
         const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
@@ -122,8 +279,8 @@
         let words = []
         let currentWord = null
         let meaningVisible = false
-
-        // 과목별 그룹화를 위한 변수들
+        let isTestMode = false
+        
         let wordsBySubject = {}
         let subjects = []
         let currentSubjectIndex = 0
@@ -138,10 +295,19 @@
                 console.log(error)
                 return
             }
+            
+            if (data.length > 0) {
+                const latestDate = new Date(data[0].created_at);
+                document.getElementById('last-updated').textContent = `최근 업데이트: ${latestDate.toLocaleDateString()} ${latestDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+            }
 
-            words = data
+            words = data.filter(w => w.is_memorized !== true)
 
-            // 1. 단어들을 과목별로 묶어줍니다
+            setupSubjects()
+        }
+
+        function setupSubjects() {
+            wordsBySubject = {}
             words.forEach(w => {
                 const subj = w.subject || '기타'
                 if (!wordsBySubject[subj]) {
@@ -150,41 +316,77 @@
                 wordsBySubject[subj].push(w)
             })
 
-            // 2. 존재하는 과목 리스트를 저장합니다
             subjects = Object.keys(wordsBySubject)
 
-            // 3. 무작위 첫 단어 뽑기
             pickNextWord()
             renderCard()
         }
 
         function renderCard() {
+            const cardContainer = document.getElementById('card-wrapper')
+
             if (words.length === 0) {
-                document.getElementById('card').innerHTML = '<div class="card">등록된 단어가 없습니다.</div>'
+                cardContainer.innerHTML = '<div class="card empty-state">🎉 모든 단어를 다 외웠어요! 최고야! 💖</div>'
                 return
             }
 
             const word = currentWord
-            const cardContainer = document.getElementById('card')
+
+            if (isTestMode) {
+                cardContainer.innerHTML = `
+                    <div class="card test-mode">
+                        <div class="test-title">💡 암기 확인 테스트 💡</div>
+                        ${word.image_url ? `<img src="${word.image_url}" class="word-image" />` : ''}
+                        
+                        <div class="tags">
+                            <div class="subject">${word.subject}</div>
+                            <div class="category">${word.category}</div>
+                        </div>
+                        
+                        <div class="meaning-hint">${word.meaning || '뜻이 등록되지 않은 단어입니다.'}</div>
+                        
+                        <div style="text-align: center;">
+                            ${word.irregular ? `<div class="irregular-hint">불규칙/원형 힌트: ${word.irregular}</div>` : ''}
+                        </div>
+                        
+                        <div class="input-group">
+                            <input type="text" id="test-input" placeholder="스펠링을 입력해봐요! ✍️" autocomplete="off" onkeypress="if(event.key === 'Enter') checkTest()">
+                        </div>
+
+                        <div class="buttons">
+                            <button class="btn-submit" onclick="checkTest()">정답 제출 💖</button>
+                            <button class="btn-cancel" onclick="cancelTest()">취소 닫기</button>
+                        </div>
+                    </div>
+                `
+                setTimeout(() => document.getElementById('test-input').focus(), 10);
+                return;
+            }
 
             cardContainer.innerHTML = `
         <div class="card">
           ${word.image_url ? `<img src="${word.image_url}" class="word-image" />` : ''}
           <div class="word">${word.word}</div>
-          ${word.irregular ? `<div class="irregular">${word.irregular}</div>` : ''}
+          
+          <div style="text-align: center;">
+              ${word.irregular ? `<div class="irregular">${word.irregular}</div>` : ''}
+          </div>
+          
           <div class="hanja">${word.hanja || ''}</div>
 
-          <div class="subject">${word.subject}</div>
-
-          <div class="category">${word.category}</div>
+          <div class="tags">
+              <div class="subject">${word.subject}</div>
+              <div class="category">${word.category}</div>
+          </div>
 
           <div class="example">${word.example || ''}</div>
 
           <div class="meaning ${meaningVisible ? '' : 'hidden'}">${word.meaning || ''}</div>
 
           <div class="buttons">
-            <button onclick="toggleMeaning()">뜻 보기</button>
-            <button onclick="nextWord()">다음</button>
+            <button class="btn-meaning" onclick="toggleMeaning()">✨ 뜻 보기</button>
+            <button class="btn-test" onclick="toggleTestMode()">📝 암기 완료</button>
+            <button class="btn-next" onclick="nextWord()">다음 🚀</button>
           </div>
 
         </div>
@@ -195,18 +397,53 @@
             meaningVisible = !meaningVisible
             renderCard()
         }
+        
+        function toggleTestMode() {
+            isTestMode = true
+            renderCard()
+        }
+        
+        function cancelTest() {
+            isTestMode = false
+            renderCard()
+        }
+        
+        async function checkTest() {
+            const inputVal = document.getElementById('test-input').value.trim();
+            if (inputVal.toLowerCase() === currentWord.word.toLowerCase()) {
+                const { error } = await supabaseClient
+                    .from('study_words')
+                    .update({ is_memorized: true })
+                    .eq('id', currentWord.id);
+                    
+                if (error) {
+                    console.error("DB 업데이트 에러:", error);
+                    alert("서버 저장 중 오류가 발생했어요. 다시 시도해주세요! 😥");
+                    return;
+                }
+
+                alert("정답이에요! 🎉 이제 이 단어는 마스터했어요!");
+                
+                words = words.filter(w => w.id !== currentWord.id);
+                isTestMode = false;
+                setupSubjects();
+            } else {
+                alert("앗, 틀렸어요! 다시 한 번 시도해볼까요? 😉");
+                const inputEl = document.getElementById('test-input');
+                inputEl.value = '';
+                inputEl.focus();
+            }
+        }
 
         function pickNextWord() {
             if (subjects.length === 0) return
 
-            // 1. 과목을 순차적으로 하나씩 돌아가며 고릅니다 (과목 균형 유지)
             const subj = subjects[currentSubjectIndex]
             currentSubjectIndex++
             if (currentSubjectIndex >= subjects.length) {
                 currentSubjectIndex = 0
             }
 
-            // 2. 선택된 과목의 단어들 중에서 '랜덤'으로 하나를 뽑습니다.
             const list = wordsBySubject[subj]
             const randomIndex = Math.floor(Math.random() * list.length)
             currentWord = list[randomIndex]
