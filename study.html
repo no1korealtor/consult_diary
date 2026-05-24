@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>오늘 공부</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
@@ -71,6 +72,29 @@
             margin-bottom: 8px;
             text-align: center;
             letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .speaker-icon {
+            font-size: 32px;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+            background: #fff0f5;
+            padding: 8px;
+            border-radius: 50%;
+        }
+
+        .speaker-icon:hover {
+            transform: scale(1.15) rotate(-10deg);
+            background: #ffe4e1;
+        }
+
+        .speaker-icon:active {
+            transform: scale(0.9);
         }
 
         .hanja {
@@ -366,7 +390,10 @@
             cardContainer.innerHTML = `
         <div class="card">
           ${word.image_url ? `<img src="${word.image_url}" class="word-image" />` : ''}
-          <div class="word">${word.word}</div>
+          <div class="word">
+              ${word.word}
+              <span class="speaker-icon" onclick="speakWord('${word.word.replace(/'/g, "\\'")}')" title="발음 듣기">🔊</span>
+          </div>
           
           <div style="text-align: center;">
               ${word.irregular ? `<div class="irregular">${word.irregular}</div>` : ''}
@@ -453,6 +480,22 @@
             meaningVisible = false
             pickNextWord()
             renderCard()
+        }
+
+        function speakWord(text) {
+            if ('speechSynthesis' in window) {
+                // 기존 재생중인 음성 취소
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US'; // 미국 영어
+                utterance.rate = 0.85;    // 약간 천천히 (아이들이 듣기 편하게)
+                utterance.pitch = 1.1;    // 살짝 높은 톤으로 밝게
+                
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("앗! 지금 사용 중인 브라우저에서는 발음 듣기가 안 돼요. 😥 (크롬/사파리를 추천해요)");
+            }
         }
 
         loadWords()
