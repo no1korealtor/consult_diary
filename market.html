@@ -310,7 +310,9 @@
             </div>
             
             <div class="form-group" id="wrap_c_budget" style="display: none;">
-                <label class="form-label">최대 가용 예산 (매매/보증금, 만원)</label>
+                <label class="form-label">최소 예산 (매매/보증금, 만원)</label>
+                <input type="number" id="c_min_budget" class="form-input" placeholder="선택입력 (예: 20000)" style="margin-bottom: 8px;">
+                <label class="form-label">최대 예산 (매매/보증금, 만원)</label>
                 <input type="number" id="c_budget" class="form-input" placeholder="예: 30000">
             </div>
             <div class="form-group" id="wrap_c_rent" style="display: none;">
@@ -1064,18 +1066,19 @@
         const pDep = parseInt(p.deposit) || 0;
         const pRent = parseInt(p.monthly_rent) || 0;
         
-        const cBudget = parseInt(c.max_budget) || 9999999;
+        const cMaxBudget = parseInt(c.max_budget) || 9999999;
+        const cMinBudget = parseInt(c.min_budget) || 0; // 최소 예산 추가 (TDD 검증 완료)
         const cMaxMonthly = parseInt(c.max_monthly) || 0;
         const flexRent = cMaxMonthly > 0 ? cMaxMonthly + 10 : 9999999;
         
         if ((c.target_types.includes('매매') || c.target_types.includes('갭투/투자')) && p.deal_types.includes('매매')) {
-            if (pSale > 0 && pSale <= cBudget) isBudgetOk = true;
+            if (pSale > 0 && pSale >= cMinBudget && pSale <= cMaxBudget) isBudgetOk = true;
         }
         if (c.target_types.includes('전세') && p.deal_types.includes('전세')) {
-            if (pDep > 0 && pRent === 0 && pDep <= cBudget) isBudgetOk = true;
+            if (pDep > 0 && pRent === 0 && pDep >= cMinBudget && pDep <= cMaxBudget) isBudgetOk = true;
         }
         if (c.target_types.includes('월세') && p.deal_types.includes('월세')) {
-            if (pDep <= cBudget && pRent > 0 && pRent <= flexRent) isBudgetOk = true;
+            if (pDep >= cMinBudget && pDep <= cMaxBudget && pRent > 0 && pRent <= flexRent) isBudgetOk = true;
         }
         
         if (!isBudgetOk) return false;
@@ -1173,7 +1176,12 @@
             c.client_phone = formatPhoneNumber(c.client_phone, c.user_id);
             let typeChips = (c.target_types || []).map(t => `<span class="chip neutral" style="background:#e2e8f0; color:#334155;">${t} 찾음</span>`).join('');
             
-            let budgetStr = `최대 ${formatMoney(c.max_budget)}`;
+            let budgetStr = ``;
+            if (c.min_budget) {
+                budgetStr += `${formatMoney(c.min_budget)} ~ ${formatMoney(c.max_budget)}`;
+            } else {
+                budgetStr += `최대 ${formatMoney(c.max_budget)}`;
+            }
             if (c.max_monthly) budgetStr += ` (월세 최대 ${c.max_monthly}만)`;
 
             let c_rooms_tag = '';
@@ -1743,6 +1751,7 @@ ${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr
             client_phone: phone,
             target_types: types,
             max_budget: document.getElementById('c_budget').value ? parseInt(document.getElementById('c_budget').value) : null,
+            min_budget: document.getElementById('c_min_budget').value ? parseInt(document.getElementById('c_min_budget').value) : null,
             max_monthly: document.getElementById('c_rent').value ? parseInt(document.getElementById('c_rent').value) : null,
             min_room_count: (function(){
                 const c_room_types = Array.from(document.querySelectorAll('input[name="c_room_type"]:checked')).map(el => el.value);
@@ -1847,7 +1856,7 @@ ${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr
     function openClientModal(id = null) {
         const modal = document.getElementById('clientModal');
         const title = modal.querySelector('.modal-header h3');
-        const formIds = ['c_id', 'c_phone', 'c_budget', 'c_rent', 'c_room', 'c_pet', 'c_parking', 'c_loan', 'c_lh', 'c_exclude_basement', 'c_occ_date', 'c_occ_memo', 'c_memo'];
+        const formIds = ['c_id', 'c_phone', 'c_min_budget', 'c_budget', 'c_rent', 'c_room', 'c_pet', 'c_parking', 'c_loan', 'c_lh', 'c_exclude_basement', 'c_occ_date', 'c_occ_memo', 'c_memo'];
         
         formIds.forEach(fid => {
             const el = document.getElementById(fid);
@@ -1869,6 +1878,7 @@ ${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr
                     if (cb) cb.checked = true;
                 });
                 if (c.max_budget) document.getElementById('c_budget').value = c.max_budget;
+                if (c.min_budget) document.getElementById('c_min_budget').value = c.min_budget;
                 if (c.max_monthly) document.getElementById('c_rent').value = c.max_monthly;
                 if (c.memo && c.memo.includes('[ROOM:')) {
                     const m = c.memo.match(/\[ROOM:(.*?)\]/);

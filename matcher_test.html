@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>부동산 매칭 로직 TDD 테스트</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; padding: 20px; background-color: #f5f5f5; }
+        .test-box { padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 16px; font-weight: bold; }
+        .red { color: white; background-color: #ef4444; }
+        .green { color: white; background-color: #22c55e; }
+        .info { background-color: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #ddd; margin-top: 10px; margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+    <h2>🧪 부동산 매칭 로직 테스트 결과 (TDD)</h2>
+    <div id="test-results"></div>
+
+    <script>
+        // ==========================================
+        // 1. 핵심 비즈니스 로직 (현재 상태: 최대 예산만 처리 가능)
+        // ==========================================
+        function findMatchingProperties(properties, clientCondition) {
+            return properties.filter(property => {
+                const isTypeMatch = property.type === clientCondition.type;
+                const isPriceMatch = property.price <= clientCondition.maxPrice;
+                return isTypeMatch && isPriceMatch;
+            });
+        }
+
+        // ==========================================
+        // 2. 테스트 데이터
+        // ==========================================
+        const properties = [
+            { id: 1, type: '매매', price: 40000, title: '4억 매매가' },
+            { id: 2, type: '매매', price: 50000, title: '5억 매매가' },
+            { id: 3, type: '매매', price: 60000, title: '6억 매매가' },
+            { id: 4, type: '전세', price: 40000, title: '4억 전세가' },
+        ];
+
+        const resultsDiv = document.getElementById('test-results');
+
+        // ==========================================
+        // [테스트 1] 최대 예산 이하의 매물 찾기 (이미 Green 통과 상태)
+        // ==========================================
+        try {
+            const clientCondition1 = { type: '매매', maxPrice: 50000 };
+            const matched1 = findMatchingProperties(properties, clientCondition1);
+            
+            if (matched1.length !== 2) throw new Error("개수 다름");
+            resultsDiv.innerHTML += `<div class="test-box green">✅ 테스트 1 통과! (최대 예산 5억 이하 매칭 성공)</div>`;
+        } catch (error) {
+            resultsDiv.innerHTML += `<div class="test-box red">❌ 테스트 1 실패</div>`;
+        }
+
+        // ==========================================
+        // [테스트 2] 새로운 요구사항: 최소~최대 예산 범위 검색 (Red 상태)
+        // ==========================================
+        try {
+            // 고객 조건: 4억 5천 ~ 5억 5천 사이의 매매 매물
+            const clientCondition2 = { type: '매매', minPrice: 45000, maxPrice: 55000 };
+            const matched2 = findMatchingProperties(properties, clientCondition2);
+            
+            // 검증: 4.5억 ~ 5.5억 사이면, 데이터 중 '5억(id: 2)' 매물 딱 1개만 나와야 합니다.
+            if (matched2.length !== 1) {
+                throw new Error(`[테스트 2 실패] 매칭된 매물이 1개여야 하는데 ${matched2.length}개가 반환되었습니다.`);
+            }
+            if (matched2[0].id !== 2) {
+                throw new Error(`[테스트 2 실패] 5억짜리 매물(id:2)이 나와야 합니다.`);
+            }
+
+            resultsDiv.innerHTML += `<div class="test-box green">✅ 테스트 2 통과! (최소~최대 예산 범위 매칭 성공)</div>`;
+        } catch (error) {
+            resultsDiv.innerHTML += `<div class="test-box red">❌ ${error.message}</div>`;
+            resultsDiv.innerHTML += `
+                <div class="info">
+                    <p><strong>💡 해설:</strong></p>
+                    <p>새로운 테스트가 실패(Red)했습니다! 우리는 <code>minPrice(최소 예산)</code> 조건을 추가했는데, 기존 함수는 이 조건을 아예 모릅니다.</p>
+                    <p>그래서 기존 함수는 최소 예산을 무시하고 4억 이하인 매물(id:1)까지 결과에 포함시켜 버려서, 기대값인 1개가 아닌 2개를 반환해 에러가 났습니다.</p>
+                    <p>이것이 TDD의 강력함입니다. <strong>"새로운 요구사항(조건)을 넣었을 때, 기존 로직이 이를 완벽히 처리하지 못한다는 사실을 테스트가 즉시 잡아냅니다."</strong></p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
