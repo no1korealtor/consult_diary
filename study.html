@@ -460,13 +460,19 @@
                 console.log(error)
                 return
             }
-            
+            words = data.filter(w => w.is_memorized !== true)
+
             if (data.length > 0) {
                 const latestDate = new Date(data[0].created_at);
-                document.getElementById('last-updated').textContent = `최근 업데이트: ${latestDate.toLocaleDateString()} ${latestDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                document.getElementById('last-updated').innerHTML = `
+                    최근 업데이트: ${latestDate.toLocaleDateString()} ${latestDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}<br>
+                    <span style="font-weight: bold; color: rgba(255,255,255,0.9); display: inline-block; margin-top: 5px;">
+                        저장된 단어: 총 ${data.length}개 (남은 단어: ${words.length}개)
+                    </span>
+                `;
+            } else {
+                document.getElementById('last-updated').innerHTML = `저장된 단어가 없습니다.`;
             }
-
-            words = data.filter(w => w.is_memorized !== true)
 
             setupSubjects()
         }
