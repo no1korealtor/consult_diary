@@ -265,7 +265,8 @@
         let stream;
         let reqAnimFrame;
         
-        const noteStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        const noteStrings = ["도", "도#", "레", "레#", "미", "파", "파#", "솔", "솔#", "라", "라#", "시"];
+        const engStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
         function noteFromPitch(frequency) {
             const noteNum = 12 * (Math.log(frequency / 440) / Math.log(2));
@@ -364,7 +365,7 @@
                 let note = noteFromPitch(pitch);
                 let cents = centsOffFromPitch(pitch, note);
                 
-                document.getElementById('note-display').innerText = noteStrings[note % 12];
+                document.getElementById('note-display').innerHTML = `${noteStrings[note % 12]} <span style="font-size:30px; color:#a0a0b0;">(${engStrings[note % 12]})</span>`;
                 document.getElementById('cents-display').innerText = cents + ' ¢';
                 
                 // Update meter UI (from -50 to +50 cents maps to 0% to 100% width)
