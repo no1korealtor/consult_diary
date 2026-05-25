@@ -507,7 +507,7 @@
                 cardContainer.innerHTML = `
                     <div class="card test-mode">
                         <div class="test-title">💡 암기 확인 테스트 💡</div>
-                        ${word.image_url ? `<img src="${word.image_url}" class="word-image" onerror="this.style.display='none'" />` : ''}
+                        ${word.image_url ? `<img src="${word.image_url}" class="word-image" onerror="this.onerror=null; this.src='https://placehold.co/400x200/ffeaa7/ff758c?text=Image+Load+Error';" />` : ''}
                         
                         <div class="tags">
                             <div class="subject">${word.subject}</div>
@@ -536,7 +536,7 @@
 
             cardContainer.innerHTML = `
         <div class="card">
-          ${word.image_url ? `<img src="${word.image_url}" class="word-image" onerror="this.style.display='none'" />` : ''}
+          ${word.image_url ? `<img src="${word.image_url}" class="word-image" onerror="this.onerror=null; this.src='https://placehold.co/400x200/ffeaa7/ff758c?text=Image+Load+Error';" />` : ''}
           <div class="word">
               ${word.word}
               ${/[a-zA-Z]/.test(word.word) ? `<span class="speaker-icon" onclick="speakWord('${word.word.replace(/'/g, "\\'")}')" title="발음 듣기">🔊</span>` : ''}
