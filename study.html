@@ -37,13 +37,11 @@
         }
 
         .last-updated {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.9);
+            margin-top: 30px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.7);
             font-family: 'Nunito', sans-serif;
-            font-weight: 600;
-            background: rgba(0, 0, 0, 0.1);
-            padding: 4px 12px;
-            border-radius: 20px;
+            text-align: center;
         }
 
         #card-wrapper {
@@ -279,6 +277,18 @@
             font-size: 28px;
             color: #ff758c;
         }
+        @media (max-width: 600px) {
+            h1 { font-size: 28px; }
+            .card { padding: 24px 16px; border-radius: 28px; }
+            .word { font-size: 36px; gap: 8px; }
+            .speaker-icon { font-size: 26px; padding: 6px; }
+            .meaning { font-size: 20px; }
+            .example { font-size: 14px; padding: 12px; }
+            button { padding: 12px 18px; font-size: 15px; }
+            .tags { margin-bottom: 16px; }
+            .hanja { font-size: 18px; }
+            .irregular { font-size: 16px; }
+        }
     </style>
 </head>
 
@@ -286,10 +296,10 @@
 
     <h1>
         🌸 오늘의 단어장 🌸
-        <span id="last-updated" class="last-updated"></span>
     </h1>
 
     <div id="card-wrapper"></div>
+    <div id="last-updated" class="last-updated"></div>
 
     <script>
         const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
