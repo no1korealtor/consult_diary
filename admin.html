@@ -182,7 +182,22 @@
                 return;
             }
 
-            const payload = { word, hanja, subject, category, irregular, meaning, example, image_url };
+            // 중복 단어 검사 (대소문자 무시)
+            const { data: existingWords, error: checkError } = await supabaseClient
+                .from('study_words')
+                .select('id')
+                .ilike('word', word.trim());
+
+            if (!checkError && existingWords.length > 0) {
+                // 새 단어 추가이거나, 수정 시 자기 자신이 아닌 다른 단어와 중복일 경우
+                const isDuplicate = id ? existingWords.some(w => w.id !== id) : true;
+                if (isDuplicate) {
+                    alert(`'${word.trim()}'(은)는 이미 등록된 단어입니다! 중복해서 등록할 수 없습니다.`);
+                    return;
+                }
+            }
+
+            const payload = { word: word.trim(), hanja, subject, category, irregular, meaning, example, image_url };
 
             let error;
             if (id) {
