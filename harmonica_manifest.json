@@ -1,0 +1,15 @@
+{
+  "name": "하모니카 마스터",
+  "short_name": "하모니카",
+  "start_url": "harmonica.html",
+  "display": "standalone",
+  "background_color": "#1e1e2f",
+  "theme_color": "#1e1e2f",
+  "icons": [
+    {
+      "src": "harmonica_icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}
