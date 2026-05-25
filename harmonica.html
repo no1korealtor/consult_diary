@@ -193,7 +193,11 @@
                 <option value="6">6박자 (강-약-약-중강-약-약)</option>
             </select>
         </div>
-        <input type="range" id="bpm-slider" min="40" max="240" value="120" oninput="updateBPM(this.value)">
+        <div style="display:flex; align-items:center; gap:15px; margin-bottom:20px;">
+            <button onclick="changeBPMBy(-1)" style="background:#3a3a5a; color:white; border:none; border-radius:50%; width:44px; height:44px; font-size:24px; font-weight:bold; cursor:pointer; flex-shrink:0;">-</button>
+            <input type="range" id="bpm-slider" min="40" max="240" value="120" oninput="updateBPM(this.value)" style="flex-grow:1; margin-bottom:0;">
+            <button onclick="changeBPMBy(1)" style="background:#3a3a5a; color:white; border:none; border-radius:50%; width:44px; height:44px; font-size:24px; font-weight:bold; cursor:pointer; flex-shrink:0;">+</button>
+        </div>
         <button class="btn-play" id="play-btn" onclick="toggleMetronome()">▶ 재생</button>
     </div>
 
@@ -254,6 +258,15 @@
         let timerID;
         let beatsPerMeasure = 4;
         let currentBeat = 0;
+
+        function changeBPMBy(amount) {
+            let slider = document.getElementById('bpm-slider');
+            let newVal = parseInt(slider.value) + amount;
+            if (newVal < 40) newVal = 40;
+            if (newVal > 240) newVal = 240;
+            slider.value = newVal;
+            updateBPM(newVal);
+        }
 
         function updateBPM(val) {
             bpm = val;
