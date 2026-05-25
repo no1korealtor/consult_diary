@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>하모니카 연습실 (Harmonica Master)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&family=Jua&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: #1e1e2f;
+            color: #ffffff;
+            margin: 0;
+            padding: 10px;
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 15px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        @media(min-width: 900px) {
+            body {
+                grid-template-columns: 2fr 1fr;
+                grid-template-rows: 1fr 1fr;
+                padding: 20px;
+                gap: 20px;
+            }
+            .score-panel {
+                grid-column: 1 / 2;
+                grid-row: 1 / 3;
+            }
+        }
+
+        .panel {
+            background: #2a2a40;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 24px;
+            color: #4facfe;
+            margin-top: 0;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* --- Score Viewer --- */
+        .score-panel {
+            min-height: 400px;
+        }
+        .file-upload {
+            background: #3a3a5a;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .score-display {
+            flex-grow: 1;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            color: #2d3436;
+            font-size: 24px;
+            line-height: 2.5;
+            overflow-y: auto;
+            font-weight: bold;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 10px;
+        }
+        
+        .note-block {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+        }
+        
+        .note-dot-up { font-size: 14px; color: #ff758c; height: 10px; }
+        .note-dot-down { font-size: 14px; color: #4facfe; height: 10px; margin-top: -5px; }
+        .note-number { font-size: 28px; }
+        .rest-number { color: #b2bec3; }
+
+        /* --- Metronome --- */
+        .bpm-display {
+            font-size: 48px;
+            font-weight: 800;
+            color: #00f2fe;
+            text-align: center;
+            margin: 10px 0;
+        }
+        input[type=range] {
+            width: 100%;
+            accent-color: #00f2fe;
+            margin-bottom: 20px;
+        }
+        .btn-play {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+            transition: transform 0.2s;
+        }
+        .btn-play:active { transform: scale(0.95); }
+
+        /* --- Tuner --- */
+        .tuner-note {
+            font-size: 50px;
+            font-weight: 800;
+            color: #1dd1a1;
+            text-align: center;
+            margin: 10px 0;
+        }
+        .tuner-meter {
+            width: 100%;
+            height: 15px;
+            background: #1e1e2f;
+            border-radius: 10px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .meter-indicator {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 4px;
+            background: #ff4757;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: left 0.1s ease-out;
+        }
+        .meter-center {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 2px;
+            background: rgba(255,255,255,0.3);
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .btn-mic {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Score Viewer Panel -->
+    <div class="panel score-panel">
+        <h2 class="panel-title">🎼 하모니카 자동 숫자 악보</h2>
+        <div class="file-upload">
+            <label for="xml-upload">MusicXML 파일 열기 (.xml, .musicxml): </label>
+            <input type="file" id="xml-upload" accept=".xml,.musicxml" onchange="handleFileUpload(event)">
+        </div>
+        <div class="score-display" id="score-display">
+            <div style="color:#a0a0b0; font-size:16px; width:100%; text-align:center; margin-top:50px;">
+                여기에 숫자로 변환된 하모니카 악보가 뜹니다!<br><br>
+                1=도, 2=레, 3=미, 4=파, 5=솔, 6=라, 7=시<br>
+                위에 점이 있으면 높은음, 아래에 점이 있으면 낮은음입니다.
+            </div>
+        </div>
+    </div>
+
+    <!-- Metronome Panel -->
+    <div class="panel">
+        <h2 class="panel-title">⏱️ 메트로놈</h2>
+        <div class="bpm-display"><span id="bpm-val">120</span> BPM</div>
+        <input type="range" id="bpm-slider" min="40" max="240" value="120" oninput="updateBPM(this.value)">
+        <button class="btn-play" id="play-btn" onclick="toggleMetronome()">▶ 재생</button>
+    </div>
+
+    <!-- Tuner Panel -->
+    <div class="panel">
+        <h2 class="panel-title">🎙️ 튜너 (음정 확인)</h2>
+        <div class="tuner-note" id="note-display">-</div>
+        <div class="tuner-meter">
+            <div class="meter-center"></div>
+            <div class="meter-indicator" id="meter-indicator"></div>
+        </div>
+        <button class="btn-mic" id="mic-btn" onclick="startTuner()">🎙️ 튜너 켜기</button>
+    </div>
+
+    <script>
+        // ==========================================
+        // 1. MusicXML to Number Tab Logic
+        // ==========================================
+        const noteMap = { 'C':1, 'D':2, 'E':3, 'F':4, 'G':5, 'A':6, 'B':7 };
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                parseMusicXML(e.target.result);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseMusicXML(xmlText) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+            
+            const measures = xmlDoc.getElementsByTagName("measure");
+            const scoreDisplay = document.getElementById('score-display');
+            scoreDisplay.innerHTML = ''; // 초기화
+
+            if (measures.length === 0) {
+                scoreDisplay.innerHTML = '<span style="color:red; font-size:16px;">유효한 악보 데이터가 없습니다.</span>';
+                return;
+            }
+
+            for (let i = 0; i < measures.length; i++) {
+                const notes = measures[i].getElementsByTagName("note");
+                
+                // 마디 구분선
+                if(i > 0) {
+                    const barline = document.createElement('div');
+                    barline.style.borderLeft = "2px solid #ccc";
+                    barline.style.height = "40px";
+                    barline.style.margin = "0 10px";
+                    scoreDisplay.appendChild(barline);
+                }
+
+                for (let j = 0; j < notes.length; j++) {
+                    const note = notes[j];
+                    // 쉼표 확인
+                    if (note.getElementsByTagName("rest").length > 0) {
+                        const block = document.createElement('div');
+                        block.className = 'note-block';
+                        block.innerHTML = `<div class="note-dot-up"></div><div class="note-number rest-number">0</div><div class="note-dot-down"></div>`;
+                        scoreDisplay.appendChild(block);
+                        continue;
+                    }
+
+                    const pitch = note.getElementsByTagName("pitch")[0];
+                    if (pitch) {
+                        const step = pitch.getElementsByTagName("step")[0].textContent; // C, D, E...
+                        const octave = parseInt(pitch.getElementsByTagName("octave")[0].textContent);
+                        
+                        const num = noteMap[step] || step;
+                        
+                        // 하모니카 숫자악보 옥타브 표시 (기본 4옥타브 기준)
+                        let dotUp = '';
+                        let dotDown = '';
+                        if (octave > 4) {
+                            dotUp = '•'.repeat(octave - 4);
+                        } else if (octave < 4) {
+                            dotDown = '•'.repeat(4 - octave);
+                        }
+
+                        const block = document.createElement('div');
+                        block.className = 'note-block';
+                        block.innerHTML = `
+                            <div class="note-dot-up">${dotUp}</div>
+                            <div class="note-number">${num}</div>
+                            <div class="note-dot-down">${dotDown}</div>
+                        `;
+                        scoreDisplay.appendChild(block);
+                    }
+                }
+            }
+        }
+
+        // ==========================================
+        // 2. Metronome Logic
+        // ==========================================
+        let audioCtx;
+        let isPlaying = false;
+        let bpm = 120;
+        let timerID;
+
+        function updateBPM(val) {
+            bpm = val;
+            document.getElementById('bpm-val').innerText = bpm;
+        }
+
+        function playClick() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.frequency.value = 800; 
+            
+            gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function toggleMetronome() {
+            const btn = document.getElementById('play-btn');
+            if (isPlaying) {
+                clearInterval(timerID);
+                isPlaying = false;
+                btn.innerText = '▶ 재생';
+                btn.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+            } else {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                isPlaying = true;
+                btn.innerText = '⏸ 정지';
+                btn.style.background = 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)';
+                
+                playClick(); 
+                timerID = setInterval(playClick, (60 / bpm) * 1000);
+            }
+        }
+
+        // ==========================================
+        // 3. Tuner Logic
+        // ==========================================
+        let tunerCtx;
+        let analyser;
+        let stream;
+        let reqAnimFrame;
+        
+        const noteStrings = ["도", "도#", "레", "레#", "미", "파", "파#", "솔", "솔#", "라", "라#", "시"];
+        const engStrings = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+        function noteFromPitch(frequency) {
+            const noteNum = 12 * (Math.log(frequency / 440) / Math.log(2));
+            return Math.round(noteNum) + 69;
+        }
+
+        function frequencyFromNoteNumber(note) {
+            return 440 * Math.pow(2, (note - 69) / 12);
+        }
+
+        function centsOffFromPitch(frequency, note) {
+            return Math.floor(1200 * Math.log(frequency / frequencyFromNoteNumber(note)) / Math.log(2));
+        }
+
+        function autoCorrelate(buf, sampleRate) {
+            let SIZE = buf.length;
+            let rms = 0;
+            for (let i = 0; i < SIZE; i++) rms += buf[i] * buf[i];
+            rms = Math.sqrt(rms / SIZE);
+            if (rms < 0.01) return -1; 
+
+            let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+            for (var i = 0; i < SIZE / 2; i++) if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+            for (var i = 1; i < SIZE / 2; i++) if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+
+            buf = buf.slice(r1, r2);
+            SIZE = buf.length;
+            let c = new Array(SIZE).fill(0);
+            for (let i = 0; i < SIZE; i++) {
+                for (let j = 0; j < SIZE - i; j++) c[i] = c[i] + buf[j] * buf[j + i];
+            }
+            let d = 0; while (c[d] > c[d + 1]) d++;
+            let maxval = -1, maxpos = -1;
+            for (let i = d; i < SIZE; i++) {
+                if (c[i] > maxval) { maxval = c[i]; maxpos = i; }
+            }
+            let T0 = maxpos;
+            let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
+            let a = (x1 + x3 - 2 * x2) / 2;
+            let b = (x3 - x1) / 2;
+            if (a) T0 = T0 - b / (2 * a);
+            return sampleRate / T0;
+        }
+
+        async function startTuner() {
+            const btn = document.getElementById('mic-btn');
+            
+            try {
+                if(!tunerCtx) tunerCtx = new (window.AudioContext || window.webkitAudioContext)();
+                stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const source = tunerCtx.createMediaStreamSource(stream);
+                analyser = tunerCtx.createAnalyser();
+                analyser.fftSize = 2048;
+                source.connect(analyser);
+                
+                btn.innerText = '🔴 튜닝 중... (끄기)';
+                btn.style.background = 'linear-gradient(135deg, #1dd1a1 0%, #10ac84 100%)';
+                btn.onclick = stopTuner;
+                
+                updatePitch();
+            } catch (err) {
+                alert("마이크 접근 권한을 허용해주세요!");
+            }
+        }
+
+        function stopTuner() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            if (reqAnimFrame) cancelAnimationFrame(reqAnimFrame);
+            
+            const btn = document.getElementById('mic-btn');
+            btn.innerText = '🎙️ 튜너 켜기';
+            btn.style.background = 'linear-gradient(135deg, #ff4757 0%, #ff6b81 100%)';
+            btn.onclick = startTuner;
+            document.getElementById('note-display').innerText = '-';
+            document.getElementById('meter-indicator').style.left = '50%';
+        }
+
+        function updatePitch() {
+            if(!stream) return;
+            let buf = new Float32Array(analyser.fftSize);
+            analyser.getFloatTimeDomainData(buf);
+            
+            let pitch = autoCorrelate(buf, tunerCtx.sampleRate);
+            
+            if (pitch !== -1) {
+                let note = noteFromPitch(pitch);
+                let cents = centsOffFromPitch(pitch, note);
+                
+                document.getElementById('note-display').innerHTML = `${noteStrings[note % 12]} <span style="font-size:24px; color:#a0a0b0;">(${engStrings[note % 12]})</span>`;
+                
+                let percent = (cents + 50) / 100;
+                percent = Math.max(0, Math.min(1, percent));
+                let meterEl = document.getElementById('meter-indicator');
+                meterEl.style.left = (percent * 100) + '%';
+                
+                if (Math.abs(cents) < 5) {
+                    meterEl.style.background = '#1dd1a1';
+                } else {
+                    meterEl.style.background = '#ff4757';
+                }
+            }
+            
+            reqAnimFrame = requestAnimationFrame(updatePitch);
+        }
+    </script>
+</body>
+</html>
