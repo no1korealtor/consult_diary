@@ -1,0 +1,15 @@
+{
+  "name": "오늘 공부",
+  "short_name": "오늘 공부",
+  "start_url": "study.html",
+  "display": "standalone",
+  "background_color": "#ffc3a0",
+  "theme_color": "#ffc3a0",
+  "icons": [
+    {
+      "src": "study_icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}
