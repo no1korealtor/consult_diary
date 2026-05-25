@@ -533,7 +533,7 @@
           ${word.image_url ? `<img src="${word.image_url}" class="word-image" onerror="this.style.display='none'" />` : ''}
           <div class="word">
               ${word.word}
-              <span class="speaker-icon" onclick="speakWord('${word.word.replace(/'/g, "\\'")}')" title="발음 듣기">🔊</span>
+              ${/[a-zA-Z]/.test(word.word) ? `<span class="speaker-icon" onclick="speakWord('${word.word.replace(/'/g, "\\'")}')" title="발음 듣기">🔊</span>` : ''}
           </div>
           
           <div style="text-align: center;">
