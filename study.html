@@ -7,6 +7,7 @@
     <title>오늘 공부</title>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@400;600;700&display=swap');
 
@@ -42,6 +43,65 @@
             color: rgba(255, 255, 255, 0.7);
             font-family: 'Nunito', sans-serif;
             text-align: center;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 480px;
+            margin-bottom: 20px;
+        }
+
+        .combo-badge {
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Jua', sans-serif;
+            box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4);
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            white-space: nowrap;
+        }
+
+        .progress-container {
+            flex-grow: 1;
+            margin-left: 15px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            height: 24px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #84fab0 0%, #8fd3f4 100%);
+            width: 0%;
+            transition: width 0.5s ease-out, background 0.5s ease;
+            border-radius: 20px;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 13px;
+            font-weight: bold;
+            color: #2d3436;
+            font-family: 'Nunito', sans-serif;
+            white-space: nowrap;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.2); }
+            100% { transform: scale(1); opacity: 1; }
         }
 
         #card-wrapper {
@@ -297,6 +357,14 @@
     <h1>
         🌸 오늘의 단어장 🌸
     </h1>
+    
+    <div class="stats-bar" id="stats-bar">
+        <div class="combo-badge hidden" id="combo-badge">🔥 0 Combo!</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="progress-text" id="progress-text">오늘의 목표: 0 / 5</div>
+        </div>
+    </div>
 
     <div id="card-wrapper"></div>
     <div id="last-updated" class="last-updated"></div>
@@ -318,6 +386,61 @@
         let wordsBySubject = {}
         let subjects = []
         let currentSubjectIndex = 0
+
+        // Reward System State
+        let comboCount = 0;
+        const dailyGoal = 5;
+        let dailyProgress = 0;
+
+        function initStats() {
+            const today = new Date().toLocaleDateString();
+            const savedData = JSON.parse(localStorage.getItem('studyStats')) || {};
+            
+            if (savedData.date !== today) {
+                dailyProgress = 0;
+                comboCount = 0;
+            } else {
+                dailyProgress = savedData.progress || 0;
+                comboCount = savedData.combo || 0;
+            }
+            updateStatsUI();
+        }
+
+        function saveStats() {
+            const today = new Date().toLocaleDateString();
+            localStorage.setItem('studyStats', JSON.stringify({
+                date: today,
+                progress: dailyProgress,
+                combo: comboCount
+            }));
+            updateStatsUI();
+        }
+
+        function updateStatsUI() {
+            const comboEl = document.getElementById('combo-badge');
+            if (comboCount >= 2) {
+                comboEl.classList.remove('hidden');
+                comboEl.innerHTML = `🔥 ${comboCount} Combo!`;
+                // Re-trigger animation
+                comboEl.style.animation = 'none';
+                setTimeout(() => comboEl.style.animation = '', 10);
+            } else {
+                comboEl.classList.add('hidden');
+            }
+
+            const progressEl = document.getElementById('progress-bar');
+            const textEl = document.getElementById('progress-text');
+            const percent = Math.min((dailyProgress / dailyGoal) * 100, 100);
+            progressEl.style.width = `${percent}%`;
+            
+            if (dailyProgress >= dailyGoal) {
+                textEl.innerHTML = `🎉 목표 달성! (${dailyProgress}개 마스터)`;
+                progressEl.style.background = 'linear-gradient(90deg, #f6d365 0%, #fda085 100%)';
+            } else {
+                textEl.innerHTML = `오늘의 목표: ${dailyProgress} / ${dailyGoal}`;
+                progressEl.style.background = 'linear-gradient(90deg, #84fab0 0%, #8fd3f4 100%)';
+            }
+        }
 
         async function loadWords() {
             const { data, error } = await supabaseClient
@@ -459,12 +582,27 @@
                     return;
                 }
 
-                alert("정답이에요! 🎉 이제 이 단어는 마스터했어요!");
+                // Reward Updates
+                comboCount++;
+                dailyProgress++;
+                saveStats();
+
+                // Fire Confetti!
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#ffc3a0', '#ffafbd', '#84fab0', '#8fd3f4', '#f6d365']
+                });
                 
                 words = words.filter(w => w.id !== currentWord.id);
                 isTestMode = false;
                 setupSubjects();
             } else {
+                // Combo Breaks
+                comboCount = 0;
+                saveStats();
+
                 alert("앗, 틀렸어요! 다시 한 번 시도해볼까요? 😉");
                 const inputEl = document.getElementById('test-input');
                 inputEl.value = '';
@@ -508,6 +646,7 @@
             }
         }
 
+        initStats()
         loadWords()
     </script>
 
