@@ -643,7 +643,12 @@
                 // 기존 재생중인 음성 취소
                 window.speechSynthesis.cancel();
                 
-                const utterance = new SpeechSynthesisUtterance(text);
+                // 한글 제거 (영어 발음 기호나 기타 텍스트만 남김)
+                const englishOnly = text.replace(/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/g, '').trim();
+                
+                if (!englishOnly) return;
+                
+                const utterance = new SpeechSynthesisUtterance(englishOnly);
                 utterance.lang = 'en-US'; // 미국 영어
                 utterance.rate = 0.85;    // 약간 천천히 (아이들이 듣기 편하게)
                 utterance.pitch = 1.1;    // 살짝 높은 톤으로 밝게
