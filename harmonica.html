@@ -167,17 +167,15 @@
 <body>
 
     <!-- Score Viewer Panel -->
-    <div class="panel score-panel">
-        <h2 class="panel-title">🎼 하모니카 자동 숫자 악보</h2>
+    <div class="panel score-panel" style="display: flex; flex-direction: column;">
+        <h2 class="panel-title">🎼 내 악보 보기 (PDF/사진)</h2>
         <div class="file-upload">
-            <label for="xml-upload">MusicXML 파일 열기 (.xml, .musicxml): </label>
-            <input type="file" id="xml-upload" accept=".xml,.musicxml" onchange="handleFileUpload(event)">
+            <label for="pdf-upload">악보 파일 열기 (PDF, JPG, PNG): </label>
+            <input type="file" id="pdf-upload" accept="application/pdf, image/*" onchange="handleFileUpload(event)">
         </div>
-        <div class="score-display" id="score-display">
-            <div style="color:#a0a0b0; font-size:16px; width:100%; text-align:center; margin-top:50px;">
-                여기에 숫자로 변환된 하모니카 악보가 뜹니다!<br><br>
-                1=도, 2=레, 3=미, 4=파, 5=솔, 6=라, 7=시<br>
-                위에 점이 있으면 높은음, 아래에 점이 있으면 낮은음입니다.
+        <div class="score-display" id="score-display" style="flex-grow:1; padding:0; overflow:hidden; position:relative;">
+            <div id="placeholder-text" style="color:#a0a0b0; font-size:18px; width:100%; text-align:center; position:absolute; top:50%; transform:translateY(-50%);">
+                연습하실 악보 파일(PDF 또는 사진)을 올려주세요!
             </div>
         </div>
     </div>
@@ -185,7 +183,16 @@
     <!-- Metronome Panel -->
     <div class="panel">
         <h2 class="panel-title">⏱️ 메트로놈</h2>
-        <div class="bpm-display"><span id="bpm-val">120</span> BPM</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div class="bpm-display" style="margin:0;"><span id="bpm-val">120</span> BPM</div>
+            <select id="time-signature" onchange="updateTimeSignature(this.value)" style="padding:10px; border-radius:10px; background:#3a3a5a; color:white; border:none; font-size:18px; font-family:'Jua', sans-serif; cursor:pointer; outline:none;">
+                <option value="1">기본 (강세 없음)</option>
+                <option value="2">2박자 (강-약)</option>
+                <option value="3">3박자 (강-약-약)</option>
+                <option value="4" selected>4박자 (강-약-중강-약)</option>
+                <option value="6">6박자 (강-약-약-중강-약-약)</option>
+            </select>
+        </div>
         <input type="range" id="bpm-slider" min="40" max="240" value="120" oninput="updateBPM(this.value)">
         <button class="btn-play" id="play-btn" onclick="toggleMetronome()">▶ 재생</button>
     </div>
@@ -203,97 +210,63 @@
 
     <script>
         // ==========================================
-        // 1. MusicXML to Number Tab Logic
+        // 1. PDF / Image Viewer Logic
         // ==========================================
-        const noteMap = { 'C':1, 'D':2, 'E':3, 'F':4, 'G':5, 'A':6, 'B':7 };
-
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                parseMusicXML(e.target.result);
-            };
-            reader.readAsText(file);
-        }
-
-        function parseMusicXML(xmlText) {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-            
-            const measures = xmlDoc.getElementsByTagName("measure");
             const scoreDisplay = document.getElementById('score-display');
-            scoreDisplay.innerHTML = ''; // 초기화
+            const placeholder = document.getElementById('placeholder-text');
+            if (placeholder) placeholder.style.display = 'none';
 
-            if (measures.length === 0) {
-                scoreDisplay.innerHTML = '<span style="color:red; font-size:16px;">유효한 악보 데이터가 없습니다.</span>';
-                return;
-            }
+            const fileURL = URL.createObjectURL(file);
+            scoreDisplay.innerHTML = ''; // Clear previous
 
-            for (let i = 0; i < measures.length; i++) {
-                const notes = measures[i].getElementsByTagName("note");
-                
-                // 마디 구분선
-                if(i > 0) {
-                    const barline = document.createElement('div');
-                    barline.style.borderLeft = "2px solid #ccc";
-                    barline.style.height = "40px";
-                    barline.style.margin = "0 10px";
-                    scoreDisplay.appendChild(barline);
-                }
-
-                for (let j = 0; j < notes.length; j++) {
-                    const note = notes[j];
-                    // 쉼표 확인
-                    if (note.getElementsByTagName("rest").length > 0) {
-                        const block = document.createElement('div');
-                        block.className = 'note-block';
-                        block.innerHTML = `<div class="note-dot-up"></div><div class="note-number rest-number">0</div><div class="note-dot-down"></div>`;
-                        scoreDisplay.appendChild(block);
-                        continue;
-                    }
-
-                    const pitch = note.getElementsByTagName("pitch")[0];
-                    if (pitch) {
-                        const step = pitch.getElementsByTagName("step")[0].textContent; // C, D, E...
-                        const octave = parseInt(pitch.getElementsByTagName("octave")[0].textContent);
-                        
-                        const num = noteMap[step] || step;
-                        
-                        // 하모니카 숫자악보 옥타브 표시 (기본 4옥타브 기준)
-                        let dotUp = '';
-                        let dotDown = '';
-                        if (octave > 4) {
-                            dotUp = '•'.repeat(octave - 4);
-                        } else if (octave < 4) {
-                            dotDown = '•'.repeat(4 - octave);
-                        }
-
-                        const block = document.createElement('div');
-                        block.className = 'note-block';
-                        block.innerHTML = `
-                            <div class="note-dot-up">${dotUp}</div>
-                            <div class="note-number">${num}</div>
-                            <div class="note-dot-down">${dotDown}</div>
-                        `;
-                        scoreDisplay.appendChild(block);
-                    }
-                }
+            if (file.type === 'application/pdf') {
+                const embed = document.createElement('embed');
+                embed.src = fileURL + '#toolbar=0&navpanes=0&scrollbar=0';
+                embed.type = 'application/pdf';
+                embed.style.width = '100%';
+                embed.style.height = '100%';
+                embed.style.border = 'none';
+                embed.style.borderRadius = '15px';
+                scoreDisplay.appendChild(embed);
+            } else if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = fileURL;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'contain';
+                img.style.borderRadius = '15px';
+                scoreDisplay.appendChild(img);
+            } else {
+                alert("지원하지 않는 파일 형식입니다. (PDF나 이미지만 지원)");
             }
         }
 
         // ==========================================
-        // 2. Metronome Logic
+        // 2. Metronome Logic (with Time Signature)
         // ==========================================
         let audioCtx;
         let isPlaying = false;
         let bpm = 120;
         let timerID;
+        let beatsPerMeasure = 4;
+        let currentBeat = 0;
 
         function updateBPM(val) {
             bpm = val;
             document.getElementById('bpm-val').innerText = bpm;
+            if (isPlaying) {
+                clearInterval(timerID);
+                timerID = setInterval(playClick, (60 / bpm) * 1000);
+            }
+        }
+
+        function updateTimeSignature(val) {
+            beatsPerMeasure = parseInt(val);
+            currentBeat = 0;
         }
 
         function playClick() {
@@ -303,11 +276,27 @@
 
             osc.connect(gainNode);
             gainNode.connect(audioCtx.destination);
-            osc.frequency.value = 800; 
             
-            gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+            currentBeat++;
+            if (currentBeat > beatsPerMeasure) {
+                currentBeat = 1;
+            }
 
+            if (beatsPerMeasure === 1) {
+                osc.frequency.value = 800;
+                gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+            } else if (currentBeat === 1) {
+                osc.frequency.value = 1200; // 강
+                gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
+            } else if ((beatsPerMeasure === 4 && currentBeat === 3) || (beatsPerMeasure === 6 && currentBeat === 4)) {
+                osc.frequency.value = 900; // 중강
+                gainNode.gain.setValueAtTime(0.7, audioCtx.currentTime);
+            } else {
+                osc.frequency.value = 700; // 약
+                gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime);
+            }
+            
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
             osc.start(audioCtx.currentTime);
             osc.stop(audioCtx.currentTime + 0.1);
         }
@@ -317,6 +306,7 @@
             if (isPlaying) {
                 clearInterval(timerID);
                 isPlaying = false;
+                currentBeat = 0;
                 btn.innerText = '▶ 재생';
                 btn.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
             } else {
@@ -324,6 +314,7 @@
                 if (audioCtx.state === 'suspended') audioCtx.resume();
                 
                 isPlaying = true;
+                currentBeat = 0;
                 btn.innerText = '⏸ 정지';
                 btn.style.background = 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)';
                 
