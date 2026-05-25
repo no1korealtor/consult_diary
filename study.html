@@ -537,7 +537,12 @@
           </div>
           
           <div style="text-align: center;">
-              ${word.irregular ? `<div class="irregular">${word.irregular}</div>` : ''}
+              ${word.irregular ? `
+                  <div class="irregular" style="display: inline-flex; align-items: center; gap: 8px;">
+                      ${word.irregular}
+                      ${/[a-zA-Z]/.test(word.irregular) ? `<span class="speaker-icon" onclick="speakWord('${word.irregular.replace(/'/g, "\\'")}')" title="불규칙 변화 발음 듣기" style="font-size: 22px; padding: 4px;">🔊</span>` : ''}
+                  </div>
+              ` : ''}
           </div>
           
           <div class="hanja">${word.hanja || ''}</div>
