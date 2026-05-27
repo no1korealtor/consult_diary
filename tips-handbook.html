@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>실무 편람 (Handbook)</title>
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="nav.css">
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+        
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Pretendard Variable', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: #fff !important;
+            color: #0f172a !important;
+        }
+        
+        .handbook-wrapper {
+            display: flex;
+            flex: 1;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Layout */
+        .sidebar {
+            width: 320px;
+            background: #f8fafc;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: transform 0.3s ease;
+        }
+        
+        .main-content {
+            flex: 1;
+            height: 100%;
+            overflow-y: auto;
+            padding: 40px;
+            position: relative;
+            background: #ffffff;
+        }
+
+        /* Sidebar Elements */
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            background: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .back-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #1e293b; padding: 0; }
+
+        .search-container {
+            padding: 16px 20px;
+            background: #f8fafc;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            font-family: inherit;
+        }
+        .search-box:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
+
+        .index-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 10px 20px 10px;
+        }
+
+        .category-group {
+            margin-bottom: 16px;
+        }
+        .category-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #64748b;
+            padding: 8px 10px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .tip-item {
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-bottom: 2px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155;
+            transition: all 0.2s;
+            line-height: 1.4;
+        }
+        .tip-item:hover {
+            background: #f1f5f9;
+        }
+        .tip-item.active {
+            background: #e0e7ff;
+            color: #4338ca;
+            font-weight: 700;
+        }
+
+        /* Main Content Elements */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #94a3b8;
+        }
+        .empty-state h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #64748b; }
+        
+        .article { display: none; max-width: 800px; margin: 0 auto; }
+        .article.active { display: block; }
+        
+        .article-category {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+        
+        .article-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0 0 20px 0;
+            line-height: 1.3;
+        }
+
+        .article-meta {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .meta-tag {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .meta-warning {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .summary-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+        .summary-box h4 { margin: 0 0 12px 0; font-size: 15px; color: #334155; }
+        .summary-list { list-style: none; padding: 0; margin: 0; font-size: 15px; font-weight: 600; color: #1e293b; }
+        .summary-list li { margin-bottom: 8px; display: flex; gap: 8px; line-height: 1.5; }
+        .summary-list li:last-child { margin-bottom: 0; }
+
+        .article-body {
+            font-size: 16px;
+            color: #334155;
+            line-height: 1.8;
+            white-space: pre-line;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 30px;
+            padding-bottom: 60px;
+        }
+
+        .mobile-back-btn {
+            display: none;
+            background: #f1f5f9;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                position: absolute;
+                z-index: 10;
+            }
+            .sidebar.hidden {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                padding: 20px;
+                padding-bottom: 80px;
+            }
+            .mobile-back-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+            .article-title {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="handbook-wrapper">
+    <!-- 좌측 사이드바 (목차) -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="back-btn" onclick="history.back()">←</button>
+            <h2 style="margin: 0; font-size: 18px; font-weight: 800; color: #1e293b;">📚 실무 편람</h2>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-box" placeholder="제목/내용 검색..." onkeyup="filterIndex()">
+        </div>
+        <div class="index-list" id="indexList">
+            <div style="text-align: center; color: #64748b; padding: 20px 0; font-size: 13px;">목차를 불러오는 중...</div>
+        </div>
+    </div>
+
+    <!-- 우측 메인 영역 (본문) -->
+    <div class="main-content" id="mainContent">
+        <button class="mobile-back-btn" onclick="showSidebar()">← 목차로 돌아가기</button>
+        
+        <div class="empty-state" id="emptyState">
+            <h3>편람에 오신 것을 환영합니다</h3>
+            <p>좌측 목차에서 원하시는 실무 팁을 선택해주세요.</p>
+        </div>
+
+        <div class="article" id="articleView">
+            <div class="article-category" id="vCategory">카테고리</div>
+            <h1 class="article-title" id="vTitle">제목</h1>
+            
+            <div class="article-meta" id="vMeta">
+                <!-- 날짜, 경고 태그 등이 들어갈 자리 -->
+            </div>
+
+            <div class="summary-box" id="vSummaryBox">
+                <h4>📝 핵심 요약</h4>
+                <ul class="summary-list" id="vSummary">
+                    <!-- 요약 리스트 -->
+                </ul>
+            </div>
+
+            <div class="article-body" id="vBody">
+                <!-- 본문 내용 -->
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <nav class="bottom-nav">
+    <a href="deal-register.html" class="nav-item">
+        <span class="nav-icon">🏠</span>
+        <span>일정</span>
+    </a>
+    <a href="market.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        <span>장부</span>
+    </a>
+    <a href="contacts.html" class="nav-item">
+        <span class="nav-icon">👥</span>
+        <span>연락처</span>
+    </a>
+    <a href="tips-handbook.html" class="nav-item active">
+        <span class="nav-icon">📚</span>
+        <span>편람</span>
+    </a>
+    <a href="profile-edit.html" class="nav-item">
+        <span class="nav-icon">👤</span>
+        <span>내정보</span>
+    </a>
+</nav>
+
+    <script src="auth-helper.js"></script>
+    <script src="ui-helper.js"></script>
+    <script>
+        let allTips = [];
+
+        async function loadHandbook() {
+            await requireAuth();
+
+            const { data, error } = await supabaseClient
+                .from('practical_tips')
+                .select('*')
+                .eq('is_active', true)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                document.getElementById('indexList').innerHTML = '<div style="text-align: center; color: #ef4444; padding: 20px 0; font-size:13px;">데이터를 불러오지 못했습니다.</div>';
+                return;
+            }
+
+            allTips = data || [];
+            renderIndex(allTips);
+        }
+
+        function renderIndex(tips) {
+            const indexList = document.getElementById('indexList');
+            indexList.innerHTML = '';
+
+            if (tips.length === 0) {
+                indexList.innerHTML = '<div style="text-align: center; color: #64748b; padding: 20px 0; font-size:13px;">일치하는 팁이 없습니다.</div>';
+                return;
+            }
+
+            // 카테고리별로 그룹화
+            const grouped = {
+                '공통': [],
+                '세법/정책': [],
+                '중개실무': [],
+                '임대차': [],
+                '부동산경제상식': [],
+                '기타': []
+            };
+            
+            tips.forEach(tip => {
+                const cat = tip.category || '기타';
+                if (!grouped[cat]) grouped[cat] = [];
+                grouped[cat].push(tip);
+            });
+
+            // 목차 렌더링
+            for (const [category, items] of Object.entries(grouped)) {
+                if (items.length === 0) continue;
+
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'category-group';
+                
+                const title = document.createElement('h3');
+                title.className = 'category-title';
+                title.innerText = category;
+                groupDiv.appendChild(title);
+
+                items.forEach(tip => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'tip-item';
+                    itemDiv.id = 'idx_' + tip.id;
+                    itemDiv.innerText = tip.title;
+                    itemDiv.onclick = () => showArticle(tip.id);
+                    groupDiv.appendChild(itemDiv);
+                });
+
+                indexList.appendChild(groupDiv);
+            }
+        }
+
+        function showArticle(id) {
+            const tip = allTips.find(t => t.id === id);
+            if (!tip) return;
+
+            // 사이드바 활성화 표시 업데이트
+            document.querySelectorAll('.tip-item').forEach(el => el.classList.remove('active'));
+            const activeItem = document.getElementById('idx_' + id);
+            if(activeItem) activeItem.classList.add('active');
+
+            // 화면 전환 (모바일)
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.add('hidden');
+            }
+
+            // 내용 채우기
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('articleView').classList.add('active');
+            
+            document.getElementById('vCategory').innerText = tip.category || '분류 없음';
+            document.getElementById('vTitle').innerText = tip.title;
+
+            // 메타 정보 (날짜, 경고)
+            let metaHtml = '';
+            if (tip.effective_date) metaHtml += `<span class="meta-tag">📅 ${tip.effective_date}</span>`;
+            if (tip.warnings) metaHtml += `<span class="meta-tag meta-warning">⚠️ ${tip.warnings}</span>`;
+            document.getElementById('vMeta').innerHTML = metaHtml;
+
+            // 요약
+            const summaryArr = Array.isArray(tip.summary) ? tip.summary : (typeof tip.summary === "string" ? JSON.parse(tip.summary || "[]") : []);
+            if (summaryArr.length > 0) {
+                document.getElementById('vSummaryBox').style.display = 'block';
+                const sumHtml = summaryArr.map(s => `<li><span style="color:#3b82f6;">✓</span><span>${s}</span></li>`).join('');
+                document.getElementById('vSummary').innerHTML = sumHtml;
+            } else {
+                document.getElementById('vSummaryBox').style.display = 'none';
+            }
+
+            // 본문
+            let contentText = tip.full_text || '';
+            if (contentText) {
+                // 잘못 임포트된 rn 문자열 및 과도한 공백(4개 이상)을 줄바꿈으로 변환
+                contentText = contentText.replace(/rnrn/g, '\n\n')
+                                         .replace(/rn/g, '\n')
+                                         .replace(/[ ]{4,}/g, '\n\n');
+            } else {
+                contentText = '<span style="color:#94a3b8">상세 내용이 없습니다.</span>';
+            }
+            document.getElementById('vBody').innerHTML = contentText;
+            
+            // 본문 영역 스크롤 최상단으로
+            document.getElementById('mainContent').scrollTop = 0;
+        }
+
+        function showSidebar() {
+            document.getElementById('sidebar').classList.remove('hidden');
+        }
+
+        function filterIndex() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allTips.filter(t => 
+                t.title.toLowerCase().includes(query) || 
+                (t.category && t.category.toLowerCase().includes(query)) ||
+                (t.full_text && t.full_text.toLowerCase().includes(query))
+            );
+            renderIndex(filtered);
+            
+            // 활성화 상태 유지
+            const activeArticleTitle = document.getElementById('vTitle').innerText;
+            if(activeArticleTitle) {
+                const activeTip = filtered.find(t => t.title === activeArticleTitle);
+                if(activeTip) {
+                    setTimeout(() => {
+                        const el = document.getElementById('idx_' + activeTip.id);
+                        if(el) el.classList.add('active');
+                    }, 50);
+                }
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.getElementById('sidebar').classList.remove('hidden');
+            }
+        });
+
+        window.addEventListener('load', loadHandbook);
+    </script>
+</body>
+</html>
+
+

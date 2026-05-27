@@ -1,0 +1,15 @@
+﻿
+> dbno1korealtor.sql:225:  CONSTRAINT `기사고유번호` FOREIGN KEY (`artiid`) REFERENCES `article_tbl` (`id`),
+  dbno1korealtor.sql:226:  CONSTRAINT `키워드` FOREIGN KEY (`kword`) REFERENCES `keyword` (`kword_id`)
+  dbno1korealtor.sql:227:) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8 COMMENT='키워드 검색을 위한 단어들과 기사들을 연결하는 매개';
+  dbno1korealtor.sql:228:/*!40101 SET character_set_client = @saved_cs_client */;
+  dbno1korealtor.sql:229:
+  dbno1korealtor.sql:230:--
+> dbno1korealtor.sql:253:-- Table structure for table `article_tbl`
+  dbno1korealtor.sql:254:--
+  dbno1korealtor.sql:255:
+> dbno1korealtor.sql:256:DROP TABLE IF EXISTS `article_tbl`;
+  dbno1korealtor.sql:257:/*!40101 SET @saved_cs_client     = @@character_set_client */;
+  dbno1korealtor.sql:258:/*!40101 SET character_set_client = utf8 */;
+
+

@@ -206,19 +206,19 @@
         renderTodayDate();
     </script>
 
-    <!-- 실무팁 배너 -->
-<div id="tipBanner" style="display: none; background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 16px; padding: 16px 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative;">
-    <div style="position: absolute; top: 12px; right: 12px; display: flex; gap: 8px;">
-        <button onclick="hideCurrentTip(event)" style="background: rgba(255,255,255,0.1); border: none; color: #cbd5e1; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 12px;" title="이 팁 다시 보지 않기">✕</button>
-    </div>
-    <div onclick="openTipSheet()" style="cursor: pointer; padding-right: 30px;">
-        <div style="font-size: 12px; color: #94a3b8; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-            <span id="tipTitleSpan">💡 맞춤 실무 팁</span>
-            <span id="tipBannerCategory" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; padding: 2px 6px; border-radius: 4px; font-size: 10px;">일반</span>
-        </div>
-        <div id="tipBannerTitle" style="font-size: 15px; font-weight: 800; color: #f8fafc; word-break: keep-all; line-height: 1.4;">-</div>
-    </div>
-</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
 <h3 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
         <span>내 일정</span>
         <span id="personalDealsCount" style="font-size: 13px; color: #6b7280; font-weight: normal; background: #e5e7eb; padding: 2px 8px; border-radius: 10px; display: none;"></span>
@@ -269,7 +269,7 @@
         </div>
     </div>
 
-    <div id="clientSelectContainer" style="margin-bottom: 16px; margin-top: 16px;">
+    <div id="clientSelectContainer" style="display: none; margin-bottom: 16px; margin-top: 16px;">
         <select id="clientSelect" placeholder="손님 선택 (전화번호 뒷자리 등)">
             <option value="">손님 선택 안함</option>
         </select>
@@ -1750,27 +1750,28 @@
     </footer>
 
     <nav class="bottom-nav">
-        <a href="deal-register.html" class="nav-item active">
-            <span class="nav-icon">🏠</span>
-            <span>일정</span>
-        </a>
-        <a href="market.html" class="nav-item">
-            <span class="nav-icon">📋</span>
-            <span>장부</span>
-        </a>
-        <a href="contacts.html" class="nav-item">
-            <span class="nav-icon">👥</span>
-            <span>연락처</span>
-        </a>
-        <a href="manual.html" class="nav-item">
-            <span class="nav-icon">📖</span>
-            <span>설명서</span>
-        </a>
-        <a href="profile-edit.html" class="nav-item">
-            <span class="nav-icon">👤</span>
-            <span>내정보</span>
-        </a>
-    </nav>
+    <a href="deal-register.html" class="nav-item active">
+        <span class="nav-icon">🏠</span>
+        <span>일정</span>
+    </a>
+    <a href="market.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        <span>장부</span>
+    </a>
+    <a href="contacts.html" class="nav-item">
+        <span class="nav-icon">👥</span>
+        <span>연락처</span>
+    </a>
+    <a href="tips-handbook.html" class="nav-item">
+        <span class="nav-icon">📚</span>
+        <span>편람</span>
+    </a>
+    <a href="profile-edit.html" class="nav-item">
+        <span class="nav-icon">👤</span>
+        <span>내정보</span>
+    </a>
+</nav>
+
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -2053,4 +2054,6 @@ function toggleTipText(id, btn) {
     </script>
 </body>
 </html>
+
+
 

@@ -345,6 +345,7 @@
             font-size: 28px;
             color: #ff758c;
         }
+
         @media (max-width: 600px) {
             h1 { font-size: 28px; }
             .card { padding: 24px 16px; border-radius: 28px; }
@@ -660,7 +661,24 @@
                 if (!englishOnly) return;
                 
                 const utterance = new SpeechSynthesisUtterance(englishOnly);
-                utterance.lang = 'en-US'; // 미국 영어
+                
+                // 중학생 학습용 추천 목소리 적용 (자동)
+                const voices = window.speechSynthesis.getVoices();
+                const recommendedVoices = ['Google US English', 'Samantha', 'Microsoft Zira - English (United States)', 'Microsoft Zira', 'Alex'];
+                
+                const bestVoice = voices.find(v => recommendedVoices.includes(v.name));
+                if (bestVoice) {
+                    utterance.voice = bestVoice;
+                } else {
+                    // 추천 목소리가 없으면 기본 영어 목소리
+                    const fallbackVoice = voices.find(v => v.lang.startsWith('en') && v.default) || voices.find(v => v.lang.startsWith('en'));
+                    if (fallbackVoice) {
+                        utterance.voice = fallbackVoice;
+                    } else {
+                        utterance.lang = 'en-US';
+                    }
+                }
+
                 utterance.rate = 0.85;    // 약간 천천히 (아이들이 듣기 편하게)
                 utterance.pitch = 1.1;    // 살짝 높은 톤으로 밝게
                 

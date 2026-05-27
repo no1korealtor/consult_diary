@@ -32,14 +32,23 @@
             body {
                 display: grid;
                 grid-template-columns: 2fr 1fr;
-                grid-template-rows: 1fr 1fr;
                 padding: 20px;
                 gap: 20px;
+                align-items: start;
             }
             .score-panel {
                 grid-column: 1 / 2;
-                grid-row: 1 / 3;
             }
+            .right-panels {
+                position: sticky;
+                top: 20px;
+            }
+        }
+
+        .right-panels {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
         .panel {
@@ -238,9 +247,10 @@
         </div>
     </div>
 
-    <!-- Metronome Panel -->
-    <div class="panel">
-        <h2 class="panel-title">⏱️ 메트로놈</h2>
+    <div class="right-panels">
+        <!-- Metronome Panel -->
+        <div class="panel">
+            <h2 class="panel-title">⏱️ 메트로놈</h2>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px;">
             <div class="bpm-display" style="margin:0;"><span id="bpm-val">120</span> BPM</div>
             <select id="time-signature" onchange="updateTimeSignature(this.value)" style="padding:8px; border-radius:10px; background:#3a3a5a; color:white; border:none; font-size:16px; font-family:'Jua', sans-serif; cursor:pointer; outline:none; max-width:100%; flex-grow:1;">
@@ -270,15 +280,66 @@
         </div>
         <button class="btn-mic" id="mic-btn" onclick="startTuner()">🎙️ 튜너 켜기</button>
     </div>
+    </div>
 
     <script>
         // ==========================================
         // 1. PDF / Image Viewer Logic
         // ==========================================
+        const dbName = "HarmonicaDB";
+        const storeName = "scores";
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(dbName, 1);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(storeName)) {
+                        db.createObjectStore(storeName);
+                    }
+                };
+                request.onsuccess = (event) => resolve(event.target.result);
+                request.onerror = (event) => reject(event.target.error);
+            });
+        }
+
+        async function saveScoreToDB(file) {
+            try {
+                const db = await initDB();
+                const tx = db.transaction(storeName, "readwrite");
+                const store = tx.objectStore(storeName);
+                store.put(file, "latestScore");
+            } catch (e) {
+                console.error("Failed to save score to DB", e);
+            }
+        }
+
+        async function loadScoreFromDB() {
+            try {
+                const db = await initDB();
+                const tx = db.transaction(storeName, "readonly");
+                const store = tx.objectStore(storeName);
+                const request = store.get("latestScore");
+                request.onsuccess = () => {
+                    const file = request.result;
+                    if (file) {
+                        displayFile(file);
+                    }
+                };
+            } catch (e) {
+                console.error("Failed to load score from DB", e);
+            }
+        }
+
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
+            displayFile(file);
+            saveScoreToDB(file);
+        }
+
+        function displayFile(file) {
             const scoreDisplay = document.getElementById('score-display');
             const placeholder = document.getElementById('placeholder-text');
             if (placeholder) placeholder.style.display = 'none';
@@ -543,6 +604,7 @@
 
         // 초기화
         renderBeatIndicators();
+        loadScoreFromDB();
     </script>
     <footer class="site-footer">
         <div class="footer-info">

@@ -1,4 +1,4 @@
-$files = @("manual.html", "deal-register.html", "contacts.html", "admin-tips.html", "profile-edit.html")
+$files = @("tips-handbook.html", "deal-register.html", "contacts.html", "admin-tips.html", "profile-edit.html", "market.html")
 
 foreach ($file in $files) {
     $content = Get-Content -Path $file -Raw -Encoding UTF8
@@ -20,9 +20,9 @@ foreach ($file in $files) {
         <span class="nav-icon">👥</span>
         <span>연락처</span>
     </a>
-    <a href="manual.html" class="nav-item">
-        <span class="nav-icon">📖</span>
-        <span>설명서</span>
+    <a href="tips-handbook.html" class="nav-item">
+        <span class="nav-icon">📚</span>
+        <span>편람</span>
     </a>
     <a href="profile-edit.html" class="nav-item">
         <span class="nav-icon">👤</span>
@@ -34,7 +34,7 @@ foreach ($file in $files) {
     # Active 상태 추가
     if ($file -eq "deal-register.html") { $navTemplate = $navTemplate -replace '"deal-register.html" class="nav-item"', '"deal-register.html" class="nav-item active"' }
     if ($file -eq "contacts.html") { $navTemplate = $navTemplate -replace '"contacts.html" class="nav-item"', '"contacts.html" class="nav-item active"' }
-    if ($file -eq "manual.html") { $navTemplate = $navTemplate -replace '"manual.html" class="nav-item"', '"manual.html" class="nav-item active"' }
+    if ($file -eq "tips-handbook.html") { $navTemplate = $navTemplate -replace '"tips-handbook.html" class="nav-item"', '"tips-handbook.html" class="nav-item active"' }
     if ($file -eq "profile-edit.html") { $navTemplate = $navTemplate -replace '"profile-edit.html" class="nav-item"', '"profile-edit.html" class="nav-item active"' }
     
     # 교체 로직
