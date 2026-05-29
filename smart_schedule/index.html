@@ -1053,7 +1053,9 @@
             const isNotice = (s) => {
                 if (!s) return false;
                 const isGlobal = !s.buildings && !s.building_id && !s.properties && !s.property_id;
-                return isGlobal;
+                const isPrivate = (s.memo || '').includes('[PRIVATE]');
+                const isProposal = (s.memo || '').includes('[PROPOSAL]');
+                return isGlobal && !isPrivate && !isProposal;
             };
 
             const sortByDate = (a, b) => {
