@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -63,8 +63,27 @@
         
         <textarea id="memo" placeholder="일정 메모 / 모임명" rows="4" style="margin-bottom: 12px;"></textarea>
 
-        <label id="balanceDateLabel" style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: none;">날짜 지정</label>
-        <input type="date" id="balanceDate" style="margin-bottom: 12px;">
+        <div style="display: flex; gap: 8px;">
+            <div style="flex: 1;">
+                <label id="balanceDateLabel" style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">날짜 지정</label>
+                <input type="date" id="balanceDate" style="margin-bottom: 12px;">
+            </div>
+            <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label style="font-size: 12px; color: #6b7280; font-weight: 600;">시간 지정 (선택)</label>
+                    <label style="font-size: 12px; color: #1e293b; font-weight: 600; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                        <input type="checkbox" id="chkMeetAllDay" style="width: 14px; height: 14px; margin: 0; accent-color: #3b82f6;" onchange="document.getElementById('mTimeContainer').style.opacity = this.checked ? '0.5' : '1'; document.getElementById('mTimeContainer').style.pointerEvents = this.checked ? 'none' : 'auto';"> 하루 종일
+                    </label>
+                </div>
+                <div id="mTimeContainer" style="display: flex; gap: 4px; margin-bottom: 12px;">
+                    <select id="mTimeAmPm" style="flex: 1; padding: 14px 8px; border-radius: 12px; font-size: 15px; border: 1px solid #e2e8f0; appearance: none; background: white;">
+                        <option value="">오전/오후</option><option value="AM">오전</option><option value="PM">오후</option>
+                    </select>
+                    <select id="mTimeHour" style="flex: 1; padding: 14px 8px; border-radius: 12px; font-size: 15px; border: 1px solid #e2e8f0; appearance: none; background: white;"></select>
+                    <select id="mTimeMinute" style="flex: 1; padding: 14px 8px; border-radius: 12px; font-size: 15px; border: 1px solid #e2e8f0; appearance: none; background: white;"></select>
+                </div>
+            </div>
+        </div>
         
         <div id="meetingEditFields" style="display: none; background: #eff6ff; padding: 16px; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 12px;">
             <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">모임 장소 (주소 검색)</label>
@@ -73,15 +92,6 @@
                 <button type="button" onclick="execDaumPostcodeMeeting()" style="width: auto; padding: 0 16px; margin-bottom: 0; background: #3b82f6; color: white; border-radius: 12px; font-weight: 600;">검색</button>
             </div>
             <input type="text" id="mLocDetail" placeholder="상세 장소 (예: 2층 호프집)" style="margin-bottom: 12px; display: none;">
-            
-            <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">시간</label>
-            <div style="display: flex; gap: 4px; margin-bottom: 12px;">
-                <select id="mTimeAmPm" style="flex: 1; padding: 12px; border-radius: 12px; font-size: 15px; border: 1px solid #e2e8f0; appearance: none; background: white;">
-                    <option value="">오전/오후</option><option value="AM">오전</option><option value="PM">오후</option>
-                </select>
-                <select id="mTimeHour" style="flex: 1; padding: 12px; border-radius: 12px; font-size: 15px; border: 1px solid #e2e8f0; appearance: none; background: white;"></select>
-                <select id="mTimeMinute" style="flex: 1; padding: 12px; border-radius: 12px; font-size: 15px; border: 1px solid #e2e8f0; appearance: none; background: white;"></select>
-            </div>
             
             <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">관련 링크(URL)</label>
             <input type="text" id="mUrl" placeholder="https://...">
@@ -144,21 +154,17 @@
                 }
             });
 
-            if (data.schedule_type === '모임' || (!data.buildings && !data.properties)) {
-                document.getElementById('propertyFields').style.display = 'none';
-                document.getElementById('contractType').style.display = 'none';
-                if(document.getElementById('clientSelectContainer')) document.getElementById('clientSelectContainer').style.display = 'none';
-                document.getElementById('balanceDateLabel').style.display = 'block';
-                document.querySelector('.notice').innerText = "💡 장소, 시간, 링크 및 메모를 수정할 수 있습니다.";
-                document.getElementById('meetingEditFields').style.display = 'block';
-                
-                let mTime = data.schedule_time ? data.schedule_time.substring(0, 5) : null;
-                if (!mTime) {
-                    const timeMatch = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
-                    if (timeMatch) mTime = timeMatch[1];
-                }
-                
-                if (mTime) {
+            let mTime = data.schedule_time ? data.schedule_time.substring(0, 5) : null;
+            if (!mTime) {
+                const timeMatch = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
+                if (timeMatch) mTime = timeMatch[1];
+            }
+            
+            if (mTime) {
+                if (mTime === '하루 종일') {
+                    const chk = document.getElementById('chkMeetAllDay');
+                    if (chk) { chk.checked = true; chk.dispatchEvent(new Event('change')); }
+                } else {
                     let [h, m] = mTime.split(':');
                     let hh = parseInt(h, 10);
                     let ampm = 'AM';
@@ -171,6 +177,15 @@
                     document.getElementById('mTimeHour').value = String(hh).padStart(2, '0');
                     document.getElementById('mTimeMinute').value = m;
                 }
+            }
+
+            if (data.schedule_type === '모임' || (!data.buildings && !data.properties)) {
+                document.getElementById('propertyFields').style.display = 'none';
+                document.getElementById('contractType').style.display = 'none';
+                if(document.getElementById('clientSelectContainer')) document.getElementById('clientSelectContainer').style.display = 'none';
+                document.getElementById('balanceDateLabel').style.display = 'block';
+                document.querySelector('.notice').innerText = "💡 장소, 링크 및 메모를 수정할 수 있습니다.";
+                document.getElementById('meetingEditFields').style.display = 'block';
                 
                 let mLoc = data.location || null;
                 if (data.location_detail) mLoc += ' ' + data.location_detail;
@@ -251,26 +266,30 @@
                 const mLocBase = document.getElementById('mLoc').value;
                 const mLocDetail = document.getElementById('mLocDetail').style.display !== 'none' ? document.getElementById('mLocDetail').value.trim() : '';
                 
+                const mUrl = document.getElementById('mUrl').value;
+                const mUrlName = document.getElementById('mUrlName').value;
+
+                payload.location = mLocBase || null;
+                payload.location_detail = mLocDetail || null;
+                payload.url = mUrl || null;
+                payload.url_name = mUrlName || null;
+            }
+
+            let mTime = null;
+            if (document.getElementById('chkMeetAllDay')?.checked) {
+                payload.memo = '[TIME]하루 종일[/TIME]\n' + payload.memo;
+            } else {
                 const ampm = document.getElementById('mTimeAmPm').value;
                 const hour = document.getElementById('mTimeHour').value;
                 const min = document.getElementById('mTimeMinute').value;
-                let mTime = null;
                 if (ampm && hour && min) {
                     let hh = parseInt(hour, 10);
                     if (ampm === 'PM' && hh < 12) hh += 12;
                     if (ampm === 'AM' && hh === 12) hh = 0;
                     mTime = String(hh).padStart(2, '0') + ':' + min;
                 }
-                
-                const mUrl = document.getElementById('mUrl').value;
-                const mUrlName = document.getElementById('mUrlName').value;
-
-                payload.schedule_time = mTime;
-                payload.location = mLocBase || null;
-                payload.location_detail = mLocDetail || null;
-                payload.url = mUrl || null;
-                payload.url_name = mUrlName || null;
             }
+            payload.schedule_time = mTime;
 
             if (contractType !== undefined) payload.schedule_type = contractType;
             if (balanceDate !== undefined) payload.schedule_date = balanceDate ? balanceDate : null;
@@ -459,5 +478,4 @@
 </script>
 </body>
 </html>
-
 
