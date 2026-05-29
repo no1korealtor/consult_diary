@@ -1583,6 +1583,20 @@
                 let visibleCount = 0;
 
                 allDeals.forEach((schedule) => {
+                    const isGlobal = !schedule.buildings && !schedule.building_id && !schedule.properties && !schedule.property_id;
+                    const li = createDealListItem(schedule, isGlobal);
+                    li.dataset.originalDisplay = 'block';
+                    
+                    const isHiddenProp = li.dataset.isHiddenProposal === 'true';
+
+                    if (isHiddenProp) {
+                        li.style.display = 'none';
+                        li.classList.add('hidden-proposal-item-rendered');
+                        hiddenPropCount++;
+                        list.appendChild(li);
+                        return;
+                    }
+
                     let dealMonth = '날짜 미정';
                     let dealDate = '미정';
                     let isPast = false;
@@ -1662,11 +1676,6 @@
                         }
                         list.appendChild(dateDividerLi);
                     }
-
-                    const li = createDealListItem(schedule, !schedule.buildings && !schedule.building_id && !schedule.properties && !schedule.property_id);
-                    li.dataset.originalDisplay = 'block';
-                    
-                    const isHiddenProp = li.dataset.isHiddenProposal === 'true';
 
                     if (isHiddenProp) {
                         li.style.display = 'none';
