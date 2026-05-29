@@ -1053,10 +1053,7 @@
             const isNotice = (s) => {
                 if (!s) return false;
                 const isGlobal = !s.buildings && !s.building_id && !s.properties && !s.property_id;
-                if (!isGlobal) return false;
-                const type = s.schedule_type || '';
-                const memo = s.memo || '';
-                return type.includes('공지') || memo.includes('공지') || type.includes('소득세') || type.includes('신고');
+                return isGlobal;
             };
 
             const sortByDate = (a, b) => {
