@@ -1232,7 +1232,7 @@
                 let locationHtml = '';
                 let typeBadgeHtml = '';
                 
-                const isMeetingTag = mTime || mLoc || mAtt;
+                const isMeetingTag = mAtt || schedule.schedule_type === '모임';
                 if (schedule.schedule_type === '모임' || (isGlobal && isMeetingTag)) {
                     const timeStr = mTime ? `${mTime}` : '';
                     let locStr = '';
@@ -1413,6 +1413,20 @@
                     rawMemo = ''; // Hide memo
                 } else if (isGlobal) {
                     locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📢 ${schedule.schedule_type}</div>`;
+                    
+                    const timeStr = mTime ? `${mTime}` : '';
+                    let locStr = '';
+                    if (mLoc) {
+                        locStr = `<span onclick="window.open('https://map.kakao.com/link/search/${encodeURIComponent(mLoc)}', '_blank'); event.stopPropagation();" style="color: #475569; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 2px;">📍 ${mLoc}</span>`;
+                    }
+                    if (timeStr || locStr) {
+                        locationHtml += `<div style="font-size: 13px; margin-top: 8px; margin-bottom: 8px; display: inline-flex; gap: 8px; align-items: center; background: #f8fafc; padding: 6px 12px; border-radius: 8px; border: 1px solid #f1f5f9;">`;
+                        if (timeStr) locationHtml += `<span style="color: #1e293b; font-weight: 800;">🕙 ${timeStr}</span>`;
+                        if (timeStr && locStr) locationHtml += `<span style="color: #cbd5e1;">|</span>`;
+                        if (locStr) locationHtml += `${locStr}`;
+                        locationHtml += `</div>`;
+                    }
+
                     locationHtml += `
                     <div style="margin-top: 12px; text-align: right;" onclick="event.stopPropagation()">
                         ${isHiddenProposal

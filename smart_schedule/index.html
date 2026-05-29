@@ -163,7 +163,7 @@
         ⚠️ 사무실 주소 또는 업무용 전화번호가 입력되지 않았습니다!<br><span style="text-decoration: underline; color: #b45309; font-size: 0.85rem;">원활한 협업을 위해 여기를 클릭하여 필히 입력해주세요.</span>
     </div>
     <div style="margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start;">
-        <div onclick="location.href='index.html'" style="cursor: pointer; transition: 0.1s;" onmousedown="this.style.opacity='0.7'" onmouseup="this.style.opacity='1'" onmouseleave="this.style.opacity='1'" title="홈으로 새로고침">
+        <div onclick="location.href='deal-register.html'" style="cursor: pointer; transition: 0.1s;" onmousedown="this.style.opacity='0.7'" onmouseup="this.style.opacity='1'" onmouseleave="this.style.opacity='1'" title="홈으로 새로고침">
             <h2 style="margin: 0; font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #2563eb, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; line-height: 1.2;">
                 One for All,<br>All for One
             </h2>
@@ -357,8 +357,13 @@
             <input type="date" id="balanceDate" style="margin-top: 4px; margin-bottom: 0;">
         </div>
         <div id="timeCol" style="flex: 1; display: none;">
-            <label style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block;">시간 지정</label>
-            <div style="display: flex; gap: 4px; margin-top: 4px; margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block;">시간 지정</label>
+                <label style="font-size: 12px; color: #1e293b; font-weight: 600; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                    <input type="checkbox" id="chkMeetAllDay" style="width: 14px; height: 14px; margin: 0; accent-color: #3b82f6;" onchange="document.getElementById('meetTimeContainer').style.opacity = this.checked ? '0.5' : '1'; document.getElementById('meetTimeContainer').style.pointerEvents = this.checked ? 'none' : 'auto';"> 하루 종일
+                </label>
+            </div>
+            <div id="meetTimeContainer" style="display: flex; gap: 4px; margin-top: 4px; margin-bottom: 0;">
                 <select id="meetTimeAmPm" style="flex: 1; padding: 12px; border-radius: 12px; font-size: 15px; border: 1px solid #e2e8f0; appearance: none; background: white;">
                     <option value="">오전/오후</option><option value="AM">오전</option><option value="PM">오후</option>
                 </select>
@@ -757,6 +762,7 @@
                 const mName = mNameElem ? mNameElem.value.trim() : '';
 
                 function getTimeFromSelects(prefix) {
+                    if (prefix === 'meetTime' && document.getElementById('chkMeetAllDay')?.checked) return '하루 종일';
                     const ampm = document.getElementById(prefix + 'AmPm')?.value;
                     const hour = document.getElementById(prefix + 'Hour')?.value;
                     const min = document.getElementById(prefix + 'Minute')?.value;
@@ -770,6 +776,10 @@
                 if (mName) finalMemo = mName + (finalMemo ? '\n' + finalMemo : '');
                 
                 pTime = getTimeFromSelects('meetTime') || null;
+                if (pTime === '하루 종일') {
+                    finalMemo = '[TIME]하루 종일[/TIME]\n' + finalMemo;
+                    pTime = null;
+                }
                 pLocBase = document.getElementById('meetingLocation').value || null;
                 pLocDetail = document.getElementById('meetingLocationDetail') ? document.getElementById('meetingLocationDetail').value.trim() : null;
                 pAtt = document.getElementById('meetingAttendance') ? document.getElementById('meetingAttendance').value : null;
@@ -1129,6 +1139,7 @@
                     const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
                     if (m) { mTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
+                if (mTime === '하루 종일') mTime = mTime; // Keep it as string
                 if (!mLoc && rawMemo.includes('[LOC]')) {
                     const m = rawMemo.match(/\[LOC\](.*?)\[\/LOC\]/);
                     if (m) { mLoc = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
@@ -1221,7 +1232,7 @@
                 let locationHtml = '';
                 let typeBadgeHtml = '';
                 
-                const isMeetingTag = mTime || mLoc || mAtt;
+                const isMeetingTag = mAtt || schedule.schedule_type === '모임';
                 if (schedule.schedule_type === '모임' || (isGlobal && isMeetingTag)) {
                     const timeStr = mTime ? `${mTime}` : '';
                     let locStr = '';
@@ -1402,6 +1413,20 @@
                     rawMemo = ''; // Hide memo
                 } else if (isGlobal) {
                     locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📢 ${schedule.schedule_type}</div>`;
+                    
+                    const timeStr = mTime ? `${mTime}` : '';
+                    let locStr = '';
+                    if (mLoc) {
+                        locStr = `<span onclick="window.open('https://map.kakao.com/link/search/${encodeURIComponent(mLoc)}', '_blank'); event.stopPropagation();" style="color: #475569; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 2px;">📍 ${mLoc}</span>`;
+                    }
+                    if (timeStr || locStr) {
+                        locationHtml += `<div style="font-size: 13px; margin-top: 8px; margin-bottom: 8px; display: inline-flex; gap: 8px; align-items: center; background: #f8fafc; padding: 6px 12px; border-radius: 8px; border: 1px solid #f1f5f9;">`;
+                        if (timeStr) locationHtml += `<span style="color: #1e293b; font-weight: 800;">🕙 ${timeStr}</span>`;
+                        if (timeStr && locStr) locationHtml += `<span style="color: #cbd5e1;">|</span>`;
+                        if (locStr) locationHtml += `${locStr}`;
+                        locationHtml += `</div>`;
+                    }
+
                     locationHtml += `
                     <div style="margin-top: 12px; text-align: right;" onclick="event.stopPropagation()">
                         ${isHiddenProposal
@@ -1820,13 +1845,21 @@
     </footer>
 
     <nav class="bottom-nav">
-    <a href="index.html" class="nav-item active">
+    <a href="deal-register.html" class="nav-item active">
         <span class="nav-icon">🏠</span>
         <span>일정</span>
+    </a>
+    <a href="market.html" class="nav-item">
+        <span class="nav-icon">📋</span>
+        <span>장부</span>
     </a>
     <a href="contacts.html" class="nav-item">
         <span class="nav-icon">👥</span>
         <span>연락처</span>
+    </a>
+    <a href="manual.html" class="nav-item">
+        <span class="nav-icon">📖</span>
+        <span>매뉴얼</span>
     </a>
     <a href="profile-edit.html" class="nav-item">
         <span class="nav-icon">👤</span>
@@ -2116,7 +2149,6 @@ function toggleTipText(id, btn) {
     </script>
 </body>
 </html>
-
 
 
 
