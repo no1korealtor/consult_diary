@@ -357,8 +357,13 @@
             <input type="date" id="balanceDate" style="margin-top: 4px; margin-bottom: 0;">
         </div>
         <div id="timeCol" style="flex: 1; display: none;">
-            <label style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block;">시간 지정</label>
-            <div style="display: flex; gap: 4px; margin-top: 4px; margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block;">시간 지정</label>
+                <label style="font-size: 12px; color: #1e293b; font-weight: 600; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                    <input type="checkbox" id="chkMeetAllDay" style="width: 14px; height: 14px; margin: 0; accent-color: #3b82f6;" onchange="document.getElementById('meetTimeContainer').style.opacity = this.checked ? '0.5' : '1'; document.getElementById('meetTimeContainer').style.pointerEvents = this.checked ? 'none' : 'auto';"> 하루 종일
+                </label>
+            </div>
+            <div id="meetTimeContainer" style="display: flex; gap: 4px; margin-top: 4px; margin-bottom: 0;">
                 <select id="meetTimeAmPm" style="flex: 1; padding: 12px; border-radius: 12px; font-size: 15px; border: 1px solid #e2e8f0; appearance: none; background: white;">
                     <option value="">오전/오후</option><option value="AM">오전</option><option value="PM">오후</option>
                 </select>
@@ -757,6 +762,7 @@
                 const mName = mNameElem ? mNameElem.value.trim() : '';
 
                 function getTimeFromSelects(prefix) {
+                    if (prefix === 'meetTime' && document.getElementById('chkMeetAllDay')?.checked) return '하루 종일';
                     const ampm = document.getElementById(prefix + 'AmPm')?.value;
                     const hour = document.getElementById(prefix + 'Hour')?.value;
                     const min = document.getElementById(prefix + 'Minute')?.value;
@@ -1129,6 +1135,7 @@
                     const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
                     if (m) { mTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
                 }
+                if (mTime === '하루 종일') mTime = mTime; // Keep it as string
                 if (!mLoc && rawMemo.includes('[LOC]')) {
                     const m = rawMemo.match(/\[LOC\](.*?)\[\/LOC\]/);
                     if (m) { mLoc = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
