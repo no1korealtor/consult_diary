@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 센터</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="nav.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+        body { font-family: 'Pretendard Variable', sans-serif; background-color: #f3f4f6; padding: 24px 16px; max-width: 480px; margin: auto; color: #111827; padding-bottom: 100px; }
+        .card { background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .admin-btn { flex: 1; padding: 16px; border-radius: 16px; font-weight: 800; font-size: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.2s; }
+        .admin-btn:active { transform: scale(0.97); }
+        .user-item { border-bottom: 1px solid #f1f5f9; padding-bottom: 16px; margin-bottom: 16px; }
+        .user-item:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
+    </style>
+</head>
+<body>
+    <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <h2 style="margin: 0; font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #ef4444, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; line-height: 1.2;">
+                관리자 센터
+            </h2>
+            <p style="margin: 6px 0 0 0; color: #6b7280; font-size: 13px; font-weight: 600;">시스템 통합 관리 및 회원 승인</p>
+        </div>
+        <button type="button" onclick="logout()" style="background: white; border: 1px solid #e5e7eb; font-size: 13px; cursor: pointer; padding: 6px 10px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); color: #4b5563; display: flex; align-items: center; gap: 4px; margin: 0; width: auto;">
+            🚪 로그아웃
+        </button>
+    </div>
+    
+
+
+    <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+        <span>👥 회원 승인 및 소속 관리</span>
+        <button onclick="toggleGroupManager()" style="font-size: 12px; padding: 6px 12px; background: #1e293b; color: white; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">그룹 신설/삭제</button>
+    </h3>
+
+    <div id="groupManager" class="card" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; margin-bottom: 16px; padding: 16px;">
+        <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #334155;">현재 등록된 그룹</h4>
+        <div id="groupList" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;"></div>
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="newGroupName" placeholder="새 그룹 이름" style="flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; outline: none;">
+            <button onclick="createGroup()" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; width: auto;">추가</button>
+        </div>
+    </div>
+    
+    <div class="card">
+        <ul id="userList" style="list-style: none; padding: 0; margin: 0;"></ul>
+    </div>
+
+    <script src="auth-helper.js"></script>
+    <script>
+        let allGroups = [];
+
+        async function fetchGroups() {
+            const { data } = await authClient.from('groups').select('id, name');
+            if (data) allGroups = data;
+        }
+
+        function toggleGroupManager() {
+            const el = document.getElementById('groupManager');
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                renderGroupManager();
+            } else {
+                el.style.display = 'none';
+            }
+        }
+
+        function renderGroupManager() {
+            const list = document.getElementById('groupList');
+            list.innerHTML = '';
+            if (allGroups.length === 0) {
+                list.innerHTML = '<span style="font-size: 13px; color: #94a3b8;">등록된 그룹이 없습니다.</span>';
+                return;
+            }
+            allGroups.forEach(g => {
+                const badge = document.createElement('div');
+                badge.style.cssText = "background: white; border: 1px solid #cbd5e1; padding: 4px 8px 4px 12px; border-radius: 16px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; color: #334155;";
+                badge.innerHTML = `${g.name} <button onclick="deleteGroup('${g.id}', '${g.name}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0 4px; font-size: 16px; font-weight: bold; line-height: 1;">&times;</button>`;
+                list.appendChild(badge);
+            });
+        }
+
+        async function createGroup() {
+            const name = document.getElementById('newGroupName').value.trim();
+            if (!name) return;
+            const { error } = await authClient.from('groups').insert({ name });
+            if (error) alert("그룹 생성 실패: " + error.message);
+            else {
+                document.getElementById('newGroupName').value = '';
+                await fetchGroups();
+                renderGroupManager();
+                loadUsers();
+            }
+        }
+
+        async function deleteGroup(id, name) {
+            if (!confirm(`정말 '${name}' 그룹을 삭제하시겠습니까?\n이 그룹에 속한 회원의 소속 정보도 함께 지워집니다.`)) return;
+            const { error } = await authClient.from('groups').delete().eq('id', id);
+            if (error) alert("삭제 실패: " + error.message);
+            else {
+                await fetchGroups();
+                renderGroupManager();
+                loadUsers();
+            }
+        }
+
+        async function changeRole(userId, newRole, userName) {
+            if (!newRole) {
+                alert('부여할 권한을 선택해주세요.');
+                return;
+            }
+            if (!confirm(`'${userName}' 님의 권한을 '${newRole === 'admin' ? '관리자' : '개업공인중개사'}'(으)로 승인하고 체크된 그룹 소속을 저장하시겠습니까?`)) {
+                return;
+            }
+
+            const { error: roleError } = await authClient
+                .from('users')
+                .update({ role: newRole })
+                .eq('id', userId);
+
+            if (roleError) {
+                alert('권한 변경에 실패했습니다: ' + roleError.message);
+                return;
+            }
+
+            const checkedGroupIds = [];
+            allGroups.forEach(g => {
+                const cb = document.getElementById(`group-${userId}-${g.id}`);
+                if (cb && cb.checked) checkedGroupIds.push(g.id);
+            });
+
+            if (checkedGroupIds.length > 0) {
+                await authClient.from('user_groups').delete().eq('user_id', userId).not('group_id', 'in', `(${checkedGroupIds.join(',')})`);
+            } else {
+                await authClient.from('user_groups').delete().eq('user_id', userId);
+            }
+
+            for (const gid of checkedGroupIds) {
+                const { data: existing } = await authClient.from('user_groups').select('group_role').eq('user_id', userId).eq('group_id', gid).maybeSingle();
+                
+                if (existing) {
+                    await authClient.from('user_groups').update({ status: 'approved' }).eq('user_id', userId).eq('group_id', gid);
+                } else {
+                    await authClient.from('user_groups').insert({ user_id: userId, group_id: gid, status: 'approved', group_role: 'member' });
+                }
+            }
+
+            alert('정상적으로 저장되었습니다.');
+            loadUsers();
+        }
+
+        async function forceDeleteUser(userId, userName) {
+            const input = prompt(`정말로 '${userName}' 사용자를 강제 탈퇴 처리하시겠습니까?\n이 작업은 취소할 수 없습니다.\n\n계속하려면 '${userName}'을(를) 정확히 입력해주세요.`);
+            if (input !== userName) return;
+
+            const { error } = await authClient.from('users').delete().eq('id', userId);
+            if (error) {
+                alert('강제 탈퇴 중 오류 발생: ' + error.message + '\n\n💡 팁: 일정이 남아있어 삭제가 막힐 수 있습니다. 권한을 "승인 대기(빈값)"로 변경하면 로그인이 차단됩니다.');
+                return;
+            }
+            alert('강제 탈퇴 처리되었습니다.');
+            loadUsers();
+        }
+
+        async function loadUsers() {
+            const list = document.getElementById('userList');
+            list.innerHTML = '<li style="text-align: center; color: #64748b;">로딩 중...</li>';
+
+            if (allGroups.length === 0) await fetchGroups();
+
+            const { data, error } = await authClient
+                .from('users')
+                .select(`
+                    id, name, phone, office_address, role,
+                    user_groups ( group_id, status, group_role, groups ( name ) )
+                `)
+                .order('name');
+
+            if (error) {
+                list.innerHTML = `<li style="color: #ef4444;">목록을 불러오지 못했습니다: ${error.message}</li>`;
+                return;
+            }
+
+            list.innerHTML = '';
+            if (!data || data.length === 0) {
+                list.innerHTML = '<li style="text-align: center; color: #64748b;">가입된 회원이 없습니다.</li>';
+                return;
+            }
+
+            data.forEach(user => {
+                const li = document.createElement('li');
+                li.className = 'user-item';
+                
+                const nameStr = user.name || '이름 없음';
+                const phoneStr = user.phone || '전화번호 미입력';
+                const isMe = user.id === window.currentUser.id;
+                
+                // 가입 대기 여부 판단
+                const isPendingUser = !user.role;
+                const statusBadge = isPendingUser ? `<span style="background: #fee2e2; color: #b91c1c; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">🚨 승인 대기중</span>` : `<span style="background: #dbeafe; color: #1d4ed8; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800;">✅ ${user.role === 'admin' ? '관리자' : '정회원'}</span>`;
+
+                let groupCheckboxesHtml = `
+                    <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 12px; border: 1px solid #e2e8f0;">
+                        <div style="font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 8px;">소속 그룹 관리 (체크 시 자동 배정)</div>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            ${allGroups.map(g => {
+                                const ug = user.user_groups?.find(u => u.group_id === g.id);
+                                const isChecked = ug && ug.status === 'approved' ? 'checked' : '';
+                                const isPending = ug && ug.status === 'pending';
+                                const pendingText = isPending ? '<span style="color:#d97706; font-size:11px;">(가입 신청됨)</span>' : '';
+                                return `
+                                <label style="font-size: 13px; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                    <input type="checkbox" id="group-${user.id}-${g.id}" value="${g.id}" ${isChecked} ${isMe ? 'disabled' : ''} style="width: 16px; height: 16px; accent-color: #3b82f6;">
+                                    ${g.name} ${pendingText}
+                                </label>`;
+                            }).join('')}
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 16px;">
+                            <select id="role-${user.id}" ${isMe ? 'disabled' : ''} style="padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; outline: none; width: 140px; font-size: 13px; ${isPendingUser ? 'border-color: #ef4444; background-color: #fef2f2; color: #ef4444; font-weight: bold;' : ''}">
+                                ${isPendingUser ? '<option value="" disabled selected>기본 권한 (미부여)</option>' : ''}
+                                <option value="consultant" ${user.role === 'consultant' ? 'selected' : ''}>개업공인중개사</option>
+                                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>관리자 (Admin)</option>
+                            </select>
+                            <div style="display: flex; gap: 6px;">
+                                <button onclick="changeRole('${user.id}', document.getElementById('role-${user.id}').value, '${nameStr}')" style="padding: 8px 16px; font-size: 13px; font-weight: 700; background: #3b82f6; color: white; border-radius: 8px; border: none; cursor: pointer; ${isMe ? 'display: none;' : ''}">저장 및 승인</button>
+                                <button onclick="forceDeleteUser('${user.id}', '${nameStr}')" style="padding: 8px 12px; font-size: 13px; font-weight: 600; background: transparent; color: #ef4444; border: 1px solid #ef4444; border-radius: 8px; cursor: pointer; ${isMe ? 'display: none;' : ''}">강제탈퇴</button>
+                            </div>
+                        </div>
+                    </div>`;
+                
+                li.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <div style="font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 2px;">${nameStr} ${isMe ? '(나)' : ''}</div>
+                            <div style="font-size: 13px; color: #64748b;">${phoneStr}</div>
+                        </div>
+                        <div>${statusBadge}</div>
+                    </div>
+                    ${groupCheckboxesHtml}
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        async function checkAuthAndLoad() {
+            const user = await requireAuth();
+            if (user) {
+                if (user.role !== 'admin') {
+                    alert('관리자 전용 페이지입니다.');
+                    location.href = 'index.html';
+                    return;
+                }
+                loadUsers();
+            }
+        }
+
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted || window.performance && window.performance.navigation.type === 2) {
+                checkAuthAndLoad();
+            } else {
+                checkAuthAndLoad();
+            }
+        });
+    </script>
+
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span>일정</span>
+        </a>
+        <a href="contacts.html" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span>연락처</span>
+        </a>
+        <a href="manual.html" class="nav-item">
+            <span class="nav-icon">📖</span>
+            <span>매뉴얼</span>
+        </a>
+        <a href="profile-edit.html" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span>내정보</span>
+        </a>
+    </nav>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js');
+    });
+  }
+</script>
+</body>
+</html>
+
