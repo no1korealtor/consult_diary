@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -152,8 +152,15 @@
 <body>
 
 <div class="main-content">
-    <div id="inline-profile-warning" style="display: none; background-color: #fef08a; color: #854d0e; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; font-size: 0.95rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05);" onclick="location.href='profile-edit.html'">
-        ⚠️ 사무실 주소 정보가 입력되지 않았습니다. <span style="text-decoration: underline;">여기를 클릭하여 수정해주세요.</span>
+    <style>
+        @keyframes blink-warning {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; background-color: #fde047; }
+            100% { opacity: 1; }
+        }
+    </style>
+    <div id="inline-profile-warning" style="display: none; background-color: #fef08a; color: #854d0e; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; font-size: 0.95rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); animation: blink-warning 1.5s infinite;" onclick="location.href='profile-edit.html'">
+        ⚠️ 사무실 주소 또는 사무실 전화번호가 입력되지 않았습니다!<br><span style="text-decoration: underline; color: #b45309; font-size: 0.85rem;">원활한 협업을 위해 여기를 클릭하여 필히 입력해주세요.</span>
     </div>
     <div style="margin-bottom: 28px; display: flex; justify-content: space-between; align-items: flex-start;">
         <div onclick="location.href='index.html'" style="cursor: pointer; transition: 0.1s;" onmousedown="this.style.opacity='0.7'" onmouseup="this.style.opacity='1'" onmouseleave="this.style.opacity='1'" title="홈으로 새로고침">
