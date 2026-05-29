@@ -335,7 +335,7 @@
                 const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
                 if (m) { rawMemo = rawMemo.replace(m[0], ''); }
             }
-            let mTime = data.schedule_time ? data.schedule_time.substring(0, 5) : null;
+            mTime = data.schedule_time ? data.schedule_time.substring(0, 5) : null;
             if (!mTime && rawMemo.includes('[TIME]')) {
                 const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
                 if (m) { mTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
