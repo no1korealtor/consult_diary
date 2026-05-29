@@ -262,7 +262,7 @@
                 
                 let mTime = null;
                 if (document.getElementById('chkMeetAllDay')?.checked) {
-                    mTime = '하루 종일';
+                    payload.memo = '[TIME]하루 종일[/TIME]\n' + payload.memo;
                 } else {
                     const ampm = document.getElementById('mTimeAmPm').value;
                     const hour = document.getElementById('mTimeHour').value;

@@ -776,6 +776,10 @@
                 if (mName) finalMemo = mName + (finalMemo ? '\n' + finalMemo : '');
                 
                 pTime = getTimeFromSelects('meetTime') || null;
+                if (pTime === '하루 종일') {
+                    finalMemo = '[TIME]하루 종일[/TIME]\n' + finalMemo;
+                    pTime = null;
+                }
                 pLocBase = document.getElementById('meetingLocation').value || null;
                 pLocDetail = document.getElementById('meetingLocationDetail') ? document.getElementById('meetingLocationDetail').value.trim() : null;
                 pAtt = document.getElementById('meetingAttendance') ? document.getElementById('meetingAttendance').value : null;
