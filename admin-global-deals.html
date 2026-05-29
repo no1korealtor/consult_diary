@@ -165,7 +165,12 @@
 
         <input type="text" id="contractType" placeholder="일정 종류 (예: 부가가치세 신고, 모임 등)" oninput="checkMeetingType()">
         <div id="meetingFields" style="display: none; background: #eff6ff; padding: 16px; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 12px;">
-            <label style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block; margin-bottom: 4px;">모임 일시</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label style="font-size: 12px; color: #6b7280; margin-left: 4px;">모임 일시</label>
+                <label style="font-size: 12px; color: #1e293b; font-weight: 600; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                    <input type="checkbox" id="isAllDay" style="width: 14px; height: 14px; margin: 0; accent-color: #3b82f6;" onchange="toggleAllDay()"> 하루 종일
+                </label>
+            </div>
             <input type="datetime-local" id="meetingDateTime" style="margin-bottom: 12px;">
             
             <label style="font-size: 12px; color: #6b7280; margin-left: 4px; display: block; margin-bottom: 4px;">장소 (주소 검색)</label>
@@ -249,6 +254,20 @@
                 }
             }).open();
         }
+        
+        function toggleAllDay() {
+            const isAllDay = document.getElementById('isAllDay').checked;
+            const dtInput = document.getElementById('meetingDateTime');
+            if (isAllDay) {
+                const parts = dtInput.value.split('T');
+                dtInput.type = 'date';
+                if (parts[0]) dtInput.value = parts[0];
+            } else {
+                const val = dtInput.value;
+                dtInput.type = 'datetime-local';
+                if (val && !val.includes('T')) dtInput.value = val + 'T12:00';
+            }
+        }
 
         async function saveGlobalDeal() {
             const contractType = document.getElementById('contractType').value;
@@ -291,10 +310,14 @@
                 const mLoc = [mLocMain, mLocDetail].filter(Boolean).join(' ');
                 
                 const mAtt = document.getElementById('meetingAttendance').value;
+                const isAllDay = document.getElementById('isAllDay').checked;
                 
                 if (meetingDateTime) {
                     finalBalanceDate = meetingDateTime.split('T')[0];
-                    const mTime = meetingDateTime.split('T')[1];
+                    let mTime = meetingDateTime.split('T')[1];
+                    if (isAllDay) {
+                        mTime = "하루 종일";
+                    }
                     if(mTime) finalMemo = `[TIME]${mTime}[/TIME]` + finalMemo;
                 }
                 
@@ -505,8 +528,28 @@
                     document.getElementById('startDate').value = startDt || '';
                     document.getElementById('urlInput').value = linkUrl || '';
                     document.getElementById('memo').value = rawMemo.trim() || '';
+                    
+                    const isAllDayCb = document.getElementById('isAllDay');
+                    const dtInput = document.getElementById('meetingDateTime');
+                    
                     if (schedule.schedule_date && mTime) {
-                        document.getElementById('meetingDateTime').value = schedule.schedule_date + 'T' + mTime;
+                        if (mTime === '하루 종일') {
+                            if (isAllDayCb) isAllDayCb.checked = true;
+                            dtInput.type = 'date';
+                            dtInput.value = schedule.schedule_date;
+                        } else {
+                            if (isAllDayCb) isAllDayCb.checked = false;
+                            dtInput.type = 'datetime-local';
+                            dtInput.value = schedule.schedule_date + 'T' + mTime;
+                        }
+                    } else {
+                        if (isAllDayCb) isAllDayCb.checked = false;
+                        dtInput.type = 'datetime-local';
+                        if (schedule.schedule_date) {
+                            dtInput.value = schedule.schedule_date + 'T12:00';
+                        } else {
+                            dtInput.value = '';
+                        }
                     }
                     document.getElementById('meetingLocation').value = mLoc || '';
                     if(mAtt) document.getElementById('meetingAttendance').value = mAtt;
