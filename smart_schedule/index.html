@@ -1101,108 +1101,40 @@
 
             // 공통 렌더링 함수
             const createDealListItem = (schedule, isGlobal) => {
-                let rawMemo = schedule.memo || '';
-                let linkUrl = schedule.url || null;
-                let linkName = schedule.url_name || '관련 링크';
+                const parsed = parseScheduleMemo(schedule.memo, schedule.schedule_time);
                 
-                if (!linkUrl && rawMemo.includes('[URL]')) {
-                    const m = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
-                    if (m) { 
-                        let urlData = m[1];
-                        if (urlData.includes('|')) {
-                            const parts = urlData.split('|');
-                            linkUrl = parts[0];
-                            linkName = parts[1];
-                        } else {
-                            linkUrl = urlData;
-                        }
-                        rawMemo = rawMemo.replace(m[0], ''); 
-                    }
-                }
-
-                let startDt = null;
-                if (rawMemo.includes('[START]')) {
-                    const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
-                    if (m) { startDt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-                }
+                let rawMemo = parsed.cleanMemo;
+                let linkUrl = schedule.url || parsed.linkUrl;
+                let linkName = schedule.url_name || parsed.linkName || '관련 링크';
+                let startDt = parsed.startDate;
                 
-                let mTime = schedule.schedule_time ? schedule.schedule_time.substring(0, 5) : null;
-                let mLoc = schedule.location || null;
-                if (schedule.location_detail) mLoc += ' ' + schedule.location_detail;
-                let mAtt = null;
-                let myAtt = null;
-
-                if (!mTime && rawMemo.includes('[TIME]')) {
-                    const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
-                    if (m) { mTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-                }
+                let mTime = parsed.time;
                 if (mTime === '하루 종일') mTime = mTime; // Keep it as string
-                if (!mLoc && rawMemo.includes('[LOC]')) {
-                    const m = rawMemo.match(/\[LOC\](.*?)\[\/LOC\]/);
-                    if (m) { mLoc = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-                }
-                if (rawMemo.includes('[ATT]')) {
-                    const m = rawMemo.match(/\[ATT\](.*?)\[\/ATT\]/);
-                    if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-                }
-
-                let mDeadline = schedule.proposal_deadline || null;
-                let mMinAtt = schedule.min_attendance || null;
                 
-                if (!mDeadline && rawMemo.includes('[DEADLINE]')) {
-                    const m = rawMemo.match(/\[DEADLINE\](.*?)\[\/DEADLINE\]/);
-                    if (m) { mDeadline = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-                }
-                if (!mMinAtt && rawMemo.includes('[MIN_ATT]')) {
-                    const m = rawMemo.match(/\[MIN_ATT\](.*?)\[\/MIN_ATT\]/);
-                    if (m) { mMinAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-                }
+                let mLoc = schedule.location || parsed.location || null;
+                if (schedule.location_detail) mLoc += ' ' + schedule.location_detail;
                 
-                let tJangumTime = null;
-                let tUtil = false;
-                if (rawMemo.includes('[TASK:잔금시간]')) {
-                    const m = rawMemo.match(/\[TASK:잔금시간\]\s*(.*?)(?=\n|$)/);
-                    if (m) { tJangumTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-                }
-                if (rawMemo.includes('[TASK:공과금정산]')) {
-                    const m = rawMemo.match(/\[TASK:공과금정산\]\s*(.*?)(?=\n|$)/);
-                    if (m) { tUtil = true; rawMemo = rawMemo.replace(m[0], ''); }
-                }
+                let mAtt = parsed.attendance;
+                let myAtt = null; // Will be set later based on user attendance
                 
-                const isPrivateMeeting = rawMemo.includes('[PRIVATE]');
-                if (isPrivateMeeting) {
-                    rawMemo = rawMemo.replace('[PRIVATE]', '');
-                }
-                const isProposal = schedule.is_proposal || rawMemo.includes('[PROPOSAL]');
-                if (rawMemo.includes('[PROPOSAL]')) {
-                    rawMemo = rawMemo.replace('[PROPOSAL]', '');
-                }
+                let mDeadline = schedule.proposal_deadline || parsed.deadline;
+                let mMinAtt = schedule.min_attendance || parsed.minAttendance;
+                
+                let tJangumTime = parsed.taskJangumTime;
+                let tUtil = parsed.taskUtil;
+                
+                const isPrivateMeeting = parsed.isPrivate;
+                const isProposal = schedule.is_proposal || parsed.isProposal;
+                const isPendingAdmin = parsed.isPendingAdmin;
+                let isCanceled = parsed.isCanceled;
+                let cancelReason = parsed.cancelReason;
                 
                 const isMine = schedule.user_id === window.currentUser.id || window.currentUser.role === 'broker';
                 const isSharedMeeting = schedule.schedule_type === '모임' && !isPrivateMeeting;
                 
                 let isHiddenProposal = false;
-                if (rawMemo.includes('[HIDDEN:' + window.currentUser.id + ']')) {
+                if (schedule.memo && schedule.memo.includes('[HIDDEN:' + window.currentUser.id + ']')) {
                     isHiddenProposal = true;
-                }
-
-                const isPendingAdmin = rawMemo.includes('[PENDING_ADMIN]');
-                if (isPendingAdmin) {
-                    rawMemo = rawMemo.replace('[PENDING_ADMIN]', '');
-                }
-
-                let cancelReason = '';
-                if (rawMemo.includes('[CANCELED_REASON]')) {
-                    const m = rawMemo.match(/\[CANCELED_REASON\](.*?)\[\/CANCELED_REASON\]/);
-                    if (m) {
-                        cancelReason = m[1];
-                        rawMemo = rawMemo.replace(m[0], '');
-                    }
-                }
-
-                const isCanceled = rawMemo.includes('[CANCELED]') || cancelReason !== '';
-                if (rawMemo.includes('[CANCELED]')) {
-                    rawMemo = rawMemo.replace('[CANCELED]', '');
                 }
 
                 let monthStr = '미정';

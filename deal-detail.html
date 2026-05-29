@@ -204,6 +204,7 @@
         </button>
     </div>
 
+    <script src="schedule_parser.js"></script>
     <script src="auth-helper.js"></script>
     <script>
 
@@ -251,57 +252,28 @@
                 }
             }
 
-            let rawMemo = data.memo || '';
-            let isDone = false;
-            if (rawMemo.includes('[DONE]')) {
-                isDone = true;
-                rawMemo = rawMemo.replace(/\[DONE\]/g, '');
-            }
+            const parsed = parseScheduleMemo(data.memo, data.schedule_time);
+            let rawMemo = parsed.cleanMemo;
+            
+            let isDone = parsed.isDone;
             window.currentDealIsDone = isDone;
-
-            let settledDate = null;
-            if (rawMemo.includes('[SETTLED_DATE]')) {
-                const m = rawMemo.match(/\[SETTLED_DATE\](.*?)\[\/SETTLED_DATE\]/);
-                if (m) { settledDate = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-            }
+            
+            let settledDate = parsed.settledDate;
             window.currentSettledDate = settledDate;
-
-            let isPrivateMeeting = false;
-            if (rawMemo.includes('[PRIVATE]')) {
-                isPrivateMeeting = true;
-                rawMemo = rawMemo.replace(/\[PRIVATE\]/g, '');
-            }
-
-            let isProposal = false;
-            if (rawMemo.includes('[PROPOSAL]')) {
-                isProposal = true;
-                rawMemo = rawMemo.replace(/\[PROPOSAL\]/g, '');
-            }
-
-            let isPendingAdmin = false;
-            if (rawMemo.includes('[PENDING_ADMIN]')) {
-                isPendingAdmin = true;
-                rawMemo = rawMemo.replace(/\[PENDING_ADMIN\]/g, '');
-            }
-
-            let cancelReason = '';
-            if (rawMemo.includes('[CANCELED_REASON]')) {
-                const m = rawMemo.match(/\[CANCELED_REASON\](.*?)\[\/CANCELED_REASON\]/);
-                if (m) {
-                    cancelReason = m[1];
-                    rawMemo = rawMemo.replace(m[0], '');
-                }
-            }
-
-            let isCanceled = false;
-            if (rawMemo.includes('[CANCELED]') || cancelReason !== '') {
-                isCanceled = true;
-                rawMemo = rawMemo.replace(/\[CANCELED\]/g, '');
-            }
-
-            if (rawMemo.includes('[HIDDEN:')) {
-                rawMemo = rawMemo.replace(/\[HIDDEN:[^\]]+\]/g, '');
-            }
+            
+            let isPrivateMeeting = parsed.isPrivate;
+            let isProposal = parsed.isProposal;
+            let isPendingAdmin = parsed.isPendingAdmin;
+            let isCanceled = parsed.isCanceled;
+            let cancelReason = parsed.cancelReason;
+            
+            let linkUrl = parsed.linkUrl;
+            let linkName = parsed.linkName;
+            let mTime = parsed.time;
+            let mLoc = parsed.location;
+            let mAtt = parsed.attendance;
+            let mDeadline = parsed.deadline;
+            let mMinAtt = parsed.minAttendance;
 
             const btnComplete = document.getElementById('btnComplete');
             if (isDone) {
@@ -316,51 +288,6 @@
                 btnComplete.style.borderColor = '#bbf7d0';
             }
 
-            let linkUrl = null, linkName = '관련 링크', mTime = null, mLoc = null, mAtt = null;
-            if (rawMemo.includes('[URL]')) {
-                const m = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
-                if (m) { 
-                    let urlData = m[1];
-                    if (urlData.includes('|')) {
-                        const parts = urlData.split('|');
-                        linkUrl = parts[0];
-                        linkName = parts[1];
-                    } else {
-                        linkUrl = urlData;
-                    }
-                    rawMemo = rawMemo.replace(m[0], ''); 
-                }
-            }
-            if (rawMemo.includes('[START]')) {
-                const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
-                if (m) { rawMemo = rawMemo.replace(m[0], ''); }
-            }
-            mTime = data.schedule_time ? data.schedule_time.substring(0, 5) : null;
-            if (!mTime && rawMemo.includes('[TIME]')) {
-                const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
-                if (m) { mTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-            } else if (rawMemo.includes('[TIME]')) {
-                const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
-                if (m) { rawMemo = rawMemo.replace(m[0], ''); }
-            }
-            if (rawMemo.includes('[LOC]')) {
-                const m = rawMemo.match(/\[LOC\](.*?)\[\/LOC\]/);
-                if (m) { mLoc = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-            }
-            if (rawMemo.includes('[ATT]')) {
-                const m = rawMemo.match(/\[ATT\](.*?)\[\/ATT\]/);
-                if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-            }
-
-            let mDeadline = null, mMinAtt = null;
-            if (rawMemo.includes('[DEADLINE]')) {
-                const m = rawMemo.match(/\[DEADLINE\](.*?)\[\/DEADLINE\]/);
-                if (m) { mDeadline = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-            }
-            if (rawMemo.includes('[MIN_ATT]')) {
-                const m = rawMemo.match(/\[MIN_ATT\](.*?)\[\/MIN_ATT\]/);
-                if (m) { mMinAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
-            }
 
             if (data.schedule_type === '모임' || (!data.building_id && !data.property_id)) {
                 let meetTitle = '모임';
