@@ -122,6 +122,21 @@
             const roomIdFromUrl = urlParams.get('room_id');
 
             if (buildingIdFromUrl) {
+                let exists = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === buildingIdFromUrl) { exists = true; break; }
+                }
+                if (!exists) {
+                    const { data: bData } = await supabaseClient.from('buildings').select('*').eq('id', buildingIdFromUrl).single();
+                    if (bData) {
+                        const option = document.createElement('option');
+                        option.value = bData.id;
+                        let text = bData.road_address;
+                        if (bData.jibun_address) text += ' (' + bData.jibun_address + ')';
+                        option.textContent = text;
+                        select.appendChild(option);
+                    }
+                }
                 select.value = buildingIdFromUrl;
                 select.disabled = true;
                 await loadRooms(roomIdFromUrl);
@@ -145,6 +160,8 @@
 
             roomSelect.innerHTML =
                 '<option value="">호수 선택</option>';
+
+            if (!buildingId) return;
 
             const { data, error } =
                 await supabaseClient
@@ -173,6 +190,19 @@
             });
 
             if (typeof roomIdToSelect === 'string' && roomIdToSelect) {
+                let exists = false;
+                for (let i = 0; i < roomSelect.options.length; i++) {
+                    if (roomSelect.options[i].value === roomIdToSelect) { exists = true; break; }
+                }
+                if (!exists) {
+                    const { data: rData } = await supabaseClient.from('rooms').select('*').eq('id', roomIdToSelect).single();
+                    if (rData) {
+                        const option = document.createElement('option');
+                        option.value = rData.id;
+                        option.textContent = rData.room_name;
+                        roomSelect.appendChild(option);
+                    }
+                }
                 roomSelect.value = roomIdToSelect;
                 roomSelect.disabled = true;
             }

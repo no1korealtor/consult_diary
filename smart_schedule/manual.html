@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사용 설명서</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+        body {
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            color: #334155;
+            line-height: 1.6;
+        }
+        .header {
+            background: #ffffff;
+            padding: 16px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .content {
+            padding: 24px 20px 80px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        h2 { margin-top: 0; color: #1e293b; font-size: 18px; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px; }
+        h3 { color: #3b82f6; font-size: 16px; margin-top: 24px; margin-bottom: 12px; }
+        p, li { font-size: 15px; color: #475569; }
+        ul { padding-left: 20px; margin-top: 8px; }
+        li { margin-bottom: 8px; }
+        strong { color: #1e293b; font-weight: 800; }
+        .highlight { background: #fef08a; padding: 2px 6px; border-radius: 4px; color: #854d0e; font-weight: bold; }
+        .btn-style { background: #f1f5f9; padding: 4px 8px; border-radius: 6px; font-weight: bold; color: #475569; border: 1px solid #cbd5e1; font-size: 13px; }
+    </style>
+    <link rel="stylesheet" href="nav.css">
+</head>
+<body>
+
+    <div class="header">
+        <h1>앱 사용 설명서</h1>
+    </div>
+
+    <div class="content">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="font-size: 48px; margin-bottom: 12px;">📱</div>
+            <h2 style="border: none; padding: 0; font-size: 22px;">스마트 일정관리</h2>
+            <p style="color: #64748b;">기계에 익숙하지 않으셔도 괜찮습니다.<br>천천히 따라 해보시면 카카오톡만큼 쉽습니다! 😊</p>
+        </div>
+
+        <div class="card">
+            <h2>1단계: 시작하기 (로그인/내 정보)</h2>
+            <ul>
+                <li><strong>가입하기:</strong> 처음이시라면 아이디(이메일), 비밀번호, 성함을 넣고 가입해 주세요. (가입 시 정보 공개에 동의하셔야 원활한 협업이 가능합니다.) 대표님이 승인해 주시면 시작됩니다.</li>
+                <li><strong>내 정보 입력:</strong> 로그인을 하셨다면 화면 오른쪽 아래 <span class="btn-style">👤 내정보</span> 메뉴를 눌러 사무실 주소와 휴대폰 번호를 적어주세요.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>2단계: 메인 화면 (내 일정 챙기기)</h2>
+            <p>가장 먼저 나오는 <span class="btn-style">🏠 일정</span> 화면입니다. 내 모든 업무를 한눈에 볼 수 있습니다.</p>
+            
+            <h3>📅 내 일정 확인하기</h3>
+            <ul>
+                <li><strong>오늘 날짜 & 음력 표시</strong>: 화면 맨 위에서 오늘 날짜와 요일, 그리고 음력 날짜를 즉시 확인할 수 있습니다.</li>
+                <li><strong>빨간색 뱃지 (D-3, D-Day)</strong>: 날짜가 3일 이내로 다가온 아주 급한 일정입니다! 잊지 말고 챙기세요.</li>
+                <li><strong>참석/불참 투표</strong>: 모임 공지가 뜨면 단톡방 대신 카드 아래의 <span class="btn-style">👍 참석</span> 또는 <span class="btn-style">✋ 불참</span> 버튼만 꾹 눌러주세요.</li>
+            </ul>
+
+            <h3>✅ 세부 할 일 챙기기 (체크리스트)</h3>
+            <ul>
+                <li>일정 카드 하단에 <strong>[+ 추가]</strong> 버튼을 누르면 그 일정에 맞는 세부 할 일(예: 잔금 확인, 수도요금 정산 등)을 입력할 수 있습니다.</li>
+                <li>완료된 할 일은 체크박스를 눌러 줄을 긋고(완료 처리), 현재 몇 개 중 몇 개를 완료했는지 실시간으로 추적하세요!</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>3단계: 새 일정 및 모임 등록하기</h2>
+            <p>수첩 대신 앱에 적어두면 잊어버릴 일이 없습니다. <strong>[새 일정 추가]</strong> 박스에서 <span style="color:#3b82f6;font-weight:bold;">🏢 업무 일정</span>과 <span style="color:#8b5cf6;font-weight:bold;">👥 모임 일정</span> 탭을 눌러 선택하세요.</p>
+            
+            <h3>🏢 업무 일정 (건물, 정산, 잔금 등)</h3>
+            <ol>
+                <li><strong>건물과 호수 선택</strong>: 등록해둔 건물을 고르거나, 처음 가는 곳이라면 <strong>[+ 새 건물 등록]</strong>을 눌러 주소를 찾아주세요. (주소 검색란을 클릭하면 주소찾기가 열립니다!)</li>
+                <li><strong>계약 종류 선택</strong>: 정산, 잔금, 계약 등에서 고릅니다.</li>
+                <li><strong>날짜 지정</strong>: 달력에서 일정을 찍고 메모(특이사항 등)를 적은 뒤 파란색 <span class="btn-style">저장</span> 버튼을 누르면 끝입니다!</li>
+            </ol>
+
+            <h3>👥 모임 일정 (개인 약속 및 회식 수요조사)</h3>
+            <p>모임 탭을 누르면 두 가지 종류의 일정을 만들 수 있습니다.</p>
+            <ol>
+                <li><strong>🔒 개인 일정</strong>: 나만 볼 수 있는 프라이빗한 일정입니다. 개인 약속 관리에 좋습니다.</li>
+                <li><strong>💡 모임 제안</strong>: 사무실 식구들에게 모임을 제안하고 <strong>참석/불참 투표</strong>를 받을 수 있습니다.</li>
+            </ol>
+            <p style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px dashed #cbd5e1; font-size: 13px; color: #475569; margin-top: 16px;">
+                <strong>📌 모임 메모 적기 꿀팁:</strong><br>
+                메모칸의 <strong>첫 줄은 '제목'</strong>으로 크고 진하게 보이고, <strong>엔터(줄바꿈) 후 두 번째 줄부터는 '상세 설명'</strong>으로 깔끔하게 분리되어 보입니다!
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>4단계: 연락처 찾기</h2>
+            <p>화면 아래 <span class="btn-style">👥 연락처</span> 메뉴입니다.</p>
+            <ul>
+                <li><strong>회원사 및 협력업체</strong>: 가입 승인된 공인중개사 소장님들의 상호명, 주소, 전화번호가 나옵니다. 누르면 바로 통화 화면으로 연결됩니다.</li>
+                <li><strong>주요 기관 연락처</strong>: 맨 아래에는 부동산거래관리시스템, 등기민원 콜센터 등 현장에서 급할 때 유용한 관공서 번호들이 모여있습니다.</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>5단계: 내정보 수정</h2>
+            <p>화면 아래 <span class="btn-style">👤 내정보</span> 메뉴입니다.</p>
+            <ul>
+                <li>내 사무실 주소와 전화번호 등 프로필을 수정할 수 있습니다.</li>
+                <li><strong>로그아웃</strong>: 기기를 변경하시거나 안전하게 종료하실 때 로그아웃하실 수 있습니다.</li>
+            </ul>
+        </div>
+
+        <div class="card" style="background: #eff6ff; border-color: #bfdbfe;">
+            <h2 style="border-bottom-color: #bfdbfe; color: #1e3a8a;">🆘 화면이 이상할 때 꿀팁!</h2>
+            <p>앱이 가끔 옛날 화면을 기억해서 새 기능이 안 보일 때가 있습니다. 당황하지 마시고 이렇게 해보세요.</p>
+            <ul>
+                <li><strong>스마트폰</strong>: 현재 켜져 있는 앱을 화면 위로 날려서 <strong>완전히 껐다가</strong> 바탕화면 아이콘을 눌러 다시 켜주세요.</li>
+                <li><strong>PC (컴퓨터)</strong>: 키보드에서 <strong>Ctrl + Shift + R</strong> 세 키를 동시에 꾹 눌러주세요. 최신 버전으로 새로고침됩니다.</li>
+            </ul>
+        </div>
+    </div>
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span>일정</span>
+        </a>
+        <a href="contacts.html" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span>연락처</span>
+        </a>
+        <a href="manual.html" class="nav-item active">
+            <span class="nav-icon">📖</span>
+            <span>매뉴얼</span>
+        </a>
+        <a href="profile-edit.html" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span>내정보</span>
+        </a>
+    </nav>
+</body>
+</html>

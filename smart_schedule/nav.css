@@ -1,0 +1,58 @@
+﻿body {
+    padding-bottom: 76px !important;
+}
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0 16px 0;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.03);
+    z-index: 1000;
+}
+
+/* For dark themes like profile-edit.html */
+.bottom-nav.dark-mode {
+    background: #0f172a;
+    border-top: 1px solid #334155;
+}
+.bottom-nav.dark-mode .nav-item {
+    color: #94a3b8;
+}
+.bottom-nav.dark-mode .nav-item.active {
+    color: #60a5fa;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #9ca3af;
+    font-size: 11px;
+    font-weight: 700;
+    gap: 4px;
+    transition: all 0.2s;
+    flex: 1;
+}
+
+.nav-item:hover {
+    color: #6b7280;
+}
+.bottom-nav.dark-mode .nav-item:hover {
+    color: #cbd5e1;
+}
+
+.nav-item.active {
+    color: #3b82f6;
+}
+
+.nav-item .nav-icon {
+    font-size: 22px;
+    margin-bottom: 2px;
+}

@@ -1,0 +1,353 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>중개일기 - 로그인</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+
+        body {
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f8fafc;
+            padding: 0;
+            margin: 0;
+            color: #111827;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 32px 20px;
+            box-sizing: border-box;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .brand-title {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .brand-title h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #2563eb, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .brand-title p {
+            margin: 8px 0 0 0;
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 32px 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            margin-bottom: 24px;
+        }
+
+        .stats-box {
+            display: flex;
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 24px;
+            justify-content: space-around;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 4px;
+            word-break: keep-all;
+            white-space: nowrap;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+            word-break: keep-all;
+            white-space: nowrap;
+        }
+
+        .stat-divider {
+            width: 1px;
+            background: #e2e8f0;
+            margin: 0 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 12px;
+            font-size: 15px;
+            box-sizing: border-box;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #3b82f6, #4f46e5);
+            color: white;
+            font-size: 16px;
+            padding: 16px;
+            border-radius: 14px;
+            border: none;
+            width: 100%;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            margin-top: 8px;
+            font-family: inherit;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .links-container {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .manual-btn {
+            display: inline-block;
+            padding: 14px 20px;
+            background: #eff6ff;
+            border-radius: 12px;
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 800;
+            border: 1px dashed #bfdbfe;
+            transition: 0.2s;
+        }
+
+        .manual-btn:hover {
+            background: #dbeafe;
+        }
+
+        .install-guide {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            margin-top: 24px;
+        }
+
+        .install-guide h3 {
+            font-size: 14px;
+            color: #1e293b;
+            margin: 0 0 12px 0;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .install-guide p {
+            font-size: 13px;
+            color: #475569;
+            line-height: 1.6;
+            margin: 0;
+            word-break: keep-all;
+        }
+
+        .app-footer {
+            padding: 24px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.6;
+            border-top: 1px solid #e2e8f0;
+            width: 100%;
+            box-sizing: border-box;
+            background: #f8fafc;
+        }
+
+        .app-footer strong {
+            color: #64748b;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+    </style>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f8fafc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+
+    <div class="container">
+        <div class="brand-title">
+            <h1>One for All,<br>All for One</h1>
+            <p>신대림공인중개사사무소 스마트 일정관리</p>
+        </div>
+
+        <div class="login-card">
+            <div class="stats-box">
+                <div class="stat-item">
+                    <div class="stat-label">누적 가입자</div>
+                    <div class="stat-value" id="totalUsers">-</div>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <div class="stat-label">승인된 중개사</div>
+                    <div class="stat-value" id="approvedUsers" style="color: #4f46e5;">-</div>
+                </div>
+            </div>
+
+            <form id="loginForm">
+                <input type="email" id="email" placeholder="이메일 주소" required>
+                <input type="password" id="password" placeholder="비밀번호" required>
+                <button type="submit" class="btn-login" id="loginBtn">시작하기</button>
+            </form>
+            
+            <div id="errorMsg" style="color: #ef4444; margin-top: 16px; text-align: center; display: none; font-size: 13px; font-weight: 600;"></div>
+
+            <div style="margin-top: 24px; text-align: center;">
+                <a href="register.html" style="color: #64748b; text-decoration: none; font-size: 14px; font-weight: 600;">
+                    계정이 없으신가요? <span style="color: #3b82f6; font-weight: 800;">무료 회원가입</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="links-container">
+            </div>
+
+        <div class="install-guide">
+            <h3>📱 바탕화면에 진짜 앱처럼 설치하세요!</h3>
+            <p>
+                <strong>[스마트폰]</strong><br>
+                - <strong>안드로이드 (크롬)</strong>: 우측 상단 점 3개(⋮) ➔ <strong>'홈 화면에 추가'</strong><br>
+                - <strong>아이폰 (사파리)</strong>: 하단 공유 버튼(네모 화살표) ➔ <strong>'홈 화면에 추가'</strong><br><br>
+                <strong>[컴퓨터]</strong><br>
+                인터넷 주소창 우측 끝의 <strong>[앱 설치]</strong> 아이콘을 클릭하세요.
+            </p>
+        </div>
+    </div>
+
+    <footer class="app-footer">
+        <strong>신대림공인중개사사무소</strong>
+        사업자등록번호: 219-01-50737 | 전화번호: 010-9128-0586<br>
+        서울특별시 마포구 모래내로7길 52 (성산동)
+    </footer>
+
+    <script src="auth-helper.js"></script>
+    <script>
+        // 이미 로그인되어 있는지 확인
+        async function checkSession() {
+            const { data: { user } } = await authClient.auth.getUser();
+            if (user) {
+                window.location.href = 'index.html';
+            }
+        }
+        checkSession();
+
+        // 회원수 및 승인수 조회
+        async function fetchUserStats() {
+            try {
+                // RLS 정책으로 인해 직접 조회가 막혀있을 수 있으므로, RPC 함수 사용
+                const { data, error } = await authClient.rpc('get_user_stats');
+                
+                if (error) {
+                    console.log("RPC 함수가 없거나 접근 불가하여 기존 방식으로 재시도합니다.");
+                    // Fallback (RLS가 풀려있는 경우를 대비)
+                    const { count: total } = await authClient.from('users').select('*', { count: 'exact', head: true });
+                    const { count: approved } = await authClient.from('users').select('*', { count: 'exact', head: true }).not('role', 'is', null);
+                    if (total !== null) document.getElementById('totalUsers').textContent = total + '명';
+                    if (approved !== null) document.getElementById('approvedUsers').textContent = approved + '명';
+                    return;
+                }
+
+                if (data) {
+                    document.getElementById('totalUsers').textContent = data.total + '명';
+                    document.getElementById('approvedUsers').textContent = data.approved + '명';
+                }
+            } catch (error) {
+                console.error("통계 조회 중 오류:", error);
+            }
+        }
+        fetchUserStats();
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('errorMsg');
+
+            errorMsg.style.display = 'none';
+            document.getElementById('loginBtn').disabled = true;
+            document.getElementById('loginBtn').textContent = '확인 중...';
+
+            const { data, error } = await authClient.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            if (error) {
+                errorMsg.textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
+                errorMsg.style.display = 'block';
+                document.getElementById('loginBtn').disabled = false;
+                document.getElementById('loginBtn').textContent = '시작하기';
+            } else {
+                // 로그인 성공 시 무조건 index.html 로 이동
+                window.location.href = 'index.html';
+            }
+        });
+    </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js');
+    });
+  }
+</script>
+</body>
+</html>
+

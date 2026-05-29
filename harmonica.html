@@ -80,10 +80,12 @@
         /* --- Score Viewer --- */
         .score-panel {
             flex-grow: 1;
-            min-height: 300px;
+            min-height: 400px;
         }
         @media(min-width: 900px) {
-            .score-panel { min-height: 400px; }
+            .score-panel { 
+                height: calc(100vh - 80px); 
+            }
         }
         .file-upload {
             background: #3a3a5a;
@@ -274,10 +276,11 @@
     <div class="panel">
         <h2 class="panel-title">🎙️ 튜너 (음정 확인)</h2>
         <div class="tuner-note" id="note-display">-</div>
-        <div class="tuner-meter">
+        <div class="tuner-meter" style="margin-bottom: 10px;">
             <div class="meter-center"></div>
             <div class="meter-indicator" id="meter-indicator"></div>
         </div>
+        <canvas id="oscilloscope" style="width: 100%; height: 35px; background: #1e1e2f; border-radius: 8px; margin-bottom: 15px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);"></canvas>
         <button class="btn-mic" id="mic-btn" onclick="startTuner()">🎙️ 튜너 켜기</button>
     </div>
     </div>
@@ -572,12 +575,71 @@
             btn.onclick = startTuner;
             document.getElementById('note-display').innerText = '-';
             document.getElementById('meter-indicator').style.left = '50%';
+            
+            const canvas = document.getElementById('oscilloscope');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#1e1e2f';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height/2);
+                ctx.lineTo(canvas.width, canvas.height/2);
+                ctx.strokeStyle = '#3a3a5a';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        function drawOscilloscope(dataArray) {
+            const canvas = document.getElementById('oscilloscope');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            if (canvas.width !== canvas.clientWidth) canvas.width = canvas.clientWidth;
+            if (canvas.height !== canvas.clientHeight) canvas.height = canvas.clientHeight;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.fillStyle = '#1e1e2f';
+            ctx.fillRect(0, 0, width, height);
+            
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#00f2fe';
+            ctx.beginPath();
+            
+            const sliceWidth = width * 1.0 / dataArray.length;
+            let x = 0;
+            
+            for (let i = 0; i < dataArray.length; i++) {
+                // v goes from -1.0 to 1.0. We scale it.
+                // multiply by a factor (e.g. 2.0) to make it more visible
+                let v = dataArray[i] * 2.5; 
+                if (v > 1) v = 1;
+                if (v < -1) v = -1;
+                
+                const y = (v * height / 2) + height / 2;
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+                
+                x += sliceWidth;
+            }
+            
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.stroke();
         }
 
         function updatePitch() {
             if(!stream) return;
             let buf = new Float32Array(analyser.fftSize);
             analyser.getFloatTimeDomainData(buf);
+            
+            drawOscilloscope(buf);
             
             let pitch = autoCorrelate(buf, tunerCtx.sampleRate);
             

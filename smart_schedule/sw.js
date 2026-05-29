@@ -1,6 +1,6 @@
-﻿const CACHE_NAME = 'consult-diary-v39';
+const CACHE_NAME = 'consult-diary-v38';
 
-// 湲곕낯?곸쑝濡?罹먯떛???먯뀑 紐⑸줉 (?ㅽ봽?쇱씤?먯꽌???붾㈃??蹂댁뿬二쇨린 ?꾪빐)
+// 기본적으로 캐싱할 에셋 목록 (오프라인에서도 화면을 보여주기 위해)
 const urlsToCache = [
   './login.html',
   './app.css',
@@ -22,7 +22,7 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // 罹먯떆???덉쑝硫?罹먯떆???묐떟 諛섑솚, ?놁쑝硫??ㅽ듃?뚰겕 ?붿껌
+        // 캐시에 있으면 캐시된 응답 반환, 없으면 네트워크 요청
         return response || fetch(event.request);
       })
   );

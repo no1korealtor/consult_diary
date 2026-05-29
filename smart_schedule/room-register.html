@@ -1,0 +1,221 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>호수 등록</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            max-width: 480px;
+            margin: auto;
+        }
+
+        select,
+        input,
+        button {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            font-size: 18px;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+
+    <h2>호수 등록</h2>
+
+    <select id="buildingSelect">
+        <option value="">건물 선택</option>
+    </select>
+
+    <input id="room_name" placeholder="예: 101호 / 해당없음">
+
+    <button onclick="saveRoom()">
+        저장
+    </button>
+
+    <div id="status"></div>
+
+    <script src="auth-helper.js"></script>
+    <script>
+
+        async function loadBuildings() {
+
+            const { data, error } =
+                await supabaseClient
+                    .from('buildings')
+                    .select('*')
+                    .eq('office_id', window.currentUser.office_id)
+                    .order('created_at', { ascending: false });
+
+            if (error) {
+                alert('건물 목록 로드 에러: ' + error.message);
+                console.log(error);
+                return;
+            }
+
+            const select =
+                document.getElementById('buildingSelect');
+
+            select.innerHTML = '<option value="">건물 선택</option>';
+
+            data.forEach(building => {
+
+                const option =
+                    document.createElement('option');
+
+                option.value = building.id;
+
+                let text = building.road_address;
+                if (building.jibun_address) {
+                    text += ' (' + building.jibun_address + ')';
+                }
+                option.textContent = text;
+
+                select.appendChild(option);
+
+            });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            let buildingIdFromUrl = urlParams.get('building_id');
+            if (buildingIdFromUrl && buildingIdFromUrl.startsWith('B_')) {
+                buildingIdFromUrl = buildingIdFromUrl.substring(2);
+            }
+            const lastBuildingId = sessionStorage.getItem('lastRegisteredBuildingId');
+            
+            if (buildingIdFromUrl) {
+                select.value = buildingIdFromUrl;
+                select.disabled = true; // 변경하지 못하도록 잠금 처리
+            } else if (lastBuildingId) {
+                select.value = lastBuildingId;
+                sessionStorage.removeItem('lastRegisteredBuildingId');
+            }
+
+        }
+
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted || window.performance && window.performance.navigation.type === 2) {
+                loadBuildings();
+            }
+        });
+
+        async function saveRoom() {
+
+            const buildingId =
+                document.getElementById('buildingSelect').value;
+
+            const roomNameRaw = document.getElementById('room_name').value;
+            const roomName = roomNameRaw.replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ').trim();
+
+            const status =
+                document.getElementById('status');
+
+            if (!buildingId) {
+
+                status.innerText =
+                    '건물을 선택하세요';
+
+                return;
+            }
+
+            if (!roomName) {
+
+                status.innerText =
+                    '호수를 입력하세요';
+
+                return;
+            }
+
+            status.innerText = '저장 중...';
+
+            const { data: existingR } = await supabaseClient.from('rooms')
+                .select('id')
+                .eq('building_id', buildingId)
+                .eq('room_name', roomName)
+                .eq('office_id', window.currentUser.office_id)
+                .limit(1);
+            
+            let roomIdToUse = null;
+
+            if (existingR && existingR.length > 0) {
+                roomIdToUse = existingR[0].id;
+            } else {
+                const { data, error } =
+                    await supabaseClient
+                        .from('rooms')
+                        .insert([
+                            {
+                                building_id: buildingId,
+                                room_name: roomName,
+                                user_id: window.currentUser.id, office_id: window.currentUser.office_id
+                            }
+                        ])
+                        .select();
+
+                if (error) {
+                    status.innerText = '에러: ' + error.message;
+                    return;
+                }
+                
+                if (data && data.length > 0) {
+                    roomIdToUse = data[0].id;
+                }
+            }
+
+            if (roomIdToUse) {
+                sessionStorage.setItem('lastRegisteredBuildingId', buildingId);
+                sessionStorage.setItem('lastRegisteredRoomId', roomIdToUse);
+            }
+
+            status.innerText = '저장 완료';
+            document.getElementById('room_name').value = '';
+
+            alert('호수가 성공적으로 등록되었습니다.');
+            history.back(); // 이전 페이지(잔금 일정 등록 등)로 돌아가기
+
+        }
+
+        async function init() {
+            const user = await requireAuth();
+            if (user) {
+                loadBuildings();
+            }
+        }
+        init();
+
+    </script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js');
+    });
+  }
+</script>
+</body>
+
+</html>
