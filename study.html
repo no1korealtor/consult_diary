@@ -442,11 +442,21 @@
             const percent = Math.min((dailyProgress / dailyGoal) * 100, 100);
             progressEl.style.width = `${percent}%`;
             
+            // 그래픽(보석)으로 목표 표시 (중2 맞춤형 퀘스트 스타일)
+            let graphicGoal = '';
+            for(let i = 0; i < dailyGoal; i++) {
+                if (i < dailyProgress) {
+                    graphicGoal += '<span style="display:inline-block; margin: 0 2px; transform:scale(1.1); text-shadow: 0 0 5px rgba(0,0,0,0.2); transition:all 0.3s;">💎</span>';
+                } else {
+                    graphicGoal += '<span style="display:inline-block; margin: 0 2px; opacity:0.35; filter:grayscale(100%); transition:all 0.3s;">💎</span>';
+                }
+            }
+            
             if (dailyProgress >= dailyGoal) {
-                textEl.innerHTML = `🎉 목표 달성! (${dailyProgress}개 마스터)`;
+                textEl.innerHTML = `🎉 퀘스트 클리어! ${graphicGoal} 👑`;
                 progressEl.style.background = 'linear-gradient(90deg, #f6d365 0%, #fda085 100%)';
             } else {
-                textEl.innerHTML = `오늘의 목표: ${dailyProgress} / ${dailyGoal}`;
+                textEl.innerHTML = `일일 퀘스트: ${graphicGoal}`;
                 progressEl.style.background = 'linear-gradient(90deg, #84fab0 0%, #8fd3f4 100%)';
             }
         }
