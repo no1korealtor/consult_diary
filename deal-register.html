@@ -598,7 +598,7 @@
         window.toggleScheduleDone = async function(scheduleId, currentIsDone) {
             const { data: schedule, error: fetchErr } = await supabaseClient
                 .from('schedules')
-                .select('memo')
+                .select('memo, schedule_type, building_id, room_id, client_id, property_id')
                 .eq('id', scheduleId)
                 .single();
             if (fetchErr || !schedule) return;
@@ -613,6 +613,43 @@
                                  .trim();
             } else {
                 newMemo = `[DONE:${myId}]\n` + newMemo;
+
+                if (schedule.schedule_type === '계약') {
+                    const createBalance = confirm("🎉 계약 완료를 축하합니다!\n이어서 '잔금' 일정을 자동으로 생성하시겠습니까?");
+                    if (createBalance) {
+                        const defaultDate = new Date();
+                        defaultDate.setDate(defaultDate.getDate() + 30);
+                        const defaultDateStr = defaultDate.toLocaleDateString('en-CA');
+                        
+                        const balanceDate = prompt("잔금일을 입력해주세요 (YYYY-MM-DD 형식):", defaultDateStr);
+                        if (balanceDate) {
+                            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                            if (dateRegex.test(balanceDate)) {
+                                const payload = {
+                                    schedule_type: '잔금',
+                                    schedule_date: balanceDate,
+                                    building_id: schedule.building_id,
+                                    room_id: schedule.room_id,
+                                    client_id: schedule.client_id,
+                                    property_id: schedule.property_id,
+                                    user_id: window.currentUser.id,
+                                    office_id: window.currentUser.office_id,
+                                    memo: '[자동생성] 계약 건에 이어진 잔금 일정입니다.'
+                                };
+                                const { error: insertErr } = await supabaseClient
+                                    .from('schedules')
+                                    .insert([payload]);
+                                if (insertErr) {
+                                    alert("잔금 일정 자동 생성 중 오류가 발생했습니다: " + insertErr.message);
+                                } else {
+                                    if (window.showToast) window.showToast('✅ 지정한 날짜로 잔금 일정이 추가되었습니다!', 'success');
+                                }
+                            } else {
+                                alert("날짜 형식이 올바르지 않아 잔금 일정이 생성되지 않았습니다.");
+                            }
+                        }
+                    }
+                }
             }
 
             await supabaseClient.from('schedules').update({ memo: newMemo }).eq('id', scheduleId);
