@@ -114,7 +114,7 @@
                 <span>📍</span> 등록할 건물의 주소를 먼저 찾아주세요!
             </label>
             <div style="display: flex; gap: 8px;">
-                <input type="text" placeholder="여기를 눌러 주소를 검색하세요" readonly style="flex: 1; margin: 0; background: #ffffff; border: 2px solid #3b82f6; font-weight: 700; color: #3b82f6; pointer-events: none;">
+                <input id="main_address_display" type="text" placeholder="여기를 눌러 주소를 검색하세요" readonly style="flex: 1; margin: 0; background: #ffffff; border: 2px solid #3b82f6; font-weight: 700; color: #3b82f6; pointer-events: none;">
                 <button type="button" style="width: auto; padding: 0 20px; margin: 0; background: #3b82f6; color: white; border-radius: 12px; font-weight: 800; border: none; white-space: nowrap; pointer-events: none;">🔍 검색</button>
             </div>
         </div>
@@ -145,13 +145,12 @@
             new daum.Postcode({
 
                 oncomplete: function (data) {
+                    const road = data.roadAddress || data.autoRoadAddress || data.address;
+                    const jibun = data.jibunAddress || data.autoJibunAddress || data.address;
 
-                    document.getElementById('road_address').value =
-                        data.roadAddress;
-
-                    document.getElementById('jibun_address').value =
-                        data.jibunAddress || data.autoJibunAddress || '';
-
+                    document.getElementById('road_address').value = road;
+                    document.getElementById('jibun_address').value = jibun;
+                    document.getElementById('main_address_display').value = data.address;
                 }
 
             }).open();
