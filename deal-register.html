@@ -294,7 +294,8 @@
     <select id="contractType">
         <option value="정산">정산</option>
         <option value="잔금">잔금</option>
-        <option value="계약">계약</option>
+        <option value="임대차계약">임대차계약</option>
+        <option value="매매계약">매매계약</option>
         <option value="집보여주기">집보여주기</option>
         <option value="기타">기타</option>
         <option value="모임" style="display: none;">모임</option>
@@ -614,7 +615,22 @@
             } else {
                 newMemo = `[DONE:${myId}]\n` + newMemo;
 
-                if (schedule.schedule_type === '계약') {
+                if (schedule.schedule_type === '임대차계약' || schedule.schedule_type === '매매계약') {
+                    // 기본 할 일 '광고삭제' 추가
+                    const { data: existingTasks } = await supabaseClient
+                        .from('schedule_tasks')
+                        .select('id')
+                        .eq('schedule_id', scheduleId)
+                        .eq('task_content', '광고삭제');
+                    
+                    if (!existingTasks || existingTasks.length === 0) {
+                        await supabaseClient.from('schedule_tasks').insert([{
+                            schedule_id: scheduleId,
+                            task_content: '광고삭제',
+                            is_completed: false
+                        }]);
+                    }
+
                     const createBalance = confirm("🎉 계약 완료를 축하합니다!\n이어서 '잔금' 일정을 자동으로 생성하시겠습니까?");
                     if (createBalance) {
                         const defaultDate = new Date();
@@ -636,16 +652,43 @@
                                     office_id: window.currentUser.office_id,
                                     memo: '[자동생성] 계약 건에 이어진 잔금 일정입니다.'
                                 };
+                                const payloadsToInsert = [payload];
+
+                                if (schedule.schedule_type === '매매계약') {
+                                    const reportDate = new Date();
+                                    reportDate.setDate(reportDate.getDate() + 30);
+                                    let reportDateStr = reportDate.toLocaleDateString('en-CA');
+                                    
+                                    if (balanceDate < reportDateStr) {
+                                        reportDateStr = balanceDate;
+                                    }
+                                    
+                                    const createReport = confirm("매매계약은 30일 이내(또는 잔금일 이전)에 부동산거래신고를 해야 합니다.\n신고 기한을 일정으로 추가하시겠습니까?\n(확인 시 기한: " + reportDateStr + ")");
+                                    if (createReport) {
+                                        payloadsToInsert.push({
+                                            schedule_type: '기타',
+                                            schedule_date: reportDateStr,
+                                            building_id: schedule.building_id,
+                                            room_id: schedule.room_id,
+                                            client_id: schedule.client_id,
+                                            property_id: schedule.property_id,
+                                            user_id: window.currentUser.id,
+                                            office_id: window.currentUser.office_id,
+                                            memo: '[자동생성] 부동산거래신고 기한'
+                                        });
+                                    }
+                                }
+
                                 const { error: insertErr } = await supabaseClient
                                     .from('schedules')
-                                    .insert([payload]);
+                                    .insert(payloadsToInsert);
                                 if (insertErr) {
-                                    alert("잔금 일정 자동 생성 중 오류가 발생했습니다: " + insertErr.message);
+                                    alert("일정 자동 생성 중 오류가 발생했습니다: " + insertErr.message);
                                 } else {
-                                    if (window.showToast) window.showToast('✅ 지정한 날짜로 잔금 일정이 추가되었습니다!', 'success');
+                                    if (window.showToast) window.showToast('✅ 지정한 일정이 추가되었습니다!', 'success');
                                 }
                             } else {
-                                alert("날짜 형식이 올바르지 않아 잔금 일정이 생성되지 않았습니다.");
+                                alert("날짜 형식이 올바르지 않아 일정이 생성되지 않았습니다.");
                             }
                         }
                     }
@@ -1122,6 +1165,22 @@
                     const isMine = schedule.user_id === window.currentUser.id || window.currentUser.role === 'broker';
                     const isPrivate = (schedule.memo || '').includes('[PRIVATE]');
                     if (isPrivate && !isMine) return false;
+                    
+                    // 완료된 일정 중 날짜가 3일 이상 지난 일정은 목록에서 숨김
+                    const myId = window.currentUser ? window.currentUser.id : '';
+                    const isDone = (schedule.memo || '').includes('[DONE]') || (myId && (schedule.memo || '').includes(`[DONE:${myId}]`));
+                    
+                    if (isDone && schedule.schedule_date) {
+                        const sDate = new Date(schedule.schedule_date);
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const diffTime = today - sDate;
+                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+                        if (diffDays >= 3) {
+                            return false;
+                        }
+                    }
+                    
                     return true;
                 });
             }

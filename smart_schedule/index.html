@@ -286,7 +286,8 @@
     <select id="contractType">
         <option value="정산">정산</option>
         <option value="잔금">잔금</option>
-        <option value="계약">계약</option>
+        <option value="임대차계약">임대차계약</option>
+        <option value="매매계약">매매계약</option>
         <option value="집보여주기">집보여주기</option>
         <option value="기타">기타</option>
         <option value="모임" style="display: none;">모임</option>
@@ -1077,6 +1078,22 @@
                     const isMine = schedule.user_id === window.currentUser.id || window.currentUser.role === 'broker';
                     const isPrivate = (schedule.memo || '').includes('[PRIVATE]');
                     if (isPrivate && !isMine) return false;
+                    
+                    // 완료된 일정 중 날짜가 3일 이상 지난 일정은 목록에서 숨김
+                    const myId = window.currentUser ? window.currentUser.id : '';
+                    const isDone = (schedule.memo || '').includes('[DONE]') || (myId && (schedule.memo || '').includes(`[DONE:${myId}]`));
+                    
+                    if (isDone && schedule.schedule_date) {
+                        const sDate = new Date(schedule.schedule_date);
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        const diffTime = today - sDate;
+                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+                        if (diffDays >= 3) {
+                            return false;
+                        }
+                    }
+                    
                     return true;
                 });
             }

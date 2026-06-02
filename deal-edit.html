@@ -56,7 +56,9 @@
         <select id="contractType" style="margin-bottom: 12px;">
             <option value="정산">정산</option>
             <option value="잔금">잔금</option>
-            <option value="계약">계약</option>
+            <option value="임대차계약">임대차계약</option>
+            <option value="매매계약">매매계약</option>
+            <option value="계약해제">계약해제</option>
             <option value="집보여주기">집보여주기</option>
             <option value="기타">기타</option>
         </select>
@@ -237,6 +239,12 @@
             
             const status = document.getElementById('status');
 
+            if (contractType === '계약해제') {
+                if (!confirm("계약해제로 상태를 변경하시겠습니까?\n관련된 잔금 및 부동산거래신고 일정(자동 생성된 일정)이 함께 삭제됩니다.")) {
+                    return;
+                }
+            }
+
             status.innerText = '저장 중...';
 
             const payload = {
@@ -311,6 +319,16 @@
             if (error) {
                 status.innerText = '에러: ' + error.message;
                 return;
+            }
+
+            if (contractType === '계약해제') {
+                let query = supabaseClient.from('schedules').delete().like('memo', '%[자동생성]%').in('schedule_type', ['잔금', '기타']);
+                if (payload.building_id) query = query.eq('building_id', payload.building_id); else query = query.is('building_id', null);
+                if (payload.room_id) query = query.eq('room_id', payload.room_id); else query = query.is('room_id', null);
+                if (payload.property_id) query = query.eq('property_id', payload.property_id); else query = query.is('property_id', null);
+                if (payload.client_id) query = query.eq('client_id', payload.client_id); else query = query.is('client_id', null);
+                
+                await query;
             }
 
             status.innerText = '수정 완료';
