@@ -145,12 +145,12 @@
                 }
             });
             
-            const regexTags = [/\[HIDDEN:[^\]]+\]/, /\[SETTLED_DATE\].*?\[\/SETTLED_DATE\]/];
+            const regexTags = [/\[HIDDEN:[^\]]+\]/g, /\[SETTLED_DATE\].*?\[\/SETTLED_DATE\]/g, /\[DONE:[^\]]+\]/g];
             regexTags.forEach(regex => {
-                const match = rawMemo.match(regex);
-                if (match) {
-                    window.preservedTags += match[0];
-                    rawMemo = rawMemo.replace(match[0], '');
+                const matches = rawMemo.match(regex);
+                if (matches) {
+                    window.preservedTags += matches.join('');
+                    rawMemo = rawMemo.replace(regex, '');
                 }
             });
 
@@ -240,8 +240,15 @@
             status.innerText = '저장 중...';
 
             const payload = {
-                memo: (window.preservedTags || '') + memo
+                memo: ''
             };
+            
+            let finalTags = window.preservedTags || '';
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            if (balanceDate && balanceDate >= todayStr) {
+                finalTags = finalTags.replace(/\[DONE\]/g, '').replace(/\[DONE:[^\]]+\]/g, '');
+            }
+            payload.memo = finalTags + memo;
 
             if (document.getElementById('propertyFields').style.display === 'block') {
                 const bVal = document.getElementById('buildingSelect').value;
