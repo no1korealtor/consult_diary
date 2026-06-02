@@ -35,7 +35,7 @@ if (typeof module !== 'undefined' && module.exports) {
  * @param {string} rawMemo - ?먮낯 硫붾え ?띿뒪?? * @param {string} [dbScheduleTime] - DB????λ맂 schedule_time (?좏깮)
  * @returns {object} ?뚯떛???쇱젙 ?곗씠??媛앹껜
  */
-function parseScheduleMemo(rawMemo, dbScheduleTime = null) {
+function parseScheduleMemo(rawMemo, dbScheduleTime = null, currentUserId = null) {
     if (!rawMemo) rawMemo = "";
     
     let isDone = false;
@@ -43,6 +43,15 @@ function parseScheduleMemo(rawMemo, dbScheduleTime = null) {
         isDone = true;
         rawMemo = rawMemo.replace(/\[DONE\]/g, "");
     }
+    
+    if (currentUserId) {
+        const personalDoneTag = `[DONE:${currentUserId}]`;
+        if (rawMemo.includes(personalDoneTag)) {
+            isDone = true;
+        }
+    }
+    // Always strip all personal done tags from the clean memo so they don't show up in the UI
+    rawMemo = rawMemo.replace(/\[DONE:[a-zA-Z0-9-]+\]/g, "");
 
     let settledDate = null;
     if (rawMemo.includes("[SETTLED_DATE]")) {

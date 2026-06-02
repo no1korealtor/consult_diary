@@ -587,6 +587,30 @@
             loadschedules();
         };
 
+        window.toggleScheduleDone = async function(scheduleId, currentIsDone) {
+            const { data: schedule, error: fetchErr } = await supabaseClient
+                .from('schedules')
+                .select('memo')
+                .eq('id', scheduleId)
+                .single();
+            if (fetchErr || !schedule) return;
+
+            const myId = window.currentUser ? window.currentUser.id : '';
+            if (!myId) return;
+
+            let newMemo = schedule.memo || '';
+            if (currentIsDone) {
+                newMemo = newMemo.replace(/\[DONE\]/g, '')
+                                 .replace(new RegExp(`\\[DONE:${myId}\\]`, 'g'), '')
+                                 .trim();
+            } else {
+                newMemo = `[DONE:${myId}]\n` + newMemo;
+            }
+
+            await supabaseClient.from('schedules').update({ memo: newMemo }).eq('id', scheduleId);
+            loadschedules();
+        };
+
         window.deleteTask = async function(taskId) {
             if (!confirm("이 할 일을 삭제하시겠습니까?")) return;
             const { error } = await supabaseClient
@@ -1072,6 +1096,13 @@
                 if (isNoticeA && !isNoticeB) return -1;
                 if (!isNoticeA && isNoticeB) return 1;
 
+                const myId = window.currentUser ? window.currentUser.id : '';
+                const isDoneA = (a.memo || '').includes('[DONE]') || (myId && (a.memo || '').includes(`[DONE:${myId}]`));
+                const isDoneB = (b.memo || '').includes('[DONE]') || (myId && (b.memo || '').includes(`[DONE:${myId}]`));
+                
+                if (isDoneA && !isDoneB) return 1;
+                if (!isDoneA && isDoneB) return -1;
+
                 const isInvalidA = !a.schedule_date || isNaN(new Date(a.schedule_date).getTime());
                 const isInvalidB = !b.schedule_date || isNaN(new Date(b.schedule_date).getTime());
                 
@@ -1084,11 +1115,11 @@
                 const today = new Date();
                 today.setHours(0,0,0,0);
                 
-                const isPastA = dateA < today;
-                const isPastB = dateB < today;
+                const isPastA = dateA < today && !isDoneA;
+                const isPastB = dateB < today && !isDoneB;
 
-                if (isPastA && !isPastB) return 1;
-                if (!isPastA && isPastB) return -1;
+                if (isPastA && !isPastB) return -1;
+                if (!isPastA && isPastB) return 1;
                 
                 if (!isPastA && !isPastB) {
                     return dateA - dateB;
@@ -1101,7 +1132,8 @@
 
             // 공통 렌더링 함수
             const createDealListItem = (schedule, isGlobal) => {
-                const parsed = parseScheduleMemo(schedule.memo, schedule.schedule_time);
+                const currentUserId = window.currentUser ? window.currentUser.id : null;
+                const parsed = parseScheduleMemo(schedule.memo, schedule.schedule_time, currentUserId);
                 
                 let rawMemo = parsed.cleanMemo;
                 let linkUrl = schedule.url || parsed.linkUrl;
@@ -1466,27 +1498,27 @@
                     
                     checklistHtml += `<div style="margin-top: 16px; padding-top: 16px; border-top: 2px dashed #e2e8f0;" onclick="event.stopPropagation()">`;
                     checklistHtml += `
-                    <div style="font-size: 14px; font-weight: 800; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
-                        <div style="display: flex; align-items: center; gap: 6px;">
+                    <div style="font-size: 14px; font-weight: 800; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                             <span style="font-size: 16px;">📋</span>
-                            <span>세부 할 일</span>
-                            <span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 12px; font-size: 12px;">${tasks.filter(t => t.is_completed).length} / ${tasks.length}</span>
+                            <span style="white-space: nowrap;">세부 할 일</span>
+                            <span style="background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 12px; font-size: 12px; white-space: nowrap;">${tasks.filter(t => t.is_completed).length} / ${tasks.length}</span>
                         </div>
-                        <button type="button" onclick="addTask('${schedule.id}')" style="width: auto !important; margin: 0 !important; background: #3b82f6 !important; color: white !important; padding: 6px 12px !important; border-radius: 8px !important; font-size: 12px !important; font-weight: 800 !important;">+ 추가</button>
+                        <button type="button" onclick="addTask('${schedule.id}')" style="width: auto !important; margin: 0 !important; background: #3b82f6 !important; color: white !important; padding: 6px 12px !important; border-radius: 8px !important; font-size: 12px !important; font-weight: 800 !important; white-space: nowrap !important; flex-shrink: 0 !important;">+ 추가</button>
                     </div>`;
                     
                     if (tasks.length > 0) {
                         checklistHtml += `<div style="display: flex; flex-direction: column; gap: 8px;">`;
                         tasks.forEach(t => {
                             checklistHtml += `
-                            <div style="display: flex; align-items: flex-start; padding: 12px; background: ${t.is_completed ? '#f8fafc' : '#ffffff'}; border: 1px solid ${t.is_completed ? '#e2e8f0' : '#e5e7eb'}; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
-                                <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; flex: 1; min-width: 0; margin: 0 !important;">
+                            <div style="display: flex; align-items: flex-start; padding: 10px; background: ${t.is_completed ? '#f8fafc' : '#ffffff'}; border: 1px solid ${t.is_completed ? '#e2e8f0' : '#e5e7eb'}; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
+                                <label style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; flex: 1; min-width: 0; margin: 0 !important;">
                                     <input type="checkbox" ${t.is_completed ? 'checked' : ''} onchange="toggleTask('${t.id}', this.checked)" style="width: 18px !important; height: 18px !important; margin: 2px 0 0 0 !important; padding: 0 !important; flex-shrink: 0 !important; accent-color: #3b82f6;">
-                                    <span style="font-size: 14px; color: ${t.is_completed ? '#9ca3af' : '#374151'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'}; word-break: keep-all; font-weight: ${t.is_completed ? '500' : '700'}; line-height: 1.4; display: block; width: 100%;">
+                                    <span style="font-size: 13px; color: ${t.is_completed ? '#9ca3af' : '#374151'}; text-decoration: ${t.is_completed ? 'line-through' : 'none'}; word-break: break-word; font-weight: ${t.is_completed ? '500' : '700'}; line-height: 1.4; display: block; width: 100%;">
                                         ${t.task_content}
                                     </span>
                                 </label>
-                                <button type="button" onclick="deleteTask('${t.id}')" style="width: auto !important; margin: 0 0 0 10px !important; padding: 6px 10px !important; flex-shrink: 0 !important; background: #fee2e2 !important; color: #ef4444 !important; font-size: 12px !important; font-weight: 800 !important; border-radius: 6px !important;" title="삭제">✕</button>
+                                <button type="button" onclick="deleteTask('${t.id}')" style="width: auto !important; margin: 0 0 0 8px !important; padding: 6px 10px !important; flex-shrink: 0 !important; background: #fee2e2 !important; color: #ef4444 !important; font-size: 12px !important; font-weight: 800 !important; border-radius: 6px !important;" title="삭제">✕</button>
                             </div>
                             `;
                         });
@@ -1500,8 +1532,29 @@
                 let dateBoxBg = monthStr === '미정' ? '#fee2e2' : '#f8fafc';
                 let dateBoxBorder = monthStr === '미정' ? '#fca5a5' : '#e2e8f0';
                 
+                let toggleDoneBtnHtml = '';
+                if (isMine || (window.currentUser && window.currentUser.role === 'admin')) {
+                    const btnBg = parsed.isDone ? '#f8fafc' : '#ffffff';
+                    const btnBorder = parsed.isDone ? '#e2e8f0' : '#d1d5db';
+                    const btnColor = parsed.isDone ? '#94a3b8' : '#374151';
+                    const btnHoverBg = parsed.isDone ? '#f1f5f9' : '#f3f4f6';
+                    const btnHoverBorder = parsed.isDone ? '#cbd5e1' : '#9ca3af';
+                    const btnHoverColor = parsed.isDone ? '#64748b' : '#111827';
+                    
+                    toggleDoneBtnHtml = `
+                        <button type="button" onclick="toggleScheduleDone('${schedule.id}', ${parsed.isDone}); event.stopPropagation();" 
+                                style="position: absolute; top: 16px; right: 16px; z-index: 10; width: auto; background: ${btnBg}; border: 1px solid ${btnBorder}; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 800; color: ${btnColor}; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" 
+                                onmouseover="this.style.background='${btnHoverBg}'; this.style.borderColor='${btnHoverBorder}'; this.style.color='${btnHoverColor}';" 
+                                onmouseout="this.style.background='${btnBg}'; this.style.borderColor='${btnBorder}'; this.style.color='${btnColor}';">
+                            ${parsed.isDone ? '↩️ 완료 취소' : '✅ 완료 처리'}
+                        </button>
+                    `;
+                }
+
+                let contentStyle = parsed.isDone ? 'opacity: 0.6; text-decoration: line-through;' : '';
+
                 li.innerHTML = `
-                    <div style="display: flex; gap: 16px; align-items: stretch;">
+                    <div style="display: flex; gap: 16px; align-items: stretch; ${contentStyle}">
                         <div style="flex-shrink: 0; width: 64px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
                             <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: ${dateBoxBg}; border: 1px solid ${dateBoxBorder}; border-radius: 12px; padding: 10px 0; box-sizing: border-box;">
                                 <span style="font-size: 12px; font-weight: 800; color: #ef4444; margin-bottom: 2px;">${monthStr}</span>
@@ -1511,7 +1564,7 @@
                             ${mTime && !isMeetingTag && !isGlobal ? `<div style="margin-top: 8px; font-size: 11px; font-weight: 800; color: #3b82f6; background: #eff6ff; padding: 4px; border-radius: 6px; border: 1px solid #bfdbfe; width: 100%; box-sizing: border-box; text-align: center; word-break: keep-all;">${mTime}</div>` : ''}
                         </div>
                         <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0;">
-                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; padding-right: 24px;">
+                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; padding-right: 60px;">
                                 ${typeBadgeHtml}
                                 ${dDayHtml}
                             </div>
@@ -1523,6 +1576,7 @@
                             ${isGlobal && !isMeetingTag ? '</div>' : ''}
                         </div>
                     </div>
+                    ${toggleDoneBtnHtml}
                 `;
                 
                 // attach isHiddenProposal flag to li for filtering
@@ -1542,7 +1596,7 @@
                 
                 let currentMonthLabel = '';
                 let farFutureCount = 0;
-                let pastCount = 0;
+                let completedCount = 0;
                 let hiddenPropCount = 0;
                 let currentDateLabel = '';
                 let visibleCount = 0;
@@ -1564,9 +1618,13 @@
 
                     let dealMonth = '날짜 미정';
                     let dealDate = '미정';
-                    let isPast = false;
+                    let isCompleted = false;
+                    let isOverdue = false;
                     let mNum = '';
                     let isFarFuture = false;
+
+                    const myId = window.currentUser ? window.currentUser.id : '';
+                    const isDone = (schedule.memo || '').includes('[DONE]') || (myId && (schedule.memo || '').includes(`[DONE:${myId}]`));
 
                     if (isNotice(schedule)) {
                         dealMonth = '전체 공지';
@@ -1577,6 +1635,9 @@
                                 dealDate = `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
                             }
                         }
+                    } else if (isDone) {
+                        dealMonth = '✅ 완료된 일정';
+                        isCompleted = true;
                     } else if (schedule.schedule_date) {
                         const d = new Date(schedule.schedule_date);
                         if (!isNaN(d.getTime())) {
@@ -1585,8 +1646,8 @@
                             const diffDays = Math.ceil((d.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
                             
                             if (d < today) {
-                                dealMonth = '지난 일정';
-                                isPast = true;
+                                dealMonth = '⚠️ 지연된 일정';
+                                isOverdue = true;
                             } else {
                                 dealMonth = `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
                                 mNum = d.getMonth() + 1;
@@ -1605,10 +1666,14 @@
                         currentDateLabel = dealDate; // Set it to current deal's date so no line is drawn right under the month header
                         const dividerLi = document.createElement('li');
                         
-                        if (isPast || dealMonth === '날짜 미정' || dealMonth === '전체 공지') {
-                            const badgeColor = dealMonth === '전체 공지' ? '#4f46e5' : '#9ca3af';
+                        if (isCompleted || isOverdue || dealMonth === '날짜 미정' || dealMonth === '전체 공지') {
+                            let badgeColor = '#9ca3af';
+                            if (dealMonth === '전체 공지') badgeColor = '#4f46e5';
+                            if (isOverdue) badgeColor = '#ef4444';
+                            if (isCompleted) badgeColor = '#10b981';
+                            
                             dividerLi.style.cssText = "margin: 32px 0 12px 0; display: flex; align-items: center;";
-                            dividerLi.innerHTML = `<span style="color: ${badgeColor}; font-size: 14px; font-weight: 700;">${dealMonth}</span><div style="flex: 1; height: 1px; background: #e5e7eb; margin-left: 12px;"></div>`;
+                            dividerLi.innerHTML = `<span style="color: ${badgeColor}; font-size: 14px; font-weight: 800;">${dealMonth}</span><div style="flex: 1; height: 1px; background: #e5e7eb; margin-left: 12px;"></div>`;
                         } else {
                             dividerLi.style.cssText = "margin: 40px 0 16px 0; display: flex; align-items: baseline; border-bottom: 2px solid #111827; padding-bottom: 4px;";
                             dividerLi.innerHTML = `<span style="font-size: 44px; font-weight: 900; color: #111827; letter-spacing: -2px; line-height: 1;">${mNum}</span><span style="font-size: 18px; font-weight: 800; color: #111827; margin-left: 6px;">월</span>`;
@@ -1619,9 +1684,9 @@
                         if (isFarFuture) {
                             dividerLi.style.display = 'none';
                             dividerLi.classList.add('far-future-item');
-                        } else if (isPast) {
+                        } else if (isCompleted) {
                             dividerLi.style.display = 'none';
-                            dividerLi.classList.add('past-item');
+                            dividerLi.classList.add('completed-item');
                         } else if (visibleCount >= 5) {
                             dividerLi.style.display = 'none';
                             dividerLi.classList.add('personal-hidden-item');
@@ -1629,7 +1694,7 @@
                         list.appendChild(dividerLi);
                     }
 
-                    if (!isPast && !isFarFuture && dealDate !== '미정' && dealDate !== currentDateLabel) {
+                    if (!isCompleted && !isFarFuture && !isOverdue && dealDate !== '미정' && dealDate !== currentDateLabel) {
                         currentDateLabel = dealDate;
                         const dateDividerLi = document.createElement('li');
                         dateDividerLi.style.cssText = "margin: 16px 0 16px 0; height: 1px; border-top: 2px dashed #e2e8f0;";
@@ -1646,18 +1711,17 @@
                         li.style.display = 'none';
                         li.classList.add('hidden-proposal-item-rendered');
                         hiddenPropCount++;
-                    } else if (dealMonth === '날짜 미정' || dealMonth === '전체 공지') {
-                        // 날짜 미정 항목이나 전체 공지는 상단 노출
+                    } else if (dealMonth === '날짜 미정' || dealMonth === '전체 공지' || isOverdue) {
                         li.style.display = 'block';
                         visibleCount++;
                     } else if (isFarFuture) {
                         li.style.display = 'none';
                         li.classList.add('far-future-item');
                         farFutureCount++;
-                    } else if (isPast) {
+                    } else if (isCompleted) {
                         li.style.display = 'none';
-                        li.classList.add('past-item');
-                        pastCount++;
+                        li.classList.add('completed-item');
+                        completedCount++;
                     } else {
                         if (visibleCount >= 5) {
                             li.style.display = 'none';
@@ -1690,26 +1754,26 @@
                     list.appendChild(noticeLi);
                 }
 
-                if (pastCount > 0) {
-                    const noticePastLi = document.createElement('li');
-                    noticePastLi.classList.add('past-notice');
-                    noticePastLi.dataset.originalDisplay = 'block';
-                    noticePastLi.style.cssText = "margin-top: 12px; padding: 16px; text-align: center; background: #f3f4f6; border-radius: 12px; color: #6b7280; font-size: 14px; font-weight: 600; border: 1px dashed #d1d5db; cursor: pointer; transition: all 0.2s;";
-                    noticePastLi.innerHTML = `⌛ 지난 일정 <strong>${pastCount}건</strong> 펼쳐보기 ▼`;
+                if (completedCount > 0) {
+                    const noticeCompLi = document.createElement('li');
+                    noticeCompLi.classList.add('comp-notice');
+                    noticeCompLi.dataset.originalDisplay = 'block';
+                    noticeCompLi.style.cssText = "margin-top: 12px; padding: 16px; text-align: center; background: #f0fdf4; border-radius: 12px; color: #15803d; font-size: 14px; font-weight: 600; border: 1px dashed #bbf7d0; cursor: pointer; transition: all 0.2s;";
+                    noticeCompLi.innerHTML = `✅ 완료된 일정 <strong>${completedCount}건</strong> 펼쳐보기 ▼`;
                     
-                    noticePastLi.onclick = () => {
-                        const pastItems = document.querySelectorAll('.past-item');
-                        pastItems.forEach(item => {
+                    noticeCompLi.onclick = () => {
+                        const compItems = document.querySelectorAll('.completed-item');
+                        compItems.forEach(item => {
                             item.style.display = item.dataset.originalDisplay || '';
                         });
-                        noticePastLi.style.display = 'none';
+                        noticeCompLi.style.display = 'none';
                     };
                     
                     if (visibleCount >= 5) {
-                        noticePastLi.style.display = 'none';
-                        noticePastLi.classList.add('personal-hidden-item');
+                        noticeCompLi.style.display = 'none';
+                        noticeCompLi.classList.add('personal-hidden-item');
                     }
-                    list.appendChild(noticePastLi);
+                    list.appendChild(noticeCompLi);
                 }
 
                 if (hiddenPropCount > 0) {
@@ -1734,7 +1798,7 @@
                     list.appendChild(noticePropLi);
                 }
 
-                if (visibleCount > 5 || (visibleCount === 5 && (farFutureCount > 0 || pastCount > 0 || hiddenPropCount > 0))) {
+                if (visibleCount > 5 || (visibleCount === 5 && (farFutureCount > 0 || completedCount > 0 || hiddenPropCount > 0))) {
                     personalMoreBtn.style.display = 'block';
                     personalMoreBtn.onclick = function() {
                         const isExpanded = this.innerText.includes('접기');
@@ -1742,10 +1806,10 @@
                         if (isExpanded) {
                             hiddenItems.forEach(item => item.style.display = 'none');
                             document.querySelectorAll('.far-future-item').forEach(item => item.style.display = 'none');
-                            document.querySelectorAll('.past-item').forEach(item => item.style.display = 'none');
+                            document.querySelectorAll('.completed-item').forEach(item => item.style.display = 'none');
                             document.querySelectorAll('.hidden-proposal-item-rendered').forEach(item => item.style.display = 'none');
                             
-                            document.querySelectorAll('.far-future-notice, .past-notice, .prop-notice').forEach(item => {
+                            document.querySelectorAll('.far-future-notice, .comp-notice, .prop-notice').forEach(item => {
                                 if (!item.classList.contains('personal-hidden-item')) {
                                     item.style.display = 'block';
                                 }
@@ -2023,6 +2087,7 @@ function toggleTipText(id, btn) {
     }
 }
         function execDaumPostcodeMeeting() {
+            if (window.showToast) showToast('주소 검색 창을 엽니다.\n창이 뜨지 않으면 팝업 차단을 해제해주세요.', 'info');
             new daum.Postcode({
                 oncomplete: function(data) {
                     let addr = data.roadAddress !== '' ? data.roadAddress : data.jibunAddress;

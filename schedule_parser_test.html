@@ -82,6 +82,31 @@
             getDDay("", mockToday)
         );
 
+        // --- parseScheduleMemo 테스트 ---
+        const sampleMemo1 = "[TIME]15:30[/TIME]\n[LOC]강남역 4번 출구[/LOC]\n[DONE]\n손님 미팅 건";
+        const parsed1 = parseScheduleMemo(sampleMemo1);
+        
+        test(
+            "메모 파싱: 시간 추출",
+            "15:30",
+            parsed1.time
+        );
+        test(
+            "메모 파싱: 장소 추출",
+            "강남역 4번 출구",
+            parsed1.location
+        );
+        test(
+            "메모 파싱: 완료 태그 분석",
+            true,
+            parsed1.isDone
+        );
+        test(
+            "메모 파싱: 태그 제거된 순수 텍스트",
+            "손님 미팅 건",
+            parsed1.cleanMemo
+        );
+
     </script>
 </body>
 </html>

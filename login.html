@@ -250,7 +250,10 @@
             
             <div id="errorMsg" style="color: #ef4444; margin-top: 16px; text-align: center; display: none; font-size: 13px; font-weight: 600;"></div>
 
-            <div style="margin-top: 24px; text-align: center;">
+            <div style="margin-top: 24px; text-align: center; display: flex; flex-direction: column; gap: 12px;">
+                <a href="#" onclick="resetPassword()" style="color: #64748b; text-decoration: none; font-size: 14px; font-weight: 600;">
+                    비밀번호를 잊으셨나요? <span style="color: #3b82f6;">비밀번호 재설정</span>
+                </a>
                 <a href="register.html" style="color: #64748b; text-decoration: none; font-size: 14px; font-weight: 600;">
                     계정이 없으신가요? <span style="color: #3b82f6; font-weight: 800;">무료 회원가입</span>
                 </a>
@@ -343,6 +346,33 @@
                 window.location.href = 'deal-register.html';
             }
         });
+
+        async function resetPassword() {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                alert('위의 이메일 칸에 이메일 주소를 먼저 입력하신 후 눌러주세요.');
+                return;
+            }
+            
+            // 로그인 버튼을 비활성화해서 로딩 상태를 표시
+            const btn = document.getElementById('loginBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '처리 중...';
+            
+            const { error } = await authClient.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + window.location.pathname.replace('login.html', 'profile-edit.html')
+            });
+            
+            btn.disabled = false;
+            btn.textContent = originalText;
+            
+            if (error) {
+                alert('비밀번호 재설정 메일 발송에 실패했습니다: ' + error.message);
+            } else {
+                alert('입력하신 이메일로 비밀번호 재설정 링크가 발송되었습니다. 이메일을 확인해주세요.');
+            }
+        }
     </script>
 <script>
   if ('serviceWorker' in navigator) {

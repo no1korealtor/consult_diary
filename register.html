@@ -169,6 +169,7 @@
         import { supabase } from './supabase-client.js';
 
         window.openAddressSearch = function() {
+            if (window.showToast) showToast('주소 검색 창을 엽니다.\n창이 뜨지 않으면 팝업 차단을 해제해주세요.', 'info');
             new daum.Postcode({
                 oncomplete: function(data) {
                     document.getElementById('office_address').value = data.address;

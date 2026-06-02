@@ -42,9 +42,11 @@ async function requireAuth(bypassProfileCheck = false) {
         else if (!profile) debugMsg = "users 테이블에 해당 id(" + user.id + ")의 정보가 없습니다.";
         else if (!profile.role) debugMsg = "role 값이 비어있습니다.";
         
-        alert('전문가 승인이 필요합니다. 관리자 승인 후 이용 가능합니다.\n[디버그] ' + debugMsg);
+        alert('가입승인 대기 중입니다. (010-9128-0586 조항준)');
         await authClient.auth.signOut();
-        location.href = 'login.html';
+        setTimeout(() => {
+            location.href = 'login.html';
+        }, 3500);
         return null;
     }
 
