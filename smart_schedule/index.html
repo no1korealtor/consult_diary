@@ -1189,7 +1189,7 @@
                 const isPendingAdmin = parsed.isPendingAdmin;
                 let isCanceled = parsed.isCanceled;
                 let cancelReason = parsed.cancelReason;
-                const isContractCanceled = parsed.isContractCanceled;
+                const isContractCanceled = parsed.isContractCanceled || schedule.schedule_type === '계약해제';
                 
                 const isMine = schedule.user_id === window.currentUser.id || window.currentUser.role === 'broker';
                 const isSharedMeeting = schedule.schedule_type === '모임' && !isPrivateMeeting;
