@@ -116,6 +116,7 @@
         }
 
         .deal-item { background: #ffffff; border: 1px solid rgba(0,0,0,0.03); padding: 18px 20px; margin-bottom: 16px; border-radius: 24px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 16px rgba(0,0,0,0.02); }
+        .deal-item.canceled { text-decoration: line-through; opacity: 0.5; }
 
         .deal-item:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.04); }
 
@@ -1276,6 +1277,7 @@
                 const isPendingAdmin = parsed.isPendingAdmin;
                 let isCanceled = parsed.isCanceled;
                 let cancelReason = parsed.cancelReason;
+                const isContractCanceled = parsed.isContractCanceled;
                 
                 const isMine = schedule.user_id === window.currentUser.id || window.currentUser.role === 'broker';
                 const isSharedMeeting = schedule.schedule_type === '모임' && !isPrivateMeeting;
@@ -1577,6 +1579,10 @@
 
                 const li = document.createElement('li');
                 li.className = 'deal-item';
+                
+                if (isContractCanceled) {
+                    li.classList.add('canceled');
+                }
                 
                 if (isGlobal) {
                     li.classList.add('global');

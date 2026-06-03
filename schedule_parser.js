@@ -59,6 +59,11 @@ function parseScheduleMemo(rawMemo, dbScheduleTime = null, currentUserId = null)
         if (m) { settledDate = m[1]; rawMemo = rawMemo.replace(m[0], ""); }
     }
 
+    let isContractCanceled = false;
+    if (rawMemo.includes("계약해제")) {
+        isContractCanceled = true;
+    }
+
     let isPrivate = false;
     if (rawMemo.includes("[PRIVATE]")) {
         isPrivate = true;
@@ -166,6 +171,7 @@ function parseScheduleMemo(rawMemo, dbScheduleTime = null, currentUserId = null)
         cleanMemo: rawMemo.trim(),
         isDone,
         settledDate,
+        isContractCanceled,
         isPrivate,
         isProposal,
         isPendingAdmin,
