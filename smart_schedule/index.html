@@ -602,10 +602,11 @@
             let newMemo = schedule.memo || '';
             if (currentIsDone) {
                 newMemo = newMemo.replace(/\[DONE\]/g, '')
-                                 .replace(new RegExp(`\\[DONE:${myId}\\]`, 'g'), '')
+                                 .replace(/\[DONE:[^\]]+\]/g, '')
                                  .trim();
             } else {
-                newMemo = `[DONE:${myId}]\n` + newMemo;
+                const todayStr = new Date().toLocaleDateString('en-CA');
+                newMemo = `[DONE:${myId}:${todayStr}]\n` + newMemo;
             }
 
             await supabaseClient.from('schedules').update({ memo: newMemo }).eq('id', scheduleId);
@@ -1079,18 +1080,32 @@
                     const isPrivate = (schedule.memo || '').includes('[PRIVATE]');
                     if (isPrivate && !isMine) return false;
                     
-                    // 완료된 일정 중 날짜가 3일 이상 지난 일정은 목록에서 숨김
-                    const myId = window.currentUser ? window.currentUser.id : '';
-                    const isDone = (schedule.memo || '').includes('[DONE]') || (myId && (schedule.memo || '').includes(`[DONE:${myId}]`));
+                    // 완료된 일정 중 완료일(또는 일정일)로부터 3일 이상 지난 일정은 목록에서 숨김
+                    let isDone = false;
+                    let doneDateStr = null;
+                    const lines = (schedule.memo || '').split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('[DONE')) {
+                            isDone = true;
+                            const parts = line.split(':');
+                            if (parts.length >= 3) {
+                                doneDateStr = parts[2].replace(']', '');
+                            }
+                            break;
+                        }
+                    }
                     
-                    if (isDone && schedule.schedule_date) {
-                        const sDate = new Date(schedule.schedule_date);
-                        const today = new Date();
-                        today.setHours(0,0,0,0);
-                        const diffTime = today - sDate;
-                        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
-                        if (diffDays >= 3) {
-                            return false;
+                    if (isDone) {
+                        const targetDateStr = doneDateStr || schedule.schedule_date;
+                        if (targetDateStr) {
+                            const sDate = new Date(targetDateStr);
+                            const today = new Date();
+                            today.setHours(0,0,0,0);
+                            const diffTime = today - sDate;
+                            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+                            if (diffDays >= 3) {
+                                return false;
+                            }
                         }
                     }
                     
