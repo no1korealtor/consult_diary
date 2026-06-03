@@ -664,7 +664,7 @@
                                     const createReport = confirm("매매계약은 30일 이내(또는 잔금일 이전)에 부동산거래신고를 해야 합니다.\n신고 기한을 일정으로 추가하시겠습니까?\n(확인 시 기한: " + reportDateStr + ")");
                                     if (createReport) {
                                         payloadsToInsert.push({
-                                            schedule_type: '기타',
+                                            schedule_type: 'Must-do',
                                             schedule_date: reportDateStr,
                                             building_id: schedule.building_id,
                                             room_id: schedule.room_id,
