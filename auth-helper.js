@@ -65,12 +65,10 @@ async function requireAuth(bypassProfileCheck = false) {
     user.office_id = (dataProfile && dataProfile.office_id) ? dataProfile.office_id : user.id;
     window.currentUser = user;
     
-    // 관리자인 경우 장부, 연락처 탭 표시
+    // 관리자인 경우 장부 탭 표시
     if (user.role === 'admin') {
         const navMarket = document.getElementById('navMarket');
         if (navMarket) navMarket.style.display = 'flex';
-        const navContacts = document.getElementById('navContacts');
-        if (navContacts) navContacts.style.display = 'flex';
 
         setTimeout(() => {
             const nav = document.querySelector('.bottom-nav');
