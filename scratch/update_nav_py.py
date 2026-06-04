@@ -10,7 +10,8 @@ files = [
     "market.html",
     "harmonica.html",
     "study.html",
-    "login.html"
+    "login.html",
+    "scrap.html"
 ]
 
 nav_template = """<nav class="{nav_class}">
@@ -18,17 +19,17 @@ nav_template = """<nav class="{nav_class}">
         <span class="nav-icon">🏠</span>
         <span>일정</span>
     </a>
-    <a href="market.html" class="nav-item">
+    <a href="market.html" class="nav-item" id="navMarket" style="display: none;">
         <span class="nav-icon">📋</span>
         <span>장부</span>
     </a>
-    <a href="contacts.html" class="nav-item">
+    <a href="contacts.html" class="nav-item" id="navContacts" style="display: none;">
         <span class="nav-icon">👥</span>
         <span>연락처</span>
     </a>
     <a href="manual.html" class="nav-item">
-        <span class="nav-icon">📖</span>
-        <span>매뉴얼</span>
+        <span class="nav-icon">🗂️</span>
+        <span>자료실</span>
     </a>
     <a href="profile-edit.html" class="nav-item">
         <span class="nav-icon">👤</span>
@@ -50,6 +51,9 @@ for filename in files:
         
         # Add active class for the current file
         replacement = replacement.replace(f'"{filename}" class="nav-item"', f'"{filename}" class="nav-item active"')
+        # Special case: scrap.html and manual.html share the same tab logic, but we make manual.html active
+        if filename == "scrap.html":
+             replacement = replacement.replace(f'"manual.html" class="nav-item"', f'"manual.html" class="nav-item active"')
         
         new_content = re.sub(r'<nav class="bottom-nav[^>]*>.*?</nav>', replacement, content, flags=re.DOTALL)
         
