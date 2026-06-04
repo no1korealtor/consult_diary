@@ -24,6 +24,33 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            flex-direction: column;
+            align-items: stretch;
+            padding: 16px 20px 0 20px;
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .tabs {
+            display: flex;
+            gap: 16px;
+        }
+        .tab-btn {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-weight: 700;
+            font-size: 15px;
+            text-decoration: none;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            transition: 0.2s;
+        }
+        .tab-btn.active {
+            color: #3b82f6;
+            border-bottom: 3px solid #3b82f6;
         }
         .back-btn {
             background: none;
@@ -35,7 +62,7 @@
             display: flex;
             align-items: center;
         }
-        .header h1 {
+        .header-top h1 {
             margin: 0;
             font-size: 18px;
             font-weight: 800;
@@ -68,8 +95,13 @@
 <body>
 
     <div class="header">
-        
-        <h1>앱 사용 설명서</h1>
+        <div class="header-top">
+            <h1>🗂️ 자료 및 스크랩</h1>
+        </div>
+        <div class="tabs">
+            <a href="manual.html" class="tab-btn active">앱 매뉴얼</a>
+            <a href="scrap.html" class="tab-btn">실무 스크랩</a>
+        </div>
     </div>
 
     <div class="content">
@@ -204,8 +236,8 @@
             <span>연락처</span>
         </a>
         <a href="manual.html" class="nav-item active">
-            <span class="nav-icon">📖</span>
-            <span>매뉴얼</span>
+            <span class="nav-icon">🗂️</span>
+            <span>자료실</span>
         </a>
         <a href="profile-edit.html" class="nav-item">
             <span class="nav-icon">👤</span>

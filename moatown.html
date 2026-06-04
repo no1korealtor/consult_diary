@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모아타운, 도대체 무엇이 궁금한가?</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+
+        body {
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            color: #334155;
+            line-height: 1.7;
+        }
+
+        /* 관리자/직원 전용 툴바 (기본 숨김) */
+        #agentToolbar {
+            display: none;
+            background: #1e293b;
+            padding: 12px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .agent-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+        .agent-btn:hover { background: #2563eb; }
+        .agent-btn.kakao { background: #FEE500; color: #000000; }
+        .agent-btn.kakao:hover { background: #e5ce00; }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        .blog-content {
+            background: #ffffff;
+            padding: 40px 32px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            border: 1px solid #f1f5f9;
+        }
+
+        /* 블로그 스크랩 태그 (직원에게만 보임) */
+        #scrapTag {
+            display: none;
+            background: #eff6ff;
+            color: #3b82f6;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            width: fit-content;
+            border: 1px solid #bfdbfe;
+        }
+
+        .blog-content h1 {
+            font-size: 32px;
+            font-weight: 900;
+            color: #0f172a;
+            margin-top: 0;
+            margin-bottom: 12px;
+            line-height: 1.3;
+            letter-spacing: -0.5px;
+        }
+
+        .blog-content h2.subtitle {
+            font-size: 20px;
+            font-weight: 600;
+            color: #64748b;
+            margin-top: 0;
+            margin-bottom: 32px;
+            letter-spacing: -0.3px;
+        }
+
+        .blog-content hr {
+            border: 0;
+            height: 1px;
+            background: #e2e8f0;
+            margin: 32px 0;
+        }
+
+        .blog-content h2.section-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-top: 48px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3b82f6;
+            display: inline-block;
+        }
+
+        .blog-content h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-top: 40px;
+            margin-bottom: 16px;
+        }
+
+        .blog-content p {
+            font-size: 17px;
+            margin-bottom: 16px;
+            color: #475569;
+            word-break: keep-all;
+        }
+
+        .blog-content ul {
+            padding-left: 24px;
+            margin-bottom: 20px;
+        }
+
+        .blog-content li {
+            font-size: 17px;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+
+        .quote-box {
+            background-color: #f1f5f9;
+            border-left: 4px solid #94a3b8;
+            padding: 16px 20px;
+            margin: 24px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .quote-box p {
+            margin: 0 0 8px 0;
+            color: #334155;
+            font-weight: 600;
+        }
+        
+        .quote-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .public-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px dashed #cbd5e1;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        @media (max-width: 600px) {
+            .blog-content {
+                padding: 24px 20px;
+                border-radius: 12px;
+            }
+            .blog-content h1 {
+                font-size: 26px;
+            }
+            .blog-content h2.section-title {
+                font-size: 20px;
+            }
+            .blog-content p, .blog-content li {
+                font-size: 16px;
+            }
+            .container {
+                padding: 20px 12px;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- 직원 전용 툴바 -->
+    <div id="agentToolbar">
+        <button class="agent-btn" style="background: transparent; border: 1px solid #475569;" onclick="history.back()">
+            ← 뒤로
+        </button>
+        <div style="display: flex; gap: 8px;">
+            <button class="agent-btn kakao" onclick="shareKakao()">
+                💬 고객전송
+            </button>
+            <button class="agent-btn" onclick="copyForBlog()">
+                📝 블로그 복사
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 네이버 블로그에 복사될 내용이 들어가는 메인 컨테이너 -->
+        <div class="blog-content" id="exportContent">
+            <div id="scrapTag">🔖 실무 스크랩 자료</div>
+            <h1>모아타운, 도대체 무엇이 궁금한가?</h1>
+            <h2 class="subtitle">공인중개사와 투자자가 가장 많이 묻는 질문</h2>
+            <hr>
+
+            <h3>들어가며</h3>
+            <p>모아타운 설명회나 주민설명회에 참석해 보면 의외로 많은 사람들이 같은 질문을 반복한다.</p>
+            
+            <div class="quote-box">
+                <p>"모아타운이 뭐예요?"</p>
+                <p>"가로주택정비사업이랑 뭐가 다른가요?"</p>
+                <p>"분양권은 몇 개 나오나요?"</p>
+                <p>"현금청산은 언제 되나요?"</p>
+                <p>"우리 동네도 재개발처럼 되는 건가요?"</p>
+            </div>
+
+            <p>이 글은 필자가 모아타운을 공부하면서 실제로 가장 궁금했던 내용들을 정리한 것이다.</p>
+
+            <h2 class="section-title">1. 모아타운은 사업인가?</h2>
+            <p><strong>결론부터 말하면 아니다.</strong></p>
+            <p>많은 사람들이 모아타운을 재개발 사업처럼 생각하지만 모아타운은 사업명이 아니라 서울시의 정책 브랜드다.</p>
+            <p>법률상 명칭은 「빈집 및 소규모주택 정비에 관한 특례법」에 따른 <strong>"소규모주택정비 관리지역"</strong>이다.</p>
+            <p>쉽게 말하면 여러 개의 소규모 정비사업을 하나의 생활권 단위로 묶어 체계적으로 정비하기 위한 <strong>계획</strong>이다.</p>
+
+            <h2 class="section-title">2. 모아주택과 모아타운은 무엇이 다른가?</h2>
+            <p><strong>모아타운은 계획이다.</strong><br>
+            <strong>모아주택은 사업이다.</strong></p>
+            <p>모아타운이 동네 전체의 <strong>마스터플랜</strong>이라면 모아주택은 실제로 <strong>건물을 짓는 사업구역</strong>이다.</p>
+            <p>모아타운 안에서 추진되는 모아주택 사업은 다음과 같은 소규모주택정비사업을 활용한다.</p>
+            <ul>
+                <li>가로주택정비사업</li>
+                <li>자율주택정비사업</li>
+                <li>소규모재건축사업</li>
+                <li>소규모재개발사업</li>
+            </ul>
+
+            <h2 class="section-title">3. 가로주택정비사업과 모아주택은 같은 것인가?</h2>
+            <p><strong>엄밀히 말하면 아니다.</strong></p>
+            <p>가로주택정비사업은 법률상 사업유형이다.<br>
+            반면 모아주택은 서울시가 만든 정책 개념이다.</p>
+            <p>즉 모아주택은 가로주택정비사업 등을 활용하여 추진하는 <strong>서울형 정비모델</strong>이라고 이해하면 된다.</p>
+
+            <h2 class="section-title">4. 모아타운은 왜 등장했을까?</h2>
+            <p>재개발이 어려운 <strong>노후 저층주거지</strong>가 많았기 때문이다.</p>
+            <ul>
+                <li>좁은 골목길</li>
+                <li>부족한 주차장</li>
+                <li>노후된 다세대주택</li>
+                <li>열악한 공원과 생활기반시설</li>
+            </ul>
+            <p>하지만 재개발을 추진하기에는 규모가 작고 사업성이 부족한 경우가 많았다.<br>
+            서울시는 이러한 문제를 해결하기 위해 모아타운 제도를 도입했다.</p>
+
+            <h2 class="section-title">5. 소규모주택정비 관리지역이란?</h2>
+            <p>모아타운의 <strong>법적 명칭</strong>이다.</p>
+            <p>보통 10만㎡ 미만의 지역을 하나의 생활권 단위로 묶어 관리계획을 수립한다.</p>
+            <p>관리계획을 통해 도로, 공원, 주차장 등 기반시설을 확충하고 개별 사업이 원활하게 추진될 수 있도록 지원한다.</p>
+
+            <h2 class="section-title">6. 기반시설이 왜 중요한가?</h2>
+            <p>정비사업의 목적은 단순히 새 아파트를 짓는 것이 아니다.<br>
+            <strong>좋은 주거환경을 만드는 것</strong>이다.</p>
+            <p>기반시설에는 다음과 같은 것들이 포함된다.</p>
+            <ul>
+                <li>도로</li>
+                <li>공원</li>
+                <li>상수도</li>
+                <li>하수도</li>
+                <li>공용주차장</li>
+                <li>공동구</li>
+                <li>가스공급시설</li>
+            </ul>
+            <p>이러한 시설이 확보되어야 주민들의 생활환경이 개선된다.</p>
+
+            <h2 class="section-title">7. 공동이용시설은 무엇인가?</h2>
+            <p>주민들이 <strong>함께 사용하는 시설</strong>이다.</p>
+            <p>예를 들면</p>
+            <ul>
+                <li>주민운동시설</li>
+                <li>어린이놀이터</li>
+                <li>마을회관</li>
+                <li>공동작업장</li>
+                <li>위생시설</li>
+            </ul>
+            <p>등이 있다.</p>
+
+            <h2 class="section-title">8. 토지등소유자란 누구인가?</h2>
+            <p>정비사업에서 <strong>가장 중요한 개념 중 하나</strong>다.</p>
+            <p>토지등소유자가 되어야 다음과 같은 권리를 행사할 수 있다.</p>
+            <ul>
+                <li>동의서 제출</li>
+                <li>조합원 자격</li>
+                <li>분양신청</li>
+                <li>청산금 수령</li>
+            </ul>
+
+            <h2 class="section-title">9. 권리산정기준일은 왜 중요할까?</h2>
+            <p>권리산정기준일 이후에 지분을 쪼개거나 세대를 늘려도 <strong>추가 분양권이 인정되지 않는 경우</strong>가 있다.</p>
+            <p>특히 소규모재개발사업에서는 매우 중요한 개념이다.</p>
+
+            <h2 class="section-title">10. 나는 몇 채를 분양받을 수 있을까?</h2>
+            <p>정비사업에서 가장 많이 나오는 질문이다.<br>
+            그러나 단순히 소유한 주택 수로 결정되지 않는다.</p>
+            <ul>
+                <li>토지등소유자 여부</li>
+                <li>사업유형</li>
+                <li>권리산정기준일</li>
+                <li>소유형태</li>
+                <li>공동소유 여부</li>
+            </ul>
+            <p>등을 종합적으로 검토해야 한다.</p>
+
+            <h2 class="section-title">11. 분양계획이란?</h2>
+            <p>사업이 완료되었을 때 <strong>누가 무엇을 받을 것인지</strong>를 정하는 계획이다.</p>
+            <p>많은 사람들이 궁금해하는</p>
+            <div class="quote-box">
+                <p>"몇 평을 받을 수 있는가?"</p>
+                <p>"얼마를 부담해야 하는가?"</p>
+                <p>"상가를 받을 수 있는가?"</p>
+            </div>
+            <p>와 같은 내용이 여기에 포함된다.</p>
+
+            <h2 class="section-title">12. 분양신청을 하지 않으면?</h2>
+            <p>사업유형에 따라 차이는 있지만 일반적으로 분양신청을 하지 않으면 <strong>현금청산 대상</strong>이 될 수 있다.</p>
+            <p>따라서 분양신청 기간을 놓치지 않는 것이 중요하다.</p>
+
+            <h2 class="section-title">13. 현금청산이란?</h2>
+            <p>아파트를 분양받지 않고 <strong>현금으로 보상받는 절차</strong>를 말한다.</p>
+            <p>분양신청을 하지 않거나 조합원 자격이 인정되지 않는 경우 현금청산 대상이 될 수 있다.</p>
+
+            <h2 class="section-title">14. 모아타운 투자 시 반드시 확인할 사항</h2>
+            <ul>
+                <li>첫째, 관리지역 지정 여부</li>
+                <li>둘째, 관리계획 수립 여부</li>
+                <li>셋째, 사업유형</li>
+                <li>넷째, 토지등소유자 여부</li>
+                <li>다섯째, 권리산정기준일</li>
+                <li>여섯째, 분양계획</li>
+            </ul>
+
+            <h2 class="section-title" style="border-bottom: 2px solid #8b5cf6;">마치며</h2>
+            <p>모아타운은 단순한 개발사업이 아니다.<br>
+            노후 저층주거지의 주거환경을 개선하기 위한 새로운 도시정비 방식이다.</p>
+            <p>하지만 투자자와 주민 입장에서 가장 중요한 것은 결국 <strong>자신의 권리</strong>다.</p>
+            <p>모아타운을 이해하려면 "모아타운이 무엇인가"보다<br>
+            <strong>"나는 어떤 권리를 가지는가"</strong>를 먼저 이해해야 한다.</p>
+        </div>
+        
+        <div class="public-footer">
+            본 콘텐츠는 <strong>신대림 스마트 일정관리</strong>에서 제공합니다.
+        </div>
+    </div>
+
+    <!-- auth-helper 스크립트를 로드하여 로그인 여부 체크 -->
+    <script src="auth-helper.js"></script>
+    <script>
+        // 페이지 로드 시 로그인 상태 체크 (redirect 끄기 위해 약간 편법 사용 또는 직접 토큰 검사)
+        async function checkLoginState() {
+            // requireAuth()는 비로그인시 login.html로 튕겨버리므로 사용 불가
+            // 직접 localStorage를 확인
+            const tokenStr = localStorage.getItem('sb-token');
+            if (tokenStr) {
+                try {
+                    const token = JSON.parse(tokenStr);
+                    if (token && token.access_token) {
+                        // 로그인 된 상태: 상단 툴바 표시, 스크랩 태그 표시
+                        document.getElementById('agentToolbar').style.display = 'flex';
+                        document.getElementById('scrapTag').style.display = 'block';
+                    }
+                } catch(e) {}
+            }
+        }
+        
+        checkLoginState();
+
+        // 카카오 공유 기능 (고객에게 URL 전송)
+        function shareKakao() {
+            const currentUrl = window.location.href.split('?')[0]; // 파라미터 제거
+            const shareText = `[부동산 상식]\n모아타운, 도대체 무엇이 궁금한가?\n\n고객님들이 가장 많이 묻는 질문 14가지를 알기 쉽게 정리했습니다. 아래 링크에서 확인해보세요!\n\n${currentUrl}`;
+            
+            // 단순 텍스트 클립보드 복사
+            navigator.clipboard.writeText(shareText).then(() => {
+                alert('카톡 공유용 텍스트가 복사되었습니다.\n고객 채팅방에 붙여넣기 해주세요!');
+            });
+        }
+
+        // 블로그 복사 기능 (서식 포함 Rich Text 복사)
+        function copyForBlog() {
+            const contentDiv = document.getElementById('exportContent');
+            // 스크랩 태그는 복사 안되게 잠깐 숨김
+            const scrapTag = document.getElementById('scrapTag');
+            const wasVisible = scrapTag.style.display;
+            scrapTag.style.display = 'none';
+
+            // Selection API를 사용하여 내용 선택
+            const range = document.createRange();
+            range.selectNodeContents(contentDiv);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+
+            try {
+                // 서식을 유지한 채 클립보드에 복사
+                document.execCommand('copy');
+                alert('서식과 함께 복사되었습니다!\n네이버 블로그 스마트에디터에 그대로 붙여넣기(Ctrl+V) 하시면 됩니다.');
+            } catch(err) {
+                alert('복사에 실패했습니다. 직접 드래그하여 복사해주세요.');
+            }
+
+            // 선택 해제 및 원상복구
+            selection.removeAllRanges();
+            scrapTag.style.display = wasVisible;
+        }
+    </script>
+</body>
+</html>

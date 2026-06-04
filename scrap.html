@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>자료 및 스크랩</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+        body {
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding: 0;
+            color: #334155;
+            line-height: 1.6;
+        }
+        .header {
+            background: #ffffff;
+            padding: 16px 20px 0 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .header-top h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .tabs {
+            display: flex;
+            gap: 16px;
+        }
+        .tab-btn {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-weight: 700;
+            font-size: 15px;
+            text-decoration: none;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            transition: 0.2s;
+        }
+        .tab-btn.active {
+            color: #3b82f6;
+            border-bottom: 3px solid #3b82f6;
+        }
+        .content {
+            padding: 24px 20px 80px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .scrap-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .scrap-item {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .scrap-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            border-color: #cbd5e1;
+        }
+        .tag {
+            background: #eff6ff;
+            color: #3b82f6;
+            font-size: 12px;
+            font-weight: 800;
+            padding: 4px 8px;
+            border-radius: 6px;
+            width: fit-content;
+        }
+        .scrap-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 0;
+            line-height: 1.4;
+        }
+        .scrap-desc {
+            font-size: 14px;
+            color: #64748b;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+    <link rel="stylesheet" href="nav.css">
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-top">
+            <h1>🗂️ 자료 및 스크랩</h1>
+        </div>
+        <div class="tabs">
+            <a href="manual.html" class="tab-btn">앱 매뉴얼</a>
+            <a href="scrap.html" class="tab-btn active">실무 스크랩</a>
+        </div>
+    </div>
+
+    <div class="content">
+        <div style="margin-bottom: 20px; font-size: 14px; color: #64748b; font-weight: 600;">
+            소장님을 위한 실무 지식창고입니다. 고객에게 카톡으로 보내거나 블로그에 복사할 수 있습니다.
+        </div>
+
+        <ul class="scrap-list">
+            <li class="scrap-item" onclick="location.href='moatown.html'">
+                <div class="tag">부동산 상식 / 재개발</div>
+                <h3 class="scrap-title">모아타운, 도대체 무엇이 궁금한가?</h3>
+                <p class="scrap-desc">공인중개사와 투자자가 가장 많이 묻는 모아타운 관련 질문 14가지 총정리 (모아주택, 권리산정기준일, 현금청산 등)</p>
+            </li>
+            
+            <!-- 향후 추가될 스크랩 항목들 예시 (비활성) -->
+            <li class="scrap-item" style="opacity: 0.6; cursor: default;">
+                <div class="tag" style="background: #f1f5f9; color: #64748b;">세무 / 양도세</div>
+                <h3 class="scrap-title" style="color: #64748b;">2024년 변경되는 양도소득세 핵심 요약</h3>
+                <p class="scrap-desc">준비 중인 자료입니다.</p>
+            </li>
+        </ul>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="deal-register.html" class="nav-item">
+            <span class="nav-icon">🏠</span>
+            <span>일정</span>
+        </a>
+        <a href="market.html" class="nav-item">
+            <span class="nav-icon">📋</span>
+            <span>장부</span>
+        </a>
+        <a href="contacts.html" class="nav-item">
+            <span class="nav-icon">👥</span>
+            <span>연락처</span>
+        </a>
+        <a href="manual.html" class="nav-item active">
+            <span class="nav-icon">🗂️</span>
+            <span>자료실</span>
+        </a>
+        <a href="profile-edit.html" class="nav-item">
+            <span class="nav-icon">👤</span>
+            <span>내정보</span>
+        </a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="auth-helper.js"></script>
+    <script>
+        // 로그인 체크
+        requireAuth();
+    </script>
+</body>
+</html>
