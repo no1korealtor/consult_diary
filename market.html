@@ -28,8 +28,9 @@
         h2 { font-size: 22px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; }
         
         .tab-btn {
-            flex: 1; padding: 12px; border-radius: 10px; border: none; background: transparent; color: #94a3b8; font-weight: 800; font-size: 15px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            flex: 1; padding: 10px; border-radius: 10px; border: none; background: transparent; color: #94a3b8; font-weight: 800; font-size: 14px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        .tab-btn.active-match { background: #f59e0b; color: white; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); }
         .tab-btn.active-prop { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
         .tab-btn.active-client { background: #10b981; color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
         
@@ -115,15 +116,23 @@
         </div>
     </div>
     
-    <h3 id="mainTitle" style="margin: 0 0 16px 0; font-size: 22px; font-weight: 800; color: #3b82f6; transition: color 0.3s;">🏢 매물장 <span style="font-size:14px; font-weight:600; color:#94a3b8; margin-left:6px;">Property Ledger</span></h3>
+    <h3 id="mainTitle" style="margin: 0 0 16px 0; font-size: 22px; font-weight: 800; color: #f59e0b; transition: color 0.3s;">🤝 매칭 현황 <span style="font-size:14px; font-weight:600; color:#94a3b8; margin-left:6px;">Matches</span></h3>
 
     <div style="display: flex; gap: 4px; margin-bottom: 24px; background: #f1f5f9; padding: 6px; border-radius: 16px; border: 1px solid #e2e8f0;">
-        <button class="tab-btn active-prop" id="tabProperties" onclick="switchTab('properties')">🏢 매물장</button>
-        <button class="tab-btn" id="tabClients" onclick="switchTab('clients')">🧑‍💼 손님 장부</button>
+        <button class="tab-btn active-match" id="tabMatches" onclick="switchTab('matches')">🤝 매칭현황</button>
+        <button class="tab-btn" id="tabProperties" onclick="switchTab('properties')">🏢 매물장</button>
+        <button class="tab-btn" id="tabClients" onclick="switchTab('clients')">🧑‍💼 손님장부</button>
+    </div>
+
+    <!-- 자동 매칭 탭 -->
+    <div id="matchesTab">
+        <div id="matchesList">
+            <div style="text-align:center; padding: 40px 0; color: #94a3b8; font-weight: 700;">로딩 중...</div>
+        </div>
     </div>
 
     <!-- 매물장 탭 -->
-    <div id="propertiesTab">
+    <div id="propertiesTab" style="display: none;">
         <div style="display: flex; gap: 8px; margin-bottom: 16px;">
             <button class="btn-primary" onclick="openPropModal()" style="margin: 0; flex: 1;">+ 새 매물 등록하기</button>
             <button id="excelPropBtn" onclick="downloadPropertiesExcel()" style="display: none; background: #16a34a; color: white; border: none; padding: 0 16px; border-radius: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);">엑셀 ⬇️</button>
@@ -434,14 +443,20 @@
     }
 
     function switchTab(tabName) {
+        document.getElementById('matchesTab').style.display = tabName === 'matches' ? 'block' : 'none';
         document.getElementById('propertiesTab').style.display = tabName === 'properties' ? 'block' : 'none';
         document.getElementById('clientsTab').style.display = tabName === 'clients' ? 'block' : 'none';
+        
+        document.getElementById('tabMatches').className = tabName === 'matches' ? 'tab-btn active-match' : 'tab-btn';
         document.getElementById('tabProperties').className = tabName === 'properties' ? 'tab-btn active-prop' : 'tab-btn';
         document.getElementById('tabClients').className = tabName === 'clients' ? 'tab-btn active-client' : 'tab-btn';
         
         const titleEl = document.getElementById('mainTitle');
         if (titleEl) {
-            if (tabName === 'properties') {
+            if (tabName === 'matches') {
+                titleEl.innerHTML = '🤝 매칭 현황 <span style="font-size:14px; font-weight:600; color:#94a3b8; margin-left:6px;">Matches</span>';
+                titleEl.style.color = '#f59e0b';
+            } else if (tabName === 'properties') {
                 titleEl.innerHTML = '🏢 매물장 <span style="font-size:14px; font-weight:600; color:#94a3b8; margin-left:6px;">Property Ledger</span>';
                 titleEl.style.color = '#3b82f6';
             } else {
@@ -1035,7 +1050,7 @@
         const pRent = parseInt(p.monthly_rent) || 0;
         
         const cMaxBudget = parseInt(c.max_budget) || 9999999;
-        const cMinBudget = parseInt(c.min_budget) || 0; // 최소 예산 추가 (TDD 검증 완료)
+        const cMinBudget = parseInt(c.min_budget) || 0;
         const cMaxMonthly = parseInt(c.max_monthly) || 0;
         const flexRent = cMaxMonthly > 0 ? cMaxMonthly + 10 : 9999999;
         
@@ -1108,21 +1123,14 @@
         
         let html = '';
         filteredData.forEach(p => {
-            const matched = ((p.status || '').trim() === '거래가능') ? clientsData.filter(c => isMatch(p, c)) : [];
-            const viewed = clientsData.filter(c => c.viewed_properties && c.viewed_properties.some(v => v.property_id === p.id));
-            
-            let combinedClients = [...viewed];
-            matched.forEach(mc => {
-                if (!combinedClients.find(c => c.id === mc.id)) combinedClients.push(mc);
-            });
-            
-            html += createPropertyCard(p, false, null, combinedClients);
+            html += createPropertyCard(p, false);
         });
         list.innerHTML = html;
     }
 
     function renderClients() {
         const list = document.getElementById('clientsList');
+        const matchesList = document.getElementById('matchesList');
         
         let filteredData = clientsData;
         if (currentClientFilter !== 'all') {
@@ -1135,10 +1143,13 @@
         
         if (filteredData.length === 0) {
             list.innerHTML = `<div style="text-align:center; padding: 40px 0; color: #94a3b8;">해당 조건의 손님이 없습니다.</div>`;
+            if (matchesList) matchesList.innerHTML = `<div style="text-align:center; padding: 40px 0; color: #94a3b8;">매칭된 결과가 없습니다.</div>`;
             return;
         }
         
-        let html = '';
+        let clientsHtml = '';
+        let matchesHtml = '';
+        
         filteredData.forEach(c_orig => {
             let c = { ...c_orig };
             c.client_phone = formatPhoneNumber(c.client_phone, c.user_id);
@@ -1201,7 +1212,7 @@
             const cardStyle = isClientClosed ? 'style="border-left: 4px solid #94a3b8; opacity: 0.6; position: relative;"' : 'style="border-left: 4px solid #10b981; position: relative;"';
             const strikethroughHtml = isClientClosed ? `<div style="position: absolute; top: 120px; left: 12px; right: 12px; height: 2px; background: #ef4444; z-index: 10; pointer-events: none;"></div>` : '';
 
-            html += `
+            let baseCardHtml = `
             <div class="card" ${cardStyle}>
                 ${strikethroughHtml}
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; position: relative; z-index: 11; gap: 8px; flex-wrap: wrap;">
@@ -1246,16 +1257,30 @@
                 <div style="font-size: 14px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">${occStr}</div>
                 ${reqs.length > 0 ? `<div style="font-size: 13px; font-weight: 600; color: #ef4444; margin-bottom: 8px;">⚠️ 조건: ${reqs.join(' · ')}</div>` : ''}
                 ${c.memo ? `<div style="font-size: 13px; color: #475569; margin-bottom: 12px;">📝 ${c.memo.replace(/\\[SETTLED_DATE\\].*?\\[\\/SETTLED_DATE\\]/g, '').trim()}</div>` : ''}
-                
-                ${matches.length > 0 ? `
-                <button type="button" onclick="showMatchesForClient('${c.id}')" style="width: 100%; margin-top: 12px; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px dashed #3b82f6; background: #eff6ff; color: #2563eb; cursor: pointer; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
-                    🔍 맞춤 매물 찾기 (${matches.length}건 매칭)
-                </button>
-                ` : `<div style="font-size: 12px; color: #94a3b8; margin-top: 12px; text-align: center; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1;">조건에 딱 맞는 매물이 아직 없습니다.</div>`}
-            </div>
             `;
+            
+            // 손님 장부 리스트 (매칭 UI 제외)
+            clientsHtml += baseCardHtml + `</div>`;
+            
+            // 매칭 현황 리스트 (매칭된 경우만)
+            if (c.status === '탐색중' && matches.length > 0) {
+                matchesHtml += baseCardHtml + `
+                    <details open style="margin-top: 12px; background: #f0fdf4; border: 1px solid #16a34a; border-radius: 8px; padding: 12px;">
+                        <summary style="font-weight: 800; color: #15803d; cursor: pointer; outline: none; margin-bottom: 8px;">
+                            ✨ 조건에 맞는 매물 ${matches.length}개 발견!
+                        </summary>
+                        <div>
+                            ${matches.map(p => createPropertyCard(p, true, c)).join('')}
+                        </div>
+                    </details>
+                </div>
+                `;
+            }
         });
-        list.innerHTML = html;
+        list.innerHTML = clientsHtml;
+        if (matchesList) {
+            matchesList.innerHTML = matchesHtml || `<div style="text-align:center; padding: 40px 0; color: #94a3b8; font-weight: 700;">현재 매칭된 조건이 없습니다.</div>`;
+        }
     }
 
     function copyClientToKakao(id, btnElem) {
