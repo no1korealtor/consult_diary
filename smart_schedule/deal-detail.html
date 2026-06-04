@@ -363,12 +363,12 @@
             }
 
             if (data.schedule_type === '모임' || (!data.building_id && !data.property_id)) {
-                let meetTitle = '모임';
+                let meetTitle = '모임(기념일)';
                 if (isPrivateMeeting) meetTitle = '개인 일정';
-                else if (isCanceled) meetTitle = '❌ 취소된 모임';
+                else if (isCanceled) meetTitle = '❌ 취소된 모임(기념일)';
                 else if (isProposal) meetTitle = '💡 수요조사 (제안)';
                 else if (isPendingAdmin) meetTitle = '⏳ 승인 대기중';
-                else meetTitle = '✅ 확정 모임';
+                else meetTitle = '✅ 확정 모임(기념일)';
 
                 document.getElementById('dealTitle').innerText = (data.schedule_date ? data.schedule_date + ' ' : '') + meetTitle;
                 document.getElementById('address').innerText = mLoc || '장소 미정';
@@ -380,7 +380,7 @@
                 if(linkUrl) meetInfoHtml += `<div>🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6; font-weight: bold;">${linkName}</a></div>`;
                 
                 const rawLines = rawMemo.trim().split('\n');
-                const meetName = rawLines[0] || '모임 일정';
+                const meetName = rawLines[0] || '모임(기념일)';
                 const meetDesc = rawLines.slice(1).join('<br>').trim();
                 
                 let titleHtml = `<div style="font-size:18px; font-weight:700; margin-bottom:4px; color:#111827;">${meetName}</div>`;

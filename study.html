@@ -346,6 +346,22 @@
             color: #ff758c;
         }
 
+        /* Welcome & Modal Styles */
+        .header-container { text-align: center; margin-bottom: 20px; }
+        .greeting { font-size: 22px; color: #fff; font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.2); margin-bottom: 5px; font-family: 'Jua', sans-serif; }
+        .date-stats { font-size: 15px; color: rgba(255, 255, 255, 0.9); font-family: 'Nunito', sans-serif; background: rgba(0, 0, 0, 0.1); padding: 4px 12px; border-radius: 12px; display: inline-block; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px); }
+        .name-modal { background: #fff; padding: 30px; border-radius: 24px; text-align: center; width: 80%; max-width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .name-modal h2 { font-family: 'Jua', sans-serif; color: #ff758c; margin-top: 0; }
+        .name-input { width: 100%; padding: 12px; border: 2px solid #ff758c; border-radius: 12px; font-size: 16px; margin: 15px 0; text-align: center; box-sizing: border-box; font-family: 'Nunito', sans-serif; }
+        .name-btn { background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; }
+
+        /* Quiz Styles */
+        .btn-quiz { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #fff; margin-top: 10px;}
+        .quiz-option { display: block; width: 100%; margin: 10px 0; padding: 15px; background: #f8f9fa; border: 2px solid #dfe6e9; border-radius: 16px; font-size: 18px; font-weight: bold; color: #2d3436; cursor: pointer; transition: all 0.2s; text-align: left; }
+        .quiz-option:hover { border-color: #84fab0; background: #eafbf0; transform: translateY(-2px); }
+        .quiz-option:active { transform: scale(0.98); }
+
         @media (max-width: 600px) {
             h1 { font-size: 28px; }
             .card { padding: 24px 16px; border-radius: 28px; }
@@ -363,9 +379,11 @@
 
 <body>
 
-    <h1>
-        🌸 오늘의 단어장 🌸
-    </h1>
+    <div class="header-container">
+        <h1>🌸 오늘의 단어장 🌸</h1>
+        <div class="greeting" id="greeting-text">환영해요! 💖</div>
+        <div class="date-stats" id="date-stats-text"></div>
+    </div>
     
     <div class="stats-bar" id="stats-bar">
         <div class="combo-badge hidden" id="combo-badge">🔥 0 Combo!</div>
@@ -396,23 +414,75 @@
         let subjects = []
         let currentSubjectIndex = 0
 
+        let memorizedWords = []
+        let isQuizMode = false
+        let quizOptions = []
+        let quizTargetWord = null
+        let userNickname = ''
+
         // Reward System State
         let comboCount = 0;
         const dailyGoal = 5;
         let dailyProgress = 0;
 
         function initStats() {
-            const today = new Date().toLocaleDateString();
+            const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
             const savedData = JSON.parse(localStorage.getItem('studyStats')) || {};
-            
-            if (savedData.date !== today) {
+            userNickname = savedData.nickname || '';
+
+            if (savedData.date !== new Date().toLocaleDateString()) {
                 dailyProgress = 0;
                 comboCount = 0;
             } else {
                 dailyProgress = savedData.progress || 0;
                 comboCount = savedData.combo || 0;
             }
+
+            if (!userNickname) {
+                showNameModal();
+            } else {
+                updateHeader(todayStr);
+            }
             updateStatsUI();
+        }
+
+        function showNameModal() {
+            const modalHtml = `
+                <div class="modal-overlay" id="name-modal-overlay">
+                    <div class="name-modal">
+                        <h2>안녕! 닉네임이 뭐야? 😊</h2>
+                        <input type="text" id="nickname-input" class="name-input" placeholder="이름이나 닉네임을 적어줘!">
+                        <button class="name-btn" onclick="saveNickname()">이름 저장하기 💖</button>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('nickname-input').focus();
+        }
+
+        function saveNickname() {
+            const input = document.getElementById('nickname-input').value.trim();
+            if(!input) return;
+            userNickname = input;
+            
+            const today = new Date().toLocaleDateString();
+            localStorage.setItem('studyStats', JSON.stringify({
+                date: today,
+                progress: dailyProgress,
+                combo: comboCount,
+                nickname: userNickname
+            }));
+
+            const overlay = document.getElementById('name-modal-overlay');
+            if (overlay) overlay.remove();
+            
+            const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
+            updateHeader(todayStr);
+        }
+
+        function updateHeader(dateStr) {
+            document.getElementById('greeting-text').innerHTML = `환영해요, ${userNickname}님! 💖 <span style="font-size:14px; cursor:pointer; opacity:0.7" onclick="showNameModal()" title="닉네임 변경">⚙️</span>`;
+            document.getElementById('date-stats-text').innerText = `${dateStr} | 오늘 암기: ${dailyProgress}개`;
         }
 
         function saveStats() {
@@ -420,9 +490,12 @@
             localStorage.setItem('studyStats', JSON.stringify({
                 date: today,
                 progress: dailyProgress,
-                combo: comboCount
+                combo: comboCount,
+                nickname: userNickname
             }));
             updateStatsUI();
+            const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
+            updateHeader(todayStr);
         }
 
         function updateStatsUI() {
@@ -472,6 +545,7 @@
                 return
             }
             words = data.filter(w => w.is_memorized !== true)
+            memorizedWords = data.filter(w => w.is_memorized === true)
 
             if (data.length > 0) {
                 const latestDate = new Date(data[0].created_at);
@@ -508,7 +582,13 @@
             const cardContainer = document.getElementById('card-wrapper')
 
             if (words.length === 0) {
-                cardContainer.innerHTML = '<div class="card empty-state">🎉 모든 단어를 다 외웠어요! 최고야! 💖</div>'
+                cardContainer.innerHTML = `
+                    <div class="card empty-state">
+                        🎉 모든 단어를 다 외웠어요! 최고야! 💖
+                        <br><br>
+                        <button class="btn-quiz" onclick="startQuiz()">🎮 복습 퀴즈 풀기</button>
+                    </div>
+                `;
                 return
             }
 
@@ -545,6 +625,27 @@
                 return;
             }
 
+            if (isQuizMode) {
+                cardContainer.innerHTML = `
+                    <div class="card test-mode">
+                        <div class="test-title">🎮 복습 퀴즈 🎮</div>
+                        <div class="meaning-hint" style="border-color:#f6d365;">${quizTargetWord.meaning || '의미 없음'}</div>
+                        <div style="text-align:center; color:#636e72; margin-bottom: 20px; font-weight: bold;">이 뜻을 가진 단어는 무엇일까요?</div>
+                        
+                        <div class="quiz-options">
+                            ${quizOptions.map(opt => `
+                                <button class="quiz-option" onclick="submitQuiz('${opt.word.replace(/'/g, "\\'")}')">${opt.word}</button>
+                            `).join('')}
+                        </div>
+
+                        <div class="buttons">
+                            <button class="btn-cancel" onclick="cancelQuiz()">취소 닫기</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
             cardContainer.innerHTML = `
         <div class="card">
           ${word.image_url ? `<img src="${word.image_url}" class="word-image" onerror="this.onerror=null; this.src='https://placehold.co/400x200/ffeaa7/ff758c?text=Image+Load+Error';" />` : ''}
@@ -577,6 +678,7 @@
             <button class="btn-meaning" onclick="toggleMeaning()">✨ 뜻 보기</button>
             <button class="btn-test" onclick="toggleTestMode()">📝 암기 완료</button>
             <button class="btn-next" onclick="nextWord()">다음 🚀</button>
+            <button class="btn-quiz" style="width: 100%;" onclick="startQuiz()">🎮 복습 퀴즈 풀기</button>
           </div>
 
         </div>
@@ -625,7 +727,9 @@
                     colors: ['#ffc3a0', '#ffafbd', '#84fab0', '#8fd3f4', '#f6d365']
                 });
                 
+                const memorizedWord = currentWord;
                 words = words.filter(w => w.id !== currentWord.id);
+                memorizedWords.push(memorizedWord);
                 isTestMode = false;
                 setupSubjects();
             } else {
@@ -638,6 +742,47 @@
                 inputEl.value = '';
                 inputEl.focus();
             }
+        }
+
+        function startQuiz() {
+            if (memorizedWords.length < 4) {
+                alert("앗! 퀴즈를 풀려면 최소 4개의 단어를 암기해야 해요! (현재 암기완료: " + memorizedWords.length + "개)");
+                return;
+            }
+            isQuizMode = true;
+            
+            // Pick 1 target from memorizedWords
+            const targetIndex = Math.floor(Math.random() * memorizedWords.length);
+            quizTargetWord = memorizedWords[targetIndex];
+            
+            // Pick 3 distractors
+            let allAvailable = [...words, ...memorizedWords].filter(w => w.id !== quizTargetWord.id);
+            allAvailable.sort(() => 0.5 - Math.random());
+            let distractors = allAvailable.slice(0, 3);
+            
+            quizOptions = [quizTargetWord, ...distractors];
+            quizOptions.sort(() => 0.5 - Math.random());
+            
+            renderCard();
+        }
+
+        function submitQuiz(selectedWord) {
+            if (selectedWord === quizTargetWord.word) {
+                confetti({
+                    particleCount: 100,
+                    spread: 60,
+                    origin: { y: 0.6 }
+                });
+                alert("정답이에요! 🎉 멋져요!");
+                setTimeout(() => startQuiz(), 500);
+            } else {
+                alert(`앗, 틀렸어요! 😥 정답은 '${quizTargetWord.word}' 였어요.`);
+            }
+        }
+
+        function cancelQuiz() {
+            isQuizMode = false;
+            renderCard();
         }
 
         function pickNextWord() {
