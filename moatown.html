@@ -19,33 +19,39 @@
         /* 관리자/직원 전용 툴바 (기본 숨김) */
         #agentToolbar {
             display: none;
-            background: #1e293b;
-            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            padding: 10px 16px;
             position: sticky;
             top: 0;
             z-index: 50;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05);
+            gap: 8px;
         }
 
         .agent-btn {
             background: #3b82f6;
             color: white;
             border: none;
-            padding: 8px 14px;
-            border-radius: 8px;
+            padding: 8px 10px;
+            border-radius: 10px;
             font-weight: 700;
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            gap: 4px;
             transition: 0.2s;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        .agent-btn:hover { background: #2563eb; }
+        .agent-btn:hover { transform: translateY(-1px); }
+        .agent-btn.back { background: #f1f5f9; color: #475569; box-shadow: none; }
         .agent-btn.kakao { background: #FEE500; color: #000000; }
-        .agent-btn.kakao:hover { background: #e5ce00; }
 
         .container {
             max-width: 720px;
@@ -190,15 +196,15 @@
 
     <!-- 직원 전용 툴바 -->
     <div id="agentToolbar">
-        <button class="agent-btn" style="background: transparent; border: 1px solid #475569;" onclick="history.back()">
+        <button class="agent-btn back" onclick="history.back()">
             ← 뒤로
         </button>
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 6px;">
             <button class="agent-btn kakao" onclick="shareKakao()">
-                💬 고객전송
+                💬 카톡전송
             </button>
             <button class="agent-btn" onclick="copyForBlog()">
-                📝 블로그 복사
+                📝 블로그복사
             </button>
         </div>
     </div>
