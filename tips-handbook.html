@@ -306,7 +306,16 @@
         
         <div class="empty-state" id="emptyState">
             <h3>편람에 오신 것을 환영합니다</h3>
-            <p>좌측 목차에서 원하시는 실무 팁을 선택해주세요.</p>
+            <p style="margin-bottom: 30px;">좌측 목차에서 원하시는 실무 팁을 선택해주세요.</p>
+            
+            <div style="width: 100%; max-width: 500px; text-align: left; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                <h4 style="margin: 0 0 16px 0; color: #1e293b; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 20px;">🆕</span> 최근 업데이트 자료
+                </h4>
+                <div id="latestUpdatesList" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="color: #94a3b8; font-size: 13px; text-align: center; padding: 10px;">불러오는 중...</div>
+                </div>
+            </div>
         </div>
 
         <div class="article" id="articleView">
@@ -376,6 +385,46 @@
 
             allTips = data || [];
             renderIndex(allTips);
+            renderLatestUpdates(allTips);
+        }
+
+        function renderLatestUpdates(tips) {
+            const container = document.getElementById('latestUpdatesList');
+            if (!container) return;
+            
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+            
+            const recentTips = tips.filter(tip => {
+                if (!tip.created_at) return false;
+                return new Date(tip.created_at) >= sixMonthsAgo;
+            });
+            
+            if (recentTips.length === 0) {
+                container.innerHTML = '<div style="color: #94a3b8; font-size: 13px; text-align: center; padding: 10px;">최근 6개월 내 업데이트 내역이 없습니다.</div>';
+                return;
+            }
+            
+            const latest = recentTips.slice(0, 5);
+            let html = '';
+            
+            latest.forEach(tip => {
+                const dateStr = tip.created_at ? new Date(tip.created_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }) : '';
+                html += `
+                <div onclick="showArticle(${tip.id})" style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; cursor: pointer; transition: all 0.2s; background: #f8fafc; border: 1px solid #f1f5f9;" onmouseover="this.style.background='#f1f5f9'; this.style.borderColor='#e2e8f0';" onmouseout="this.style.background='#f8fafc'; this.style.borderColor='#f1f5f9';">
+                    <div style="background: #e0e7ff; color: #4338ca; font-size: 11px; font-weight: 800; padding: 4px 8px; border-radius: 6px; white-space: nowrap;">
+                        ${tip.category || '기타'}
+                    </div>
+                    <div style="flex: 1; font-size: 14px; font-weight: 700; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${tip.title}
+                    </div>
+                    <div style="font-size: 12px; color: #94a3b8; font-weight: 600; white-space: nowrap;">
+                        ${dateStr}
+                    </div>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
         function renderIndex(tips) {
