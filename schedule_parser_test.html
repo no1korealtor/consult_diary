@@ -107,6 +107,20 @@
             parsed1.cleanMemo
         );
 
+        const sampleMemo2 = "[DONE:test-uuid:2026-06-05]\n개인 일정 미팅 건";
+        const parsed2 = parseScheduleMemo(sampleMemo2, null, "test-uuid");
+
+        test(
+            "개인 완료 태그 파싱: 완료 상태 인식",
+            true,
+            parsed2.isDone
+        );
+        test(
+            "개인 완료 태그 파싱: 태그 완벽 제거 검증",
+            "개인 일정 미팅 건",
+            parsed2.cleanMemo
+        );
+
     </script>
 </body>
 </html>
