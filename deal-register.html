@@ -320,6 +320,10 @@
     </div>
 
     <input type="text" id="meetingName" placeholder="📌 모임/기념일 이름 (예: 정기모임, 생일 등)" style="display: none; margin-bottom: 12px; font-weight: 800; border-color: #bfdbfe;">
+    <label id="chkRepeatYearlyContainer" style="display: none; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 14px; font-weight: 700; color: #1e293b; cursor: pointer;">
+        <input type="checkbox" id="chkRepeatYearly" style="width: 18px; height: 18px; accent-color: #3b82f6;">
+        매년 반복 (기념일, 생일 등 향후 5년치 자동 생성)
+    </label>
 
     <div id="meetSubTabs" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 6px; margin-bottom: 16px; flex-direction: column; gap: 4px;">
         <div style="display: flex; gap: 4px;">
@@ -799,6 +803,8 @@
                 meetingFields.style.display = 'none';
                 if (meetSubTabs) meetSubTabs.style.display = 'none';
                 if (meetingName) meetingName.style.display = 'none';
+                const chkRep = document.getElementById('chkRepeatYearlyContainer');
+                if (chkRep) chkRep.style.display = 'none';
                 if (contractType.value === '모임') contractType.value = '정산';
                 memo.placeholder = '메모';
             } else {
@@ -815,6 +821,8 @@
                 meetingFields.style.display = 'block';
                 if (meetSubTabs) meetSubTabs.style.display = 'flex';
                 if (meetingName) meetingName.style.display = 'block';
+                const chkRep = document.getElementById('chkRepeatYearlyContainer');
+                if (chkRep) chkRep.style.display = 'flex';
                 memo.placeholder = '추가 메모 (선택사항)';
             }
         }
@@ -952,10 +960,47 @@
                 if (clientId) payload.client_id = clientId;
             }
 
+            let payloads = [payload];
+
+            if (contractType === '임대차계약' && balanceDate) {
+                const bDate = new Date(balanceDate);
+                if (!isNaN(bDate.getTime())) {
+                    const noticeDate = new Date(bDate);
+                    noticeDate.setMonth(noticeDate.getMonth() + 18);
+                    
+                    const nY = noticeDate.getFullYear();
+                    const nM = String(noticeDate.getMonth() + 1).padStart(2, '0');
+                    const nD = String(noticeDate.getDate()).padStart(2, '0');
+                    
+                    const noticePayload = { ...payload };
+                    noticePayload.schedule_date = `${nY}-${nM}-${nD}`;
+                    noticePayload.memo = '[만기 6개월 전 알림]\n' + finalMemo;
+                    payloads.push(noticePayload);
+                }
+            }
+
+            const chkRepeat = document.getElementById('chkRepeatYearly');
+            if (contractType === '모임' && chkRepeat && chkRepeat.checked && balanceDate) {
+                const bDate = new Date(balanceDate);
+                if (!isNaN(bDate.getTime())) {
+                    for (let i = 1; i <= 5; i++) {
+                        const futureDate = new Date(bDate);
+                        futureDate.setFullYear(futureDate.getFullYear() + i);
+                        const nY = futureDate.getFullYear();
+                        const nM = String(futureDate.getMonth() + 1).padStart(2, '0');
+                        const nD = String(futureDate.getDate()).padStart(2, '0');
+                        
+                        const repeatPayload = { ...payload };
+                        repeatPayload.schedule_date = `${nY}-${nM}-${nD}`;
+                        payloads.push(repeatPayload);
+                    }
+                }
+            }
+
             const { data: savedData, error } =
                 await supabaseClient
                     .from('schedules')
-                    .insert([payload])
+                    .insert(payloads)
                     .select();
 
             if (error) {
@@ -967,11 +1012,11 @@
             }
 
             if (savedData && savedData.length > 0) {
-                const newscheduleId = savedData[0].id;
                 const mAtt = document.getElementById('meetingAttendance') ? document.getElementById('meetingAttendance').value : null;
-                // If it is a shared meeting (PROPOSAL or CONFIRMED) and user has selected attendance, save the vote
                 if (contractType === '모임' && typeof currentMeetType !== 'undefined' && currentMeetType !== 'PRIVATE' && mAtt) {
-                    await window.setAttendance(newscheduleId, mAtt);
+                    for (const item of savedData) {
+                        await window.setAttendance(item.id, mAtt);
+                    }
                 }
             }
 
