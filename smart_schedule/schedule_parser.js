@@ -46,12 +46,13 @@ function parseScheduleMemo(rawMemo, dbScheduleTime = null, currentUserId = null)
     
     if (currentUserId) {
         const personalDoneTag = `[DONE:${currentUserId}]`;
-        if (rawMemo.includes(personalDoneTag)) {
+        const personalDoneDateTag = `[DONE:${currentUserId}:`;
+        if (rawMemo.includes(personalDoneTag) || rawMemo.includes(personalDoneDateTag)) {
             isDone = true;
         }
     }
     // Always strip all personal done tags from the clean memo so they don't show up in the UI
-    rawMemo = rawMemo.replace(/\[DONE:[a-zA-Z0-9-]+\]/g, "");
+    rawMemo = rawMemo.replace(/\[DONE:[^\]]+\]/g, "");
 
     let settledDate = null;
     if (rawMemo.includes("[SETTLED_DATE]")) {

@@ -1126,8 +1126,8 @@
                 if (!isNoticeA && isNoticeB) return 1;
 
                 const myId = window.currentUser ? window.currentUser.id : '';
-                const isDoneA = (a.memo || '').includes('[DONE]') || (myId && (a.memo || '').includes(`[DONE:${myId}]`));
-                const isDoneB = (b.memo || '').includes('[DONE]') || (myId && (b.memo || '').includes(`[DONE:${myId}]`));
+                const isDoneA = (a.memo || '').includes('[DONE]') || (myId && (a.memo || '').includes(`[DONE:${myId}`));
+                const isDoneB = (b.memo || '').includes('[DONE]') || (myId && (b.memo || '').includes(`[DONE:${myId}`));
                 
                 if (isDoneA && !isDoneB) return 1;
                 if (!isDoneA && isDoneB) return -1;
@@ -1658,9 +1658,12 @@
                     let isFarFuture = false;
 
                     const myId = window.currentUser ? window.currentUser.id : '';
-                    const isDone = (schedule.memo || '').includes('[DONE]') || (myId && (schedule.memo || '').includes(`[DONE:${myId}]`));
+                    const isDone = (schedule.memo || '').includes('[DONE]') || (myId && (schedule.memo || '').includes(`[DONE:${myId}`));
 
-                    if (isNotice(schedule)) {
+                    if (isDone) {
+                        dealMonth = '✅ 완료된 일정';
+                        isCompleted = true;
+                    } else if (isNotice(schedule)) {
                         dealMonth = '전체 공지';
                         if (schedule.schedule_date) {
                             const d = new Date(schedule.schedule_date);
@@ -1669,9 +1672,6 @@
                                 dealDate = `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
                             }
                         }
-                    } else if (isDone) {
-                        dealMonth = '✅ 완료된 일정';
-                        isCompleted = true;
                     } else if (schedule.schedule_date) {
                         const d = new Date(schedule.schedule_date);
                         if (!isNaN(d.getTime())) {
