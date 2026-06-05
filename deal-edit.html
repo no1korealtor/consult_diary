@@ -87,6 +87,11 @@
             </div>
         </div>
         
+        <label id="chkRepeatYearlyContainer" style="display: none; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 14px; font-weight: 700; color: #1e293b; cursor: pointer;">
+            <input type="checkbox" id="chkRepeatYearly" style="width: 18px; height: 18px; accent-color: #3b82f6;">
+            매년 반복 (저장 시 향후 5년치 자동 추가 생성)
+        </label>
+
         <div id="meetingEditFields" style="display: none; background: #eff6ff; padding: 16px; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 12px;">
             <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">모임 장소 (주소 검색)</label>
             <div style="display: flex; gap: 8px; margin-bottom: 8px;">
@@ -188,6 +193,7 @@
                 document.getElementById('balanceDateLabel').style.display = 'block';
                 document.querySelector('.notice').innerText = "💡 장소, 링크 및 메모를 수정할 수 있습니다.";
                 document.getElementById('meetingEditFields').style.display = 'block';
+                document.getElementById('chkRepeatYearlyContainer').style.display = 'flex';
                 
                 let mLoc = data.location || null;
                 if (data.location_detail) mLoc += ' ' + data.location_detail;
@@ -319,6 +325,30 @@
             if (error) {
                 status.innerText = '에러: ' + error.message;
                 return;
+            }
+
+            const chkRepeat = document.getElementById('chkRepeatYearly');
+            if (chkRepeat && chkRepeat.checked && balanceDate && document.getElementById('meetingEditFields').style.display === 'block') {
+                const bDate = new Date(balanceDate);
+                if (!isNaN(bDate.getTime())) {
+                    let repeatPayloads = [];
+                    for (let i = 1; i <= 5; i++) {
+                        const futureDate = new Date(bDate);
+                        futureDate.setFullYear(futureDate.getFullYear() + i);
+                        const nY = futureDate.getFullYear();
+                        const nM = String(futureDate.getMonth() + 1).padStart(2, '0');
+                        const nD = String(futureDate.getDate()).padStart(2, '0');
+                        
+                        const repeatPayload = { ...payload };
+                        repeatPayload.schedule_date = `${nY}-${nM}-${nD}`;
+                        repeatPayload.user_id = window.currentUser.id;
+                        repeatPayload.office_id = window.currentUser.office_id;
+                        repeatPayloads.push(repeatPayload);
+                    }
+                    if (repeatPayloads.length > 0) {
+                        await supabaseClient.from('schedules').insert(repeatPayloads);
+                    }
+                }
             }
 
             if (contractType === '계약해제') {
