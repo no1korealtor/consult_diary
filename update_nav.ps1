@@ -1,6 +1,7 @@
-$files = @("tips-handbook.html", "deal-register.html", "contacts.html", "admin-tips.html", "profile-edit.html", "market.html")
+$files = @("tips-handbook.html", "deal-register.html", "contacts.html", "admin-tips.html", "profile-edit.html", "market.html", "manual.html", "scrap.html")
 
 foreach ($file in $files) {
+    if (-Not (Test-Path $file)) { continue }
     $content = Get-Content -Path $file -Raw -Encoding UTF8
     
     $isDarkMode = $content -match '<nav class="bottom-nav dark-mode">'
@@ -21,8 +22,8 @@ foreach ($file in $files) {
         <span>연락처</span>
     </a>
     <a href="tips-handbook.html" class="nav-item">
-        <span class="nav-icon">📚</span>
-        <span>편람</span>
+        <span class="nav-icon">🗂️</span>
+        <span>자료실</span>
     </a>
     <a href="profile-edit.html" class="nav-item">
         <span class="nav-icon">👤</span>
@@ -34,8 +35,9 @@ foreach ($file in $files) {
     # Active 상태 추가
     if ($file -eq "deal-register.html") { $navTemplate = $navTemplate -replace '"deal-register.html" class="nav-item"', '"deal-register.html" class="nav-item active"' }
     if ($file -eq "contacts.html") { $navTemplate = $navTemplate -replace '"contacts.html" class="nav-item"', '"contacts.html" class="nav-item active"' }
-    if ($file -eq "tips-handbook.html") { $navTemplate = $navTemplate -replace '"tips-handbook.html" class="nav-item"', '"tips-handbook.html" class="nav-item active"' }
+    if ($file -eq "tips-handbook.html" -or $file -eq "manual.html" -or $file -eq "scrap.html") { $navTemplate = $navTemplate -replace '"tips-handbook.html" class="nav-item"', '"tips-handbook.html" class="nav-item active"' }
     if ($file -eq "profile-edit.html") { $navTemplate = $navTemplate -replace '"profile-edit.html" class="nav-item"', '"profile-edit.html" class="nav-item active"' }
+    if ($file -eq "market.html") { $navTemplate = $navTemplate -replace '"market.html" class="nav-item"', '"market.html" class="nav-item active"' }
     
     # 교체 로직
     $content = $content -replace '(?s)<nav class="bottom-nav[^>]*>.*?</nav>', $navTemplate

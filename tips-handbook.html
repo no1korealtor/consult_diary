@@ -23,6 +23,48 @@
             padding: 0; 
             background-color: #fff !important;
             color: #0f172a !important;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: #ffffff;
+            padding: 16px 20px 0 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .header-top h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .tabs {
+            display: flex;
+            gap: 16px;
+        }
+        .tab-btn {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            font-weight: 700;
+            font-size: 15px;
+            text-decoration: none;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            transition: 0.2s;
+        }
+        .tab-btn.active {
+            color: #3b82f6;
+            border-bottom: 3px solid #3b82f6;
         }
         
         .handbook-wrapper {
@@ -77,6 +119,7 @@
             border-radius: 8px;
             font-size: 14px;
             background: white;
+            color: #0f172a;
             font-family: inherit;
         }
         .search-box:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.1); }
@@ -232,12 +275,22 @@
     </style>
 </head>
 <body>
+    <div class="header">
+        <div class="header-top">
+            <h1>🗂️ 자료 및 편람</h1>
+        </div>
+        <div class="tabs">
+            <a href="manual.html" class="tab-btn">앱 매뉴얼</a>
+            <a href="tips-handbook.html" class="tab-btn active">실무 스크랩/편람</a>
+        </div>
+    </div>
     <div class="handbook-wrapper">
     <!-- 좌측 사이드바 (목차) -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <button class="back-btn" onclick="history.back()">←</button>
-            <h2 style="margin: 0; font-size: 18px; font-weight: 800; color: #1e293b;">📚 실무 편람</h2>
+            <h2 style="margin: 0; font-size: 18px; font-weight: 800; color: #1e293b; flex: 1;">📚 실무 편람</h2>
+            <button id="addTipBtn" style="display:none; background: #3b82f6; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px;" onclick="openAddTipModal()">+ 추가</button>
         </div>
         <div class="search-container">
             <input type="text" id="searchInput" class="search-box" placeholder="제목/내용 검색..." onkeyup="filterIndex()">
@@ -292,14 +345,15 @@
         <span>연락처</span>
     </a>
     <a href="tips-handbook.html" class="nav-item active">
-        <span class="nav-icon">📚</span>
-        <span>편람</span>
+        <span class="nav-icon">🗂️</span>
+        <span>자료실</span>
     </a>
     <a href="profile-edit.html" class="nav-item">
         <span class="nav-icon">👤</span>
         <span>내정보</span>
     </a>
 </nav>
+
 
     <script src="auth-helper.js"></script>
     <script src="ui-helper.js"></script>
@@ -399,6 +453,18 @@
             let metaHtml = '';
             if (tip.effective_date) metaHtml += `<span class="meta-tag">📅 ${tip.effective_date}</span>`;
             if (tip.warnings) metaHtml += `<span class="meta-tag meta-warning">⚠️ ${tip.warnings}</span>`;
+            
+            // 가입 승인된 회원 (역할이 있는 경우) 블로그 복사 버튼 표시
+            if (window.currentUser && window.currentUser.role) {
+                metaHtml += `<button class="meta-tag" onclick="copyForKakao()" style="border:1px solid #fde047; background: #fef08a; color: #854d0e; cursor:pointer; font-weight:bold;">💬 카톡 복사</button>`;
+                metaHtml += `<button class="meta-tag" onclick="copyForBlog()" style="border:1px solid #10b981; background: #ecfdf5; color: #059669; cursor:pointer; font-weight:bold;">📋 블로그 복사</button>`;
+            }
+
+            if (window.currentUser && window.currentUser.role === 'admin') {
+                metaHtml += `<button class="meta-tag" onclick="openEditTipModal(${tip.id})" style="border:1px solid #93c5fd; background: #eff6ff; color: #2563eb; cursor:pointer;">✏️ 수정</button>`;
+                metaHtml += `<button class="meta-tag meta-warning" onclick="deleteArticle(${tip.id})" style="border:1px solid #fca5a5; cursor:pointer;">🗑️ 삭제</button>`;
+            }
+
             document.getElementById('vMeta').innerHTML = metaHtml;
 
             // 요약
@@ -427,6 +493,118 @@
             document.getElementById('mainContent').scrollTop = 0;
         }
 
+        async function deleteArticle(id) {
+            if (!confirm('정말로 이 자료를 삭제하시겠습니까?')) return;
+            
+            const { error } = await window.supabaseClient
+                .from('practical_tips')
+                .update({ is_active: false })
+                .eq('id', id);
+                
+            if (error) {
+                alert('삭제 중 오류가 발생했습니다.');
+                return;
+            }
+            
+            alert('삭제되었습니다.');
+            document.getElementById('articleView').classList.remove('active');
+            document.getElementById('emptyState').style.display = 'flex';
+            loadHandbook();
+        }
+
+        function copyForKakao() {
+            const title = document.getElementById('vTitle').innerText;
+            const summaryBox = document.getElementById('vSummaryBox');
+            const hasSummary = summaryBox && summaryBox.style.display !== 'none';
+            
+            let summaryText = '';
+            if (hasSummary) {
+                const listItems = document.querySelectorAll('#vSummary li');
+                const itemsArr = Array.from(listItems).map(li => {
+                    // li 내부의 텍스트 중 체크기호 등은 빼고 내용만 추출 (span의 두번째 자식)
+                    const spans = li.querySelectorAll('span');
+                    if (spans.length >= 2) return '- ' + spans[1].innerText;
+                    return '- ' + li.innerText;
+                });
+                summaryText = `■ 핵심 요약\n${itemsArr.join('\n')}\n\n`;
+            }
+            
+            // 본문은 innerText로 가져와서 불필요한 태그를 제외하고 줄바꿈 유지
+            let bodyText = document.getElementById('vBody').innerText;
+            
+            // 현재 앱의 접속 주소(루트) 가져오기
+            const baseUrl = window.location.href.split('tips-handbook.html')[0];
+            const appUrl = baseUrl + 'login.html';
+            
+            const kakaoText = `[신대림 지식편람]\n${title}\n\n${summaryText}${bodyText}\n\n-- 신대림공인중개사사무소 제공 --\n🔗 스마트 중개수첩 바로가기:\n${appUrl}`;
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = kakaoText;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            textarea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert('✅ 카카오톡 전송용으로 깔끔하게 복사되었습니다!\n\n카톡 대화창에서 [붙여넣기]를 하시면 텍스트 위주로 깔끔하게 전송됩니다.');
+            } catch (err) {
+                alert('복사에 실패했습니다.');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function copyForBlog() {
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            
+            const title = document.getElementById('vTitle').innerText;
+            const summaryBox = document.getElementById('vSummaryBox');
+            const hasSummary = summaryBox && summaryBox.style.display !== 'none';
+            const summaryHtml = hasSummary ? document.getElementById('vSummary').innerHTML : '';
+            
+            // 본문에 포함된 줄바꿈 문자(\n)를 HTML 줄바꿈(<br>)으로 변환하여 블로그에서 덩어리지지 않게 함
+            let bodyHtml = document.getElementById('vBody').innerHTML;
+            bodyHtml = bodyHtml.replace(/\n/g, '<br>');
+
+            tempDiv.innerHTML = `
+                <div style="font-family: 'Malgun Gothic', sans-serif; line-height: 1.8; color: #333333;">
+                    <h2 style="color: #000000; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-bottom: 20px;">${title}</h2>
+                    ${hasSummary ? `<div style="background-color: #f8fafc; padding: 20px; border-left: 5px solid #3b82f6; margin-bottom: 30px;">
+                        <h3 style="margin-top: 0; color: #1e293b;">📝 핵심 요약</h3>
+                        <ul style="margin-bottom: 0;">${summaryHtml}</ul>
+                    </div>` : ''}
+                    <div style="margin-bottom: 40px; font-size: 16px;">
+                        ${bodyHtml}
+                    </div>
+                    <hr style="border: 0; border-top: 1px solid #e5e7eb; margin: 40px 0 20px 0;">
+                    <p style="color: #9ca3af; font-size: 14px; text-align: center;">
+                        해당 자료는 <strong>신대림공인중개사사무소 지식편람</strong>에서 제공되었습니다.<br>
+                        문의: 010-9128-0586
+                    </p>
+                </div>
+            `;
+            
+            document.body.appendChild(tempDiv);
+            
+            const range = document.createRange();
+            range.selectNodeContents(tempDiv);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+            
+            try {
+                document.execCommand('copy');
+                alert('✅ 블로그용 서식이 복사되었습니다!\n\n네이버 블로그 글쓰기 창에서 [붙여넣기(Ctrl+V)] 하시면 굵은 글씨, 색상 등 서식이 그대로 들어갑니다.');
+            } catch (err) {
+                alert('복사에 실패했습니다. 브라우저에서 복사 권한을 허용해주세요.');
+            }
+            
+            sel.removeAllRanges();
+            document.body.removeChild(tempDiv);
+        }
+
         function showSidebar() {
             document.getElementById('sidebar').classList.remove('hidden');
         }
@@ -453,15 +631,182 @@
             }
         }
 
+        // --- Admin Edit Modal Logic ---
+        let currentEditId = null;
+
+        function openAddTipModal() {
+            currentEditId = null;
+            document.getElementById('modalTitle').innerText = '새 자료 추가';
+            
+            populateCategorySelect('기타');
+            
+            document.getElementById('editTitle').value = '';
+            document.getElementById('editDate').value = '';
+            document.getElementById('editSummary').value = '';
+            document.getElementById('editWarnings').value = '';
+            document.getElementById('editFullText').value = '';
+            
+            document.getElementById('adminTipModal').style.display = 'flex';
+        }
+
+        function openEditTipModal(id) {
+            const tip = allTips.find(t => t.id === id);
+            if(!tip) return;
+            
+            currentEditId = id;
+            document.getElementById('modalTitle').innerText = '자료 수정';
+            
+            populateCategorySelect(tip.category || '기타');
+            
+            document.getElementById('editTitle').value = tip.title || '';
+            document.getElementById('editDate').value = tip.effective_date || '';
+            
+            const summaries = Array.isArray(tip.summary) ? tip.summary : (typeof tip.summary === "string" ? JSON.parse(tip.summary || "[]") : []);
+            document.getElementById('editSummary').value = summaries.join('\n');
+            
+            document.getElementById('editWarnings').value = tip.warnings || '';
+            document.getElementById('editFullText').value = tip.full_text || '';
+            
+            document.getElementById('adminTipModal').style.display = 'flex';
+        }
+
+        function populateCategorySelect(selectedVal) {
+            const uniqueCats = new Set(["공통", "세법/정책", "중개실무", "임대차", "부동산경제상식", "기타"]);
+            allTips.forEach(t => { if(t.category) uniqueCats.add(t.category); });
+            
+            const selectEl = document.getElementById('editCategorySelect');
+            const inputEl = document.getElementById('editCategoryInput');
+            
+            if (selectEl) {
+                selectEl.innerHTML = '';
+                uniqueCats.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat;
+                    opt.innerText = cat;
+                    if (cat === selectedVal) opt.selected = true;
+                    selectEl.appendChild(opt);
+                });
+                
+                const newOpt = document.createElement('option');
+                newOpt.value = '___NEW___';
+                newOpt.innerText = '➕ 새 키워드 직접 입력...';
+                selectEl.appendChild(newOpt);
+                
+                // 만약 현재 카테고리가 목록에 없다면(거의 그럴 일 없지만)
+                if (!uniqueCats.has(selectedVal)) {
+                    newOpt.selected = true;
+                    inputEl.style.display = 'block';
+                    inputEl.value = selectedVal;
+                } else {
+                    inputEl.style.display = 'none';
+                    inputEl.value = '';
+                }
+            }
+        }
+
+        function closeTipModal() {
+            document.getElementById('adminTipModal').style.display = 'none';
+        }
+
+        async function saveTipModal() {
+            let category = document.getElementById('editCategorySelect').value;
+            if (category === '___NEW___') {
+                category = document.getElementById('editCategoryInput').value.trim();
+                if (!category) {
+                    alert('새로운 키워드를 입력해주세요.');
+                    return;
+                }
+            }
+            
+            const title = document.getElementById('editTitle').value;
+            const effectiveDate = document.getElementById('editDate').value;
+            const summaryRaw = document.getElementById('editSummary').value;
+            const warnings = document.getElementById('editWarnings').value;
+            const fullText = document.getElementById('editFullText').value;
+
+            if (!title) {
+                alert('제목을 입력해주세요.');
+                return;
+            }
+
+            const summaryArray = summaryRaw.split('\n').filter(s => s.trim() !== '');
+
+            const payload = {
+                category, title, summary: summaryArray, effective_date: effectiveDate, warnings, full_text: fullText
+            };
+
+            if (currentEditId) {
+                const { error } = await window.supabaseClient.from('practical_tips').update(payload).eq('id', currentEditId);
+                if (error) { alert('수정 실패: ' + error.message); return; }
+                alert('수정되었습니다.');
+                
+                // Update local state if active
+                if (document.getElementById('articleView').classList.contains('active')) {
+                    const activeTitle = document.getElementById('vTitle').innerText;
+                    // Will be reloaded
+                }
+            } else {
+                payload.is_active = true;
+                const { error } = await window.supabaseClient.from('practical_tips').insert([payload]);
+                if (error) { alert('추가 실패: ' + error.message); return; }
+                alert('추가되었습니다.');
+            }
+
+            closeTipModal();
+            loadHandbook();
+        }
+
         window.addEventListener('resize', () => {
             if (window.innerWidth > 768) {
                 document.getElementById('sidebar').classList.remove('hidden');
             }
         });
 
-        window.addEventListener('load', loadHandbook);
+        window.addEventListener('load', async () => {
+            await loadHandbook();
+            if (window.currentUser && window.currentUser.role === 'admin') {
+                document.getElementById('addTipBtn').style.display = 'block';
+            }
+        });
     </script>
+    
+    <!-- Admin Modal -->
+    <div id="adminTipModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center;">
+        <div style="background: white; width: 90%; max-width: 500px; max-height: 90vh; border-radius: 16px; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+            <h3 id="modalTitle" style="margin: 0 0 8px 0; color: #1e293b;">자료 추가/수정</h3>
+            
+            <label style="font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 2px;">키워드(카테고리)</label>
+            <div style="display: flex; gap: 8px;">
+                <select id="editCategorySelect" onchange="if(this.value === '___NEW___') { document.getElementById('editCategoryInput').style.display = 'block'; document.getElementById('editCategoryInput').focus(); } else { document.getElementById('editCategoryInput').style.display = 'none'; }" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #0f172a; width: 100%; box-sizing: border-box;">
+                </select>
+            </div>
+            <input type="text" id="editCategoryInput" placeholder="새로운 키워드를 입력하세요" style="display: none; margin-top: 8px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #0f172a; width: 100%; box-sizing: border-box;">
+
+            <label style="font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 2px; margin-top: 8px;">제목</label>
+            <input type="text" id="editTitle" placeholder="제목" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #0f172a; width: 100%; box-sizing: border-box;">
+
+            <label style="font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 2px; margin-top: 8px;">적용일 (선택)</label>
+            <input type="text" id="editDate" placeholder="예: 2026.06.01 시행" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #0f172a; width: 100%; box-sizing: border-box;">
+
+            <label style="font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 2px; margin-top: 8px;">핵심 요약 (줄바꿈 구분)</label>
+            <textarea id="editSummary" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; height: 80px; resize: vertical; background: white; color: #0f172a; width: 100%; box-sizing: border-box;"></textarea>
+
+            <label style="font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 2px; margin-top: 8px;">주의사항 (선택)</label>
+            <input type="text" id="editWarnings" placeholder="예: 소급 적용 주의" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #0f172a; width: 100%; box-sizing: border-box;">
+
+            <label style="font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 2px; margin-top: 8px;">본문 내용 (HTML 가능)</label>
+            <textarea id="editFullText" style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; height: 150px; resize: vertical; background: white; color: #0f172a; width: 100%; box-sizing: border-box;"></textarea>
+            
+            <div style="display: flex; gap: 8px; margin-top: 16px;">
+                <button onclick="closeTipModal()" style="flex: 1; padding: 12px; background: #f1f5f9; color: #475569; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">취소</button>
+                <button onclick="saveTipModal()" style="flex: 2; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">저장하기</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
+
+
+
 
 

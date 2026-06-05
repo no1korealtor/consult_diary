@@ -12,8 +12,8 @@
         <span>연락처</span>
     </a>
     <a href="tips-handbook.html" class="nav-item">
-        <span class="nav-icon">📚</span>
-        <span>편람</span>
+        <span class="nav-icon">🗂️</span>
+        <span>자료실</span>
     </a>
     <a href="profile-edit.html" class="nav-item">
         <span class="nav-icon">👤</span>
