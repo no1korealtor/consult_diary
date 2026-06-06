@@ -593,7 +593,7 @@
         window.toggleScheduleDone = async function(scheduleId, currentIsDone) {
             const { data: schedule, error: fetchErr } = await supabaseClient
                 .from('schedules')
-                .select('memo')
+                .select('memo, schedule_type, building_id, room_id, client_id, property_id')
                 .eq('id', scheduleId)
                 .single();
             if (fetchErr || !schedule) return;
@@ -609,6 +609,110 @@
             } else {
                 const todayStr = new Date().toLocaleDateString('en-CA');
                 newMemo = `[DONE:${myId}:${todayStr}]\n` + newMemo;
+
+                if (schedule.schedule_type === '임대차계약' || schedule.schedule_type === '매매계약') {
+                    // 기본 할 일 '광고삭제' 추가
+                    const { data: existingTasks } = await supabaseClient
+                        .from('schedule_tasks')
+                        .select('id')
+                        .eq('schedule_id', scheduleId)
+                        .eq('task_content', '광고삭제');
+                    
+                    if (!existingTasks || existingTasks.length === 0) {
+                        await supabaseClient.from('schedule_tasks').insert([{
+                            schedule_id: scheduleId,
+                            task_content: '광고삭제',
+                            is_completed: false
+                        }]);
+                    }
+
+                    const createBalance = confirm("🎉 계약 완료를 축하합니다!\n이어서 '잔금' 일정을 자동으로 생성하시겠습니까?");
+                    if (createBalance) {
+                        const defaultDate = new Date();
+                        defaultDate.setDate(defaultDate.getDate() + 30);
+                        const defaultDateStr = defaultDate.toLocaleDateString('en-CA');
+                        
+                        const balanceDate = prompt("잔금일을 입력해주세요 (YYYY-MM-DD 형식):", defaultDateStr);
+                        if (balanceDate) {
+                            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                            if (dateRegex.test(balanceDate)) {
+                                const payload = {
+                                    schedule_type: '잔금',
+                                    schedule_date: balanceDate,
+                                    building_id: schedule.building_id,
+                                    room_id: schedule.room_id,
+                                    client_id: schedule.client_id,
+                                    property_id: schedule.property_id,
+                                    user_id: window.currentUser.id,
+                                    office_id: window.currentUser.office_id,
+                                    memo: '[자동생성] 계약 건에 이어진 잔금 일정입니다.'
+                                };
+                                const payloadsToInsert = [payload];
+
+                                if (schedule.schedule_type === '매매계약') {
+                                    const reportDate = new Date();
+                                    reportDate.setDate(reportDate.getDate() + 30);
+                                    let reportDateStr = reportDate.toLocaleDateString('en-CA');
+                                    
+                                    if (balanceDate < reportDateStr) {
+                                        reportDateStr = balanceDate;
+                                    }
+                                    
+                                    const createReport = confirm("매매계약은 30일 이내(또는 잔금일 이전)에 부동산거래신고를 해야 합니다.\n신고 기한을 일정으로 추가하시겠습니까?\n(확인 시 기한: " + reportDateStr + ")");
+                                    if (createReport) {
+                                        payloadsToInsert.push({
+                                            schedule_type: '후속업무',
+                                            schedule_date: reportDateStr,
+                                            building_id: schedule.building_id,
+                                            room_id: schedule.room_id,
+                                            client_id: schedule.client_id,
+                                            property_id: schedule.property_id,
+                                            user_id: window.currentUser.id,
+                                            office_id: window.currentUser.office_id,
+                                            memo: '[자동생성] 부동산거래신고 기한'
+                                        });
+                                    }
+                                }
+
+                                if (schedule.schedule_type === '임대차계약') {
+                                    const bDateObj = new Date(balanceDate);
+                                    if (!isNaN(bDateObj.getTime())) {
+                                        const noticeDate = new Date(bDateObj);
+                                        noticeDate.setMonth(noticeDate.getMonth() + 18);
+                                        
+                                        const nY = noticeDate.getFullYear();
+                                        const nM = String(noticeDate.getMonth() + 1).padStart(2, '0');
+                                        const nD = String(noticeDate.getDate()).padStart(2, '0');
+                                        
+                                        let cleanMemo = (schedule.memo || '').replace(/\[DONE:[^\]]+\]/g, '').replace(/\[DONE\]/g, '').trim();
+                                        payloadsToInsert.push({
+                                            schedule_type: '임대차계약',
+                                            schedule_date: `${nY}-${nM}-${nD}`,
+                                            building_id: schedule.building_id,
+                                            room_id: schedule.room_id,
+                                            client_id: schedule.client_id,
+                                            property_id: schedule.property_id,
+                                            user_id: window.currentUser.id,
+                                            office_id: window.currentUser.office_id,
+                                            memo: '[만기 6개월 전 알림]\n' + cleanMemo
+                                        });
+                                    }
+                                }
+
+                                const { error: insertErr } = await supabaseClient
+                                    .from('schedules')
+                                    .insert(payloadsToInsert);
+                                if (insertErr) {
+                                    alert("일정 자동 생성 중 오류가 발생했습니다: " + insertErr.message);
+                                } else {
+                                    if (window.showToast) window.showToast('✅ 지정한 일정이 추가되었습니다!', 'success');
+                                }
+                            } else {
+                                alert("날짜 형식이 올바르지 않아 일정이 생성되지 않았습니다.");
+                            }
+                        }
+                    }
+                }
             }
 
             await supabaseClient.from('schedules').update({ memo: newMemo }).eq('id', scheduleId);
@@ -875,22 +979,6 @@
 
             let payloads = [payload];
 
-            if (contractType === '임대차계약' && balanceDate) {
-                const bDate = new Date(balanceDate);
-                if (!isNaN(bDate.getTime())) {
-                    const noticeDate = new Date(bDate);
-                    noticeDate.setMonth(noticeDate.getMonth() + 18);
-                    
-                    const nY = noticeDate.getFullYear();
-                    const nM = String(noticeDate.getMonth() + 1).padStart(2, '0');
-                    const nD = String(noticeDate.getDate()).padStart(2, '0');
-                    
-                    const noticePayload = { ...payload };
-                    noticePayload.schedule_date = `${nY}-${nM}-${nD}`;
-                    noticePayload.memo = '[만기 6개월 전 알림]\n' + finalMemo;
-                    payloads.push(noticePayload);
-                }
-            }
 
             const chkRepeat = document.getElementById('chkRepeatYearly');
             if (contractType === '모임' && chkRepeat && chkRepeat.checked && balanceDate) {

@@ -682,6 +682,31 @@
                                     }
                                 }
 
+                                if (schedule.schedule_type === '임대차계약') {
+                                    const bDateObj = new Date(balanceDate);
+                                    if (!isNaN(bDateObj.getTime())) {
+                                        const noticeDate = new Date(bDateObj);
+                                        noticeDate.setMonth(noticeDate.getMonth() + 18);
+                                        
+                                        const nY = noticeDate.getFullYear();
+                                        const nM = String(noticeDate.getMonth() + 1).padStart(2, '0');
+                                        const nD = String(noticeDate.getDate()).padStart(2, '0');
+                                        
+                                        let cleanMemo = (schedule.memo || '').replace(/\[DONE:[^\]]+\]/g, '').replace(/\[DONE\]/g, '').trim();
+                                        payloadsToInsert.push({
+                                            schedule_type: '임대차계약',
+                                            schedule_date: `${nY}-${nM}-${nD}`,
+                                            building_id: schedule.building_id,
+                                            room_id: schedule.room_id,
+                                            client_id: schedule.client_id,
+                                            property_id: schedule.property_id,
+                                            user_id: window.currentUser.id,
+                                            office_id: window.currentUser.office_id,
+                                            memo: '[만기 6개월 전 알림]\n' + cleanMemo
+                                        });
+                                    }
+                                }
+
                                 const { error: insertErr } = await supabaseClient
                                     .from('schedules')
                                     .insert(payloadsToInsert);
@@ -962,22 +987,6 @@
 
             let payloads = [payload];
 
-            if (contractType === '임대차계약' && balanceDate) {
-                const bDate = new Date(balanceDate);
-                if (!isNaN(bDate.getTime())) {
-                    const noticeDate = new Date(bDate);
-                    noticeDate.setMonth(noticeDate.getMonth() + 18);
-                    
-                    const nY = noticeDate.getFullYear();
-                    const nM = String(noticeDate.getMonth() + 1).padStart(2, '0');
-                    const nD = String(noticeDate.getDate()).padStart(2, '0');
-                    
-                    const noticePayload = { ...payload };
-                    noticePayload.schedule_date = `${nY}-${nM}-${nD}`;
-                    noticePayload.memo = '[만기 6개월 전 알림]\n' + finalMemo;
-                    payloads.push(noticePayload);
-                }
-            }
 
             const chkRepeat = document.getElementById('chkRepeatYearly');
             if (contractType === '모임' && chkRepeat && chkRepeat.checked && balanceDate) {
