@@ -438,9 +438,19 @@
 
         function initStats() {
             const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
-            const savedData = JSON.parse(localStorage.getItem('studyStats')) || {};
-            userNickname = savedData.nickname || '';
+            userNickname = localStorage.getItem('study_currentUser') || '';
 
+            if (!userNickname) {
+                showNameModal();
+            } else {
+                loadStats();
+                updateHeader(todayStr);
+                updateStatsUI();
+            }
+        }
+
+        function loadStats() {
+            const savedData = JSON.parse(localStorage.getItem('studyStats_' + userNickname)) || {};
             if (savedData.date !== new Date().toLocaleDateString()) {
                 dailyProgress = 0;
                 comboCount = 0;
@@ -448,22 +458,15 @@
                 dailyProgress = savedData.progress || 0;
                 comboCount = savedData.combo || 0;
             }
-
-            if (!userNickname) {
-                showNameModal();
-            } else {
-                updateHeader(todayStr);
-            }
-            updateStatsUI();
         }
 
         function showNameModal() {
             const modalHtml = `
                 <div class="modal-overlay" id="name-modal-overlay">
                     <div class="name-modal">
-                        <h2>안녕! 닉네임이 뭐야? 😊</h2>
-                        <input type="text" id="nickname-input" class="name-input" value="${userNickname}" placeholder="이름이나 닉네임을 적어줘!">
-                        <button class="name-btn" onclick="saveNickname()">저장하기 💖</button>
+                        <h2>비밀번호를 입력해주세요 🔒</h2>
+                        <input type="password" id="nickname-input" class="name-input" placeholder="비밀번호 4자리" onkeypress="if(event.key === 'Enter') saveNickname()">
+                        <button class="name-btn" onclick="saveNickname()">로그인 💖</button>
                     </div>
                 </div>
             `;
@@ -474,31 +477,41 @@
         function saveNickname() {
             const input = document.getElementById('nickname-input').value.trim();
             if(!input) return;
-            userNickname = input;
             
-            const today = new Date().toLocaleDateString();
-            localStorage.setItem('studyStats', JSON.stringify({
-                date: today,
-                progress: dailyProgress,
-                combo: comboCount,
-                nickname: userNickname
-            }));
+            if (input === '4321') {
+                userNickname = '아빠';
+            } else if (input === '1234') {
+                userNickname = '우리딸';
+            } else {
+                alert('비밀번호가 틀렸습니다! 다시 입력해주세요. 😊');
+                document.getElementById('nickname-input').value = '';
+                return;
+            }
+            
+            localStorage.setItem('study_currentUser', userNickname);
+            loadStats();
 
             const overlay = document.getElementById('name-modal-overlay');
             if (overlay) overlay.remove();
             
             const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
             updateHeader(todayStr);
+            updateStatsUI();
+        }
+
+        function logout() {
+            localStorage.removeItem('study_currentUser');
+            location.reload();
         }
 
         function updateHeader(dateStr) {
-            document.getElementById('greeting-text').innerHTML = `환영해요, ${userNickname}님! 💖 <span style="font-size:14px; cursor:pointer; opacity:0.7" onclick="showNameModal()" title="닉네임 변경">⚙️</span>`;
+            document.getElementById('greeting-text').innerHTML = `환영해요, ${userNickname}님! 💖 <span style="font-size:14px; cursor:pointer; opacity:0.7" onclick="logout()" title="로그아웃">🚪</span>`;
             document.getElementById('date-stats-text').innerText = `${dateStr} | 오늘 암기: ${dailyProgress}개`;
         }
 
         function saveStats() {
             const today = new Date().toLocaleDateString();
-            localStorage.setItem('studyStats', JSON.stringify({
+            localStorage.setItem('studyStats_' + userNickname, JSON.stringify({
                 date: today,
                 progress: dailyProgress,
                 combo: comboCount,
