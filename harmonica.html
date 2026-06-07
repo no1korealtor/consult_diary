@@ -231,16 +231,47 @@
             font-family: 'Jua', sans-serif;
             letter-spacing: 1px;
         }
+
+        /* --- Harmonica Grid --- */
+        .harmonica-grid {
+            display: grid;
+            grid-template-columns: repeat(22, 1fr);
+            gap: 1px;
+            background: #4facfe;
+            border: 2px solid #4facfe;
+            border-radius: 8px;
+            min-width: 800px;
+            overflow: hidden;
+        }
+        .harmonica-cell {
+            text-align: center;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Jua', sans-serif;
+        }
+        .harmonica-cell.top { height: 35px; font-size: 18px; border-bottom: 1px solid #2a2a40; }
+        .harmonica-cell.middle { background: #ffffff; height: 50px; font-size: 22px; border-bottom: 1px solid #dfe6e9; }
+        .harmonica-cell.bottom { background: #dfe6e9; height: 50px; font-size: 22px; }
     </style>
 </head>
 <body>
+    
+    <!-- Harmonica Layout Panel -->
+    <div class="panel" style="grid-column: 1 / -1; overflow-x: auto; padding: 15px; margin-bottom: 10px;">
+        <h2 class="panel-title" style="margin-bottom: 10px;">🎵 C 메이저 트레몰로 22홀 배열도</h2>
+        <div id="harmonica-layout-container"></div>
+    </div>
 
     <!-- Score Viewer Panel -->
     <div class="panel score-panel" style="display: flex; flex-direction: column;">
-        <h2 class="panel-title">🎼 내 악보 보기 (PDF/사진)</h2>
-        <div class="file-upload" style="display:flex; flex-direction: column; gap: 8px;">
-            <label for="pdf-upload" style="font-size: 14px; color: #a0a0b0;">악보 파일 열기 (PDF, JPG, PNG): </label>
-            <input type="file" id="pdf-upload" accept="application/pdf, image/*" onchange="handleFileUpload(event)" style="width: 100%; font-size: 14px; background: #2a2a40; padding: 5px; border-radius: 5px;">
+        <div class="panel-title" style="margin-bottom: 15px;">
+            <span style="display:flex; align-items:center;">🎼 내 악보 보기</span>
+            <label for="pdf-upload" style="cursor: pointer; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 6px 14px; border-radius: 20px; font-size: 14px; font-family: 'Nunito', sans-serif; font-weight: bold; box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3);">
+                📁 파일 열기
+            </label>
+            <input type="file" id="pdf-upload" accept="application/pdf, image/*" onchange="handleFileUpload(event)" style="display: none;">
         </div>
         <div class="score-display" id="score-display" style="flex-grow:1; padding:0; overflow:hidden; position:relative;">
             <div id="placeholder-text" style="color:#a0a0b0; font-size:18px; width:100%; text-align:center; position:absolute; top:50%; transform:translateY(-50%);">
@@ -664,7 +695,45 @@
             reqAnimFrame = requestAnimationFrame(updatePitch);
         }
 
+        // ==========================================
+        // 4. Harmonica Grid Logic
+        // ==========================================
+        function renderHarmonicaGrid() {
+            const middleRow = ['','도','','미','','솔','','도','','미','','솔','','도','','미','','솔','','도','',''];
+            const bottomRow = ['레','','파','','라','','시','','레','','파','','라','','시','','레','','파','','라','시'];
+            
+            function getColor(num) {
+                if(num <= 7) return '#0984e3'; // 저음 (파랑)
+                if(num <= 13) return '#d63031'; // 중음 (빨강)
+                if(num <= 19) return '#00b894'; // 고음 (초록)
+                return '#e17055'; // 최고음 (주황)
+            }
+
+            let html = '<div class="harmonica-grid">';
+            
+            // 1. Top Row (Numbers)
+            for(let i=1; i<=22; i++) {
+                const isHighlight = [2,8,14,20].includes(i);
+                const bg = isHighlight ? '#fbc2eb' : '#faedcd';
+                html += `<div class="harmonica-cell top" style="background:${bg}; color:${getColor(i)};">${i}</div>`;
+            }
+            
+            // 2. Middle Row (Blow/내쉬기)
+            for(let i=1; i<=22; i++) {
+                html += `<div class="harmonica-cell middle" style="color:${getColor(i)};">${middleRow[i-1]}</div>`;
+            }
+            
+            // 3. Bottom Row (Draw/마시기)
+            for(let i=1; i<=22; i++) {
+                html += `<div class="harmonica-cell bottom" style="color:${getColor(i)};">${bottomRow[i-1]}</div>`;
+            }
+            
+            html += '</div>';
+            document.getElementById('harmonica-layout-container').innerHTML = html;
+        }
+
         // 초기화
+        renderHarmonicaGrid();
         renderBeatIndicators();
         loadScoreFromDB();
     </script>
