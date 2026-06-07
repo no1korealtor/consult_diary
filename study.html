@@ -16,6 +16,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    
+    <!-- KaTeX 수학 수식 렌더링 라이브러리 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@400;600;700&display=swap');
 
@@ -419,6 +425,11 @@
         let quizOptions = []
         let quizTargetWord = null
         let userNickname = ''
+        let geminiApiKey = ''
+        
+        let isMathAiMode = false;
+        let mathAiResult = null;
+        let isMathLoading = false;
 
         // Reward System State
         let comboCount = 0;
@@ -429,6 +440,7 @@
             const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
             const savedData = JSON.parse(localStorage.getItem('studyStats')) || {};
             userNickname = savedData.nickname || '';
+            geminiApiKey = localStorage.getItem('geminiApiKey') || '';
 
             if (savedData.date !== new Date().toLocaleDateString()) {
                 dailyProgress = 0;
@@ -451,8 +463,9 @@
                 <div class="modal-overlay" id="name-modal-overlay">
                     <div class="name-modal">
                         <h2>안녕! 닉네임이 뭐야? 😊</h2>
-                        <input type="text" id="nickname-input" class="name-input" placeholder="이름이나 닉네임을 적어줘!">
-                        <button class="name-btn" onclick="saveNickname()">이름 저장하기 💖</button>
+                        <input type="text" id="nickname-input" class="name-input" value="${userNickname}" placeholder="이름이나 닉네임을 적어줘!">
+                        <input type="password" id="gemini-input" class="name-input" value="${geminiApiKey}" placeholder="Gemini API 키 (선택사항, 수학 AI용)" style="font-size: 14px; opacity: 0.8; margin-top: 0;">
+                        <button class="name-btn" onclick="saveNickname()">저장하기 💖</button>
                     </div>
                 </div>
             `;
@@ -462,8 +475,11 @@
 
         function saveNickname() {
             const input = document.getElementById('nickname-input').value.trim();
+            const geminiInput = document.getElementById('gemini-input').value.trim();
             if(!input) return;
             userNickname = input;
+            geminiApiKey = geminiInput;
+            localStorage.setItem('geminiApiKey', geminiApiKey);
             
             const today = new Date().toLocaleDateString();
             localStorage.setItem('studyStats', JSON.stringify({
@@ -645,6 +661,47 @@
                 `;
                 return;
             }
+            
+            if (isMathAiMode) {
+                if (isMathLoading) {
+                    cardContainer.innerHTML = `
+                        <div class="card test-mode">
+                            <div class="test-title">🤖 AI 수학 선생님 🤖</div>
+                            <div class="empty-state">
+                                <div>${word.word} 기초 문제를 만들고 있어요...</div>
+                                <div style="font-size: 40px; margin-top: 20px; animation: popIn 1s infinite;">⏳</div>
+                            </div>
+                        </div>
+                    `;
+                } else if (mathAiResult) {
+                    cardContainer.innerHTML = `
+                        <div class="card test-mode">
+                            <div class="test-title">🤖 AI 기초 탄탄 문제 🤖</div>
+                            <div style="font-family:'Jua', sans-serif; font-size: 22px; color:#2d3436; text-align:center; margin-bottom:20px; line-height: 1.5; padding: 20px; background:#fff9e6; border-radius:20px; border:2px solid #ffeaa7;">
+                                ${mathAiResult.problem}
+                            </div>
+                            
+                            <div id="math-solution-area" class="hidden">
+                                <div style="font-weight:bold; color:#ff758c; font-size: 24px; text-align:center; margin-bottom: 10px;">정답: ${mathAiResult.answer}</div>
+                                <div style="font-size: 16px; color:#636e72; background:#f8f9fa; padding:15px; border-radius:15px; line-height:1.6; white-space: pre-wrap;">${mathAiResult.solution}</div>
+                            </div>
+
+                            <div class="buttons" id="math-actions-1">
+                                <button class="btn-meaning" onclick="document.getElementById('math-solution-area').classList.remove('hidden'); document.getElementById('math-actions-1').classList.add('hidden'); document.getElementById('math-actions-2').classList.remove('hidden');">👀 정답 및 풀이 보기</button>
+                                <button class="btn-cancel" onclick="cancelTest()">다음에 풀기</button>
+                            </div>
+                            
+                            <div class="buttons hidden" id="math-actions-2">
+                                <button class="btn-submit" style="width:100%" onclick="finishMathAi()">이해했어요! (완료) 💖</button>
+                                <button class="btn-cancel" onclick="cancelTest()">다시 공부할게요</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            const isMath = word.subject && word.subject.includes('수학');
 
             cardContainer.innerHTML = `
         <div class="card">
@@ -675,14 +732,82 @@
           <div class="meaning ${meaningVisible ? '' : 'hidden'}">${word.meaning || ''}</div>
 
           <div class="buttons">
-            <button class="btn-meaning" onclick="toggleMeaning()">✨ 뜻 보기</button>
-            <button class="btn-test" onclick="toggleTestMode()">📝 암기 완료</button>
+            ${isMath ? 
+              `<button class="btn-meaning" onclick="toggleMeaning()">✨ 정답 보기</button>
+               <button class="btn-test" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white;" onclick="startMathAiMode()">🤖 AI 맞춤 문제</button>` 
+              :
+              `<button class="btn-meaning" onclick="toggleMeaning()">✨ 뜻 보기</button>
+               <button class="btn-test" onclick="toggleTestMode()">📝 스펠링 테스트</button>`
+            }
+            <button class="btn-submit" onclick="markAsMemorizedManually()">✔️ 그냥 완료할래요</button>
             <button class="btn-next" onclick="nextWord()">다음 🚀</button>
-            <button class="btn-quiz" style="width: 100%;" onclick="startQuiz()">🎮 복습 퀴즈 풀기</button>
+            ${!isMath ? `<button class="btn-quiz" style="width: 100%;" onclick="startQuiz()">🎮 복습 퀴즈 풀기</button>` : ''}
           </div>
 
         </div>
       `
+            
+            // 수식(LaTeX) 렌더링 적용
+            if (window.renderMathInElement) {
+                renderMathInElement(cardContainer, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        async function insertStudyLog(subject, content, detail) {
+            await supabaseClient.from('study_logs').insert([{
+                subject: subject,
+                content: content,
+                detail: detail
+            }]);
+        }
+
+        async function markAsMemorizedManually() {
+            await updateMemorizedState();
+            await insertStudyLog(currentWord.subject || '기타', currentWord.word, '직접 완료 처리');
+            finalizeTest();
+        }
+
+        async function updateMemorizedState() {
+            const { error } = await supabaseClient
+                .from('study_words')
+                .update({ is_memorized: true })
+                .eq('id', currentWord.id);
+                
+            if (error) {
+                console.error("DB 업데이트 에러:", error);
+                alert("서버 저장 중 오류가 발생했어요. 다시 시도해주세요! 😥");
+                return false;
+            }
+            return true;
+        }
+
+        function finalizeTest() {
+            comboCount++;
+            dailyProgress++;
+            saveStats();
+
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ffc3a0', '#ffafbd', '#84fab0', '#8fd3f4', '#f6d365']
+            });
+            
+            const memorizedWord = currentWord;
+            words = words.filter(w => w.id !== currentWord.id);
+            memorizedWords.push(memorizedWord);
+            isTestMode = false;
+            isMathAiMode = false;
+            mathAiResult = null;
+            setupSubjects();
         }
 
         function toggleMeaning() {
@@ -703,35 +828,11 @@
         async function checkTest() {
             const inputVal = document.getElementById('test-input').value.trim();
             if (inputVal.toLowerCase() === currentWord.word.toLowerCase()) {
-                const { error } = await supabaseClient
-                    .from('study_words')
-                    .update({ is_memorized: true })
-                    .eq('id', currentWord.id);
-                    
-                if (error) {
-                    console.error("DB 업데이트 에러:", error);
-                    alert("서버 저장 중 오류가 발생했어요. 다시 시도해주세요! 😥");
-                    return;
-                }
+                const success = await updateMemorizedState();
+                if(!success) return;
 
-                // Reward Updates
-                comboCount++;
-                dailyProgress++;
-                saveStats();
-
-                // Fire Confetti!
-                confetti({
-                    particleCount: 150,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#ffc3a0', '#ffafbd', '#84fab0', '#8fd3f4', '#f6d365']
-                });
-                
-                const memorizedWord = currentWord;
-                words = words.filter(w => w.id !== currentWord.id);
-                memorizedWords.push(memorizedWord);
-                isTestMode = false;
-                setupSubjects();
+                await insertStudyLog(currentWord.subject || '영어', currentWord.word, '스펠링 테스트 완료');
+                finalizeTest();
             } else {
                 // Combo Breaks
                 comboCount = 0;
@@ -799,8 +900,62 @@
             currentWord = list[randomIndex]
         }
 
+        async function startMathAiMode() {
+            if (!geminiApiKey) {
+                alert("Gemini API 키가 설정되지 않았습니다. 우측 상단 톱니바퀴를 눌러 API 키를 입력해주세요!");
+                return;
+            }
+            
+            isMathAiMode = true;
+            isMathLoading = true;
+            mathAiResult = null;
+            renderCard();
+
+            const prompt = `너는 중학교 2학년 1학기 기초가 많이 부족한 아이를 가르치는 다정하고 친절한 수학 선생님이야. 
+아이가 '${currentWord.word}'에 대한 기초 문제를 풀고 싶어해. 
+이 개념을 확인할 수 있는 아주 쉽고 기본적인 기초 문제 딱 1개만 내줘. 꼬아낸 응용 문제는 절대 안돼.
+해설은 왜 이렇게 계산해야 하는지 초등학생에게 설명하듯 다정하게 하나씩 풀어서 설명해줘.
+중요: 분수, 거듭제곱(제곱), 곱하기 기호 등 모든 수식은 반드시 LaTeX 문법으로 작성하고 양쪽을 $ 기호로 감싸줘. (예: $x^2$, $\\frac{1}{2}$, $a \\times b$).
+응답은 반드시 아래 JSON 형식으로만 줘. 절대 다른 말은 붙이지 마:
+{"problem": "문제 내용", "answer": "정답", "solution": "풀이 과정"}`;
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { response_mime_type: "application/json" }
+                    })
+                });
+
+                const data = await response.json();
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    mathAiResult = JSON.parse(data.candidates[0].content.parts[0].text);
+                } else {
+                    throw new Error("Invalid response");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("AI 문제 생성에 실패했습니다. API 키나 인터넷 연결을 확인해주세요.");
+                isMathAiMode = false;
+            } finally {
+                isMathLoading = false;
+                renderCard();
+            }
+        }
+
+        async function finishMathAi() {
+            const success = await updateMemorizedState();
+            if(!success) return;
+            
+            await insertStudyLog(currentWord.subject || '수학', currentWord.word, 'AI 맞춤 수학 문제 풀이 완료');
+            finalizeTest();
+        }
+
         function nextWord() {
             meaningVisible = false
+            isMathAiMode = false
             pickNextWord()
             renderCard()
         }

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아빠 요정 대시보드 🧚‍♂️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <style>
+        body {
+            font-family: 'Nunito', 'Jua', sans-serif;
+            background: #f4f7f6;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 {
+            color: #2c3e50;
+            font-family: 'Jua', sans-serif;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .dashboard-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .stats-box {
+            display: flex;
+            justify-content: space-around;
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            color: #2c3e50;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            font-family: 'Jua', sans-serif;
+            color: #1e272e;
+        }
+        .stat-label {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .log-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .log-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 16px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.2s;
+        }
+        .log-item:hover {
+            background: #f9f9f9;
+        }
+        .log-item:last-child {
+            border-bottom: none;
+        }
+        .log-time {
+            font-size: 12px;
+            color: #95a5a6;
+            min-width: 70px;
+            margin-top: 4px;
+        }
+        .log-content {
+            flex-grow: 1;
+        }
+        .log-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 4px;
+            font-family: 'Jua', sans-serif;
+        }
+        .log-detail {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            margin-right: 8px;
+        }
+        .badge-math { background: #ff758c; }
+        .badge-eng { background: #84fab0; color: #2d3436; }
+        .empty-state {
+            text-align: center;
+            color: #95a5a6;
+            padding: 30px;
+            font-family: 'Jua', sans-serif;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🧚‍♂️ 우리 딸 오늘 공부 현황</h1>
+    
+    <div class="dashboard-container">
+        <div class="stats-box">
+            <div class="stat-item">
+                <div class="stat-number" id="total-count">0</div>
+                <div class="stat-label">오늘 총 완료 개수</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="math-count">0</div>
+                <div class="stat-label">수학 (AI)</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="eng-count">0</div>
+                <div class="stat-label">영단어</div>
+            </div>
+        </div>
+
+        <h3 style="font-family: 'Jua', sans-serif; color: #2c3e50; margin-bottom: 15px;">📝 상세 기록</h3>
+        <ul class="log-list" id="log-list">
+            <div class="empty-state">데이터를 불러오는 중입니다...</div>
+        </ul>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
+        const supabaseKey = 'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k'
+        const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+        async function loadTodayLogs() {
+            // 오늘 날짜의 자정 구하기 (UTC 기준으로 필터링하거나 로컬 시간대에 맞게 조정)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayIso = today.toISOString();
+
+            const { data, error } = await supabaseClient
+                .from('study_logs')
+                .select('*')
+                .gte('created_at', todayIso)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("DB 로드 에러:", error);
+                document.getElementById('log-list').innerHTML = `<div class="empty-state">기록을 불러오지 못했어요. (study_logs 테이블이 없거나 권한 오류)</div>`;
+                return;
+            }
+
+            renderLogs(data);
+        }
+
+        function renderLogs(logs) {
+            const listEl = document.getElementById('log-list');
+            
+            if (logs.length === 0) {
+                listEl.innerHTML = `<div class="empty-state">아직 오늘 공부한 기록이 없네요! 조금 이따가 다시 확인해보세요. 😉</div>`;
+                document.getElementById('total-count').innerText = '0';
+                document.getElementById('math-count').innerText = '0';
+                document.getElementById('eng-count').innerText = '0';
+                return;
+            }
+
+            let mathCount = 0;
+            let engCount = 0;
+
+            let html = '';
+            logs.forEach(log => {
+                const date = new Date(log.created_at);
+                const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                const isMath = log.subject && log.subject.includes('수학');
+                if (isMath) mathCount++;
+                else engCount++;
+
+                const badgeClass = isMath ? 'badge-math' : 'badge-eng';
+                const badgeText = isMath ? '수학' : '영어';
+
+                html += `
+                    <li class="log-item">
+                        <div class="log-time">${timeStr}</div>
+                        <div class="log-content">
+                            <div class="log-title"><span class="badge ${badgeClass}">${badgeText}</span> ${log.content}</div>
+                            <div class="log-detail">${log.detail || '완료'}</div>
+                        </div>
+                    </li>
+                `;
+            });
+
+            listEl.innerHTML = html;
+            document.getElementById('total-count').innerText = logs.length;
+            document.getElementById('math-count').innerText = mathCount;
+            document.getElementById('eng-count').innerText = engCount;
+        }
+
+        loadTodayLogs();
+        
+        // 1분마다 새로고침
+        setInterval(loadTodayLogs, 60000);
+    </script>
+</body>
+</html>
