@@ -941,13 +941,14 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error("서버 에러 발생");
+                    const errorText = await response.text();
+                    throw new Error(`상태 코드: ${response.status}, 내용: ${errorText}`);
                 }
 
                 mathAiResult = await response.json();
             } catch (err) {
                 console.error(err);
-                alert("AI 문제 생성에 실패했습니다. 인터넷 연결을 확인해주세요.");
+                alert("AI 문제 생성에 실패했습니다.\n사유: " + err.message);
                 isMathAiMode = false;
             } finally {
                 isMathLoading = false;
