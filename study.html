@@ -724,6 +724,21 @@
                             </div>
                         </div>
                     `;
+                    
+                    // 수식(LaTeX) 렌더링 적용 (AI 문제 화면용)
+                    if (window.renderMathInElement) {
+                        setTimeout(() => {
+                            renderMathInElement(document.getElementById('card-wrapper'), {
+                                delimiters: [
+                                    {left: '$$', right: '$$', display: true},
+                                    {left: '$', right: '$', display: false},
+                                    {left: '\\(', right: '\\)', display: false},
+                                    {left: '\\[', right: '\\]', display: true}
+                                ],
+                                throwOnError: false
+                            });
+                        }, 50); // DOM 업데이트 직후 렌더링되도록 약간의 지연 시간 부여
+                    }
                 }
                 return;
             }
