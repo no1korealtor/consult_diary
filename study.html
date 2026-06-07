@@ -450,6 +450,25 @@
         }
 
         function loadStats() {
+            // 과거 버전 데이터(studyStats, geminiApiKey) 정리 및 마이그레이션
+            const oldDataStr = localStorage.getItem('studyStats');
+            if (oldDataStr) {
+                try {
+                    const oldData = JSON.parse(oldDataStr);
+                    // 기존 닉네임과 새 로그인 계정이 연관성이 있으면 데이터 복원
+                    if (oldData.nickname && (
+                        (userNickname === '아빠' && oldData.nickname.includes('아빠')) ||
+                        (userNickname === '우리딸' && oldData.nickname.includes('딸'))
+                    )) {
+                        localStorage.setItem('studyStats_' + userNickname, oldDataStr);
+                    }
+                } catch(e) {}
+                // 마이그레이션 후 과거 데이터는 깔끔하게 삭제
+                localStorage.removeItem('studyStats');
+            }
+            // 이제 필요 없는 API 키도 깔끔하게 삭제
+            localStorage.removeItem('geminiApiKey');
+
             const savedData = JSON.parse(localStorage.getItem('studyStats_' + userNickname)) || {};
             if (savedData.date !== new Date().toLocaleDateString()) {
                 dailyProgress = 0;
