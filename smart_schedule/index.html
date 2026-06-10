@@ -1807,7 +1807,8 @@
                     `;
                 }
 
-                let contentStyle = '';
+                let opacityStyle = '';
+                let strikeStyle = '';
                 let doneBadgeHtml = '';
 
                 if (parsed.isDone) {
@@ -1822,21 +1823,23 @@
                     }
 
                     if (isFutureSchedule) {
-                        contentStyle = 'opacity: 0.8; text-decoration: line-through; text-decoration-color: #ef4444; text-decoration-thickness: 2px;';
+                        opacityStyle = 'opacity: 0.8;';
+                        strikeStyle = 'text-decoration: line-through; text-decoration-color: #ef4444; text-decoration-thickness: 2px;';
                         if (parsed.doneDate) {
                             const dObj = new Date(parsed.doneDate);
                             if (!isNaN(dObj.getTime())) {
                                 const doneStr = `${dObj.getMonth()+1}/${dObj.getDate()} 완료됨`;
-                                doneBadgeHtml = `<span style="background: #fef2f2; color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; border: 1px solid #fecaca; margin-left: 4px;">✅ ${doneStr}</span>`;
+                                doneBadgeHtml = `<span style="background: #fef2f2; color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; border: 1px solid #fecaca; margin-left: 4px; text-decoration: none; display: inline-block;">✅ ${doneStr}</span>`;
                             }
                         }
                     } else {
-                        contentStyle = 'opacity: 0.6; text-decoration: line-through;';
+                        opacityStyle = 'opacity: 0.6;';
+                        strikeStyle = 'text-decoration: line-through;';
                     }
                 }
 
                 li.innerHTML = `
-                    <div style="display: flex; gap: 16px; align-items: stretch; ${contentStyle}">
+                    <div style="display: flex; gap: 16px; align-items: stretch; ${opacityStyle}">
                         <div style="flex-shrink: 0; width: 64px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
                             <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: ${dateBoxBg}; border: 1px solid ${dateBoxBorder}; border-radius: 12px; padding: 10px 0; box-sizing: border-box;">
                                 <span style="font-size: 12px; font-weight: 800; color: #ef4444; margin-bottom: 2px;">${monthStr}</span>
@@ -1847,15 +1850,17 @@
                         </div>
                         <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0;">
                             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; padding-right: 60px;">
-                                ${typeBadgeHtml}
-                                ${dDayHtml}
+                                <div style="${strikeStyle}">${typeBadgeHtml}</div>
+                                <div style="${strikeStyle}">${dDayHtml}</div>
                                 ${doneBadgeHtml}
                             </div>
-                            ${rangeHtml}
-                            ${locationHtml}
-                            ${clientHtml}
-                            ${memoHtml}
-                            ${checklistHtml}
+                            <div style="${strikeStyle}">
+                                ${rangeHtml}
+                                ${locationHtml}
+                                ${clientHtml}
+                                ${memoHtml}
+                                ${checklistHtml}
+                            </div>
                             ${isGlobal && !isMeetingTag ? '</div>' : ''}
                         </div>
                     </div>

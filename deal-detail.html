@@ -252,7 +252,8 @@
                 }
             }
 
-            const parsed = parseScheduleMemo(data.memo, data.schedule_time);
+            const currentUserId = window.currentUser ? window.currentUser.id : null;
+            const parsed = parseScheduleMemo(data.memo, data.schedule_time, currentUserId);
             let rawMemo = parsed.cleanMemo;
             
             let isDone = parsed.isDone;
