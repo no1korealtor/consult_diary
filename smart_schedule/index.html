@@ -1772,7 +1772,7 @@
                 personalCount.innerText = `${allDeals.length}건`;
                 
                 let currentMonthLabel = '';
-                let farFutureCount = 0;
+                let farFutureCounts = {};
                 let completedCount = 0;
                 let hiddenPropCount = 0;
                 let currentDateLabel = '';
@@ -1800,6 +1800,7 @@
                     let mNum = '';
                     let mYear = '';
                     let isFarFuture = false;
+                    let farFutureGroup = null;
 
                     const myId = window.currentUser ? window.currentUser.id : '';
                     const isDone = (schedule.memo || '').includes('[DONE]') || (myId && (schedule.memo || '').includes(`[DONE:${myId}`));
@@ -1833,8 +1834,14 @@
                                 const days = ['일', '월', '화', '수', '목', '금', '토'];
                                 dealDate = `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
                                 
-                                if (diffDays > 45) {
+                                if (diffDays > 180) {
                                     isFarFuture = true;
+                                    const todayYear = today.getFullYear();
+                                    if (d.getFullYear() === todayYear) {
+                                        farFutureGroup = `${todayYear}년 하반기`;
+                                    } else {
+                                        farFutureGroup = `${d.getFullYear()}년`;
+                                    }
                                 }
                             }
                         }
@@ -1864,6 +1871,7 @@
                         if (isFarFuture) {
                             dividerLi.style.display = 'none';
                             dividerLi.classList.add('far-future-item');
+                            if (farFutureGroup) dividerLi.dataset.farFutureGroup = farFutureGroup;
                         } else if (isCompleted) {
                             dividerLi.style.display = 'none';
                             dividerLi.classList.add('completed-item');
@@ -1897,7 +1905,10 @@
                     } else if (isFarFuture) {
                         li.style.display = 'none';
                         li.classList.add('far-future-item');
-                        farFutureCount++;
+                        if (farFutureGroup) {
+                            li.dataset.farFutureGroup = farFutureGroup;
+                            farFutureCounts[farFutureGroup] = (farFutureCounts[farFutureGroup] || 0) + 1;
+                        }
                     } else if (isCompleted) {
                         li.style.display = 'none';
                         li.classList.add('completed-item');
@@ -1912,15 +1923,19 @@
                     list.appendChild(li);
                 });
 
-                if (farFutureCount > 0) {
+                const sortedGroups = Object.keys(farFutureCounts).sort((a, b) => a.localeCompare(b));
+                let hasFarFuture = false;
+                sortedGroups.forEach(group => {
+                    hasFarFuture = true;
+                    const count = farFutureCounts[group];
                     const noticeLi = document.createElement('li');
                     noticeLi.classList.add('far-future-notice');
                     noticeLi.dataset.originalDisplay = 'block';
                     noticeLi.style.cssText = "margin-top: 24px; padding: 16px; text-align: center; background: #f8fafc; border-radius: 12px; color: #6b7280; font-size: 14px; font-weight: 600; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s;";
-                    noticeLi.innerHTML = `🗓️ 45일 이후 예정된 일정 <strong>${farFutureCount}건</strong> 펼쳐보기 ▼`;
+                    noticeLi.innerHTML = `🗓️ ${group} 예정 일정 <strong>${count}건</strong> 펼쳐보기 ▼`;
                     
                     noticeLi.onclick = () => {
-                        const farItems = document.querySelectorAll('.far-future-item');
+                        const farItems = document.querySelectorAll(`.far-future-item[data-far-future-group="${group}"]`);
                         farItems.forEach(item => {
                             item.style.display = item.dataset.originalDisplay || '';
                         });
@@ -1932,7 +1947,7 @@
                         noticeLi.classList.add('personal-hidden-item');
                     }
                     list.appendChild(noticeLi);
-                }
+                });
 
                 if (completedCount > 0) {
                     const noticeCompLi = document.createElement('li');
@@ -1978,7 +1993,7 @@
                     list.appendChild(noticePropLi);
                 }
 
-                if (visibleCount > 5 || (visibleCount === 5 && (farFutureCount > 0 || completedCount > 0 || hiddenPropCount > 0))) {
+                if (visibleCount > 5 || (visibleCount === 5 && (hasFarFuture || completedCount > 0 || hiddenPropCount > 0))) {
                     personalMoreBtn.style.display = 'block';
                     personalMoreBtn.onclick = function() {
                         const isExpanded = this.innerText.includes('접기');
