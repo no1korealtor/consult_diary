@@ -1287,12 +1287,25 @@
                     if (isDone) {
                         const targetDateStr = doneDateStr || schedule.schedule_date;
                         if (targetDateStr) {
-                            const sDate = new Date(targetDateStr);
                             const today = new Date();
                             today.setHours(0,0,0,0);
-                            const diffTime = today - sDate;
-                            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
-                            const showAll = document.getElementById("showAllCompleted")?.checked; if (!showAll && diffDays >= 3) { return false;
+                            
+                            let isFutureSchedule = false;
+                            if (schedule.schedule_date) {
+                                const schDate = new Date(schedule.schedule_date);
+                                if (schDate >= today) {
+                                    isFutureSchedule = true;
+                                }
+                            }
+
+                            if (!isFutureSchedule) {
+                                const sDate = new Date(targetDateStr);
+                                const diffTime = today - sDate;
+                                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+                                const showAll = document.getElementById("showAllCompleted")?.checked; 
+                                if (!showAll && diffDays >= 3) {
+                                    return false;
+                                }
                             }
                         }
                     }
@@ -1790,7 +1803,33 @@
                     `;
                 }
 
-                let contentStyle = parsed.isDone ? 'opacity: 0.6; text-decoration: line-through;' : '';
+                let contentStyle = '';
+                let doneBadgeHtml = '';
+
+                if (parsed.isDone) {
+                    let isFutureSchedule = false;
+                    if (schedule.schedule_date) {
+                        const schDate = new Date(schedule.schedule_date);
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        if (schDate >= today) {
+                            isFutureSchedule = true;
+                        }
+                    }
+
+                    if (isFutureSchedule) {
+                        contentStyle = 'opacity: 0.8; text-decoration: line-through; text-decoration-color: #ef4444; text-decoration-thickness: 2px;';
+                        if (parsed.doneDate) {
+                            const dObj = new Date(parsed.doneDate);
+                            if (!isNaN(dObj.getTime())) {
+                                const doneStr = `${dObj.getMonth()+1}/${dObj.getDate()} 완료됨`;
+                                doneBadgeHtml = `<span style="background: #fef2f2; color: #ef4444; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; border: 1px solid #fecaca; margin-left: 4px;">✅ ${doneStr}</span>`;
+                            }
+                        }
+                    } else {
+                        contentStyle = 'opacity: 0.6; text-decoration: line-through;';
+                    }
+                }
 
                 li.innerHTML = `
                     <div style="display: flex; gap: 16px; align-items: stretch; ${contentStyle}">
@@ -1806,6 +1845,7 @@
                             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px; flex-wrap: wrap; padding-right: 60px;">
                                 ${typeBadgeHtml}
                                 ${dDayHtml}
+                                ${doneBadgeHtml}
                             </div>
                             ${rangeHtml}
                             ${locationHtml}

@@ -439,6 +439,12 @@
         function initStats() {
             const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
             userNickname = localStorage.getItem('study_currentUser') || '';
+            
+            // 기존 '우리딸' 계정명을 '아람'으로 마이그레이션
+            if (userNickname === '우리딸') {
+                userNickname = '아람';
+                localStorage.setItem('study_currentUser', '아람');
+            }
 
             if (!userNickname) {
                 showNameModal();
@@ -458,7 +464,8 @@
                     // 기존 닉네임과 새 로그인 계정이 연관성이 있으면 데이터 복원
                     if (oldData.nickname && (
                         (userNickname === '아빠' && oldData.nickname.includes('아빠')) ||
-                        (userNickname === '우리딸' && oldData.nickname.includes('딸'))
+                        (userNickname === '아람' && (oldData.nickname.includes('딸') || oldData.nickname.includes('아람'))) ||
+                        (userNickname === '친구' && oldData.nickname.includes('친구'))
                     )) {
                         localStorage.setItem('studyStats_' + userNickname, oldDataStr);
                     }
@@ -500,7 +507,9 @@
             if (input === '4321') {
                 userNickname = '아빠';
             } else if (input === '1234') {
-                userNickname = '우리딸';
+                userNickname = '아람';
+            } else if (input === '0000') {
+                userNickname = '친구';
             } else {
                 alert('비밀번호가 틀렸습니다! 다시 입력해주세요. 😊');
                 document.getElementById('nickname-input').value = '';
@@ -587,8 +596,8 @@
                 console.log(error)
                 return
             }
-            words = data.filter(w => w.is_memorized !== true)
-            memorizedWords = data.filter(w => w.is_memorized === true)
+            words = data.filter(w => !(w.memorized_users && w.memorized_users.includes(userNickname)))
+            memorizedWords = data.filter(w => w.memorized_users && w.memorized_users.includes(userNickname))
 
             if (data.length > 0) {
                 const latestDate = new Date(data[0].created_at);
@@ -807,7 +816,8 @@
             await supabaseClient.from('study_logs').insert([{
                 subject: subject,
                 content: content,
-                detail: detail
+                detail: detail,
+                creator: userNickname
             }]);
         }
 
@@ -818,9 +828,14 @@
         }
 
         async function updateMemorizedState() {
+            const newUsers = currentWord.memorized_users ? [...currentWord.memorized_users] : [];
+            if (!newUsers.includes(userNickname)) {
+                newUsers.push(userNickname);
+            }
+
             const { error } = await supabaseClient
                 .from('study_words')
-                .update({ is_memorized: true })
+                .update({ memorized_users: newUsers })
                 .eq('id', currentWord.id);
                 
             if (error) {

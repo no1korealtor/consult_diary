@@ -39,16 +39,24 @@ function parseScheduleMemo(rawMemo, dbScheduleTime = null, currentUserId = null)
     if (!rawMemo) rawMemo = "";
     
     let isDone = false;
+    let doneDate = null;
+    
     if (rawMemo.includes("[DONE]")) {
         isDone = true;
         rawMemo = rawMemo.replace(/\[DONE\]/g, "");
     }
     
     if (currentUserId) {
-        const personalDoneTag = `[DONE:${currentUserId}]`;
-        const personalDoneDateTag = `[DONE:${currentUserId}:`;
-        if (rawMemo.includes(personalDoneTag) || rawMemo.includes(personalDoneDateTag)) {
+        const personalDoneDateRegex = new RegExp(`\\[DONE:${currentUserId}:([^\\]]+)\\]`);
+        const match = rawMemo.match(personalDoneDateRegex);
+        if (match) {
             isDone = true;
+            doneDate = match[1];
+        } else {
+            const personalDoneTag = `[DONE:${currentUserId}]`;
+            if (rawMemo.includes(personalDoneTag)) {
+                isDone = true;
+            }
         }
     }
     // Always strip all personal done tags from the clean memo so they don't show up in the UI
@@ -171,6 +179,7 @@ function parseScheduleMemo(rawMemo, dbScheduleTime = null, currentUserId = null)
     return {
         cleanMemo: rawMemo.trim(),
         isDone,
+        doneDate,
         settledDate,
         isContractCanceled,
         isPrivate,

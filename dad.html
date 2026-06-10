@@ -73,8 +73,9 @@
         .log-time {
             font-size: 12px;
             color: #95a5a6;
-            min-width: 70px;
+            min-width: 85px;
             margin-top: 4px;
+            margin-right: 10px;
         }
         .log-content {
             flex-grow: 1;
@@ -112,13 +113,13 @@
 </head>
 <body>
 
-    <h1>🧚‍♂️ 우리 딸 오늘 공부 현황</h1>
+    <h1>🧚‍♂️ 우리 딸 최근 일주일 공부 현황</h1>
     
     <div class="dashboard-container">
         <div class="stats-box">
             <div class="stat-item">
                 <div class="stat-number" id="total-count">0</div>
-                <div class="stat-label">오늘 총 완료 개수</div>
+                <div class="stat-label">최근 일주일 완료 개수</div>
             </div>
             <div class="stat-item">
                 <div class="stat-number" id="math-count">0</div>
@@ -142,15 +143,16 @@
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey)
 
         async function loadTodayLogs() {
-            // 오늘 날짜의 자정 구하기 (UTC 기준으로 필터링하거나 로컬 시간대에 맞게 조정)
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const todayIso = today.toISOString();
+            // 일주일(7일) 전 자정 구하기
+            const targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() - 6);
+            targetDate.setHours(0, 0, 0, 0);
+            const targetIso = targetDate.toISOString();
 
             const { data, error } = await supabaseClient
                 .from('study_logs')
                 .select('*')
-                .gte('created_at', todayIso)
+                .gte('created_at', targetIso)
                 .order('created_at', { ascending: false });
 
             if (error) {
@@ -166,7 +168,7 @@
             const listEl = document.getElementById('log-list');
             
             if (logs.length === 0) {
-                listEl.innerHTML = `<div class="empty-state">아직 오늘 공부한 기록이 없네요! 조금 이따가 다시 확인해보세요. 😉</div>`;
+                listEl.innerHTML = `<div class="empty-state">아직 최근 공부한 기록이 없네요! 조금 이따가 다시 확인해보세요. 😉</div>`;
                 document.getElementById('total-count').innerText = '0';
                 document.getElementById('math-count').innerText = '0';
                 document.getElementById('eng-count').innerText = '0';
@@ -179,7 +181,10 @@
             let html = '';
             logs.forEach(log => {
                 const date = new Date(log.created_at);
+                const isToday = new Date().toDateString() === date.toDateString();
+                const dateStr = isToday ? '오늘' : `${date.getMonth() + 1}/${date.getDate()}`;
                 const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const displayTime = `${dateStr} ${timeStr}`;
                 
                 const isMath = log.subject && log.subject.includes('수학');
                 if (isMath) mathCount++;
@@ -190,7 +195,7 @@
 
                 html += `
                     <li class="log-item">
-                        <div class="log-time">${timeStr}</div>
+                        <div class="log-time">${displayTime}</div>
                         <div class="log-content">
                             <div class="log-title"><span class="badge ${badgeClass}">${badgeText}</span> ${log.content}</div>
                             <div class="log-detail">${log.detail || '완료'}</div>
