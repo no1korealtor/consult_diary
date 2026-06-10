@@ -767,7 +767,7 @@
                                     const createReport = confirm("매매계약은 30일 이내(또는 잔금일 이전)에 부동산거래신고를 해야 합니다.\n신고 기한을 일정으로 추가하시겠습니까?\n(확인 시 기한: " + reportDateStr + ")");
                                     if (createReport) {
                                         payloadsToInsert.push({
-                                            schedule_type: '후속업무',
+                                            schedule_type: '🚨 거래신고',
                                             schedule_date: reportDateStr,
                                             building_id: schedule.building_id,
                                             room_id: schedule.room_id,
@@ -1695,7 +1695,18 @@
                     if (window.formatAddress) bName = window.formatAddress(bName, schedule.user_id);
                     const rName = schedule.rooms ? schedule.rooms.room_name : '';
                     locationHtml = `<div style="color: #111827; font-size: 15px; font-weight: 700; line-height: 1.4; margin-bottom: 4px; word-break: keep-all;">📍 ${bName} ${rName ? '<span style="color: #3b82f6;">' + rName + '</span>' : ''}</div>`;
-                    typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800;">${schedule.schedule_type}</span>`;
+                    
+                    if (schedule.schedule_type === '후속업무' && schedule.memo && schedule.memo.includes('부동산거래신고')) {
+                        schedule.schedule_type = '🚨 거래신고';
+                    }
+
+                    if (schedule.schedule_type === '🚨 거래신고') {
+                        typeBadgeHtml = `<span style="background: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; border: 1px solid #fecaca; animation: blink-warning 2s infinite;">${schedule.schedule_type}</span>`;
+                        li.style.borderColor = '#fca5a5';
+                        li.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.15)';
+                    } else {
+                        typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800;">${schedule.schedule_type}</span>`;
+                    }
                     
                     if (tJangumTime || tUtil) {
                         let tasksHtml = `<div style="margin-top: 8px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 13px;">`;
