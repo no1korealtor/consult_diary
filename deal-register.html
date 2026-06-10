@@ -196,7 +196,7 @@
     <div style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; margin-bottom: 24px; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 12px; font-size: 12px; color: #475569;">
         <span style="font-size: 14px;">🛠️</span>
         <div style="flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 600;">
-            <span style="color: #3b82f6; margin-right: 4px;">[6/10 개선]</span> 호수 중복 일정 알림, 연도 표시 및 만기 일정 자동 생성명칭 개선
+            <span style="color: #3b82f6; margin-right: 4px;">[6/10 개선]</span> 오늘의 업무 자동 생성 및 미사용 시 자동 정리 기능 추가
         </div>
     </div>
 
@@ -588,6 +588,50 @@
             container.style.display = 'block';
         }
 
+        async function manageTodayTaskSchedule() {
+            if (!window.currentUser) return false;
+            const myId = window.currentUser.id;
+            const officeId = window.currentUser.office_id;
+            const todayStr = new Date().toLocaleDateString('en-CA');
+
+            const { data, error } = await supabaseClient
+                .from('schedules')
+                .select('id, schedule_date, memo, schedule_type, schedule_tasks(id)')
+                .eq('user_id', myId)
+                .eq('schedule_type', '모임');
+
+            if (error || !data) return false;
+
+            const myTodayTasks = data.filter(s => s.memo && s.memo.startsWith('오늘의 업무\n[PRIVATE]'));
+
+            let hasToday = false;
+            const toDelete = [];
+
+            myTodayTasks.forEach(s => {
+                if (s.schedule_date === todayStr) {
+                    hasToday = true;
+                } else if (!s.schedule_tasks || s.schedule_tasks.length === 0) {
+                    toDelete.push(s.id);
+                }
+            });
+
+            if (toDelete.length > 0) {
+                await supabaseClient.from('schedules').delete().in('id', toDelete);
+            }
+
+            if (!hasToday) {
+                await supabaseClient.from('schedules').insert([{
+                    schedule_type: '모임',
+                    schedule_date: todayStr,
+                    user_id: myId,
+                    office_id: officeId,
+                    memo: '오늘의 업무\n[PRIVATE]'
+                }]);
+                return true;
+            }
+            return false;
+        }
+
         let _isCheckingAuth = false;
         async function checkAuthAndLoad() {
             if (_isCheckingAuth) return;
@@ -616,6 +660,7 @@
                 }
                 loadBuildings();
                 loadClients();
+                await manageTodayTaskSchedule();
                 loadschedules();
                 if(typeof loadTips === 'function') loadTips();
             }

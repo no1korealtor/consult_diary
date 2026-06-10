@@ -530,6 +530,50 @@
             loadRooms();
         }
 
+        async function manageTodayTaskSchedule() {
+            if (!window.currentUser) return false;
+            const myId = window.currentUser.id;
+            const officeId = window.currentUser.office_id;
+            const todayStr = new Date().toLocaleDateString('en-CA');
+
+            const { data, error } = await supabaseClient
+                .from('schedules')
+                .select('id, schedule_date, memo, schedule_type, schedule_tasks(id)')
+                .eq('user_id', myId)
+                .eq('schedule_type', '모임');
+
+            if (error || !data) return false;
+
+            const myTodayTasks = data.filter(s => s.memo && s.memo.startsWith('오늘의 업무\n[PRIVATE]'));
+
+            let hasToday = false;
+            const toDelete = [];
+
+            myTodayTasks.forEach(s => {
+                if (s.schedule_date === todayStr) {
+                    hasToday = true;
+                } else if (!s.schedule_tasks || s.schedule_tasks.length === 0) {
+                    toDelete.push(s.id);
+                }
+            });
+
+            if (toDelete.length > 0) {
+                await supabaseClient.from('schedules').delete().in('id', toDelete);
+            }
+
+            if (!hasToday) {
+                await supabaseClient.from('schedules').insert([{
+                    schedule_type: '모임',
+                    schedule_date: todayStr,
+                    user_id: myId,
+                    office_id: officeId,
+                    memo: '오늘의 업무\n[PRIVATE]'
+                }]);
+                return true;
+            }
+            return false;
+        }
+
         let _isCheckingAuth = false;
         async function checkAuthAndLoad() {
             if (_isCheckingAuth) return;
@@ -558,6 +602,7 @@
                 }
                 loadBuildings();
                 loadClients();
+                await manageTodayTaskSchedule();
                 loadschedules();
                 if(typeof loadTips === 'function') loadTips();
             }
