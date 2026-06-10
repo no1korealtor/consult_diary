@@ -1817,7 +1817,7 @@
             let todayTaskSchedule = null;
             allDeals = allDeals.filter(s => {
                 const todayStr = new Date().toLocaleDateString('en-CA');
-                if (s.schedule_type === '모임' && s.memo && s.memo.startsWith('오늘의 업무\\n[PRIVATE]') && s.schedule_date === todayStr) {
+                if (s.schedule_type === '모임' && s.memo && s.memo.startsWith('오늘의 업무\n[PRIVATE]') && s.schedule_date === todayStr) {
                     todayTaskSchedule = s;
                     return false;
                 }
