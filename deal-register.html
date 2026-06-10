@@ -830,7 +830,11 @@
                 }
             }
 
-            await supabaseClient.from('schedules').update({ memo: newMemo }).eq('id', scheduleId);
+            const { error: updateErr } = await supabaseClient.from('schedules').update({ memo: newMemo }).eq('id', scheduleId);
+            if (updateErr) {
+                alert('완료 상태 변경 중 오류가 발생했습니다: ' + updateErr.message);
+                return;
+            }
             loadschedules();
         };
 
