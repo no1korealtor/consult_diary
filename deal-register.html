@@ -260,7 +260,7 @@
         </button>
 
         <div style="display: flex; gap: 4px; margin-bottom: 12px; align-items: center;" id="roomSelectContainer">
-            <select id="roomSelect" style="flex: 1; margin-bottom: 0;">
+            <select id="roomSelect" style="flex: 1; margin-bottom: 0;" onchange="checkRoomSchedules()">
                 <option value="">호수 선택</option>
             </select>
             <button
@@ -280,6 +280,7 @@
                 + 등록
             </button>
         </div>
+        <div id="roomSchedulesContainer" style="display: none; margin-bottom: 16px; font-size: 13px;"></div>
     </div>
 
     <div id="clientSelectContainer" style="display: none; margin-bottom: 16px; margin-top: 16px;">
@@ -538,6 +539,55 @@
             loadRooms();
         }
 
+        async function checkRoomSchedules() {
+            const roomId = document.getElementById('roomSelect').value;
+            const container = document.getElementById('roomSchedulesContainer');
+            if (!container) return;
+            
+            if (!roomId) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            const { data, error } = await supabaseClient
+                .from('schedules')
+                .select('*')
+                .eq('room_id', roomId)
+                .order('schedule_date', { ascending: true });
+                
+            if (error || !data || data.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            const myId = window.currentUser ? window.currentUser.id : '';
+            const upcoming = data.filter(s => {
+                const isDone = (s.memo || '').includes('[DONE]') || (myId && (s.memo || '').includes(`[DONE:${myId}`));
+                return !isDone;
+            });
+            
+            if (upcoming.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            let html = `<div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 10px; color: #b45309;">
+                <div style="font-weight: 800; margin-bottom: 6px;">⚠️ 이 호수에 아직 완료되지 않은 일정이 있습니다</div>`;
+            
+            upcoming.forEach(s => {
+                let sDate = s.schedule_date ? s.schedule_date : '날짜 미정';
+                let sType = s.schedule_type || '일정';
+                html += `<div style="margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-weight: 600;">[${sType}] ${sDate}</span>
+                    <button type="button" onclick="window.open('deal-detail.html?id=${s.id}', '_blank')" style="margin: 0; padding: 4px 8px; font-size: 11px; background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; border-radius: 4px; font-weight: bold; width: auto; cursor: pointer;">수정/확인</button>
+                </div>`;
+            });
+            
+            html += `</div>`;
+            container.innerHTML = html;
+            container.style.display = 'block';
+        }
+
         let _isCheckingAuth = false;
         async function checkAuthAndLoad() {
             if (_isCheckingAuth) return;
@@ -709,7 +759,7 @@
                         
                         let cleanMemo = (schedule.memo || '').replace(/\[DONE:[^\]]+\]/g, '').replace(/\[DONE\]/g, '').trim();
                         payloadsToInsert.push({
-                            schedule_type: '임대차계약',
+                            schedule_type: '임대차계약 1회차 만기 예정일',
                             schedule_date: `${nY}-${nM}-${nD}`,
                             building_id: schedule.building_id,
                             room_id: schedule.room_id,
@@ -804,6 +854,7 @@
                 roomSelect.value = lastRoomId;
                 sessionStorage.removeItem('lastRegisteredRoomId');
             }
+            checkRoomSchedules();
             } catch (e) {
                 console.error(e);
             } finally {
@@ -1806,6 +1857,7 @@
                     let isCompleted = false;
                     let isOverdue = false;
                     let mNum = '';
+                    let mYear = '';
                     let isFarFuture = false;
 
                     const myId = window.currentUser ? window.currentUser.id : '';
@@ -1836,6 +1888,7 @@
                             } else {
                                 dealMonth = `${d.getFullYear()}년 ${d.getMonth() + 1}월`;
                                 mNum = d.getMonth() + 1;
+                                mYear = d.getFullYear();
                                 const days = ['일', '월', '화', '수', '목', '금', '토'];
                                 dealDate = `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
                                 
@@ -1861,7 +1914,8 @@
                             dividerLi.innerHTML = `<span style="color: ${badgeColor}; font-size: 14px; font-weight: 800;">${dealMonth}</span><div style="flex: 1; height: 1px; background: #e5e7eb; margin-left: 12px;"></div>`;
                         } else {
                             dividerLi.style.cssText = "margin: 40px 0 16px 0; display: flex; align-items: baseline; border-bottom: 2px solid #111827; padding-bottom: 4px;";
-                            dividerLi.innerHTML = `<span style="font-size: 44px; font-weight: 900; color: #111827; letter-spacing: -2px; line-height: 1;">${mNum}</span><span style="font-size: 18px; font-weight: 800; color: #111827; margin-left: 6px;">월</span>`;
+                            const yearBadge = (mYear && mYear !== new Date().getFullYear()) ? `<span style="font-size: 16px; font-weight: 700; color: #6b7280; margin-right: 8px;">${mYear}년</span>` : '';
+                            dividerLi.innerHTML = `${yearBadge}<span style="font-size: 44px; font-weight: 900; color: #111827; letter-spacing: -2px; line-height: 1;">${mNum}</span><span style="font-size: 18px; font-weight: 800; color: #111827; margin-left: 6px;">월</span>`;
                         }
 
                         dividerLi.dataset.originalDisplay = 'flex';
