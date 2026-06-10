@@ -1323,7 +1323,8 @@
                 const isGlobal = !s.buildings && !s.building_id && !s.properties && !s.property_id;
                 const isPrivate = (s.memo || '').includes('[PRIVATE]');
                 const isProposal = (s.memo || '').includes('[PROPOSAL]');
-                return isGlobal && !isPrivate && !isProposal;
+                const isReport = s.schedule_type === '🚨 거래신고' || s.schedule_type === '잔금' || s.schedule_type === '계약' || (s.memo && s.memo.includes('부동산거래신고'));
+                return isGlobal && !isPrivate && !isProposal && !isReport;
             };
 
             const sortByDate = (a, b) => {
