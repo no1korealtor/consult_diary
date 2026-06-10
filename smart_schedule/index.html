@@ -214,6 +214,9 @@
         renderTodayDate();
     </script>
 
+    <!-- 오늘의 업무 전용 공간 -->
+    <div id="todayTaskBoard" style="margin-bottom: 24px;"></div>
+
 
 
 
@@ -1808,6 +1811,25 @@
             };
 
             // 통합 일정 렌더링
+            const todayTaskBoard = document.getElementById('todayTaskBoard');
+            if (todayTaskBoard) todayTaskBoard.innerHTML = '';
+            
+            let todayTaskSchedule = null;
+            allDeals = allDeals.filter(s => {
+                const todayStr = new Date().toLocaleDateString('en-CA');
+                if (s.schedule_type === '모임' && s.memo && s.memo.startsWith('오늘의 업무\\n[PRIVATE]') && s.schedule_date === todayStr) {
+                    todayTaskSchedule = s;
+                    return false;
+                }
+                return true;
+            });
+
+            if (todayTaskSchedule && todayTaskBoard) {
+                const li = createDealListItem(todayTaskSchedule, true);
+                todayTaskBoard.innerHTML = '<ul style="list-style: none; padding: 0; margin: 0;"></ul>';
+                todayTaskBoard.querySelector('ul').appendChild(li);
+            }
+
             if (allDeals.length === 0) {
                 list.innerHTML = '<li>등록된 일정이 없습니다.</li>';
                 personalCount.style.display = 'none';
