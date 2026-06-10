@@ -1392,13 +1392,6 @@
                 if (isNoticeA && !isNoticeB) return -1;
                 if (!isNoticeA && isNoticeB) return 1;
 
-                const myId = window.currentUser ? window.currentUser.id : '';
-                const isDoneA = (a.memo || '').includes('[DONE]') || (myId && (a.memo || '').includes(`[DONE:${myId}`));
-                const isDoneB = (b.memo || '').includes('[DONE]') || (myId && (b.memo || '').includes(`[DONE:${myId}`));
-                
-                if (isDoneA && !isDoneB) return 1;
-                if (!isDoneA && isDoneB) return -1;
-
                 const isInvalidA = !a.schedule_date || isNaN(new Date(a.schedule_date).getTime());
                 const isInvalidB = !b.schedule_date || isNaN(new Date(b.schedule_date).getTime());
                 
@@ -1411,6 +1404,19 @@
                 const today = new Date();
                 today.setHours(0,0,0,0);
                 
+                const isFutureA = dateA >= today;
+                const isFutureB = dateB >= today;
+
+                const myId = window.currentUser ? window.currentUser.id : '';
+                const isDoneA = (a.memo || '').includes('[DONE]') || (myId && (a.memo || '').includes(`[DONE:${myId}`));
+                const isDoneB = (b.memo || '').includes('[DONE]') || (myId && (b.memo || '').includes(`[DONE:${myId}`));
+                
+                const isPastDoneA = isDoneA && !isFutureA;
+                const isPastDoneB = isDoneB && !isFutureB;
+                
+                if (isPastDoneA && !isPastDoneB) return 1;
+                if (!isPastDoneA && isPastDoneB) return -1;
+
                 const isPastA = dateA < today && !isDoneA;
                 const isPastB = dateB < today && !isDoneB;
 
