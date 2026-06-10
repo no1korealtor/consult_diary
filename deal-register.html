@@ -1702,8 +1702,6 @@
 
                     if (schedule.schedule_type === '🚨 거래신고') {
                         typeBadgeHtml = `<span style="background: #fee2e2; color: #dc2626; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; border: 1px solid #fecaca; animation: blink-warning 2s infinite;">${schedule.schedule_type}</span>`;
-                        li.style.borderColor = '#fca5a5';
-                        li.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.15)';
                     } else {
                         typeBadgeHtml = `<span style="background: #e0e7ff; color: #4338ca; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800;">${schedule.schedule_type}</span>`;
                     }
@@ -1772,6 +1770,11 @@
                     li.style.borderColor = '#fda4af';
                     li.style.backgroundColor = '#fff1f2';
                     li.style.boxShadow = '0 4px 12px rgba(244, 63, 94, 0.1)';
+                }
+
+                if (schedule.schedule_type === '🚨 거래신고') {
+                    li.style.borderColor = '#fca5a5';
+                    li.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.15)';
                 }
                 
                 let memoHtml = '';
