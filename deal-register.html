@@ -2000,7 +2000,17 @@
                     const myId = window.currentUser ? window.currentUser.id : '';
                     const isDone = (schedule.memo || '').includes('[DONE]') || (myId && (schedule.memo || '').includes(`[DONE:${myId}`));
 
-                    if (isDone) {
+                    let isFutureDone = false;
+                    if (isDone && schedule.schedule_date) {
+                        const d = new Date(schedule.schedule_date);
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        if (!isNaN(d.getTime()) && d >= today) {
+                            isFutureDone = true;
+                        }
+                    }
+
+                    if (isDone && !isFutureDone) {
                         dealMonth = '✅ 완료된 일정';
                         isCompleted = true;
                     } else if (isNotice(schedule)) {
