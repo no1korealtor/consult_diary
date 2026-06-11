@@ -368,6 +368,70 @@
         .quiz-option:hover { border-color: #84fab0; background: #eafbf0; transform: translateY(-2px); }
         .quiz-option:active { transform: scale(0.98); }
 
+        .history-section {
+            width: 100%;
+            max-width: 480px;
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 24px;
+            padding: 24px;
+            box-sizing: border-box;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            backdrop-filter: blur(10px);
+            margin-bottom: 40px;
+        }
+
+        .history-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 20px;
+            color: #2d3436;
+            margin-bottom: 16px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .history-chart-row {
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        
+        .history-chart-date {
+            width: 45px;
+            color: #636e72;
+            font-weight: bold;
+            font-family: 'Nunito', sans-serif;
+        }
+        
+        .history-chart-bar-bg {
+            flex-grow: 1;
+            background: rgba(0,0,0,0.05);
+            height: 16px;
+            border-radius: 8px;
+            margin: 0 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .history-chart-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff9a9e 0%, #fecfef 100%);
+            border-radius: 8px;
+            transition: width 0.5s ease-out;
+        }
+        
+        .history-chart-count {
+            width: 40px;
+            text-align: right;
+            font-weight: bold;
+            color: #2d3436;
+            font-family: 'Nunito', sans-serif;
+        }
+
         @media (max-width: 600px) {
             h1 { font-size: 28px; }
             .card { padding: 24px 16px; border-radius: 28px; }
@@ -401,6 +465,8 @@
 
     <div id="card-wrapper"></div>
     <div id="last-updated" class="last-updated"></div>
+    
+    <div id="history-container" class="history-section hidden"></div>
 
     <script>
         const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
@@ -452,6 +518,7 @@
                 loadStats();
                 updateHeader(todayStr);
                 updateStatsUI();
+                loadMyHistory();
             }
         }
 
@@ -525,6 +592,7 @@
             const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
             updateHeader(todayStr);
             updateStatsUI();
+            loadMyHistory();
         }
 
         function logout() {
@@ -865,6 +933,7 @@
             isMathAiMode = false;
             mathAiResult = null;
             setupSubjects();
+            loadMyHistory();
         }
 
         function toggleMeaning() {
@@ -1037,6 +1106,87 @@
             } else {
                 alert("앗! 지금 사용 중인 브라우저에서는 발음 듣기가 안 돼요. 😥 (크롬/사파리를 추천해요)");
             }
+        }
+
+        async function loadMyHistory() {
+            if (!userNickname) return;
+            
+            const targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() - 6);
+            targetDate.setHours(0, 0, 0, 0);
+            const targetIso = targetDate.toISOString();
+
+            const { data, error } = await supabaseClient
+                .from('study_logs')
+                .select('*')
+                .eq('creator', userNickname)
+                .gte('created_at', targetIso)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("DB 로드 에러:", error);
+                return;
+            }
+
+            renderHistory(data);
+        }
+
+        function renderHistory(logs) {
+            const container = document.getElementById('history-container');
+            if (!container) return;
+            
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div class="history-title">📈 나의 일주일 공부 기록</div>
+                    <div style="text-align:center; color:#636e72; font-size:14px; padding: 20px 0; font-family:'Jua', sans-serif;">아직 최근 기록이 없어요. 오늘도 파이팅! 💖</div>
+                `;
+                container.classList.remove('hidden');
+                return;
+            }
+
+            // Aggregate by date
+            const countsByDate = {};
+            // Initialize last 7 days to maintain order
+            for(let i=6; i>=0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+                countsByDate[dateStr] = { total: 0 };
+            }
+
+            logs.forEach(log => {
+                const d = new Date(log.created_at);
+                const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+                if (countsByDate[dateStr]) {
+                    countsByDate[dateStr].total++;
+                }
+            });
+
+            let html = `<div class="history-title">📈 나의 일주일 공부 기록</div>`;
+            html += `<div style="display:flex; flex-direction:column; gap:4px; margin-top: 15px;">`;
+
+            // Max value for bar chart scaling (minimum 10)
+            const maxTotal = Math.max(10, ...Object.values(countsByDate).map(c => c.total));
+
+            Object.keys(countsByDate).reverse().forEach((dateStr, index) => {
+                const count = countsByDate[dateStr];
+                const barWidth = Math.min((count.total / maxTotal) * 100, 100);
+                const isToday = index === 0;
+                
+                html += `
+                    <div class="history-chart-row">
+                        <div class="history-chart-date" style="${isToday ? 'color:#ff758c;' : ''}">${dateStr}</div>
+                        <div class="history-chart-bar-bg">
+                            <div class="history-chart-bar-fill" style="width: ${barWidth}%; ${isToday ? 'background: linear-gradient(90deg, #84fab0 0%, #8fd3f4 100%);' : ''}"></div>
+                        </div>
+                        <div class="history-chart-count" style="${isToday ? 'color:#ff758c;' : ''}">${count.total}개</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            
+            container.innerHTML = html;
+            container.classList.remove('hidden');
         }
 
         initStats()
