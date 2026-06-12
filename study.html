@@ -496,6 +496,7 @@
         let isMathAiMode = false;
         let mathAiResult = null;
         let isMathLoading = false;
+        let isSubmitting = false;
 
         // Reward System State
         let comboCount = 0;
@@ -890,9 +891,12 @@
         }
 
         async function markAsMemorizedManually() {
+            if (isSubmitting) return;
+            isSubmitting = true;
             await updateMemorizedState();
             await insertStudyLog(currentWord.subject || '기타', currentWord.word, '직접 완료 처리');
             finalizeTest();
+            isSubmitting = false;
         }
 
         async function updateMemorizedState() {
@@ -952,13 +956,16 @@
         }
         
         async function checkTest() {
+            if (isSubmitting) return;
             const inputVal = document.getElementById('test-input').value.trim();
             if (inputVal.toLowerCase() === currentWord.word.toLowerCase()) {
+                isSubmitting = true;
                 const success = await updateMemorizedState();
-                if(!success) return;
+                if(!success) { isSubmitting = false; return; }
 
                 await insertStudyLog(currentWord.subject || '영어', currentWord.word, '스펠링 테스트 완료');
                 finalizeTest();
+                isSubmitting = false;
             } else {
                 // Combo Breaks
                 comboCount = 0;
@@ -993,15 +1000,21 @@
             renderCard();
         }
 
-        function submitQuiz(selectedWord) {
+        async function submitQuiz(selectedWord) {
+            if (isSubmitting) return;
             if (selectedWord === quizTargetWord.word) {
+                isSubmitting = true;
                 confetti({
                     particleCount: 100,
                     spread: 60,
                     origin: { y: 0.6 }
                 });
+                await insertStudyLog(quizTargetWord.subject || '복습', quizTargetWord.word, '복습 퀴즈 정답');
                 alert("정답이에요! 🎉 멋져요!");
-                setTimeout(() => startQuiz(), 500);
+                setTimeout(() => {
+                    isSubmitting = false;
+                    startQuiz();
+                }, 500);
             } else {
                 alert(`앗, 틀렸어요! 😥 정답은 '${quizTargetWord.word}' 였어요.`);
             }
@@ -1056,11 +1069,14 @@
         }
 
         async function finishMathAi() {
+            if (isSubmitting) return;
+            isSubmitting = true;
             const success = await updateMemorizedState();
-            if(!success) return;
+            if(!success) { isSubmitting = false; return; }
             
             await insertStudyLog(currentWord.subject || '수학', currentWord.word, 'AI 맞춤 수학 문제 풀이 완료');
             finalizeTest();
+            isSubmitting = false;
         }
 
         function nextWord() {

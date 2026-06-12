@@ -152,6 +152,7 @@
             const { data, error } = await supabaseClient
                 .from('study_logs')
                 .select('*')
+                .eq('creator', '아람')
                 .gte('created_at', targetIso)
                 .order('created_at', { ascending: false });
 
@@ -187,11 +188,24 @@
                 const displayTime = `${dateStr} ${timeStr}`;
                 
                 const isMath = log.subject && log.subject.includes('수학');
+                const isEng = log.subject && (log.subject.includes('영어') || log.subject.includes('영단어'));
+                
                 if (isMath) mathCount++;
-                else engCount++;
+                else if (isEng) engCount++;
 
-                const badgeClass = isMath ? 'badge-math' : 'badge-eng';
-                const badgeText = isMath ? '수학' : '영어';
+                let badgeClass = 'badge-eng';
+                let badgeText = log.subject || '기타';
+                
+                if (isMath) {
+                    badgeClass = 'badge-math';
+                    badgeText = '수학';
+                } else if (isEng) {
+                    badgeClass = 'badge-eng';
+                    badgeText = '영어';
+                } else {
+                    // 기타 과목도 영어 뱃지 색상을 사용하지만 텍스트는 실제 과목명으로 표시
+                    badgeClass = 'badge-eng';
+                }
 
                 html += `
                     <li class="log-item">
