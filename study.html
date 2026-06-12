@@ -481,6 +481,7 @@
         let currentWord = null
         let meaningVisible = false
         let isTestMode = false
+        let isIrregularTestMode = false
         
         let wordsBySubject = {}
         let subjects = []
@@ -746,6 +747,32 @@
                 return;
             }
 
+            if (isIrregularTestMode) {
+                cardContainer.innerHTML = `
+                    <div class="card test-mode">
+                        <div class="test-title">🔥 불규칙 변화 테스트 🔥</div>
+                        
+                        <div class="meaning-hint" style="font-size: 32px; color: #ff758c; border-color: #ff758c;">${word.word}</div>
+                        <div style="text-align: center; color: #636e72; margin-bottom: 20px; font-weight: bold;">(${word.meaning || ''})</div>
+                        
+                        <div style="text-align: center; font-size: 16px; color: #b2bec3; margin-bottom: 10px;">
+                            과거/과거분사형을 입력해주세요! (쉼표나 띄어쓰기는 무시됩니다)
+                        </div>
+                        
+                        <div class="input-group">
+                            <input type="text" id="irregular-test-input" placeholder="불규칙 형태 입력! ✍️" autocomplete="off" onkeypress="if(event.key === 'Enter') checkIrregularTest()">
+                        </div>
+
+                        <div class="buttons">
+                            <button class="btn-submit" onclick="checkIrregularTest()">정답 제출 💖</button>
+                            <button class="btn-cancel" onclick="cancelTest()">취소 닫기</button>
+                        </div>
+                    </div>
+                `;
+                setTimeout(() => document.getElementById('irregular-test-input').focus(), 10);
+                return;
+            }
+
             if (isQuizMode) {
                 cardContainer.innerHTML = `
                     <div class="card test-mode">
@@ -857,7 +884,8 @@
                <button class="btn-test" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white;" onclick="startMathAiMode()">🤖 AI 맞춤 문제</button>` 
               :
               `<button class="btn-meaning" onclick="toggleMeaning()">✨ 뜻 보기</button>
-               <button class="btn-test" onclick="toggleTestMode()">📝 스펠링 테스트</button>`
+               <button class="btn-test" onclick="toggleTestMode()">📝 스펠링 테스트</button>
+               ${word.irregular ? `<button class="btn-test" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:white;" onclick="toggleIrregularTestMode()">📝 불규칙 테스트</button>` : ''}`
             }
             <button class="btn-submit" onclick="markAsMemorizedManually()">✔️ 그냥 완료할래요</button>
             <button class="btn-next" onclick="nextWord()">다음 🚀</button>
@@ -934,6 +962,7 @@
             words = words.filter(w => w.id !== currentWord.id);
             memorizedWords.push(memorizedWord);
             isTestMode = false;
+            isIrregularTestMode = false;
             isMathAiMode = false;
             mathAiResult = null;
             setupSubjects();
@@ -949,9 +978,15 @@
             isTestMode = true
             renderCard()
         }
+
+        function toggleIrregularTestMode() {
+            isIrregularTestMode = true
+            renderCard()
+        }
         
         function cancelTest() {
             isTestMode = false
+            isIrregularTestMode = false
             renderCard()
         }
         
@@ -973,6 +1008,33 @@
 
                 alert("앗, 틀렸어요! 다시 한 번 시도해볼까요? 😉");
                 const inputEl = document.getElementById('test-input');
+                inputEl.value = '';
+                inputEl.focus();
+            }
+        }
+
+        async function checkIrregularTest() {
+            if (isSubmitting) return;
+            const inputVal = document.getElementById('irregular-test-input').value.trim();
+            
+            // 공백, 쉼표, 하이픈 등 기호 무시하고 소문자로 알파벳만 비교 (또는 한글도 포함)
+            const normalizedInput = inputVal.toLowerCase().replace(/[\s\-\,\.]/g, '');
+            const normalizedTarget = currentWord.irregular.toLowerCase().replace(/[\s\-\,\.]/g, '');
+
+            if (normalizedInput === normalizedTarget) {
+                isSubmitting = true;
+                const success = await updateMemorizedState();
+                if(!success) { isSubmitting = false; return; }
+
+                await insertStudyLog(currentWord.subject || '영어', currentWord.word, '불규칙 변화 테스트 완료');
+                finalizeTest();
+                isSubmitting = false;
+            } else {
+                comboCount = 0;
+                saveStats();
+
+                alert("앗, 틀렸어요! 불규칙 형태를 다시 한 번 확인해볼까요? 😉");
+                const inputEl = document.getElementById('irregular-test-input');
                 inputEl.value = '';
                 inputEl.focus();
             }
