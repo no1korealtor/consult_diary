@@ -251,7 +251,7 @@
             justify-content: center;
             font-family: 'Jua', sans-serif;
         }
-        .harmonica-cell.top { height: 20px; font-size: 13px; border-bottom: 1px solid #2a2a40; }
+        .harmonica-cell.top { height: 40px; border-bottom: 1px solid #2a2a40; }
         .harmonica-cell.middle { background: #ffffff; height: 26px; font-size: 16px; border-bottom: 1px solid #dfe6e9; }
         .harmonica-cell.bottom { background: #dfe6e9; height: 26px; font-size: 16px; }
     </style>
@@ -710,6 +710,32 @@
             const middleRow = ['','도','','미','','솔','','도','','미','','솔','','도','','미','','솔','','도','',''];
             const bottomRow = ['레','','파','','라','','시','','레','','파','','라','','시','','레','','파','','라','시'];
             
+            // 숫자 악보 표기법 (1~22홀)
+            const topRowNumbers = [
+                { num: 2, dot: 'bottom' }, // 1: 레 (저음)
+                { num: 1, dot: 'bottom' }, // 2: 도 (저음)
+                { num: 4, dot: 'bottom' }, // 3: 파 (저음)
+                { num: 3, dot: 'bottom' }, // 4: 미 (저음)
+                { num: 6, dot: 'bottom' }, // 5: 라 (저음)
+                { num: 5, dot: 'bottom' }, // 6: 솔 (저음)
+                { num: 7, dot: 'bottom' }, // 7: 시 (저음)
+                { num: 1, dot: 'none' },   // 8: 도 (중음)
+                { num: 2, dot: 'none' },   // 9: 레 (중음)
+                { num: 3, dot: 'none' },   // 10: 미 (중음)
+                { num: 4, dot: 'none' },   // 11: 파 (중음)
+                { num: 5, dot: 'none' },   // 12: 솔 (중음)
+                { num: 6, dot: 'none' },   // 13: 라 (중음)
+                { num: 1, dot: 'top' },    // 14: 도 (고음)
+                { num: 7, dot: 'none' },   // 15: 시 (중음)
+                { num: 3, dot: 'top' },    // 16: 미 (고음)
+                { num: 2, dot: 'top' },    // 17: 레 (고음)
+                { num: 5, dot: 'top' },    // 18: 솔 (고음)
+                { num: 4, dot: 'top' },    // 19: 파 (고음)
+                { num: 1, dot: 'top-double' }, // 20: 도 (최고음)
+                { num: 6, dot: 'top' },    // 21: 라 (고음)
+                { num: 7, dot: 'top' }     // 22: 시 (고음)
+            ];
+
             function getColor(num) {
                 if(num <= 7) return '#0984e3'; // 저음 (파랑)
                 if(num <= 13) return '#d63031'; // 중음 (빨강)
@@ -723,7 +749,20 @@
             for(let i=1; i<=22; i++) {
                 const isHighlight = [2,8,14,20].includes(i);
                 const bg = isHighlight ? '#fbc2eb' : '#faedcd';
-                html += `<div class="harmonica-cell top" style="background:${bg}; color:${getColor(i)};">${i}</div>`;
+                const note = topRowNumbers[i-1];
+                let numberHTML = '';
+                
+                if (note.dot === 'bottom') {
+                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:3px;"><span style="font-size:16px; font-weight:900; line-height:1;">${note.num}</span><span style="font-size:10px; line-height:0.5; color:rgba(0,0,0,0.6);">●</span></div>`;
+                } else if (note.dot === 'top') {
+                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:3px;"><span style="font-size:10px; line-height:0.5; color:rgba(0,0,0,0.6);">●</span><span style="font-size:16px; font-weight:900; line-height:1;">${note.num}</span></div>`;
+                } else if (note.dot === 'top-double') {
+                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:3px;"><span style="font-size:8px; line-height:0.5; color:rgba(0,0,0,0.6); letter-spacing:2px; margin-right:-2px;">●●</span><span style="font-size:16px; font-weight:900; line-height:1;">${note.num}</span></div>`;
+                } else {
+                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;"><span style="font-size:16px; font-weight:900; line-height:1;">${note.num}</span></div>`;
+                }
+
+                html += `<div class="harmonica-cell top" style="background:${bg}; color:${getColor(i)};">${numberHTML}</div>`;
             }
             
             // 2. Middle Row (Blow/내쉬기)

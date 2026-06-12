@@ -295,7 +295,8 @@
 
     <select id="contractType">
         <option value="정산">정산</option>
-        <option value="잔금">잔금</option>
+        <option value="임대차 잔금">임대차 잔금</option>
+        <option value="매매 잔금">매매 잔금</option>
         <option value="임대차계약">임대차계약</option>
         <option value="매매계약">매매계약</option>
         <option value="집보여주기">집보여주기</option>
@@ -743,7 +744,7 @@
                             const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
                             if (dateRegex.test(balanceDate)) {
                                 const payload = {
-                                    schedule_type: '잔금',
+                                    schedule_type: schedule.schedule_type === '매매계약' ? '매매 잔금' : '임대차 잔금',
                                     schedule_date: balanceDate,
                                     building_id: schedule.building_id,
                                     room_id: schedule.room_id,
@@ -793,8 +794,8 @@
                             }
                         }
                     }
-                } else if (schedule.schedule_type === '잔금') {
-                    const createNotice = confirm("🎉 잔금 처리가 완료되었습니다!\n만약 임대차 계약이라면, 오늘(실제 잔금일) 기준으로 18개월 뒤(만기 6개월 전)에 알림 일정을 자동 생성하시겠습니까?");
+                } else if (schedule.schedule_type === '임대차 잔금') {
+                    const createNotice = confirm("🎉 임대차 잔금 처리가 완료되었습니다!\n오늘(실제 잔금일) 기준으로 18개월 뒤(만기 6개월 전)에 알림 일정을 자동 생성하시겠습니까?");
                     if (createNotice) {
                         const payloadsToInsert = [];
                         const bDateObj = new Date(todayStr);
@@ -1054,7 +1055,7 @@
                 } else {
                     finalMemo += '\n[PRIVATE]';
                 }
-            } else if (contractType === '잔금') {
+            } else if (contractType === '임대차 잔금' || contractType === '매매 잔금') {
                 const chkTime = document.getElementById('chkTime')?.checked;
                 const chkUtil = document.getElementById('chkUtil')?.checked;
                 if (chkTime) {
@@ -1381,7 +1382,7 @@
                 const isGlobal = !s.buildings && !s.building_id && !s.properties && !s.property_id;
                 const isPrivate = (s.memo || '').includes('[PRIVATE]');
                 const isProposal = (s.memo || '').includes('[PROPOSAL]');
-                const isReport = s.schedule_type === '🚨 거래신고' || s.schedule_type === '잔금' || s.schedule_type === '계약' || (s.memo && s.memo.includes('부동산거래신고'));
+                const isReport = s.schedule_type === '🚨 거래신고' || s.schedule_type === '잔금' || s.schedule_type === '임대차 잔금' || s.schedule_type === '매매 잔금' || s.schedule_type === '계약' || (s.memo && s.memo.includes('부동산거래신고'));
                 return isGlobal && !isPrivate && !isProposal && !isReport;
             };
 
@@ -2531,7 +2532,7 @@ function toggleTipText(id, btn) {
             const jTasks = document.getElementById('jangumTasks');
             if (cType && jTasks) {
                 cType.addEventListener('change', (e) => {
-                    jTasks.style.display = e.target.value === '잔금' ? 'block' : 'none';
+                    jTasks.style.display = (e.target.value === '임대차 잔금' || e.target.value === '매매 잔금' || e.target.value === '잔금') ? 'block' : 'none';
                 });
             }
 
