@@ -205,8 +205,39 @@
                 }
                 roomSelect.value = roomIdToSelect;
                 roomSelect.disabled = true;
+                loadExistingMeters(roomIdToSelect);
             }
 
+        }
+
+        async function loadExistingMeters(roomId) {
+            if (!roomId) return;
+            
+            // 기존 값들을 초기화
+            document.getElementById('electric').value = '';
+            document.getElementById('water').value = '';
+            document.getElementById('gas').value = '';
+            document.getElementById('contact').value = '';
+
+            const { data, error } = await supabaseClient
+                .from('utility_meters')
+                .select('*')
+                .eq('room_id', roomId)
+                .order('created_at', { ascending: false });
+
+            if (error || !data) return;
+
+            // 타입별로 가장 최근(created_at 역순) 데이터 하나씩만 채우기
+            const typesFound = {};
+            data.forEach(meter => {
+                if (!typesFound[meter.type]) {
+                    typesFound[meter.type] = true;
+                    const inputEl = document.getElementById(meter.type);
+                    if (inputEl) {
+                        inputEl.value = meter.meter_last4 || '';
+                    }
+                }
+            });
         }
 
         async function saveMeter(type, value, roomId) {
@@ -296,6 +327,10 @@
         document
             .getElementById('buildingSelect')
             .addEventListener('change', loadRooms);
+
+        document
+            .getElementById('roomSelect')
+            .addEventListener('change', (e) => loadExistingMeters(e.target.value));
 
         async function init() {
             const user = await requireAuth();
