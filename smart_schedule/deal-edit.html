@@ -87,10 +87,18 @@
             </div>
         </div>
         
-        <label id="chkRepeatYearlyContainer" style="display: none; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 14px; font-weight: 700; color: #1e293b; cursor: pointer;">
-            <input type="checkbox" id="chkRepeatYearly" style="width: 18px; height: 18px; accent-color: #3b82f6;">
-            매년 반복 (저장 시 향후 5년치 자동 추가 생성)
-        </label>
+        <div id="repeatOptionsContainer" style="display: none; background: #f8fafc; padding: 12px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 13px; font-weight: 800; color: #475569; margin-bottom: 8px;">🔁 반복 설정</div>
+            <select id="selRepeatType" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 8px; font-size: 14px;">
+                <option value="none">반복 안함</option>
+                <option value="monthly">매월 반복 (저장 시 향후 12개월치 추가 생성)</option>
+                <option value="yearly">매년 반복 (저장 시 향후 5년치 추가 생성)</option>
+            </select>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #475569; cursor: pointer;">
+                <input type="checkbox" id="chkRepeatNextBizDay" style="width: 16px; height: 16px; accent-color: #3b82f6;">
+                주말일 경우 익일(다음 영업일)로 자동 미루기
+            </label>
+        </div>
 
         <div id="meetingEditFields" style="display: none; background: #eff6ff; padding: 16px; border-radius: 12px; border: 1px solid #bfdbfe; margin-bottom: 12px;">
             <label style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">모임 장소 (주소 검색)</label>
@@ -193,7 +201,7 @@
                 document.getElementById('balanceDateLabel').style.display = 'block';
                 document.querySelector('.notice').innerText = "💡 장소, 링크 및 메모를 수정할 수 있습니다.";
                 document.getElementById('meetingEditFields').style.display = 'block';
-                document.getElementById('chkRepeatYearlyContainer').style.display = 'flex';
+                document.getElementById('repeatOptionsContainer').style.display = 'block';
                 
                 let mLoc = data.location || null;
                 if (data.location_detail) mLoc += ' ' + data.location_detail;
@@ -320,14 +328,37 @@
                 return;
             }
 
-            const chkRepeat = document.getElementById('chkRepeatYearly');
-            if (chkRepeat && chkRepeat.checked && balanceDate && document.getElementById('meetingEditFields').style.display === 'block') {
+            const selRepeatType = document.getElementById('selRepeatType');
+            const chkRepeatNextBizDay = document.getElementById('chkRepeatNextBizDay');
+            
+            function adjustToNextBizDay(dateObj) {
+                let d = new Date(dateObj);
+                while (d.getDay() === 0 || d.getDay() === 6) { // 0=Sunday, 6=Saturday
+                    d.setDate(d.getDate() + 1);
+                }
+                return d;
+            }
+
+            if (selRepeatType && selRepeatType.value !== 'none' && balanceDate && document.getElementById('meetingEditFields').style.display === 'block') {
                 const bDate = new Date(balanceDate);
                 if (!isNaN(bDate.getTime())) {
                     let repeatPayloads = [];
-                    for (let i = 1; i <= 5; i++) {
-                        const futureDate = new Date(bDate);
-                        futureDate.setFullYear(futureDate.getFullYear() + i);
+                    const repeatType = selRepeatType.value;
+                    const applyNextBizDay = chkRepeatNextBizDay && chkRepeatNextBizDay.checked;
+                    
+                    const count = repeatType === 'monthly' ? 12 : 5;
+                    for (let i = 1; i <= count; i++) {
+                        let futureDate = new Date(bDate);
+                        if (repeatType === 'monthly') {
+                            futureDate.setMonth(futureDate.getMonth() + i);
+                        } else if (repeatType === 'yearly') {
+                            futureDate.setFullYear(futureDate.getFullYear() + i);
+                        }
+                        
+                        if (applyNextBizDay) {
+                            futureDate = adjustToNextBizDay(futureDate);
+                        }
+                        
                         const nY = futureDate.getFullYear();
                         const nM = String(futureDate.getMonth() + 1).padStart(2, '0');
                         const nD = String(futureDate.getDate()).padStart(2, '0');

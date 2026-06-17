@@ -315,10 +315,18 @@
     </div>
 
     <input type="text" id="meetingName" placeholder="📌 모임/기념일 이름 (예: 정기모임, 생일 등)" style="display: none; margin-bottom: 12px; font-weight: 800; border-color: #bfdbfe;">
-    <label id="chkRepeatYearlyContainer" style="display: none; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 14px; font-weight: 700; color: #1e293b; cursor: pointer;">
-        <input type="checkbox" id="chkRepeatYearly" style="width: 18px; height: 18px; accent-color: #3b82f6;">
-        매년 반복 (기념일, 생일 등 향후 5년치 자동 생성)
-    </label>
+    <div id="repeatOptionsContainer" style="display: none; background: #f8fafc; padding: 12px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #e2e8f0;">
+        <div style="font-size: 13px; font-weight: 800; color: #475569; margin-bottom: 8px;">🔁 반복 설정</div>
+        <select id="selRepeatType" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 8px; font-size: 14px;">
+            <option value="none">반복 안함</option>
+            <option value="monthly">매월 반복 (향후 12개월치 자동 생성)</option>
+            <option value="yearly">매년 반복 (향후 5년치 자동 생성)</option>
+        </select>
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #475569; cursor: pointer;">
+            <input type="checkbox" id="chkRepeatNextBizDay" style="width: 16px; height: 16px; accent-color: #3b82f6;">
+            주말일 경우 익일(다음 영업일)로 자동 미루기
+        </label>
+    </div>
 
     <div id="meetSubTabs" style="display: none; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 6px; margin-bottom: 16px; flex-direction: column; gap: 4px;">
         <div style="display: flex; gap: 4px;">
@@ -926,7 +934,7 @@
                 meetingFields.style.display = 'none';
                 if (meetSubTabs) meetSubTabs.style.display = 'none';
                 if (meetingName) meetingName.style.display = 'none';
-                const chkRep = document.getElementById('chkRepeatYearlyContainer');
+                const chkRep = document.getElementById('repeatOptionsContainer');
                 if (chkRep) chkRep.style.display = 'none';
                 if (contractType.value === '모임') contractType.value = '정산';
                 memo.placeholder = '메모';
@@ -944,8 +952,8 @@
                 meetingFields.style.display = 'block';
                 if (meetSubTabs) meetSubTabs.style.display = 'flex';
                 if (meetingName) meetingName.style.display = 'block';
-                const chkRep = document.getElementById('chkRepeatYearlyContainer');
-                if (chkRep) chkRep.style.display = 'flex';
+                const chkRep = document.getElementById('repeatOptionsContainer');
+                if (chkRep) chkRep.style.display = 'block';
                 memo.placeholder = '추가 메모 (선택사항)';
             }
         }
@@ -1086,13 +1094,36 @@
             let payloads = [payload];
 
 
-            const chkRepeat = document.getElementById('chkRepeatYearly');
-            if (contractType === '모임' && chkRepeat && chkRepeat.checked && balanceDate) {
+            const selRepeatType = document.getElementById('selRepeatType');
+            const chkRepeatNextBizDay = document.getElementById('chkRepeatNextBizDay');
+            
+            function adjustToNextBizDay(dateObj) {
+                let d = new Date(dateObj);
+                while (d.getDay() === 0 || d.getDay() === 6) { // 0=Sunday, 6=Saturday
+                    d.setDate(d.getDate() + 1);
+                }
+                return d;
+            }
+
+            if (contractType === '모임' && selRepeatType && selRepeatType.value !== 'none' && balanceDate) {
                 const bDate = new Date(balanceDate);
                 if (!isNaN(bDate.getTime())) {
-                    for (let i = 1; i <= 5; i++) {
-                        const futureDate = new Date(bDate);
-                        futureDate.setFullYear(futureDate.getFullYear() + i);
+                    const repeatType = selRepeatType.value;
+                    const applyNextBizDay = chkRepeatNextBizDay && chkRepeatNextBizDay.checked;
+                    
+                    const count = repeatType === 'monthly' ? 12 : 5;
+                    for (let i = 1; i <= count; i++) {
+                        let futureDate = new Date(bDate);
+                        if (repeatType === 'monthly') {
+                            futureDate.setMonth(futureDate.getMonth() + i);
+                        } else if (repeatType === 'yearly') {
+                            futureDate.setFullYear(futureDate.getFullYear() + i);
+                        }
+                        
+                        if (applyNextBizDay) {
+                            futureDate = adjustToNextBizDay(futureDate);
+                        }
+                        
                         const nY = futureDate.getFullYear();
                         const nM = String(futureDate.getMonth() + 1).padStart(2, '0');
                         const nD = String(futureDate.getDate()).padStart(2, '0');
