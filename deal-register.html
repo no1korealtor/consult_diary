@@ -610,10 +610,22 @@
 
             let todayScheduleId = null;
             const pastSchedules = [];
+            const duplicateTodaySchedules = [];
+
+            // 1. Sort today schedules so that the one WITH tasks is more likely to be picked as todayScheduleId
+            myTodayTasks.sort((a, b) => {
+                const aLen = a.schedule_tasks ? a.schedule_tasks.length : 0;
+                const bLen = b.schedule_tasks ? b.schedule_tasks.length : 0;
+                return bLen - aLen;
+            });
 
             myTodayTasks.forEach(s => {
                 if (s.schedule_date === todayStr) {
-                    todayScheduleId = s.id;
+                    if (!todayScheduleId) {
+                        todayScheduleId = s.id;
+                    } else {
+                        duplicateTodaySchedules.push(s);
+                    }
                 } else {
                     pastSchedules.push(s);
                 }
@@ -632,8 +644,19 @@
                 }
             }
 
-            if (todayScheduleId && pastSchedules.length > 0) {
+            if (todayScheduleId) {
                 const toDelete = [];
+
+                // 2. Merge all tasks from duplicate today schedules
+                for (const s of duplicateTodaySchedules) {
+                    if (s.schedule_tasks && s.schedule_tasks.length > 0) {
+                        const taskIds = s.schedule_tasks.map(t => t.id);
+                        await supabaseClient.from('schedule_tasks').update({ schedule_id: todayScheduleId }).in('id', taskIds);
+                    }
+                    toDelete.push(s.id);
+                }
+
+                // 3. Merge only uncompleted tasks from past schedules
                 for (const s of pastSchedules) {
                     if (s.schedule_tasks && s.schedule_tasks.length > 0) {
                         const uncompletedTaskIds = s.schedule_tasks.filter(t => !t.is_completed).map(t => t.id);
@@ -648,6 +671,7 @@
                         toDelete.push(s.id);
                     }
                 }
+
                 if (toDelete.length > 0) {
                     await supabaseClient.from('schedules').delete().in('id', toDelete);
                 }
