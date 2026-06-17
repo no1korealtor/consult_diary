@@ -600,7 +600,7 @@
 
             const { data, error } = await supabaseClient
                 .from('schedules')
-                .select('id, schedule_date, memo, schedule_type, schedule_tasks(id)')
+                .select('id, schedule_date, memo, schedule_type, schedule_tasks(id, is_completed)')
                 .eq('user_id', myId)
                 .eq('schedule_type', '모임');
 
@@ -608,32 +608,52 @@
 
             const myTodayTasks = data.filter(s => s.memo && s.memo.startsWith('오늘의 업무\n[PRIVATE]'));
 
-            let hasToday = false;
-            const toDelete = [];
+            let todayScheduleId = null;
+            const pastSchedules = [];
 
             myTodayTasks.forEach(s => {
                 if (s.schedule_date === todayStr) {
-                    hasToday = true;
-                } else if (!s.schedule_tasks || s.schedule_tasks.length === 0) {
-                    toDelete.push(s.id);
+                    todayScheduleId = s.id;
+                } else {
+                    pastSchedules.push(s);
                 }
             });
 
-            if (toDelete.length > 0) {
-                await supabaseClient.from('schedules').delete().in('id', toDelete);
-            }
-
-            if (!hasToday) {
-                await supabaseClient.from('schedules').insert([{
+            if (!todayScheduleId) {
+                const { data: newSch } = await supabaseClient.from('schedules').insert([{
                     schedule_type: '모임',
                     schedule_date: todayStr,
                     user_id: myId,
                     office_id: officeId,
                     memo: '오늘의 업무\n[PRIVATE]'
-                }]);
-                return true;
+                }]).select();
+                if (newSch && newSch.length > 0) {
+                    todayScheduleId = newSch[0].id;
+                }
             }
-            return false;
+
+            if (todayScheduleId && pastSchedules.length > 0) {
+                const toDelete = [];
+                for (const s of pastSchedules) {
+                    if (s.schedule_tasks && s.schedule_tasks.length > 0) {
+                        const uncompletedTaskIds = s.schedule_tasks.filter(t => !t.is_completed).map(t => t.id);
+                        if (uncompletedTaskIds.length > 0) {
+                            await supabaseClient.from('schedule_tasks').update({ schedule_id: todayScheduleId }).in('id', uncompletedTaskIds);
+                        }
+                        const remainingCompletedTasks = s.schedule_tasks.filter(t => t.is_completed);
+                        if (remainingCompletedTasks.length === 0) {
+                            toDelete.push(s.id);
+                        }
+                    } else {
+                        toDelete.push(s.id);
+                    }
+                }
+                if (toDelete.length > 0) {
+                    await supabaseClient.from('schedules').delete().in('id', toDelete);
+                }
+            }
+            
+            return true;
         }
 
         let _isCheckingAuth = false;
