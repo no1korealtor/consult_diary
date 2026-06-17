@@ -1386,6 +1386,27 @@
                 return isGlobal && !isPrivate && !isProposal && !isReport;
             };
 
+            allDeals = allDeals.map(schedule => {
+                const currentUserId = window.currentUser ? window.currentUser.id : null;
+                const parsed = typeof parseScheduleMemo === 'function' ? parseScheduleMemo(schedule.memo, schedule.schedule_time, currentUserId) : { isDone: false };
+                
+                if (schedule.schedule_date && !parsed.isDone) {
+                    const isNoticeFlag = isNotice(schedule);
+                    if (!isNoticeFlag) {
+                        const schDate = new Date(schedule.schedule_date);
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        
+                        if (!isNaN(schDate.getTime()) && schDate < today) {
+                            schedule.original_schedule_date = schedule.schedule_date;
+                            schedule.schedule_date = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                            schedule.is_delayed = true;
+                        }
+                    }
+                }
+                return schedule;
+            });
+
             const sortByDate = (a, b) => {
                 const isNoticeA = isNotice(a);
                 const isNoticeB = isNotice(b);
@@ -1770,6 +1791,12 @@
                         }
                     }
                     dDayHtml = `<span style="background: ${badgeBg}; color: ${badgeColor}; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">${dDayText}</span>`;
+                }
+
+                if (schedule.is_delayed) {
+                    const origD = new Date(schedule.original_schedule_date);
+                    const origStr = `${origD.getMonth()+1}/${origD.getDate()}`;
+                    dDayHtml += ` <span style="background: #fee2e2; color: #ef4444; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800; animation: blink-warning 2s infinite;">지연됨 (${origStr})</span>`;
                 }
 
                 const li = document.createElement('li');
