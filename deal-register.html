@@ -760,6 +760,12 @@
             const myId = window.currentUser ? window.currentUser.id : '';
             if (!myId) return;
 
+            if (!currentIsDone && schedule.memo && schedule.memo.includes('오늘의 업무')) {
+                if (!confirm("오늘의 업무 전체를 완료 처리하시겠습니까?\n(실수로 누르셨다면 '취소'를 클릭하세요.)")) {
+                    return;
+                }
+            }
+
             let newMemo = schedule.memo || '';
             if (currentIsDone) {
                 newMemo = newMemo.replace(/\[DONE\]/g, '')
