@@ -19,7 +19,7 @@ nav_template = """<nav class="{navClass}">
     </a>
     <a href="tips-handbook.html" class="nav-item{active_tips}">
         <span class="nav-icon">🗂️</span>
-        <span>자료실</span>
+        <span>매뉴얼/자료</span>
     </a>
     <a href="profile-edit.html" class="nav-item{active_profile}">
         <span class="nav-icon">👤</span>
