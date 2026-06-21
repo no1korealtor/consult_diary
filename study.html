@@ -820,12 +820,12 @@
 
                             <div class="buttons" id="math-actions-1">
                                 <button class="btn-meaning" onclick="document.getElementById('math-solution-area').classList.remove('hidden'); document.getElementById('math-actions-1').classList.add('hidden'); document.getElementById('math-actions-2').classList.remove('hidden');">👀 정답 및 풀이 보기</button>
-                                <button class="btn-cancel" onclick="cancelTest()">다음에 풀기</button>
+                                <button class="btn-cancel" onclick="nextWord()">다음에 풀기</button>
                             </div>
                             
                             <div class="buttons hidden" id="math-actions-2">
                                 <button class="btn-submit" style="width:100%" onclick="finishMathAi()">이해했어요! (완료) 💖</button>
-                                <button class="btn-cancel" onclick="cancelTest()">다시 공부할게요</button>
+                                <button class="btn-cancel" onclick="nextWord()">다시 공부할게요</button>
                             </div>
                         </div>
                     `;
@@ -887,7 +887,6 @@
                <button class="btn-test" onclick="toggleTestMode()">📝 스펠링 테스트</button>
                ${word.irregular ? `<button class="btn-test" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:white;" onclick="toggleIrregularTestMode()">📝 불규칙 테스트</button>` : ''}`
             }
-            <button class="btn-submit" onclick="markAsMemorizedManually()">✔️ 그냥 완료할래요</button>
             <button class="btn-next" onclick="nextWord()">다음 🚀</button>
             ${!isMath ? `<button class="btn-quiz" style="width: 100%;" onclick="startQuiz()">🎮 복습 퀴즈 풀기</button>` : ''}
           </div>
@@ -987,6 +986,7 @@
         function cancelTest() {
             isTestMode = false
             isIrregularTestMode = false
+            isMathAiMode = false
             renderCard()
         }
         

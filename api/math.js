@@ -24,7 +24,8 @@ export default async function handler(req) {
 아이가 '${word}'에 대한 기초 문제를 풀고 싶어해. 
 이 개념을 확인할 수 있는 아주 쉽고 기본적인 기초 문제 딱 1개만 내줘. 꼬아낸 응용 문제는 절대 안돼.
 해설은 왜 이렇게 계산해야 하는지 초등학생에게 설명하듯 다정하게 하나씩 풀어서 설명해줘.
-중요: 분수, 거듭제곱(제곱), 곱하기 기호 등 모든 수식은 반드시 LaTeX 문법으로 작성하고 양쪽을 $ 기호로 감싸줘. (예: $x^2$, $\\frac{1}{2}$, $a \\times b$).
+중요: 분수, 거듭제곱(제곱), 곱하기 기호 등 모든 수식은 반드시 LaTeX 문법으로 작성하고 양쪽을 $ 기호로 감싸줘.
+주의: JSON 응답이므로 LaTeX 백슬래시는 반드시 이중 백슬래시(\\\\)로 작성해야 해! (예: $x^2$, $\\\\frac{1}{2}$, $a \\\\times b$).
 응답은 반드시 아래 JSON 형식으로만 줘. 절대 다른 말은 붙이지 마:
 {"problem": "문제 내용", "answer": "정답", "solution": "풀이 과정"}`;
 
@@ -44,7 +45,10 @@ export default async function handler(req) {
     const data = await response.json();
     let resultJson = {};
     if (data.candidates && data.candidates[0].content.parts[0].text) {
-        resultJson = JSON.parse(data.candidates[0].content.parts[0].text);
+        let rawText = data.candidates[0].content.parts[0].text;
+        // AI가 마크다운 블록(```json ... ```)으로 감쌀 경우 제거
+        rawText = rawText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        resultJson = JSON.parse(rawText);
     } else {
         throw new Error("Invalid response from Gemini");
     }
