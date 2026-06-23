@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -217,6 +217,24 @@
             const user = await requireAuth();
             if (user) {
                 document.getElementById('welcomeMessage').innerText = (user.name || '전문가') + '님 환영합니다!';
+                
+                if (user.office_address && user.office_address.includes('마포구')) {
+                    const orgsList = document.querySelector('#orgsTab ul');
+                    if (orgsList && !document.getElementById('mapoOfficeItem')) {
+                        const li = document.createElement('li');
+                        li.className = 'user-item';
+                        li.id = 'mapoOfficeItem';
+                        li.innerHTML = `
+                            <div class="user-info">
+                                <span class="user-name">부동산정보과(마포구청)</span>
+                                <span class="user-phone">관할구청 등록관청</span>
+                            </div>
+                            <a href="tel:02-3153-9926" style="padding: 8px 12px; background: #e0f2fe; color: #0284c7; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 700;">📞 02-3153-9926</a>
+                        `;
+                        orgsList.appendChild(li);
+                    }
+                }
+                
                 loadUsers();
             }
         }

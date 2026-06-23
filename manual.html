@@ -95,8 +95,14 @@
 <body>
 
     <div class="header">
-        <div class="header-top">
-            <h1>🗂️ 자료 및 편람</h1>
+        <div class="header-top" style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h1 style="flex: 1;">🗂️ 자료 및 편람</h1>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                <div id="welcomeMessage" style="font-size: 12px; font-weight: 700; color: #4b5563; margin-bottom: 4px;"></div>
+                <button type="button" onclick="logout()" style="background: white; border: 1px solid #e5e7eb; font-size: 12px; cursor: pointer; padding: 4px 8px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); color: #4b5563; display: flex; align-items: center; gap: 4px; margin: 0; width: auto;" title="로그아웃">
+                    🚪 로그아웃
+                </button>
+            </div>
         </div>
         <div class="tabs">
             <a href="manual.html" class="tab-btn active">앱 매뉴얼</a>
@@ -251,6 +257,18 @@
         <span>내정보</span>
     </a>
 </nav>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth-helper.js"></script>
+<script>
+    async function checkAuthAndLoad() {
+        const user = await requireAuth();
+        if (user) {
+            const wm = document.getElementById('welcomeMessage');
+            if (wm) wm.innerText = (user.name || '전문가') + '님 환영합니다!';
+        }
+    }
+    checkAuthAndLoad();
+</script>
 </body>
 </html>
 

@@ -276,8 +276,14 @@
 </head>
 <body>
     <div class="header">
-        <div class="header-top">
-            <h1>🗂️ 자료 및 편람</h1>
+        <div class="header-top" style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <h1 style="flex: 1;">🗂️ 자료 및 편람</h1>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                <div id="welcomeMessage" style="font-size: 12px; font-weight: 700; color: #4b5563; margin-bottom: 4px;"></div>
+                <button type="button" onclick="logout()" style="background: white; border: 1px solid #e5e7eb; font-size: 12px; cursor: pointer; padding: 4px 8px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); color: #4b5563; display: flex; align-items: center; gap: 4px; margin: 0; width: auto;" title="로그아웃">
+                    🚪 로그아웃
+                </button>
+            </div>
         </div>
         <div class="tabs">
             <a href="manual.html" class="tab-btn">앱 매뉴얼</a>
@@ -370,7 +376,18 @@
         let allTips = [];
 
         async function loadHandbook() {
-            await requireAuth();
+            const { data: { session } } = await authClient.auth.getSession();
+            if (session && session.user) {
+                try {
+                    const profile = await requireAuth();
+                    if (profile) {
+                        const wm = document.getElementById('welcomeMessage');
+                        if(wm) wm.innerText = (profile.name || '전문가') + '님 환영합니다!';
+                    }
+                } catch(e) {}
+            } else {
+                window.currentUser = null;
+            }
 
             const { data, error } = await supabaseClient
                 .from('practical_tips')
@@ -386,6 +403,13 @@
             allTips = data || [];
             renderIndex(allTips);
             renderLatestUpdates(allTips);
+
+            // URL 파라미터 확인 및 바로 열기
+            const urlParams = new URLSearchParams(window.location.search);
+            const tipId = urlParams.get('id');
+            if (tipId) {
+                setTimeout(() => showArticle(parseInt(tipId)), 100);
+            }
         }
 
         function renderLatestUpdates(tips) {
@@ -503,11 +527,9 @@
             if (tip.effective_date) metaHtml += `<span class="meta-tag">📅 ${tip.effective_date}</span>`;
             if (tip.warnings) metaHtml += `<span class="meta-tag meta-warning">⚠️ ${tip.warnings}</span>`;
             
-            // 가입 승인된 회원 (역할이 있는 경우) 블로그 복사 버튼 표시
-            if (window.currentUser && window.currentUser.role) {
-                metaHtml += `<button class="meta-tag" onclick="copyForKakao()" style="border:1px solid #fde047; background: #fef08a; color: #854d0e; cursor:pointer; font-weight:bold;">💬 카톡 복사</button>`;
-                metaHtml += `<button class="meta-tag" onclick="copyForBlog()" style="border:1px solid #10b981; background: #ecfdf5; color: #059669; cursor:pointer; font-weight:bold;">📋 블로그 복사</button>`;
-            }
+            // 카톡 복사, 블로그 복사 (항상 노출, 클릭 시 권한 체크)
+            metaHtml += `<button class="meta-tag" onclick="copyForKakao()" style="border:1px solid #fde047; background: #fef08a; color: #854d0e; cursor:pointer; font-weight:bold;">💬 카톡 복사</button>`;
+            metaHtml += `<button class="meta-tag" onclick="copyForBlog()" style="border:1px solid #10b981; background: #ecfdf5; color: #059669; cursor:pointer; font-weight:bold;">📋 블로그 복사</button>`;
 
             if (window.currentUser && window.currentUser.role === 'admin') {
                 metaHtml += `<button class="meta-tag" onclick="openEditTipModal(${tip.id})" style="border:1px solid #93c5fd; background: #eff6ff; color: #2563eb; cursor:pointer;">✏️ 수정</button>`;
@@ -562,6 +584,11 @@
         }
 
         function copyForKakao() {
+            if (!window.currentUser || !window.currentUser.role) {
+                alert('이 기능은 승인된 중개사 회원에게만 제공됩니다.\\n먼저 로그인을 진행해주세요.');
+                location.href = 'login.html';
+                return;
+            }
             const title = document.getElementById('vTitle').innerText;
             const summaryBox = document.getElementById('vSummaryBox');
             const hasSummary = summaryBox && summaryBox.style.display !== 'none';
@@ -603,6 +630,11 @@
         }
 
         function copyForBlog() {
+            if (!window.currentUser || !window.currentUser.role) {
+                alert('이 기능은 승인된 중개사 회원에게만 제공됩니다.\\n먼저 로그인을 진행해주세요.');
+                location.href = 'login.html';
+                return;
+            }
             const tempDiv = document.createElement('div');
             tempDiv.style.position = 'absolute';
             tempDiv.style.left = '-9999px';

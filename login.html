@@ -260,6 +260,18 @@
             </div>
         </div>
 
+        <div class="install-guide" style="margin-top: 0; margin-bottom: 24px; padding: 16px;">
+            <h3 style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                <span>✨ 최근 업데이트 실무팁</span>
+            </h3>
+            <div id="publicTipsList" style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="text-align: center; font-size: 13px; color: #94a3b8; padding: 10px;">불러오는 중...</div>
+            </div>
+            <div style="text-align: center; margin-top: 12px;">
+                <span style="font-size: 12px; color: #64748b;">* 자세한 내용은 로그인 후 확인하실 수 있습니다.</span>
+            </div>
+        </div>
+
         <div class="links-container">
             <a href="manual.html" class="manual-btn">
                 📖 초보자를 위한 앱 사용 설명서 보기
@@ -373,6 +385,49 @@
                 alert('입력하신 이메일로 비밀번호 재설정 링크가 발송되었습니다. 이메일을 확인해주세요.');
             }
         }
+
+        async function fetchPublicTips() {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('practical_tips')
+                    .select('id, title, category, created_at')
+                    .eq('is_active', true)
+                    .order('created_at', { ascending: false })
+                    .limit(3);
+                
+                const container = document.getElementById('publicTipsList');
+                if (error) {
+                    container.innerHTML = '<div style="text-align: center; font-size: 13px; color: #ef4444; padding: 10px;">데이터를 불러올 수 없습니다.</div>';
+                    return;
+                }
+                
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; font-size: 13px; color: #94a3b8; padding: 10px;">최근 등록된 실무팁이 없습니다.</div>';
+                    return;
+                }
+                
+                let html = '';
+                data.forEach(tip => {
+                    const dateStr = tip.created_at ? new Date(tip.created_at).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }) : '';
+                    html += `
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; cursor: pointer; transition: 0.2s;" onclick="location.href='tips-handbook.html?id=${tip.id}'" onmouseover="this.style.borderColor='#3b82f6'" onmouseout="this.style.borderColor='#e2e8f0'">
+                        <div style="background: #e0e7ff; color: #4338ca; font-size: 10px; font-weight: 800; padding: 3px 6px; border-radius: 4px; white-space: nowrap;">
+                            ${tip.category || '기타'}
+                        </div>
+                        <div style="flex: 1; font-size: 13px; font-weight: 700; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${tip.title}
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8; font-weight: 600;">
+                            ${dateStr}
+                        </div>
+                    </div>`;
+                });
+                container.innerHTML = html;
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        fetchPublicTips();
     </script>
 <script>
   if ('serviceWorker' in navigator) {
