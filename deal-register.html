@@ -196,7 +196,7 @@
     <div style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; margin-bottom: 12px; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 12px; font-size: 12px; color: #475569;">
         <span style="font-size: 14px;">🛠️</span>
         <div style="flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 600;">
-            <span style="color: #3b82f6; margin-right: 4px;">[6/17 개선]</span> 이전 날짜의 미완료 일정이 오늘 일정으로 자동 이관되어 표시되도록 개선
+            <span style="color: #3b82f6; margin-right: 4px;">[6/30 개선]</span> 기념일 전용 UI가 분리되었으며, 후순위 업무 관리를 위한 '일정 보류' 기능이 추가되었습니다.
         </div>
     </div>
 
@@ -260,7 +260,8 @@
         <h3 style="margin-top: 0; margin-bottom: 16px;">새 일정 추가</h3>
         <div style="display: flex; background: #f1f5f9; padding: 4px; border-radius: 12px; margin-bottom: 16px;">
             <button id="tabWork" type="button" onclick="switchTab('work')" style="flex: 1; margin: 0; padding: 10px; border-radius: 10px; font-size: 15px; font-weight: 800; border: none; cursor: pointer; transition: 0.2s; background: #ffffff; color: #3b82f6; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">🏢 업무 일정</button>
-            <button id="tabMeet" type="button" onclick="switchTab('meet')" style="flex: 1; margin: 0; padding: 10px; border-radius: 10px; font-size: 15px; font-weight: 800; border: none; cursor: pointer; transition: 0.2s; background: transparent; color: #64748b; box-shadow: none;">👥 모임(기념일)</button>
+            <button id="tabMeet" type="button" onclick="switchTab('meet')" style="flex: 1; margin: 0; padding: 10px; border-radius: 10px; font-size: 15px; font-weight: 800; border: none; cursor: pointer; transition: 0.2s; background: transparent; color: #64748b; box-shadow: none;">👥 모임</button>
+            <button id="tabAnni" type="button" onclick="switchTab('anni')" style="flex: 1; margin: 0; padding: 10px; border-radius: 10px; font-size: 15px; font-weight: 800; border: none; cursor: pointer; transition: 0.2s; background: transparent; color: #64748b; box-shadow: none;">🎉 기념일</button>
         </div>
 
     <div id="propertyFields">
@@ -336,7 +337,7 @@
         </label>
     </div>
 
-    <input type="text" id="meetingName" placeholder="📌 모임/기념일 이름 (예: 정기모임, 생일 등)" style="display: none; margin-bottom: 12px; font-weight: 800; border-color: #bfdbfe;">
+    <input type="text" id="meetingName" placeholder="📌 모임 이름 (예: 정기모임, 회식 등)" style="display: none; margin-bottom: 12px; font-weight: 800; border-color: #bfdbfe;">
     <div id="repeatOptionsContainer" style="display: none; background: #f8fafc; padding: 12px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #e2e8f0;">
         <div style="font-size: 13px; font-weight: 800; color: #475569; margin-bottom: 8px;">🔁 반복 설정</div>
         <select id="selRepeatType" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 8px; font-size: 14px;">
@@ -1019,6 +1020,7 @@
             currentTab = tab;
             const tabWork = document.getElementById('tabWork');
             const tabMeet = document.getElementById('tabMeet');
+            const tabAnni = document.getElementById('tabAnni');
             const contractType = document.getElementById('contractType');
             const propertyFields = document.getElementById('propertyFields');
             const meetingFields = document.getElementById('meetingFields');
@@ -1026,41 +1028,66 @@
             const meetingName = document.getElementById('meetingName');
             const timeCol = document.getElementById('timeCol');
             const memo = document.getElementById('memo');
+            const chkRep = document.getElementById('repeatOptionsContainer');
+
+            [tabWork, tabMeet, tabAnni].forEach(t => {
+                if (t) {
+                    t.style.background = 'transparent';
+                    t.style.color = '#64748b';
+                    t.style.boxShadow = 'none';
+                }
+            });
 
             if (tab === 'work') {
                 tabWork.style.background = '#ffffff';
                 tabWork.style.color = '#3b82f6';
                 tabWork.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-                tabMeet.style.background = 'transparent';
-                tabMeet.style.color = '#64748b';
-                tabMeet.style.boxShadow = 'none';
 
                 contractType.style.display = 'block';
                 propertyFields.style.display = 'block';
                 meetingFields.style.display = 'none';
                 if (meetSubTabs) meetSubTabs.style.display = 'none';
                 if (meetingName) meetingName.style.display = 'none';
-                const chkRep = document.getElementById('repeatOptionsContainer');
                 if (chkRep) chkRep.style.display = 'none';
+                if (timeCol) timeCol.style.display = 'block';
                 if (contractType.value === '모임') contractType.value = '정산';
                 memo.placeholder = '메모';
-            } else {
+            } else if (tab === 'meet') {
                 tabMeet.style.background = '#ffffff';
                 tabMeet.style.color = '#8b5cf6';
                 tabMeet.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
-                tabWork.style.background = 'transparent';
-                tabWork.style.color = '#64748b';
-                tabWork.style.boxShadow = 'none';
 
                 contractType.style.display = 'none';
                 contractType.value = '모임';
                 propertyFields.style.display = 'none';
                 meetingFields.style.display = 'block';
                 if (meetSubTabs) meetSubTabs.style.display = 'flex';
-                if (meetingName) meetingName.style.display = 'block';
-                const chkRep = document.getElementById('repeatOptionsContainer');
+                if (meetingName) {
+                    meetingName.style.display = 'block';
+                    meetingName.placeholder = '📌 모임 이름 (예: 정기모임, 회식 등)';
+                }
                 if (chkRep) chkRep.style.display = 'block';
+                if (timeCol) timeCol.style.display = 'block';
                 memo.placeholder = '추가 메모 (선택사항)';
+            } else if (tab === 'anni') {
+                if (tabAnni) {
+                    tabAnni.style.background = '#ffffff';
+                    tabAnni.style.color = '#f59e0b';
+                    tabAnni.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+                }
+
+                contractType.style.display = 'none';
+                contractType.value = '모임'; // 백엔드 로직 호환을 위해 모임으로 유지
+                propertyFields.style.display = 'none';
+                meetingFields.style.display = 'none'; // 장소 등 숨김
+                if (meetSubTabs) meetSubTabs.style.display = 'none';
+                if (meetingName) {
+                    meetingName.style.display = 'block';
+                    meetingName.placeholder = '🎉 기념일 이름 (예: 생일, 결혼기념일 등)';
+                }
+                if (chkRep) chkRep.style.display = 'block';
+                if (timeCol) timeCol.style.display = 'none'; // 시간 숨김
+                memo.placeholder = '기념일 관련 메모';
             }
         }
 
@@ -1127,24 +1154,31 @@
             }
             
             if (contractType === '모임') {
+                const isAnni = (typeof currentTab !== 'undefined' && currentTab === 'anni');
                 const mNameElem = document.getElementById('meetingName');
                 if (mNameElem && !mNameElem.value.trim()) {
-                    status.innerText = '모임 이름을 입력해주세요.';
+                    status.innerText = (isAnni ? '기념일' : '모임') + ' 이름을 입력해주세요.';
                     return;
                 }
                 const mName = mNameElem ? mNameElem.value.trim() : '';
 
                 if (mName) finalMemo = mName + (finalMemo ? '\n' + finalMemo : '');
-                pLocBase = document.getElementById('meetingLocation').value || null;
-                pLocDetail = document.getElementById('meetingLocationDetail') ? document.getElementById('meetingLocationDetail').value.trim() : null;
-                pAtt = document.getElementById('meetingAttendance') ? document.getElementById('meetingAttendance').value : null;
-                pUrl = document.getElementById('meetingUrl') ? document.getElementById('meetingUrl').value : null;
-                pUrlName = document.getElementById('meetingUrlName') ? document.getElementById('meetingUrlName').value : null;
+                
+                if (!isAnni) {
+                    pLocBase = document.getElementById('meetingLocation').value || null;
+                    pLocDetail = document.getElementById('meetingLocationDetail') ? document.getElementById('meetingLocationDetail').value.trim() : null;
+                    pAtt = document.getElementById('meetingAttendance') ? document.getElementById('meetingAttendance').value : null;
+                    pUrl = document.getElementById('meetingUrl') ? document.getElementById('meetingUrl').value : null;
+                    pUrlName = document.getElementById('meetingUrlName') ? document.getElementById('meetingUrlName').value : null;
+                } else {
+                    finalMemo += '\n[ANNIVERSARY]';
+                    pTime = null;
+                }
 
                 if (typeof currentMeetType !== 'undefined') {
                     if (currentMeetType === 'PRIVATE') {
                         finalMemo += '\n[PRIVATE]';
-                    } else if (currentMeetType === 'PROPOSAL') {
+                    } else if (currentMeetType === 'PROPOSAL' && !isAnni) {
                         isProposal = true;
                         const pDeadDate = document.getElementById('proposalDeadlineDate') ? document.getElementById('proposalDeadlineDate').value : '';
                         const pDeadTime = getTimeFromSelects('propTime');
@@ -1548,6 +1582,11 @@
                 if (isNoticeA && !isNoticeB) return -1;
                 if (!isNoticeA && isNoticeB) return 1;
 
+                const isHoldA = (a.memo || '').includes('[HOLD]');
+                const isHoldB = (b.memo || '').includes('[HOLD]');
+                if (isHoldA && !isHoldB) return 1;
+                if (!isHoldA && isHoldB) return -1;
+
                 const isInvalidA = !a.schedule_date || isNaN(new Date(a.schedule_date).getTime());
                 const isInvalidB = !b.schedule_date || isNaN(new Date(b.schedule_date).getTime());
                 
@@ -1632,7 +1671,9 @@
                 let dateStr = '-';
                 let dayStr = '';
 
-                if (schedule.schedule_date) {
+                if (schedule.memo && schedule.memo.includes('[HOLD]')) {
+                    monthStr = '보류';
+                } else if (schedule.schedule_date) {
                     const d = new Date(schedule.schedule_date);
                     if (!isNaN(d.getTime())) {
                         monthStr = (d.getMonth() + 1) + '월';
@@ -1806,8 +1847,10 @@
                         else if(mAtt === '미정') attBadge = `<span style="color:#94a3b8; font-size:13px; font-weight:800; margin-left: 6px;">[미정]</span>`;
                     }
 
-                    const rawLines = rawMemo.trim().split('\n');
+                    let cleanRaw = rawMemo.replace(/\[ANNIVERSARY\]/g, '').trim();
+                    const rawLines = cleanRaw.split('\n');
                     const meetName = rawLines[0] || '이름 없음';
+                    rawMemo = cleanRaw; // Update rawMemo for the rest of the code
                     const meetDesc = rawLines.slice(1).join('<br>').trim();
                     
                     let titleHtml = `<div style="color: #0f172a; font-size: 18px; font-weight: 900; line-height: 1.4; margin-bottom: 2px; letter-spacing: -0.5px;">${meetName}${attBadge}</div>`;
@@ -1818,7 +1861,8 @@
                     locationHtml = titleHtml + descHtml + details;
                     
                     if (isPrivateMeeting) {
-                        typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #f3f4f6; color: #4b5563; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #e5e7eb;">🔒 개인 일정</span>`;
+                        const badgeText = (schedule.memo && schedule.memo.includes('[ANNIVERSARY]')) ? '개인 기념일' : '개인 일정';
+                        typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #f3f4f6; color: #4b5563; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #e5e7eb;">🔒 ${badgeText}</span>`;
                     } else if (isCanceled) {
                         typeBadgeHtml = `<span style="display: inline-flex; align-items: center; gap: 4px; background: #fee2e2; color: #ef4444; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px solid #fecaca;">❌ 제안 취소됨</span>`;
                     } else if (typeof isAutoCanceled !== 'undefined' && isAutoCanceled) {
@@ -1927,7 +1971,8 @@
                     dDayHtml = `<span style="background: ${badgeBg}; color: ${badgeColor}; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800;">${dDayText}</span>`;
                 }
 
-                if (schedule.is_delayed) {
+                const isAnniversaryBadge = schedule.memo && schedule.memo.includes('[ANNIVERSARY]');
+                if (schedule.is_delayed && !isAnniversaryBadge) {
                     const origD = new Date(schedule.original_schedule_date);
                     const origStr = `${origD.getMonth()+1}/${origD.getDate()}`;
                     dDayHtml += ` <span style="background: #fee2e2; color: #ef4444; padding: 3px 6px; border-radius: 4px; font-size: 11px; font-weight: 800; animation: blink-warning 2s infinite;">지연됨 (${origStr})</span>`;
@@ -2016,7 +2061,8 @@
                 let dateBoxBorder = monthStr === '미정' ? '#fca5a5' : '#e2e8f0';
                 
                 let toggleDoneBtnHtml = '';
-                if (isMine || (window.currentUser && window.currentUser.role === 'admin')) {
+                const isAnniversary = schedule.memo && schedule.memo.includes('[ANNIVERSARY]');
+                if (!isAnniversary && (isMine || (window.currentUser && window.currentUser.role === 'admin'))) {
                     const btnBg = parsed.isDone ? '#f8fafc' : '#ffffff';
                     const btnBorder = parsed.isDone ? '#e2e8f0' : '#d1d5db';
                     const btnColor = parsed.isDone ? '#94a3b8' : '#374151';
@@ -2107,19 +2153,42 @@
             if (todayTaskBoard) todayTaskBoard.innerHTML = '';
             
             let todayTaskSchedule = null;
+            let todayAnniversaries = [];
+            const todayStr = new Date().toLocaleDateString('en-CA');
+            
             allDeals = allDeals.filter(s => {
-                const todayStr = new Date().toLocaleDateString('en-CA');
                 if (s.schedule_type === '모임' && s.memo && s.memo.startsWith('오늘의 업무\n[PRIVATE]') && s.schedule_date === todayStr && !s.is_delayed) {
                     todayTaskSchedule = s;
                     return false;
                 }
+                
+                // Extract today's anniversaries
+                if (s.schedule_date === todayStr && s.memo && s.memo.includes('[ANNIVERSARY]')) {
+                    const parsed = typeof parseScheduleMemo === 'function' ? parseScheduleMemo(s.memo, s.schedule_time, window.currentUser?.id) : { cleanMemo: s.memo };
+                    let raw = parsed.cleanMemo.replace(/\[ANNIVERSARY\]/g, '').replace(/\[.*?\]/g, '').trim();
+                    
+                    // Filter out empty lines
+                    const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                    const name = lines[0] || '기념일';
+                    todayAnniversaries.push(name);
+                }
                 return true;
             });
 
-            if (todayTaskSchedule && todayTaskBoard) {
-                const li = createDealListItem(todayTaskSchedule, true);
-                todayTaskBoard.innerHTML = '<ul style="list-style: none; padding: 0; margin: 0;"></ul>';
-                todayTaskBoard.querySelector('ul').appendChild(li);
+            if ((todayTaskSchedule || todayAnniversaries.length > 0) && todayTaskBoard) {
+                let html = '';
+                if (todayAnniversaries.length > 0) {
+                    const anniText = todayAnniversaries.map(a => `🎉 오늘은 ${a}입니다!`).join(' / ');
+                    html += `<div style="background: #fef3c7; border: 1px solid #fde68a; color: #d97706; padding: 12px; border-radius: 12px; margin-bottom: 12px; font-weight: 800; font-size: 15px; text-align: center; box-shadow: 0 2px 8px rgba(217, 119, 6, 0.1); display: flex; align-items: center; justify-content: center; gap: 8px;"><span>${anniText}</span></div>`;
+                }
+                
+                html += '<ul style="list-style: none; padding: 0; margin: 0;"></ul>';
+                todayTaskBoard.innerHTML = html;
+                
+                if (todayTaskSchedule) {
+                    const li = createDealListItem(todayTaskSchedule, true);
+                    todayTaskBoard.querySelector('ul').appendChild(li);
+                }
             }
 
             if (allDeals.length === 0) {

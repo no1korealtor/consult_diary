@@ -53,14 +53,18 @@
             <button type="button" onclick="location.href='market.html?tab=clients&action=new'" style="width:100%; padding:10px; margin-top:8px; border-radius:8px; font-weight:bold; background:#f1f5f9; color:#3b82f6; border:1px solid #cbd5e1; cursor:pointer; font-size: 13px;">+ 손님을 찾을 수 없나요? 손님 장부에서 새로 등록하기</button>
         </div>
 
-        <select id="contractType" style="margin-bottom: 12px;">
+        <select id="contractType" style="margin-bottom: 12px;" onchange="handleContractTypeChange()">
             <option value="정산">정산</option>
-            <option value="잔금">잔금</option>
+            <option value="임대차 잔금">임대차 잔금</option>
+            <option value="매매 잔금">매매 잔금</option>
+            <option value="잔금" style="display:none;">잔금 (구버전)</option>
             <option value="임대차계약">임대차계약</option>
             <option value="매매계약">매매계약</option>
             <option value="계약해제">계약해제</option>
             <option value="집보여주기">집보여주기</option>
             <option value="기타">기타</option>
+            <option value="모임">👥 모임</option>
+            <option value="기념일">🎉 기념일</option>
         </select>
         
         <textarea id="memo" placeholder="일정 메모 / 모임명" rows="4" style="margin-bottom: 12px;"></textarea>
@@ -70,7 +74,7 @@
                 <label id="balanceDateLabel" style="font-size: 12px; color: #6b7280; font-weight: 600; margin-bottom: 4px; display: block;">날짜 지정</label>
                 <input type="date" id="balanceDate" style="margin-bottom: 12px;">
             </div>
-            <div style="flex: 1;">
+            <div style="flex: 1;" id="mTimeWrapper">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                     <label style="font-size: 12px; color: #6b7280; font-weight: 600;">시간 지정 (선택)</label>
                     <label style="font-size: 12px; color: #1e293b; font-weight: 600; display: flex; align-items: center; gap: 4px; cursor: pointer;">
@@ -152,7 +156,7 @@
             let rawMemo = data.memo || '';
             window.preservedTags = '';
             
-            const exactTags = ['[DONE]', '[PRIVATE]', '[PROPOSAL]', '[PENDING_ADMIN]'];
+            const exactTags = ['[DONE]', '[PRIVATE]', '[PROPOSAL]', '[PENDING_ADMIN]', '[ANNIVERSARY]'];
             exactTags.forEach(tag => {
                 if (rawMemo.includes(tag)) {
                     window.preservedTags += tag;
@@ -196,11 +200,14 @@
 
             if (data.schedule_type === '모임' || (!data.buildings && !data.properties)) {
                 document.getElementById('propertyFields').style.display = 'none';
-                document.getElementById('contractType').style.display = 'none';
+                document.getElementById('contractType').style.display = 'block';
+                const isAnni = window.preservedTags.includes('[ANNIVERSARY]');
+                document.getElementById('contractType').value = isAnni ? '기념일' : '모임';
                 if(document.getElementById('clientSelectContainer')) document.getElementById('clientSelectContainer').style.display = 'none';
                 document.getElementById('balanceDateLabel').style.display = 'block';
-                document.querySelector('.notice').innerText = "💡 장소, 링크 및 메모를 수정할 수 있습니다.";
-                document.getElementById('meetingEditFields').style.display = 'block';
+                document.querySelector('.notice').innerText = isAnni ? "💡 기념일 이름과 날짜, 메모를 수정할 수 있습니다." : "💡 장소, 링크 및 메모를 수정할 수 있습니다.";
+                document.getElementById('meetingEditFields').style.display = isAnni ? 'none' : 'block';
+                document.getElementById('mTimeWrapper').style.display = isAnni ? 'none' : 'block';
                 document.getElementById('repeatOptionsContainer').style.display = 'block';
                 
                 let mLoc = data.location || null;
@@ -247,7 +254,7 @@
         }
 
         async function updateDeal() {
-            const contractType = document.getElementById('contractType').style.display !== 'none' ? document.getElementById('contractType').value : undefined;
+            let contractType = document.getElementById('contractType').style.display !== 'none' ? document.getElementById('contractType').value : undefined;
             const balanceDate = document.getElementById('balanceDate').style.display !== 'none' ? document.getElementById('balanceDate').value : undefined;
             let memo = document.getElementById('memo').value;
             

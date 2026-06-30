@@ -181,14 +181,19 @@
     </div>
 
     <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
-        <button type="button" class="btn-kakao" onclick="openKakaoMap()" style="margin-bottom: 0; border-radius: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(254, 229, 0, 0.4);">
+        <button type="button" id="btnKakao" class="btn-kakao" onclick="openKakaoMap()" style="margin-bottom: 0; border-radius: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(254, 229, 0, 0.4);">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 5.58 2 10C2 12.56 3.51 14.83 5.86 16.2L4.64 20.67C4.54 21.05 4.97 21.36 5.3 21.16L10.3 18.06C10.85 18.15 11.41 18.2 12 18.2C17.52 18.2 22 14.62 22 10.2C22 5.78 17.52 2 12 2Z"/></svg>
             카카오맵 길찾기
         </button>
 
-        <button type="button" id="btnComplete" class="btn-secondary" onclick="toggleComplete()" style="margin-bottom: 12px; border-radius: 14px; background-color: #dcfce7; border: 1px solid #bbf7d0; color: #16a34a; font-weight: 700;">
-            ✅ 일정 완료
-        </button>
+        <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+            <button type="button" id="btnComplete" class="btn-secondary" onclick="toggleComplete()" style="flex: 1; margin-bottom: 0; border-radius: 14px; background-color: #dcfce7; border: 1px solid #bbf7d0; color: #16a34a; font-weight: 700;">
+                ✅ 일정 완료
+            </button>
+            <button type="button" id="btnHold" class="btn-secondary" onclick="toggleHold()" style="flex: 1; margin-bottom: 0; border-radius: 14px; background-color: #fef3c7; border: 1px solid #fde68a; color: #d97706; font-weight: 700;">
+                ⏸️ 일정 보류
+            </button>
+        </div>
 
         <div style="display: flex; gap: 12px;">
             <button class="btn-secondary" onclick="editDeal()" style="flex: 1; margin-bottom: 0; border-radius: 14px; background-color: #ffffff; border: 1px solid #e5e7eb; color: #4b5563; font-weight: 700;">
@@ -256,8 +261,19 @@
             const parsed = parseScheduleMemo(data.memo, data.schedule_time, currentUserId);
             let rawMemo = parsed.cleanMemo;
             
+            let isAnniversary = rawMemo.includes('[ANNIVERSARY]') || (data.memo && data.memo.includes('[ANNIVERSARY]'));
+            if (isAnniversary) {
+                rawMemo = rawMemo.replace(/\[ANNIVERSARY\]\n?/g, '').replace(/\[ANNIVERSARY\]/g, '').trim();
+            }
+            
             let isDone = parsed.isDone;
             window.currentDealIsDone = isDone;
+            
+            let isHold = rawMemo.includes('[HOLD]');
+            if (isHold) {
+                rawMemo = rawMemo.replace(/\[HOLD\]\n?/g, '');
+            }
+            window.currentDealIsHold = isHold;
             
             let settledDate = parsed.settledDate;
             window.currentSettledDate = settledDate;
@@ -276,8 +292,23 @@
             let mDeadline = parsed.deadline;
             let mMinAtt = parsed.minAttendance;
 
+            const isAnniCheck = data.memo && data.memo.includes('[ANNIVERSARY]');
             const btnComplete = document.getElementById('btnComplete');
-            if (isDone) {
+            const btnHold = document.getElementById('btnHold');
+            const btnKakao = document.getElementById('btnKakao');
+            if (isAnniCheck) {
+                if (btnComplete) btnComplete.style.display = 'none';
+                if (btnHold) btnHold.style.display = 'none';
+                if (btnKakao) btnKakao.style.display = 'none';
+                
+                // Hide the flex container for Complete/Hold buttons if both are hidden
+                if (btnComplete) {
+                    const actionRow = btnComplete.parentElement;
+                    if (actionRow && actionRow.style.display !== 'none') {
+                        actionRow.style.display = 'none';
+                    }
+                }
+            } else if (isDone) {
                 btnComplete.innerHTML = '🔄 완료 취소';
                 btnComplete.style.backgroundColor = '#f3f4f6';
                 btnComplete.style.color = '#4b5563';
@@ -288,15 +319,28 @@
                 btnComplete.style.color = '#16a34a';
                 btnComplete.style.borderColor = '#bbf7d0';
             }
+            if (btnHold) {
+                if (isHold) {
+                    btnHold.innerHTML = '▶️ 보류 해제';
+                    btnHold.style.backgroundColor = '#f3f4f6';
+                    btnHold.style.color = '#4b5563';
+                    btnHold.style.borderColor = '#e5e7eb';
+                } else {
+                    btnHold.innerHTML = '⏸️ 일정 보류';
+                    btnHold.style.backgroundColor = '#fef3c7';
+                    btnHold.style.color = '#d97706';
+                    btnHold.style.borderColor = '#fde68a';
+                }
+            }
 
 
             if (data.schedule_type === '모임' || (!data.building_id && !data.property_id)) {
-                let meetTitle = '모임(기념일)';
-                if (isPrivateMeeting) meetTitle = '개인 일정';
-                else if (isCanceled) meetTitle = '❌ 취소된 모임(기념일)';
+                let meetTitle = data.memo && data.memo.includes('[ANNIVERSARY]') ? '기념일' : '모임';
+                if (isPrivateMeeting) meetTitle = isAnniversary ? '개인 기념일' : '개인 일정';
+                else if (isCanceled) meetTitle = '❌ 취소된 ' + meetTitle;
                 else if (isProposal) meetTitle = '💡 수요조사 (제안)';
                 else if (isPendingAdmin) meetTitle = '⏳ 승인 대기중';
-                else meetTitle = '✅ 확정 모임(기념일)';
+                else meetTitle = '✅ 확정 ' + meetTitle;
 
                 document.getElementById('dealTitle').innerText = (data.schedule_date ? data.schedule_date + ' ' : '') + meetTitle;
                 document.getElementById('address').innerText = mLoc || '장소 미정';
@@ -308,7 +352,7 @@
                 if(linkUrl) meetInfoHtml += `<div>🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6; font-weight: bold;">${linkName}</a></div>`;
                 
                 const rawLines = rawMemo.trim().split('\n');
-                const meetName = rawLines[0] || '모임(기념일)';
+                const meetName = rawLines[0] || (data.memo && data.memo.includes('[ANNIVERSARY]') ? '기념일' : '모임');
                 const meetDesc = rawLines.slice(1).join('<br>').trim();
                 
                 let titleHtml = `<div style="font-size:18px; font-weight:700; margin-bottom:4px; color:#111827;">${meetName}</div>`;
@@ -508,6 +552,27 @@
             location.href =
                 'deal-register.html';
 
+        }
+
+        async function toggleHold() {
+            const ok = confirm(window.currentDealIsHold ? '보류 상태를 해제하시겠습니까?' : '이 일정을 보류(후순위) 상태로 변경하시겠습니까?');
+            if (!ok) return;
+
+            const { data, error: fetchErr } = await supabaseClient.from('schedules').select('memo').eq('id', scheduleId).single();
+            if (fetchErr) { alert(fetchErr.message); return; }
+
+            let newMemo = data.memo || '';
+            if (window.currentDealIsHold) {
+                newMemo = newMemo.replace(/\[HOLD\]\n?/g, '').trim();
+            } else {
+                newMemo = '[HOLD]\n' + newMemo;
+            }
+
+            const { error } = await supabaseClient.from('schedules').update({ memo: newMemo }).eq('id', scheduleId);
+            if (error) { alert(error.message); return; }
+
+            alert(window.currentDealIsHold ? '보류가 해제되었습니다.' : '일정이 보류 상태로 변경되었습니다.');
+            location.reload();
         }
 
         async function toggleComplete() {
