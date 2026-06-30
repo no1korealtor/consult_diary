@@ -99,7 +99,7 @@
             <h1 style="flex: 1;">🗂️ 자료 및 편람</h1>
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
                 <div id="welcomeMessage" style="font-size: 12px; font-weight: 700; color: #4b5563; margin-bottom: 4px;"></div>
-                <button type="button" onclick="logout()" style="background: white; border: 1px solid #e5e7eb; font-size: 12px; cursor: pointer; padding: 4px 8px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); color: #4b5563; display: flex; align-items: center; gap: 4px; margin: 0; width: auto;" title="로그아웃">
+                <button id="authBtn" type="button" onclick="logout()" style="background: white; border: 1px solid #e5e7eb; font-size: 12px; cursor: pointer; padding: 4px 8px; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); color: #4b5563; display: flex; align-items: center; gap: 4px; margin: 0; width: auto;" title="로그아웃">
                     🚪 로그아웃
                 </button>
             </div>
@@ -134,6 +134,7 @@
 
             <h3>📅 내 일정 스마트 관리 (부동산 실무 맞춤형!)</h3>
             <ul>
+                <li><span class="highlight">NEW</span> <strong>오늘의 실무 팁 배너</strong>: 메인 화면 상단에서 매일 새로운 실무 지식을 하나씩 추천해 드립니다. 터치하면 실무 스크랩/편람의 상세한 내용으로 바로 연결되어 편리하게 지식을 쌓을 수 있습니다!</li>
                 <li><span class="highlight">NEW</span> <strong>매월/매년 반복 일정 및 휴일 자동 연기</strong>: 대출 이자나 공과금 등 매월/매년 반복되는 일정을 쉽게 등록할 수 있습니다. 특히 납부일이 주말이나 공휴일인 경우, 자동으로 '다음 영업일'로 날짜를 미뤄서 일정을 만들어주는 아주 똑똑한 기능이 추가되었습니다!</li>
                 <li><span class="highlight">NEW</span> <strong>임대차/매매 잔금 세분화</strong>: '잔금' 일정을 등록할 때 '임대차 잔금'과 '매매 잔금'을 구분할 수 있습니다. 임대차 잔금을 완료했을 때만 2년 뒤 만기 알림이 생성되도록 개선되어 불필요한 알림이 줄었습니다.</li>
                 <li><span class="highlight">NEW</span> <strong>미래 완료 일정 제자리 유지</strong>: 미래 날짜의 일정을 미리 완료 처리해도 목록 맨 아래로 밀려나지 않고, 원래 있던 날짜 순서를 그대로 유지하면서 완료 표시(취소선)만 되도록 개선하여 일정 파악이 훨씬 편해졌습니다.</li>
@@ -261,10 +262,29 @@
 <script src="auth-helper.js"></script>
 <script>
     async function checkAuthAndLoad() {
-        const user = await requireAuth();
-        if (user) {
-            const wm = document.getElementById('welcomeMessage');
-            if (wm) wm.innerText = (user.name || '전문가') + '님 환영합니다!';
+        const authBtn = document.getElementById('authBtn');
+        const { data: { session } } = await authClient.auth.getSession();
+        
+        if (session && session.user) {
+            try {
+                const user = await requireAuth();
+                if (user) {
+                    const wm = document.getElementById('welcomeMessage');
+                    if (wm) wm.innerText = (user.name || '전문가') + '님 환영합니다!';
+                }
+            } catch(e) {}
+            if (authBtn) {
+                authBtn.innerHTML = '🚪 로그아웃';
+                authBtn.onclick = logout;
+                authBtn.title = '로그아웃';
+            }
+        } else {
+            window.currentUser = null;
+            if (authBtn) {
+                authBtn.innerHTML = '🔑 로그인';
+                authBtn.onclick = () => location.href = 'login.html';
+                authBtn.title = '로그인';
+            }
         }
     }
     checkAuthAndLoad();

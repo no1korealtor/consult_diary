@@ -193,11 +193,23 @@
     </div>
 
     <!-- 최근 업데이트 알림 -->
-    <div style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; margin-bottom: 24px; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 12px; font-size: 12px; color: #475569;">
+    <div style="display: flex; align-items: center; gap: 6px; padding: 8px 12px; margin-bottom: 12px; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 12px; font-size: 12px; color: #475569;">
         <span style="font-size: 14px;">🛠️</span>
         <div style="flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 600;">
             <span style="color: #3b82f6; margin-right: 4px;">[6/17 개선]</span> 이전 날짜의 미완료 일정이 오늘 일정으로 자동 이관되어 표시되도록 개선
         </div>
+    </div>
+
+    <!-- 오늘의 실무 팁 배너 -->
+    <div id="todayTipBanner" style="display: none; align-items: center; gap: 12px; padding: 12px 16px; margin-bottom: 24px; background: linear-gradient(135deg, #fdf4ff, #f3e8ff); border: 1px solid #e9d5ff; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.08);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(168, 85, 247, 0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(168, 85, 247, 0.08)';">
+        <div style="background: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex-shrink: 0;">
+            <span style="font-size: 18px;">💡</span>
+        </div>
+        <div style="flex: 1; overflow: hidden;">
+            <div style="font-size: 11px; font-weight: 800; color: #9333ea; margin-bottom: 2px;">오늘의 실무 팁</div>
+            <div id="todayTipTitle" style="font-size: 14px; font-weight: 700; color: #4c1d95; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">팁 제목이 들어갑니다</div>
+        </div>
+        <span style="color: #a855f7; font-size: 18px; font-weight: bold;">›</span>
     </div>
 
     <!-- 오늘의 업무 전용 공간 -->
@@ -718,7 +730,36 @@
                 loadClients();
                 await manageTodayTaskSchedule();
                 loadschedules();
+                loadTodayTip();
                 if(typeof loadTips === 'function') loadTips();
+            }
+        }
+
+        async function loadTodayTip() {
+            try {
+                const { data, error } = await window.supabaseClient
+                    .from('practical_tips')
+                    .select('id, title')
+                    .eq('is_active', true)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+                
+                if (data && data.length > 0) {
+                    const todaySeed = new Date().getDate();
+                    const index = todaySeed % data.length;
+                    const tip = data[index];
+                    
+                    const banner = document.getElementById('todayTipBanner');
+                    const titleEl = document.getElementById('todayTipTitle');
+                    
+                    if (banner && titleEl) {
+                        titleEl.textContent = tip.title;
+                        banner.onclick = () => location.href = 'tips-handbook.html?id=' + tip.id;
+                        banner.style.display = 'flex';
+                    }
+                }
+            } catch (err) {
+                console.error(err);
             }
         }
 
@@ -1225,9 +1266,21 @@
 
             status.innerText = '내 일정에 추가 되었습니다.';
             document.getElementById('memo').value = '';
+            document.getElementById('balanceDate').value = '';
             loadschedules();
             if(typeof loadTips === 'function') loadTips();
 
+            // 추가 후 일정 목록이 보이도록 스크롤 이동
+            setTimeout(() => {
+                const listEl = document.getElementById('dealList');
+                if (listEl) {
+                    listEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // 업데이트 시각적 피드백
+                    listEl.style.transition = 'opacity 0.3s';
+                    listEl.style.opacity = '0.3';
+                    setTimeout(() => listEl.style.opacity = '1', 300);
+                }
+            }, 100);
         }
 
         window.setAttendance = async function(scheduleId, status) {

@@ -432,6 +432,26 @@
             font-family: 'Nunito', sans-serif;
         }
 
+        .youtube-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border: 2px solid #dfe6e9;
+            border-radius: 16px;
+            text-decoration: none;
+            color: #2d3436;
+            font-weight: bold;
+            transition: all 0.2s;
+            font-family: 'Nunito', 'Jua', sans-serif;
+        }
+
+        .youtube-link:hover {
+            border-color: #ff758c;
+            background: #fff0f5;
+            transform: translateY(-2px);
+        }
+
         @media (max-width: 600px) {
             h1 { font-size: 28px; }
             .card { padding: 24px 16px; border-radius: 28px; }
@@ -467,6 +487,17 @@
     <div id="last-updated" class="last-updated"></div>
     
     <div id="history-container" class="history-section hidden"></div>
+
+    <!-- 유튜브 추천 링크 섹션 -->
+    <div id="youtube-container" class="history-section">
+        <div class="history-title">📺 추천 유튜브 학습 채널 📺</div>
+        <div style="text-align:center; color:#636e72; font-size:14px; margin-bottom: 15px; font-family:'Jua', sans-serif;">
+            아람이의 공부를 도와줄 꿀잼 채널들이에요! 💖
+        </div>
+        <div id="youtube-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+        <div id="youtube-btn-container"></div>
+        <div id="youtube-admin-actions"></div>
+    </div>
 
     <script>
         const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
@@ -603,7 +634,7 @@
         }
 
         function updateHeader(dateStr) {
-            document.getElementById('greeting-text').innerHTML = `환영해요, ${userNickname}님! 💖 <span style="font-size:14px; cursor:pointer; opacity:0.7" onclick="logout()" title="로그아웃">🚪</span>`;
+            document.getElementById('greeting-text').innerHTML = `환영해요, ${userNickname}님! 💖 <button onclick="logout()" style="background:rgba(255,255,255,0.3); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:14px; font-weight:bold; margin-left:8px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); font-family:'Nunito', sans-serif;">로그아웃</button>`;
             document.getElementById('date-stats-text').innerText = `${dateStr} | 오늘 암기: ${dailyProgress}개`;
         }
 
@@ -666,21 +697,25 @@
                 console.log(error)
                 return
             }
-            words = data.filter(w => !(w.memorized_users && w.memorized_users.includes(userNickname)))
-            memorizedWords = data.filter(w => w.memorized_users && w.memorized_users.includes(userNickname))
+            const youtubeLinks = data.filter(w => w.subject === 'YOUTUBE_LINK');
+            const studyData = data.filter(w => w.subject !== 'YOUTUBE_LINK');
 
-            if (data.length > 0) {
-                const latestDate = new Date(data[0].created_at);
+            words = studyData.filter(w => !(w.memorized_users && w.memorized_users.includes(userNickname)))
+            memorizedWords = studyData.filter(w => w.memorized_users && w.memorized_users.includes(userNickname))
+
+            if (studyData.length > 0) {
+                const latestDate = new Date(studyData[0]?.created_at || data[0].created_at);
                 document.getElementById('last-updated').innerHTML = `
                     최근 업데이트: ${latestDate.toLocaleDateString()} ${latestDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}<br>
                     <span style="font-weight: bold; color: rgba(255,255,255,0.9); display: inline-block; margin-top: 5px;">
-                        저장된 단어: 총 ${data.length}개 (남은 단어: ${words.length}개)
+                        저장된 단어: 총 ${studyData.length}개 (남은 단어: ${words.length}개)
                     </span>
                 `;
             } else {
                 document.getElementById('last-updated').innerHTML = `저장된 단어가 없습니다.`;
             }
 
+            renderYoutubeLinks(youtubeLinks);
             setupSubjects()
         }
 
@@ -1267,9 +1302,123 @@
             container.classList.remove('hidden');
         }
 
+        function renderYoutubeLinks(links) {
+            const listEl = document.getElementById('youtube-list');
+            if (!listEl) return;
+            
+            let html = '';
+            
+            // Default links
+            const defaultLinks = [
+                { url: 'https://www.youtube.com/@ebs_middle', icon: '🎒', title: 'EBS 중학 (교과서 기초 탄탄)' },
+                { url: 'https://www.youtube.com/@hongong', icon: '🔤', title: '혼공TV (쉽고 재밌는 영문법)' },
+                { url: 'https://www.youtube.com/@jungseungje', icon: '📐', title: '정승제 생선님 (수학 포기 금지!)' },
+                { url: 'https://www.youtube.com/@science_dream', icon: '🔬', title: '과학드림 (흥미진진한 과학 이야기)' },
+                { url: 'https://www.youtube.com/@1minuteinfo', icon: '🧠', title: '1분미만 (짧고 유익한 상식)' }
+            ];
+
+            const allLinks = [...defaultLinks, ...links.map(l => ({
+                id: l.id,
+                url: l.meaning,
+                icon: l.example || '📺',
+                title: l.word
+            }))];
+
+            allLinks.forEach(link => {
+                html += `
+                    <div style="position:relative; display:flex; align-items:center;">
+                        <a href="${link.url}" target="_blank" class="youtube-link" style="flex-grow:1; padding-right:${link.id && userNickname === '아빠' ? '40px' : '16px'};">
+                            <span style="font-size:24px; margin-right:12px;">${link.icon}</span> ${link.title}
+                        </a>
+                        ${userNickname === '아빠' && link.id ? `<button onclick="deleteYoutubeLink('${link.id}')" style="position:absolute; right:10px; background:white; border:2px solid #ff758c; border-radius:50%; padding:5px 8px; color:#ff758c; font-size:12px; cursor:pointer;">❌</button>` : ''}
+                    </div>
+                `;
+            });
+            
+            listEl.innerHTML = html;
+            
+            const btnContainer = document.getElementById('youtube-admin-actions');
+            if (btnContainer) {
+                if (userNickname === '아빠') {
+                    btnContainer.innerHTML = `<button onclick="showAddYoutubeModal()" style="width:100%; margin-top:16px; background:linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); color:#4a69bd; font-family:'Jua', sans-serif;">➕ 아빠의 추천 링크 추가하기</button>`;
+                } else {
+                    btnContainer.innerHTML = '';
+                }
+            }
+        }
+        
+        async function deleteYoutubeLink(id) {
+            if(!confirm('이 추천 링크를 삭제할까요?')) return;
+            const { error } = await supabaseClient.from('study_words').delete().eq('id', id);
+            if (!error) {
+                alert('삭제되었습니다!');
+                loadWords();
+            } else {
+                alert('삭제에 실패했습니다.');
+            }
+        }
+
+        function showAddYoutubeModal() {
+            const overlay = document.getElementById('youtube-modal-overlay');
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                document.getElementById('yt-title').value = '';
+                document.getElementById('yt-url').value = '';
+                document.getElementById('yt-icon').value = '📺';
+                document.getElementById('yt-title').focus();
+            }
+        }
+        
+        function closeYoutubeModal() {
+            const overlay = document.getElementById('youtube-modal-overlay');
+            if (overlay) overlay.classList.add('hidden');
+        }
+
+        function submitYoutubeModal() {
+            const title = document.getElementById('yt-title').value.trim();
+            const url = document.getElementById('yt-url').value.trim();
+            const icon = document.getElementById('yt-icon').value.trim() || '📺';
+
+            if (!title) { alert('제목을 입력해주세요!'); return; }
+            if (!url) { alert('유튜브 링크를 입력해주세요!'); return; }
+
+            addYoutubeLink(title, url, icon);
+            closeYoutubeModal();
+        }
+        
+        async function addYoutubeLink(title, url, icon) {
+            const { error } = await supabaseClient.from('study_words').insert([{
+                word: title,
+                meaning: url,
+                example: icon,
+                subject: 'YOUTUBE_LINK'
+            }]);
+            
+            if (error) {
+                alert('저장에 실패했습니다.');
+            } else {
+                alert('추천 링크가 추가되었습니다! 💖');
+                loadWords();
+            }
+        }
+
         initStats()
         loadWords()
     </script>
+
+    <!-- 유튜브 링크 추가 모달 -->
+    <div class="modal-overlay hidden" id="youtube-modal-overlay">
+        <div class="name-modal">
+            <h2 style="font-size:22px; margin-bottom:15px;">📺 추천 링크 추가 📺</h2>
+            <input type="text" id="yt-title" class="name-input" placeholder="채널/영상 제목 (예: 과학드림)">
+            <input type="text" id="yt-url" class="name-input" placeholder="유튜브 링크 URL">
+            <input type="text" id="yt-icon" class="name-input" placeholder="이모지 하나 (기본값: 📺)" value="📺">
+            <div style="display:flex; gap:10px; margin-top: 20px;">
+                <button class="name-btn" onclick="submitYoutubeModal()">추가하기 💖</button>
+                <button class="name-btn" style="background: #dfe6e9; color: #636e72; box-shadow:none;" onclick="closeYoutubeModal()">취소</button>
+            </div>
+        </div>
+    </div>
 
 </body>
 
