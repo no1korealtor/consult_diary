@@ -265,20 +265,21 @@
         </div>
 
     <div id="propertyFields">
-        <select id="buildingSelect">
-            <option value="">건물 선택</option>
-        </select>
-        <button
-            type="button"
-            onclick="location.href='building-register.html'"
-        >
-            + 새 건물 등록
-        </button>
+        <div style="display: flex; gap: 4px; margin-bottom: 12px; align-items: center;">
+            <select id="buildingSelect" style="flex: 1; margin-bottom: 0;">
+                <option value="">건물 선택</option>
+            </select>
+            <button type="button" onclick="loadBuildings()" style="padding: 14px 12px; width: auto; margin-bottom: 0; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-size: 14px; font-weight: bold;" title="목록 새로고침">🔄</button>
+            <button type="button" onclick="window.open('building-register.html', '_blank')" style="padding: 14px 12px; width: auto; margin-bottom: 0; font-size: 14px; font-weight: bold; background: #3b82f6; color: white; border: none; border-radius: 8px;">
+                + 새 건물 등록
+            </button>
+        </div>
 
         <div style="display: flex; gap: 4px; margin-bottom: 12px; align-items: center;" id="roomSelectContainer">
             <select id="roomSelect" style="flex: 1; margin-bottom: 0;" onchange="checkRoomSchedules()">
                 <option value="">호수 선택</option>
             </select>
+            <button type="button" onclick="loadRooms()" style="padding: 14px 12px; width: auto; margin-bottom: 0; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-size: 14px; font-weight: bold;" title="목록 새로고침">🔄</button>
             <button
                 type="button"
                 id="editRoomBtn"
@@ -300,10 +301,13 @@
     </div>
 
     <div id="clientSelectContainer" style="display: none; margin-bottom: 16px; margin-top: 16px;">
-        <select id="clientSelect" placeholder="손님 선택 (전화번호 뒷자리 등)">
-            <option value="">손님 선택 안함</option>
-        </select>
-        <button type="button" onclick="location.href='market.html?tab=clients&action=new'" style="width:100%; padding:10px; margin-top:8px; border-radius:8px; font-weight:bold; background:#f1f5f9; color:#3b82f6; border:1px solid #cbd5e1; cursor:pointer; font-size: 13px;">+ 손님을 찾을 수 없나요? 손님 장부에서 새로 등록하기</button>
+        <div style="display: flex; gap: 4px; align-items: center;">
+            <select id="clientSelect" placeholder="손님 선택 (전화번호 뒷자리 등)" style="flex: 1; margin-bottom: 0;">
+                <option value="">손님 선택 안함</option>
+            </select>
+            <button type="button" onclick="loadClients()" style="padding: 14px 12px; width: auto; margin-bottom: 0; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-size: 14px; font-weight: bold;" title="목록 새로고침">🔄</button>
+        </div>
+        <button type="button" onclick="window.open('market.html?tab=clients&action=new', '_blank')" style="width:100%; padding:10px; margin-top:8px; border-radius:8px; font-weight:bold; background:#f1f5f9; color:#3b82f6; border:1px solid #cbd5e1; cursor:pointer; font-size: 13px;">+ 손님을 찾을 수 없나요? 손님 장부에서 새로 등록하기</button>
     </div>
 
     <select id="contractType">
@@ -530,9 +534,9 @@
                 buildingId = buildingId.substring(2);
             }
             if (buildingId) {
-                location.href = 'room-register.html?building_id=' + buildingId;
+                window.open('room-register.html?building_id=' + buildingId, '_blank');
             } else {
-                location.href = 'room-register.html';
+                window.open('room-register.html', '_blank');
             }
         }
 
@@ -1560,7 +1564,8 @@
                 
                 if (schedule.schedule_date && !parsed.isDone) {
                     const isNoticeFlag = isNotice(schedule);
-                    if (!isNoticeFlag) {
+                    const isAnniversary = schedule.memo && schedule.memo.includes('[ANNIVERSARY]');
+                    if (!isNoticeFlag && !isAnniversary) {
                         const schDate = new Date(schedule.schedule_date);
                         const today = new Date();
                         today.setHours(0,0,0,0);
