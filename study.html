@@ -510,6 +510,10 @@
 
         let words = []
         let currentWord = null
+
+        function cleanWord(str) {
+            return str ? str.replace(/_\d+$/, '') : '';
+        }
         let meaningVisible = false
         let isTestMode = false
         let isIrregularTestMode = false
@@ -787,7 +791,7 @@
                     <div class="card test-mode">
                         <div class="test-title">🔥 불규칙 변화 테스트 🔥</div>
                         
-                        <div class="meaning-hint" style="font-size: 32px; color: #ff758c; border-color: #ff758c;">${word.word}</div>
+                        <div class="meaning-hint" style="font-size: 32px; color: #ff758c; border-color: #ff758c;">${cleanWord(word.word)}</div>
                         <div style="text-align: center; color: #636e72; margin-bottom: 20px; font-weight: bold;">(${word.meaning || ''})</div>
                         
                         <div style="text-align: center; font-size: 16px; color: #b2bec3; margin-bottom: 10px;">
@@ -817,7 +821,7 @@
                         
                         <div class="quiz-options">
                             ${quizOptions.map(opt => `
-                                <button class="quiz-option" onclick="submitQuiz('${opt.word.replace(/'/g, "\\'")}')">${opt.word}</button>
+                                <button class="quiz-option" onclick="submitQuiz('${opt.word.replace(/'/g, "\\'")}')">${cleanWord(opt.word)}</button>
                             `).join('')}
                         </div>
 
@@ -835,7 +839,7 @@
                         <div class="card test-mode">
                             <div class="test-title">🤖 AI 수학 선생님 🤖</div>
                             <div class="empty-state">
-                                <div>${word.word} 기초 문제를 만들고 있어요...</div>
+                                <div>${cleanWord(word.word)} 기초 문제를 만들고 있어요...</div>
                                 <div style="font-size: 40px; margin-top: 20px; animation: popIn 1s infinite;">⏳</div>
                             </div>
                         </div>
@@ -889,8 +893,8 @@
         <div class="card">
           ${word.image_url ? `<img src="${word.image_url}" class="word-image" onerror="this.onerror=null; this.src='https://placehold.co/400x200/ffeaa7/ff758c?text=Image+Load+Error';" />` : ''}
           <div class="word">
-              ${word.word}
-              ${/[a-zA-Z]/.test(word.word) ? `<span class="speaker-icon" onclick="speakWord('${word.word.replace(/'/g, "\\'")}')" title="발음 듣기">🔊</span>` : ''}
+              ${cleanWord(word.word)}
+              ${/[a-zA-Z]/.test(cleanWord(word.word)) ? `<span class="speaker-icon" onclick="speakWord('${cleanWord(word.word).replace(/'/g, "\\'")}')" title="발음 듣기">🔊</span>` : ''}
           </div>
           
           <div style="text-align: center;">
@@ -1028,12 +1032,12 @@
         async function checkTest() {
             if (isSubmitting) return;
             const inputVal = document.getElementById('test-input').value.trim();
-            if (inputVal.toLowerCase() === currentWord.word.toLowerCase()) {
+            if (inputVal.toLowerCase() === cleanWord(currentWord.word).toLowerCase()) {
                 isSubmitting = true;
                 const success = await updateMemorizedState();
                 if(!success) { isSubmitting = false; return; }
 
-                await insertStudyLog(currentWord.subject || '영어', currentWord.word, '스펠링 테스트 완료');
+                await insertStudyLog(currentWord.subject || '영어', cleanWord(currentWord.word), '스펠링 테스트 완료');
                 finalizeTest();
                 isSubmitting = false;
             } else {
@@ -1061,7 +1065,7 @@
                 const success = await updateMemorizedState();
                 if(!success) { isSubmitting = false; return; }
 
-                await insertStudyLog(currentWord.subject || '영어', currentWord.word, '불규칙 변화 테스트 완료');
+                await insertStudyLog(currentWord.subject || '영어', cleanWord(currentWord.word), '불규칙 변화 테스트 완료');
                 finalizeTest();
                 isSubmitting = false;
             } else {
@@ -1089,9 +1093,24 @@
             // Pick 3 distractors
             let allAvailable = [...words, ...memorizedWords].filter(w => w.id !== quizTargetWord.id);
             allAvailable.sort(() => 0.5 - Math.random());
-            let distractors = allAvailable.slice(0, 3);
             
-            quizOptions = [quizTargetWord, ...distractors];
+            const targetClean = cleanWord(quizTargetWord.word).toLowerCase();
+            let uniqueDistractors = [];
+            let seenCleanWords = new Set([targetClean]);
+            
+            for (let w of allAvailable) {
+                const wClean = cleanWord(w.word).toLowerCase();
+                if (!seenCleanWords.has(wClean)) {
+                    uniqueDistractors.push(w);
+                    seenCleanWords.add(wClean);
+                    if (uniqueDistractors.length === 3) break;
+                }
+            }
+            if (uniqueDistractors.length < 3) {
+                uniqueDistractors = allAvailable.slice(0, 3);
+            }
+            
+            quizOptions = [quizTargetWord, ...uniqueDistractors];
             quizOptions.sort(() => 0.5 - Math.random());
             
             renderCard();
@@ -1171,7 +1190,7 @@
             const success = await updateMemorizedState();
             if(!success) { isSubmitting = false; return; }
             
-            await insertStudyLog(currentWord.subject || '수학', currentWord.word, 'AI 맞춤 수학 문제 풀이 완료');
+            await insertStudyLog(currentWord.subject || '수학', cleanWord(currentWord.word), 'AI 맞춤 수학 문제 풀이 완료');
             finalizeTest();
             isSubmitting = false;
         }
@@ -1184,6 +1203,7 @@
         }
 
         function speakWord(text) {
+            text = cleanWord(text);
             if ('speechSynthesis' in window) {
                 // 기존 재생중인 음성 취소
                 window.speechSynthesis.cancel();
