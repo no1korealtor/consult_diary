@@ -368,6 +368,115 @@
         .quiz-option:hover { border-color: #84fab0; background: #eafbf0; transform: translateY(-2px); }
         .quiz-option:active { transform: scale(0.98); }
 
+        /* Multiple Choice Styles */
+        .example.mc-mode {
+            border-color: #ff758c;
+            background: #fff9fa;
+            text-align: left !important;
+            padding: 24px 20px;
+        }
+        .mc-container {
+            width: 100%;
+        }
+        .mc-question {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2d3436;
+            margin-bottom: 16px;
+            font-family: 'Jua', sans-serif;
+            line-height: 1.5;
+        }
+        .mc-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .mc-option-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 14px 16px;
+            background: #ffffff;
+            border: 2px solid #ffeaa7;
+            border-radius: 16px;
+            font-size: 17px;
+            font-weight: bold;
+            color: #2d3436;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-family: 'Nunito', 'Jua', sans-serif;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .mc-option-btn:hover:not(:disabled) {
+            border-color: #ff758c;
+            background: #fff0f5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 117, 140, 0.1);
+        }
+        .mc-option-btn:active:not(:disabled) {
+            transform: scale(0.98);
+        }
+        .mc-option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .mc-option-btn.mc-correct {
+            background: #eafbf0;
+            border-color: #2ecc71;
+            color: #27ae60;
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.15);
+        }
+        .mc-option-btn.mc-incorrect {
+            background: #ffeef0;
+            border-color: #ff7675;
+            color: #d63031;
+            text-decoration: line-through;
+            box-shadow: none;
+        }
+        .mc-label {
+            display: inline-block;
+            width: 26px;
+            height: 26px;
+            line-height: 26px;
+            text-align: center;
+            background: #f1f2f6;
+            border-radius: 50%;
+            margin-right: 12px;
+            font-size: 14px;
+            color: #747d8c;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+        .mc-option-btn.mc-correct .mc-label {
+            background: #2ecc71;
+            color: white;
+        }
+        .mc-option-btn.mc-incorrect .mc-label {
+            background: #ff7675;
+            color: white;
+        }
+        .mc-feedback {
+            margin-top: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            font-family: 'Jua', sans-serif;
+            padding: 10px;
+            border-radius: 12px;
+            animation: popIn 0.3s ease;
+        }
+        .mc-feedback.success {
+            color: #27ae60;
+            background: #eafbf0;
+            border: 1px solid #2ecc71;
+        }
+        .mc-feedback.fail {
+            color: #d63031;
+            background: #ffeef0;
+            border: 1px solid #ff7675;
+        }
+
         .history-section {
             width: 100%;
             max-width: 480px;
@@ -516,6 +625,194 @@
         }
         let meaningVisible = false
         let isTestMode = false
+
+        // Multiple choice state & helpers
+        let currentMc = null;
+        let mcWrongClicked = false;
+
+        function parseMultipleChoice(example) {
+            if (!example) return null;
+            
+            // Check if there are choices like A. B. C. D. or A) B) C) D)
+            if (!/([A-E]|[1-5])[\.\)]/i.test(example)) return null;
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = example;
+            
+            let htmlContent = tempDiv.innerHTML
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/p>/gi, '\n')
+                .replace(/<p[^>]*>/gi, '');
+                
+            tempDiv.innerHTML = htmlContent;
+            let plainText = tempDiv.textContent || tempDiv.innerText || '';
+            
+            let lines = plainText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+            
+            let question = '';
+            let options = [];
+            let correctIndex = -1;
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+                let match = line.match(/^([A-E]|[1-5])[\.\)]\s*(.*)$/i);
+                if (match) {
+                    let label = match[1];
+                    let text = match[2];
+                    let isCorrect = false;
+                    
+                    if (text.includes('(정답') || text.includes('정답!') || text.includes('정답')) {
+                        isCorrect = true;
+                        text = text.replace(/\(정답.*?\)/g, '').replace(/정답.*/g, '').trim();
+                        text = text.replace(/[\(\)\!\s]+$/, '').trim();
+                    }
+                    
+                    options.push({
+                        label: label.toUpperCase(),
+                        text: text,
+                        isCorrect: isCorrect
+                    });
+                    
+                    if (isCorrect) {
+                        correctIndex = options.length - 1;
+                    }
+                } else {
+                    if (question) {
+                        question += '<br>' + line;
+                    } else {
+                        question = line;
+                    }
+                }
+            }
+            
+            if (options.length > 0) {
+                // If correct option is not explicitly marked with "(정답)", check if option matches currentWord.word
+                if (correctIndex === -1 && typeof currentWord !== 'undefined' && currentWord) {
+                    const cleanTarget = cleanWord(currentWord.word).toLowerCase();
+                    for (let i = 0; i < options.length; i++) {
+                        if (options[i].text.toLowerCase() === cleanTarget) {
+                            options[i].isCorrect = true;
+                            correctIndex = i;
+                            break;
+                        }
+                    }
+                }
+                
+                return {
+                    question: question,
+                    options: options,
+                    correctIndex: correctIndex
+                };
+            }
+            
+            return null;
+        }
+
+        function renderMultipleChoice(example) {
+            const mc = parseMultipleChoice(example);
+            if (!mc) {
+                return example || '';
+            }
+            
+            currentMc = mc;
+            mcWrongClicked = false;
+            
+            return `
+                <div class="mc-container">
+                    <div class="mc-question">${mc.question}</div>
+                    <div class="mc-options">
+                        ${mc.options.map((opt, idx) => `
+                            <button class="mc-option-btn" id="mc-opt-${idx}" onclick="selectMcOption(${idx})">
+                                <span class="mc-label">${opt.label}</span>
+                                <span class="mc-text">${opt.text}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div class="mc-feedback hidden" id="mc-feedback"></div>
+                </div>
+            `;
+        }
+
+        async function selectMcOption(idx) {
+            if (!currentMc || isSubmitting) return;
+            
+            const feedbackEl = document.getElementById('mc-feedback');
+            const clickedBtn = document.getElementById(`mc-opt-${idx}`);
+            const option = currentMc.options[idx];
+            
+            if (option.isCorrect) {
+                isSubmitting = true;
+                
+                // Mark correct option
+                clickedBtn.classList.add('mc-correct');
+                feedbackEl.innerHTML = "정답이에요! 🎉";
+                feedbackEl.className = "mc-feedback success";
+                feedbackEl.classList.remove('hidden');
+                
+                // Disable all options
+                currentMc.options.forEach((_, i) => {
+                    const btn = document.getElementById(`mc-opt-${i}`);
+                    if (btn) btn.disabled = true;
+                });
+                
+                // If they got it right on the first try, increase combo
+                if (!mcWrongClicked) {
+                    comboCount++;
+                } else {
+                    comboCount = 0;
+                }
+                
+                dailyProgress++;
+                saveStats();
+                
+                // Trigger confetti
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#ffc3a0', '#ffafbd', '#84fab0', '#8fd3f4', '#f6d365']
+                });
+                
+                // Speak the word automatically
+                speakWord(currentWord.word);
+                
+                // Automatically show the meaning in DOM
+                const meaningEl = document.querySelector('.meaning');
+                if (meaningEl) {
+                    meaningEl.classList.remove('hidden');
+                }
+                meaningVisible = true;
+                
+                await updateMemorizedState();
+                await insertStudyLog(currentWord.subject || '영어', cleanWord(currentWord.word), '객관식 퀴즈 정답 완료');
+                
+                setTimeout(() => {
+                    const memorizedWord = currentWord;
+                    words = words.filter(w => w.id !== currentWord.id);
+                    memorizedWords.push(memorizedWord);
+                    
+                    isSubmitting = false;
+                    mcWrongClicked = false;
+                    meaningVisible = false;
+                    
+                    setupSubjects();
+                    loadMyHistory();
+                }, 1800);
+                
+            } else {
+                // Mark incorrect option
+                clickedBtn.classList.add('mc-incorrect');
+                clickedBtn.disabled = true;
+                
+                mcWrongClicked = true;
+                comboCount = 0;
+                saveStats();
+                
+                feedbackEl.innerHTML = "앗, 틀렸어요! 다른 답을 골라보세요! 😉";
+                feedbackEl.className = "mc-feedback fail";
+                feedbackEl.classList.remove('hidden');
+            }
+        }
         let isIrregularTestMode = false
         
         let wordsBySubject = {}
@@ -913,7 +1210,7 @@
               <div class="category">${word.category}</div>
           </div>
 
-          <div class="example">${word.example || ''}</div>
+          <div class="example ${parseMultipleChoice(word.example) ? 'mc-mode' : ''}">${renderMultipleChoice(word.example)}</div>
 
           <div class="meaning ${meaningVisible ? '' : 'hidden'}">${word.meaning || ''}</div>
 
