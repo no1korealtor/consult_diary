@@ -29,11 +29,21 @@ async function requireAuth(bypassProfileCheck = false) {
     }
     
     // DB에서 해당 사용자의 role, 주소, 전화번호 정보 조회 (users 테이블은 authClient 프로젝트에 존재)
-    const { data: profile, error: profileError } = await authClient
+    let { data: profile, error: profileError } = await authClient
         .from('users')
-        .select('role, office_address, phone, name')
+        .select('role, office_address, phone, name, registration_number')
         .eq('id', user.id)
         .single();
+
+    if (profileError && profileError.message && (profileError.message.includes('registration_number') || profileError.message.includes('column'))) {
+        const fallbackResult = await authClient
+            .from('users')
+            .select('role, office_address, phone, name')
+            .eq('id', user.id)
+            .single();
+        profile = fallbackResult.data;
+        profileError = fallbackResult.error;
+    }
 
     // profile이 없거나, role이 NULL이거나 비어있으면 접근 차단
     if (profileError || !profile || !profile.role) {
@@ -60,6 +70,7 @@ async function requireAuth(bypassProfileCheck = false) {
     user.office_address = profile.office_address;
     user.phone = profile.phone;
     user.name = profile.name || user.email;
+    user.registration_number = profile.registration_number || '';
     user.office_id = (dataProfile && dataProfile.office_id) ? dataProfile.office_id : user.id;
     window.currentUser = user;
     

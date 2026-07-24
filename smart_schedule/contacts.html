@@ -185,16 +185,28 @@
             list.innerHTML = '<li>로딩 중...</li>';
 
             // users 정보와 속한 그룹(user_groups -> groups) 정보를 함께 가져옴
-            let query = authClient
+            let { data, error } = await authClient
                 .from('users')
                 .select(`
-                    id, name, phone, office_address, role,
+                    id, name, phone, office_address, role, registration_number,
                     user_groups ( group_id, status, group_role, groups ( name ) )
                 `)
                 .not('role', 'is', null) // 승인된 유저만 노출
                 .order('name');
 
-            const { data, error } = await query;
+            if (error && error.message && (error.message.includes('registration_number') || error.message.includes('column'))) {
+                // Fallback query without registration_number
+                const fallbackResult = await authClient
+                    .from('users')
+                    .select(`
+                        id, name, phone, office_address, role,
+                        user_groups ( group_id, status, group_role, groups ( name ) )
+                    `)
+                    .not('role', 'is', null)
+                    .order('name');
+                data = fallbackResult.data;
+                error = fallbackResult.error;
+            }
 
             if (error) {
                 list.innerHTML = `<li style="color: #ef4444; font-size: 14px;">직원 목록을 불러오지 못했습니다.<br>사유: ${error.message}</li>`;
@@ -216,6 +228,7 @@
                 const nameStr = user.name || '이름 없음';
                 const phoneStr = user.phone || '전화번호 미입력';
                 const officeStr = user.office_address || '사무실 주소 미입력';
+                const regNoStr = user.registration_number ? ` | 등록: ${user.registration_number}` : '';
                 const isMe = user.id === window.currentUser.id;
 
                 let groupBadges = '';
@@ -238,7 +251,7 @@
                             <div class="user-info">
                                 <span class="user-name">${nameStr} ${isMe ? '(나)' : ''}</span>
                                 <span class="user-phone" style="margin-top: 2px;">☎️ ${phoneStr}</span>
-                                <span class="user-phone" style="font-size: 12px;">${officeStr}</span>
+                                <span class="user-phone" style="font-size: 12px;">${officeStr}${regNoStr}</span>
                             </div>
                             
                         </div>

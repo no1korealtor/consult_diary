@@ -139,6 +139,7 @@
                     <input type="text" id="office_address" placeholder="사무실 주소 (주소 검색 클릭)" required readonly style="margin-bottom: 0; flex: 1; cursor: pointer; background: #ffffff;" onclick="openAddressSearch()">
                     <button type="button" onclick="openAddressSearch()" style="width: auto; padding: 0 16px; margin-bottom: 0; white-space: nowrap; box-sizing: border-box; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 14px; font-family: inherit;">검색</button>
                 </div>
+                <input type="text" id="registration_number" placeholder="중개사무소 개설등록번호 (선택사항)">
                 <input type="tel" id="phone" placeholder="업무용 전화번호 (스마트폰 입력 가능)" required>
                 
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-bottom: 16px; text-align: left;">
@@ -186,6 +187,7 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const office_address = document.getElementById('office_address').value;
+            const registration_number = document.getElementById('registration_number').value;
             const phone = document.getElementById('phone').value;
             const resultMsg = document.getElementById('resultMsg');
             
@@ -210,9 +212,16 @@
             
             if (authData.user) {
                 try {
-                    await supabase.from('users').insert([
-                        { id: authData.user.id, name: name, office_address: office_address, phone: phone, role: null }
+                    const { error: insertErr } = await supabase.from('users').insert([
+                        { id: authData.user.id, name: name, office_address: office_address, phone: phone, registration_number: registration_number, role: null }
                     ]);
+                    
+                    if (insertErr && insertErr.message && (insertErr.message.includes('registration_number') || insertErr.message.includes('column'))) {
+                        // Fallback insert without registration_number if the column doesn't exist yet
+                        await supabase.from('users').insert([
+                            { id: authData.user.id, name: name, office_address: office_address, phone: phone, role: null }
+                        ]);
+                    }
                 } catch (e) {
                     console.error("Users table insert skipped or failed:", e);
                 }
