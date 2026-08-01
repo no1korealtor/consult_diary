@@ -49,8 +49,17 @@
             
             <div id="resultMsg" style="margin-top: 1rem; text-align: center; display: none;"></div>
             
-            </div></div>
-    </div>
+            </div>
+            
+            <div class="glass-panel" style="margin-top: 20px; padding: 24px; box-sizing: border-box;">
+                <h3 style="font-size: 1.1rem; color: white; margin-top: 0; margin-bottom: 16px; font-weight: 800; text-align: center;">🔒 비밀번호 변경</h3>
+                <form id="passwordForm" class="flex-col">
+                    <input type="password" id="new_password" placeholder="새 비밀번호 입력 (6자 이상)" required style="margin-bottom: 12px; width: 100%;">
+                    <button type="submit" class="btn" id="pwdBtn" style="width: 100%;">비밀번호 변경</button>
+                </form>
+                <div id="pwdResultMsg" style="margin-top: 12px; text-align: center; display: none; font-size: 0.9rem; font-weight: 600;"></div>
+            </div>
+        </div>
 
     <script src="auth-helper.js"></script>
     <script>
@@ -150,9 +159,40 @@
             resultMsg.style.display = 'block';
             document.getElementById('saveBtn').textContent = '저장 완료';
             
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1500);
+        });
+
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById('new_password').value;
+            const pwdResultMsg = document.getElementById('pwdResultMsg');
+            const pwdBtn = document.getElementById('pwdBtn');
+
+            if (newPassword.length < 6) {
+                pwdResultMsg.textContent = '비밀번호는 6자 이상이어야 합니다.';
+                pwdResultMsg.style.color = '#fca5a5';
+                pwdResultMsg.style.display = 'block';
+                return;
+            }
+
+            pwdBtn.disabled = true;
+            pwdBtn.textContent = '변경 중...';
+
+            const { data, error } = await authClient.auth.updateUser({ password: newPassword });
+
+            if (error) {
+                pwdResultMsg.textContent = '비밀번호 변경 실패: ' + error.message;
+                pwdResultMsg.style.color = '#fca5a5';
+                pwdResultMsg.style.display = 'block';
+                pwdBtn.disabled = false;
+                pwdBtn.textContent = '비밀번호 변경';
+            } else {
+                pwdResultMsg.textContent = '비밀번호가 성공적으로 변경되었습니다.';
+                pwdResultMsg.style.color = '#86efac';
+                pwdResultMsg.style.display = 'block';
+                document.getElementById('new_password').value = '';
+                pwdBtn.disabled = false;
+                pwdBtn.textContent = '비밀번호 변경';
+            }
         });
 
         loadProfile();
