@@ -305,7 +305,7 @@ def match_masked_jibun(api_jibun, target_jibun):
         return False
     
     return True
-def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm, target_build_year, target_house_type, expand_similar, target_area, build_year_margin, area_margin):
+def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_build_year=None, target_house_type=None, expand_similar=False, target_area=None, build_year_margin=3, area_margin=0.15):
     if prop_type == "1":
         api_trade = "http://apis.data.go.kr/1613000/RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade"
         api_rent = "http://apis.data.go.kr/1613000/RTMSDataSvcAptRent/getRTMSDataSvcAptRent"
