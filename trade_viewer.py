@@ -248,6 +248,8 @@ def fetch_trade_data_month(api_url, sigungu, deal_ymd):
         if not res_text.strip():
             return []
         json_data = json.loads(res_text)
+        if not isinstance(json_data, dict):
+            return []
         header = json_data.get("response", {}).get("header", {})
         result_code = header.get("resultCode")
         if result_code in ("30", "03") or "SERVICE_KEY_IS_NOT_REGISTERED_ERROR" in header.get("resultMsg", ""):
@@ -348,7 +350,7 @@ def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_
     for i in range(24):
         year = current_year
         month = current_month - i
-        if month <= 0:
+        while month <= 0:
             month += 12
             year -= 1
         months.append(f"{year}{str(month).zfill(2)}")
