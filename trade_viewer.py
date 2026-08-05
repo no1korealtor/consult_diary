@@ -354,11 +354,11 @@ def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_
         months.append(f"{year}{str(month).zfill(2)}")
     
     matches = TransactionList(); trade_permission_error = False; rent_permission_error = False
-    with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
+    with concurrent.ThreadPoolExecutor(max_workers=16) as executor:
         trade_futures = {executor.submit(fetch_trade_data_month, api_trade, sigungu, m): m for m in months}
         rent_futures = {executor.submit(fetch_trade_data_month, api_rent, sigungu, m): m for m in months}
         
-        for future in concurrent.futures.as_completed(trade_futures):
+        for future in concurrent.as_completed(trade_futures):
             try:
                 trade_items = future.result()
                 for item in trade_items:
@@ -398,7 +398,7 @@ def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_
             except Exception:
                 pass
                 
-        for future in concurrent.futures.as_completed(rent_futures):
+        for future in concurrent.as_completed(rent_futures):
             try:
                 rent_items = future.result()
                 for item in rent_items:
