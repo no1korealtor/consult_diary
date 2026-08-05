@@ -250,13 +250,29 @@ def fetch_trade_data_month(api_url, sigungu, deal_ymd):
         json_data = json.loads(res_text)
         if not isinstance(json_data, dict):
             return []
-        header = json_data.get("response", {}).get("header", {})
+            
+        response_data = json_data.get("response", {})
+        if not isinstance(response_data, dict):
+            return []
+            
+        header = response_data.get("header", {})
+        if not isinstance(header, dict):
+            return []
+            
         result_code = header.get("resultCode")
         if result_code in ("30", "03") or "SERVICE_KEY_IS_NOT_REGISTERED_ERROR" in header.get("resultMsg", ""):
             raise PermissionError("API 인증 오류")
         elif result_code not in ("00", "000"):
             return []
-        items = json_data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
+        body_data = response_data.get("body", {})
+        if not isinstance(body_data, dict):
+            return []
+            
+        items_data = body_data.get("items", {})
+        if not isinstance(items_data, dict):
+            return []
+            
+        items = items_data.get("item", [])
         if not items:
             return []
         if isinstance(items, dict):
