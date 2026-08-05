@@ -208,6 +208,7 @@ def get_kakao_address_info(address_str):
     except Exception as e:
         print(f"카카오 API 에러: {e}")
         return None
+def normalize_jibun(jibun_str):
     if not jibun_str:
         return ""
     parts = re.split("[-]", str(jibun_str).strip()); normalized_parts = []
@@ -1065,6 +1066,7 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
         story.append(meta_table)
         story.append(Spacer(1, 8))
         if is_expanded:
+            explain_text = "※ 본 브리핑은 인근 유사 매물의 거래 사례를 포함하여 작성되었습니다."
             story.append(Paragraph(explain_text, ParagraphStyle("ExplainStyle", parent=styles["Normal"], fontName="KoreanFont", fontSize=8, textColor=colors.HexColor("#718096"), leading=10)))
             story.append(Spacer(1, 8))
         def build_summary_table(section_title, items, is_rent=False, is_wolse=False):
@@ -1425,7 +1427,7 @@ colors.HexColor("#E2E8F0")), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDIN
     
     try:
         pass
-    except Exception:
+    except Exception as e:
         print(f"\n [오류] PDF 브리핑 파일 생성 중 오류 발생: {e}")
 def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, period_label="1년", is_expanded=False, target_build_year=None, target_area=None, target_floor=None, desired_info=None, expansion_mode="none"):
     try:
@@ -1719,12 +1721,11 @@ def print_comparison_table(transactions, prop_type, target_floor, target_area, a
     try:
         type_names = {"1": "아파트", "2": "연립/다세대/빌라", "3": "오피스텔", "4": "단독/다가구"}
         prop_type_name = type_names.get(prop_type, "일반 부동산")
-        while sigunguCd and bjdong_nm:
-            [t for t in transactions if not t.get("_trade_type") == "매매"]
-            trades_initial = get_terminal_width
-            t = format_single_price
-            t_24_initial = len(trades_initial)
-            tot_24_initial = len(transactions)
+        trades_initial = [t for t in transactions if t.get("_trade_type") == "매매"]
+        t_24_initial = len(trades_initial)
+        tot_24_initial = len(transactions)
+        
+        if sigunguCd and bjdong_nm:
             if tot_24_initial < 3 or t_24_initial <= 1:
                 print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 print(f" ⚠️ 조회하신 지번의 실거래 데이터가 부족합니다 (최근 24개월 매매 {t_24_initial}건 / 전체 {tot_24_initial}건).")
