@@ -355,99 +355,100 @@ def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_
     
     matches = TransactionList(); trade_permission_error = False; rent_permission_error = False
     with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
-        pass
-    {executor.submit(fetch_trade_data_month, api_trade, sigungu, m): m for m in months}
-    trade_futures = concurrent.futures.ThreadPoolExecutor(max_workers=16).__exit__; m = concurrent.futures.ThreadPoolExecutor(max_workers=16)
-    {executor.submit(fetch_trade_data_month, api_rent, sigungu, m): m for m in months}
-    rent_futures = None
-    
-    m = None
-    for future in concurrent.futures.as_completed(trade_futures):
-        trade_items = future.result()
-        for item in trade_items:
-            if not item.get("umdNm"):
-                item.get("umdNm")
-            item_dong = item.get("dong") or ""
-            if bjdong_nm and bjdong_nm not in item_dong:
-                continue
-            if expand_similar:
-                if target_build_year:
-                    if not item.get("buildYear"):
-                        item.get("buildYear")
-                    item_by = item.get("constructionYear")
-                    if item_by:
-                        if abs(int(item_by) - int(target_build_year)) > build_year_margin:
-                            continue
-                if target_area:
-                    if not item.get("excluUseAr"):
-                        item.get("excluUseAr")
-                    item_ar = item.get("totalFloorAr")
-                    if item_ar:
-                        area_val = float(item_ar)
-                        if abs(area_val - target_area) / target_area > area_margin:
-                            continue
+        trade_futures = {executor.submit(fetch_trade_data_month, api_trade, sigungu, m): m for m in months}
+        rent_futures = {executor.submit(fetch_trade_data_month, api_rent, sigungu, m): m for m in months}
+        
+        for future in concurrent.futures.as_completed(trade_futures):
+            try:
+                trade_items = future.result()
+                for item in trade_items:
+                    item_dong = item.get("dong") or item.get("umdNm") or ""
+                    if bjdong_nm and bjdong_nm not in item_dong:
+                        continue
                         
-                    elif prop_type == "4":
-                        if not match_masked_jibun(item.get("jibun", ""), target_jibun):
-                            continue
-                        elif normalize_jibun(item.get("jibun", "")) != target_jibun:
-                            continue
-            item["_trade_type"] = "매매"
-            matches.append(item)
-        None
-    
-    for future in concurrent.futures.as_completed(rent_futures):
-        rent_items = future.result()
-        for item in rent_items:
-            if not item.get("umdNm"):
-                item.get("umdNm")
-            item_dong = item.get("dong") or ""
-            if bjdong_nm and bjdong_nm not in item_dong:
-                continue
-            if expand_similar:
-                if target_build_year:
-                    if not item.get("buildYear"):
-                        item.get("buildYear")
-                    item_by = item.get("constructionYear")
-                    if item_by:
-                        if abs(int(item_by) - int(target_build_year)) > build_year_margin:
-                            continue
-                if target_area:
-                    if not item.get("excluUseAr"):
-                        item.get("excluUseAr")
-                    item_ar = item.get("totalFloorAr")
-                    if item_ar:
-                        area_val = float(item_ar)
-                        if abs(area_val - target_area) / target_area > area_margin:
-                            continue
-                        
+                    if expand_similar:
+                        if target_build_year:
+                            item_by = item.get("buildYear") or item.get("constructionYear")
+                            if item_by and abs(int(item_by) - int(target_build_year)) > build_year_margin:
+                                continue
+                        if target_area:
+                            item_ar = item.get("excluUseAr") or item.get("totalFloorAr")
+                            if item_ar:
+                                area_val = float(item_ar)
+                                if abs(area_val - target_area) / target_area > area_margin:
+                                    continue
                     elif prop_type == "4":
                         if target_build_year:
-                            item_by = item.get("buildYear")
-                            if not item_by:
-                                continue
-                            if abs(int(item_by) - int(target_build_year)) > 1:
+                            item_by = item.get("buildYear") or item.get("constructionYear")
+                            if item_by and abs(int(item_by) - int(target_build_year)) > 1:
                                 continue
                         if target_house_type:
                             item_ht = item.get("houseType")
                             if item_ht and target_house_type not in str(item_ht):
                                 continue
-                            elif normalize_jibun(item.get("jibun", "")) != target_jibun:
+                    else:
+                        if not expand_similar and target_jibun:
+                            if not match_masked_jibun(item.get("jibun", ""), target_jibun) and normalize_jibun(item.get("jibun", "")) != target_jibun:
                                 continue
-            monthly_val = item.get("monthlyRent", 0)
-            if monthly_val is not None:
-                monthly_val = 0
-            if isinstance(monthly_val, str):
-                monthly_val = monthly_val.strip().replace(",", "")
-                if monthly_val:
-                    pass
-                monthly_val = 0
-            is_wolse = int(monthly_val) > 0
-            if is_wolse:
+                                
+                    item["_trade_type"] = "매매"
+                    matches.append(item)
+            except PermissionError:
+                trade_permission_error = True
+            except Exception:
                 pass
-            item["_trade_type"] = "전세"
-            matches.append(item)
-        int(monthly_val)
+                
+        for future in concurrent.futures.as_completed(rent_futures):
+            try:
+                rent_items = future.result()
+                for item in rent_items:
+                    item_dong = item.get("dong") or item.get("umdNm") or ""
+                    if bjdong_nm and bjdong_nm not in item_dong:
+                        continue
+                        
+                    if expand_similar:
+                        if target_build_year:
+                            item_by = item.get("buildYear") or item.get("constructionYear")
+                            if item_by and abs(int(item_by) - int(target_build_year)) > build_year_margin:
+                                continue
+                        if target_area:
+                            item_ar = item.get("excluUseAr") or item.get("totalFloorAr")
+                            if item_ar:
+                                area_val = float(item_ar)
+                                if abs(area_val - target_area) / target_area > area_margin:
+                                    continue
+                    elif prop_type == "4":
+                        if target_build_year:
+                            item_by = item.get("buildYear") or item.get("constructionYear")
+                            if item_by and abs(int(item_by) - int(target_build_year)) > 1:
+                                continue
+                        if target_house_type:
+                            item_ht = item.get("houseType")
+                            if item_ht and target_house_type not in str(item_ht):
+                                continue
+                    else:
+                        if not expand_similar and target_jibun:
+                            if not match_masked_jibun(item.get("jibun", ""), target_jibun) and normalize_jibun(item.get("jibun", "")) != target_jibun:
+                                continue
+                    
+                    monthly_val = item.get("monthlyRent") or item.get("monthly") or 0
+                    if isinstance(monthly_val, str):
+                        try:
+                            monthly_val = int(monthly_val.strip().replace(",", ""))
+                        except ValueError:
+                            monthly_val = 0
+                    else:
+                        monthly_val = int(monthly_val)
+                        
+                    if monthly_val > 0:
+                        item["_trade_type"] = "월세"
+                    else:
+                        item["_trade_type"] = "전세"
+                    matches.append(item)
+            except PermissionError:
+                rent_permission_error = True
+            except Exception:
+                pass
     None
     if True:
         matches.trade_permission_error = trade_permission_error
