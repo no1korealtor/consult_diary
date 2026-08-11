@@ -1,0 +1,52 @@
+Control Identifiers:
+
+Dialog - '계약서작성 (확인설명서번호 : 32172504)'    (L-2, T88, R920, B1103)
+['계약서작성 (확인설명서번호 : 32172504)Dialog', 'Dialog', '계약서작성 (확인설명서번호 : 32172504)']
+child_window(title="계약서작성 (확인설명서번호 : 32172504)", control_type="Window")
+   | 
+   | Pane - ''    (L1, T114, R922, B1100)
+   | ['Pane', 'Pane0', 'Pane1']
+   | child_window(auto_id="133204", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L2, T296, R3, B1080)
+   |    | ['Pane2']
+   |    | child_window(auto_id="68652", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L2, T253, R921, B296)
+   |    | ['Pane3']
+   |    | child_window(auto_id="4981310", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L2, T195, R921, B251)
+   |    | ['Pane20']
+   |    | child_window(auto_id="133590", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L2, T115, R921, B195)
+   |    | ['Pane23']
+   |    | child_window(auto_id="3016166", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L2, T1080, R921, B1099)
+   |    | ['Pane25']
+   |    | child_window(auto_id="68628", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L3, T296, R921, B1080)
+   |    | ['Pane26']
+   |    | child_window(auto_id="68314", control_type="Pane")
+   | 
+   | TitleBar - ''    (L17, T91, R917, B114)
+   | ['TitleBar']
+   |    | 
+   |    | Menu - '시스템'    (L6, T96, R28, B118)
+   |    | ['Menu', '시스템', '시스템Menu', '시스템0', '시스템1']
+   |    | child_window(title="시스템", auto_id="MenuBar", control_type="MenuBar")
+   |    | 
+   |    | Button - '최소화'    (L778, T89, R825, B114)
+   |    | ['Button31', '최소화Button', '최소화']
+   |    | child_window(title="최소화", control_type="Button")
+   |    | 
+   |    | Button - '최대화'    (L825, T89, R871, B114)
+   |    | ['최대화', 'Button32', '최대화Button']
+   |    | child_window(title="최대화", control_type="Button")
+   |    | 
+   |    | Button - '닫기'    (L871, T89, R918, B114)
+   |    | ['닫기', '닫기Button', 'Button33']
+   |    | child_window(title="닫기", control_type="Button")

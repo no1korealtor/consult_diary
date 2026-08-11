@@ -1,0 +1,1237 @@
+Control Identifiers:
+
+Dialog - '계약서작성 (확인설명서번호 : 32172504)'    (L-2, T88, R920, B1103)
+['Dialog', '계약서작성 (확인설명서번호 : 32172504)Dialog', '계약서작성 (확인설명서번호 : 32172504)']
+child_window(title="계약서작성 (확인설명서번호 : 32172504)", control_type="Window")
+   | 
+   | Pane - ''    (L1, T114, R922, B1100)
+   | ['Pane', 'Pane0', 'Pane1']
+   | child_window(auto_id="133204", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L2, T296, R3, B1080)
+   |    | ['Pane2']
+   |    | child_window(auto_id="68652", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L2, T253, R921, B296)
+   |    | ['Pane3']
+   |    | child_window(auto_id="4981310", control_type="Pane")
+   |    |    | 
+   |    |    | Pane - ''    (L2, T253, R3, B296)
+   |    |    | ['Pane4']
+   |    |    | child_window(auto_id="68650", control_type="Pane")
+   |    |    | 
+   |    |    | Pane - ''    (L3, T253, R921, B296)
+   |    |    | ['Pane5']
+   |    |    | child_window(auto_id="68064", control_type="Pane")
+   |    |    |    | 
+   |    |    |    | Pane - ''    (L318, T274, R419, B293)
+   |    |    |    | ['Pane6']
+   |    |    |    | child_window(auto_id="68644", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - '갱신'    (L371, T273, R415, B293)
+   |    |    |    |    | ['갱신', 'Pane7', '갱신Pane']
+   |    |    |    |    | child_window(title="갱신", auto_id="68648", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - '신규'    (L323, T273, R367, B293)
+   |    |    |    |    | ['신규Pane', '신규', 'Pane8']
+   |    |    |    |    | child_window(title="신규", auto_id="68646", control_type="Pane")
+   |    |    |    | 
+   |    |    |    | Pane - '주택임대차계약신고서'    (L162, T273, R318, B293)
+   |    |    |    | ['Pane9', '주택임대차계약신고서', '주택임대차계약신고서Pane']
+   |    |    |    | child_window(title="주택임대차계약신고서", auto_id="68076", control_type="Pane")
+   |    |    |    | 
+   |    |    |    | Pane - 'QR코드'    (L426, T273, R488, B293)
+   |    |    |    | ['QR코드Pane', 'Pane10', 'QR코드']
+   |    |    |    | child_window(title="QR코드", auto_id="68074", control_type="Pane")
+   |    |    |    | 
+   |    |    |    | Pane - '컬러인쇄'    (L547, T275, R612, B295)
+   |    |    |    | ['컬러인쇄', 'Pane11', '컬러인쇄Pane']
+   |    |    |    | child_window(title="컬러인쇄", auto_id="68642", control_type="Pane")
+   |    |    |    | 
+   |    |    |    | Pane - '흑백인쇄'    (L547, T255, R612, B275)
+   |    |    |    | ['흑백인쇄', 'Pane12', '흑백인쇄Pane']
+   |    |    |    | child_window(title="흑백인쇄", auto_id="68640", control_type="Pane")
+   |    |    |    | 
+   |    |    |    | Pane - ''    (L698, T258, R869, B293)
+   |    |    |    | ['Pane13']
+   |    |    |    | child_window(auto_id="68634", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - '계약중'    (L804, T256, R869, B275)
+   |    |    |    |    | ['Pane14', '계약중Pane', '계약중']
+   |    |    |    |    | child_window(title="계약중", auto_id="68638", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - '계약완료'    (L804, T274, R869, B291)
+   |    |    |    |    | ['계약완료Pane', 'Pane15', '계약완료']
+   |    |    |    |    | child_window(title="계약완료", auto_id="68636", control_type="Pane")
+   |    |    |    | 
+   |    |    |    | Pane - '개인정보활용동의서'    (L162, T254, R307, B274)
+   |    |    |    | ['개인정보활용동의서Pane', 'Pane16', '개인정보활용동의서']
+   |    |    |    | child_window(title="개인정보활용동의서", auto_id="68072", control_type="Pane")
+   |    |    |    | 
+   |    |    |    | Pane - '공제증서'    (L316, T254, R389, B274)
+   |    |    |    | ['공제증서Pane', 'Pane17', '공제증서']
+   |    |    |    | child_window(title="공제증서", auto_id="68070", control_type="Pane")
+   |    |    |    | 
+   |    |    |    | Pane - '표지'    (L103, T272, R148, B292)
+   |    |    |    | ['표지', 'Pane18', '표지Pane']
+   |    |    |    | child_window(title="표지", auto_id="68068", control_type="Pane")
+   |    |    |    | 
+   |    |    |    | Pane - '계약서'    (L103, T254, R161, B274)
+   |    |    |    | ['Pane19', '계약서Pane', '계약서']
+   |    |    |    | child_window(title="계약서", auto_id="68066", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L2, T195, R921, B251)
+   |    | ['Pane20']
+   |    | child_window(auto_id="133590", control_type="Pane")
+   |    |    | 
+   |    |    | Pane - '전세권설정'    (L602, T194, R695, B215)
+   |    |    | ['전세권설정', 'Pane21', '전세권설정Pane']
+   |    |    | child_window(title="전세권설정", auto_id="133598", control_type="Pane")
+   |    |    | 
+   |    |    | ComboBox - ''    (L434, T195, R495, B220)
+   |    |    | ['ComboBox', 'ComboBox0', 'ComboBox1']
+   |    |    | child_window(auto_id="68080", control_type="ComboBox")
+   |    |    |    | 
+   |    |    |    | Static - ''    (L3, T3, R41, B22)
+   |    |    |    | ['Static', 'Static0', 'Static1']
+   |    |    |    | 
+   |    |    |    | Button - '열기'    (L479, T196, R494, B219)
+   |    |    |    | ['열기Button', '열기', 'Button', '열기Button0', '열기Button1', '열기0', '열기1', 'Button0', 'Button1']
+   |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    | 
+   |    |    | ComboBox - ''    (L274, T195, R433, B220)
+   |    |    | ['ComboBox2']
+   |    |    | child_window(auto_id="133592", control_type="ComboBox")
+   |    |    |    | 
+   |    |    |    | Edit - ''    (L277, T198, R413, B217)
+   |    |    |    | ['Edit', 'Edit0', 'Edit1']
+   |    |    |    | child_window(auto_id="1001", control_type="Edit")
+   |    |    |    | 
+   |    |    |    | Button - '열기'    (L417, T196, R432, B219)
+   |    |    |    | ['열기Button2', '열기2', 'Button2']
+   |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    | 
+   |    |    | ComboBox - ''    (L84, T195, R273, B220)
+   |    |    | ['ComboBox3']
+   |    |    | child_window(auto_id="459662", control_type="ComboBox")
+   |    |    |    | 
+   |    |    |    | Static - ''    (L3, T3, R169, B22)
+   |    |    |    | ['Static2']
+   |    |    |    | 
+   |    |    |    | Button - '열기'    (L257, T196, R272, B219)
+   |    |    |    | ['열기Button3', '열기3', 'Button3']
+   |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    | 
+   |    |    | Pane - ''    (L2, T195, R3, B251)
+   |    |    | ['Pane22']
+   |    |    | child_window(auto_id="68632", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L2, T115, R921, B195)
+   |    | ['Pane23']
+   |    | child_window(auto_id="3016166", control_type="Pane")
+   |    |    | 
+   |    |    | Pane - ''    (L2, T115, R3, B195)
+   |    |    | ['Pane24']
+   |    |    | child_window(auto_id="68630", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L2, T1080, R921, B1099)
+   |    | ['Pane25']
+   |    | child_window(auto_id="68628", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L3, T296, R921, B1080)
+   |    | ['Pane26']
+   |    | child_window(auto_id="68314", control_type="Pane")
+   |    |    | 
+   |    |    | Pane - ''    (L4, T168, R903, B2168)
+   |    |    | ['Pane27']
+   |    |    | child_window(auto_id="395764", control_type="Pane")
+   |    |    |    | 
+   |    |    |    | Pane - ''    (L6, T2068, R901, B2166)
+   |    |    |    | ['Pane28']
+   |    |    |    | child_window(auto_id="133820", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L640, T2124, R763, B2153)
+   |    |    |    |    | ['Static3']
+   |    |    |    |    | child_window(auto_id="68626", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L762, T2123, R869, B2153)
+   |    |    |    |    | ['Pane29']
+   |    |    |    |    | child_window(auto_id="68624", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L244, T2067, R869, B2097)
+   |    |    |    |    | ['Pane30']
+   |    |    |    |    | child_window(auto_id="68620", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L247, T2071, R866, B2094)
+   |    |    |    |    |    | ['Edit2']
+   |    |    |    |    |    | child_window(auto_id="68622", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L640, T2096, R763, B2125)
+   |    |    |    |    | ['Static4']
+   |    |    |    |    | child_window(auto_id="68618", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L122, T2096, R245, B2125)
+   |    |    |    |    | ['Static5']
+   |    |    |    |    | child_window(auto_id="68616", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L122, T2124, R245, B2153)
+   |    |    |    |    | ['Static6']
+   |    |    |    |    | child_window(auto_id="68614", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L390, T2124, R465, B2153)
+   |    |    |    |    | ['Static7']
+   |    |    |    |    | child_window(auto_id="68612", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L31, T2067, R123, B2153)
+   |    |    |    |    | ['Pane31']
+   |    |    |    |    | child_window(auto_id="68610", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L122, T2068, R245, B2097)
+   |    |    |    |    | ['Static8']
+   |    |    |    |    | child_window(auto_id="68608", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L244, T2095, R641, B2125)
+   |    |    |    |    | ['Pane32']
+   |    |    |    |    | child_window(auto_id="68604", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L247, T2099, R607, B2122)
+   |    |    |    |    |    | ['Edit3']
+   |    |    |    |    |    | child_window(auto_id="68606", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L464, T2123, R641, B2153)
+   |    |    |    |    | ['Pane33']
+   |    |    |    |    | child_window(auto_id="68600", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L467, T2127, R637, B2150)
+   |    |    |    |    |    | ['Edit4']
+   |    |    |    |    |    | child_window(auto_id="68602", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L244, T2123, R391, B2153)
+   |    |    |    |    | ['Pane34']
+   |    |    |    |    | child_window(auto_id="133822", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L247, T2126, R388, B2149)
+   |    |    |    |    |    | ['Edit5']
+   |    |    |    |    |    | child_window(auto_id="199344", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L762, T2095, R869, B2124)
+   |    |    |    |    | ['Pane35']
+   |    |    |    |    | child_window(auto_id="68596", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L767, T2099, R866, B2122)
+   |    |    |    |    |    | ['Edit6']
+   |    |    |    |    |    | child_window(auto_id="68598", control_type="Edit")
+   |    |    |    | 
+   |    |    |    | Pane - ''    (L6, T1970, R901, B2068)
+   |    |    |    | ['Pane36']
+   |    |    |    | child_window(auto_id="68558", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L640, T2026, R763, B2055)
+   |    |    |    |    | ['Static9']
+   |    |    |    |    | child_window(auto_id="68594", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L762, T2025, R869, B2055)
+   |    |    |    |    | ['Pane37']
+   |    |    |    |    | child_window(auto_id="68592", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L244, T1969, R869, B1999)
+   |    |    |    |    | ['Pane38']
+   |    |    |    |    | child_window(auto_id="68588", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L247, T1973, R866, B1996)
+   |    |    |    |    |    | ['Edit7']
+   |    |    |    |    |    | child_window(auto_id="68590", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L640, T1998, R763, B2027)
+   |    |    |    |    | ['Static10']
+   |    |    |    |    | child_window(auto_id="68586", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L122, T1998, R245, B2027)
+   |    |    |    |    | ['Static11']
+   |    |    |    |    | child_window(auto_id="68584", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L122, T2026, R245, B2055)
+   |    |    |    |    | ['Static12']
+   |    |    |    |    | child_window(auto_id="68582", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L390, T2026, R465, B2055)
+   |    |    |    |    | ['Static13']
+   |    |    |    |    | child_window(auto_id="68580", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L31, T1969, R123, B2055)
+   |    |    |    |    | ['Pane39']
+   |    |    |    |    | child_window(auto_id="68578", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L122, T1970, R245, B1999)
+   |    |    |    |    | ['Static14']
+   |    |    |    |    | child_window(auto_id="68576", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L244, T1997, R641, B2027)
+   |    |    |    |    | ['Pane40']
+   |    |    |    |    | child_window(auto_id="68572", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L247, T2001, R607, B2024)
+   |    |    |    |    |    | ['Edit8']
+   |    |    |    |    |    | child_window(auto_id="68574", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L464, T2025, R641, B2055)
+   |    |    |    |    | ['Pane41']
+   |    |    |    |    | child_window(auto_id="68568", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L467, T2029, R637, B2052)
+   |    |    |    |    |    | ['Edit9']
+   |    |    |    |    |    | child_window(auto_id="68570", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L244, T2025, R391, B2055)
+   |    |    |    |    | ['Pane42']
+   |    |    |    |    | child_window(auto_id="68564", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L247, T2028, R388, B2051)
+   |    |    |    |    |    | ['Edit10']
+   |    |    |    |    |    | child_window(auto_id="68566", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L762, T1997, R869, B2026)
+   |    |    |    |    | ['Pane43']
+   |    |    |    |    | child_window(auto_id="68560", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L767, T2001, R866, B2024)
+   |    |    |    |    |    | ['Edit11']
+   |    |    |    |    |    | child_window(auto_id="68562", control_type="Edit")
+   |    |    |    | 
+   |    |    |    | Pane - ''    (L6, T1817, R901, B1970)
+   |    |    |    | ['Pane44']
+   |    |    |    | child_window(auto_id="199190", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L32, T1835, R124, B1898)
+   |    |    |    |    | ['Pane45']
+   |    |    |    |    | child_window(auto_id="68556", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L245, T1835, R870, B1870)
+   |    |    |    |    | ['Pane46']
+   |    |    |    |    | child_window(auto_id="68552", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L248, T1842, R774, B1865)
+   |    |    |    |    |    | ['Edit12']
+   |    |    |    |    |    | child_window(auto_id="68554", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L245, T1929, R434, B1959)
+   |    |    |    |    | ['Pane47']
+   |    |    |    |    | child_window(auto_id="68546", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L349, T1933, R431, B1956)
+   |    |    |    |    |    | ['Edit13']
+   |    |    |    |    |    | child_window(auto_id="68550", control_type="Edit")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L248, T1933, R330, B1956)
+   |    |    |    |    |    | ['Edit14']
+   |    |    |    |    |    | child_window(auto_id="68548", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L32, T1896, R124, B1959)
+   |    |    |    |    | ['Pane48']
+   |    |    |    |    | child_window(auto_id="133648", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | ComboBox - ''    (L35, T1915, R121, B1938)
+   |    |    |    |    |    | ['ComboBox4']
+   |    |    |    |    |    | child_window(auto_id="133824", control_type="ComboBox")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L3, T3, R66, B20)
+   |    |    |    |    |    |    | ['Static15']
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Button - '열기'    (L105, T1916, R120, B1937)
+   |    |    |    |    |    |    | ['열기Button4', '열기4', 'Button4']
+   |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L123, T1868, R246, B1898)
+   |    |    |    |    | ['Pane49']
+   |    |    |    |    | child_window(auto_id="133650", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | ComboBox - ''    (L125, T1871, R244, B1896)
+   |    |    |    |    |    | ['ComboBox5']
+   |    |    |    |    |    | child_window(auto_id="330240", control_type="ComboBox")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L3, T3, R99, B22)
+   |    |    |    |    |    |    | ['Static16']
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Button - '열기'    (L228, T1872, R243, B1895)
+   |    |    |    |    |    |    | ['열기Button5', '열기5', 'Button5']
+   |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L123, T1897, R246, B1931)
+   |    |    |    |    | ['Static17']
+   |    |    |    |    | child_window(auto_id="68544", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L628, T1869, R680, B1898)
+   |    |    |    |    | ['Static18']
+   |    |    |    |    | child_window(auto_id="68542", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L433, T1869, R487, B1898)
+   |    |    |    |    | ['Static19']
+   |    |    |    |    | child_window(auto_id="68540", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L123, T1836, R246, B1870)
+   |    |    |    |    | ['Static20']
+   |    |    |    |    | child_window(auto_id="68538", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L433, T1930, R487, B1959)
+   |    |    |    |    | ['Static21']
+   |    |    |    |    | child_window(auto_id="68536", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L628, T1930, R680, B1959)
+   |    |    |    |    | ['Static22']
+   |    |    |    |    | child_window(auto_id="68534", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L245, T1868, R434, B1898)
+   |    |    |    |    | ['Pane50']
+   |    |    |    |    | child_window(auto_id="68528", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L349, T1872, R431, B1895)
+   |    |    |    |    |    | ['Edit15']
+   |    |    |    |    |    | child_window(auto_id="68532", control_type="Edit")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L248, T1872, R330, B1895)
+   |    |    |    |    |    | ['Edit16']
+   |    |    |    |    |    | child_window(auto_id="68530", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L486, T1868, R629, B1898)
+   |    |    |    |    | ['Pane51']
+   |    |    |    |    | child_window(auto_id="133644", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L489, T1872, R626, B1895)
+   |    |    |    |    |    | ['Edit17']
+   |    |    |    |    |    | child_window(auto_id="133646", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L679, T1868, R870, B1898)
+   |    |    |    |    | ['Pane52']
+   |    |    |    |    | child_window(auto_id="68524", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L682, T1872, R867, B1895)
+   |    |    |    |    |    | ['Edit18']
+   |    |    |    |    |    | child_window(auto_id="68526", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L245, T1896, R870, B1931)
+   |    |    |    |    | ['Pane53']
+   |    |    |    |    | child_window(auto_id="68520", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L248, T1903, R774, B1926)
+   |    |    |    |    |    | ['Edit19']
+   |    |    |    |    |    | child_window(auto_id="68522", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L123, T1929, R246, B1959)
+   |    |    |    |    | ['Pane54']
+   |    |    |    |    | child_window(auto_id="133640", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | ComboBox - ''    (L125, T1932, R244, B1957)
+   |    |    |    |    |    | ['ComboBox6']
+   |    |    |    |    |    | child_window(auto_id="133642", control_type="ComboBox")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L3, T3, R99, B22)
+   |    |    |    |    |    |    | ['Static23']
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Button - '열기'    (L228, T1933, R243, B1956)
+   |    |    |    |    |    |    | ['열기Button6', '열기6', 'Button6']
+   |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L486, T1928, R629, B1959)
+   |    |    |    |    | ['Pane55']
+   |    |    |    |    | child_window(auto_id="133638", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L489, T1933, R626, B1956)
+   |    |    |    |    |    | ['Edit20']
+   |    |    |    |    |    | child_window(auto_id="133818", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L679, T1928, R870, B1959)
+   |    |    |    |    | ['Pane56']
+   |    |    |    |    | child_window(auto_id="68516", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L682, T1933, R867, B1956)
+   |    |    |    |    |    | ['Edit21']
+   |    |    |    |    |    | child_window(auto_id="68518", control_type="Edit")
+   |    |    |    | 
+   |    |    |    | Pane - ''    (L6, T1664, R901, B1817)
+   |    |    |    | ['Pane57']
+   |    |    |    | child_window(auto_id="133700", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L32, T1682, R124, B1745)
+   |    |    |    |    | ['Pane58']
+   |    |    |    |    | child_window(auto_id="68514", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L245, T1682, R870, B1717)
+   |    |    |    |    | ['Pane59']
+   |    |    |    |    | child_window(auto_id="68510", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L248, T1689, R774, B1712)
+   |    |    |    |    |    | ['Edit22']
+   |    |    |    |    |    | child_window(auto_id="68512", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L245, T1776, R434, B1806)
+   |    |    |    |    | ['Pane60']
+   |    |    |    |    | child_window(auto_id="68504", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L349, T1780, R431, B1803)
+   |    |    |    |    |    | ['Edit23']
+   |    |    |    |    |    | child_window(auto_id="68508", control_type="Edit")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L248, T1780, R330, B1803)
+   |    |    |    |    |    | ['Edit24']
+   |    |    |    |    |    | child_window(auto_id="68506", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L32, T1743, R124, B1806)
+   |    |    |    |    | ['Pane61']
+   |    |    |    |    | child_window(auto_id="133692", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | ComboBox - ''    (L35, T1762, R121, B1785)
+   |    |    |    |    |    | ['ComboBox7']
+   |    |    |    |    |    | child_window(auto_id="133694", control_type="ComboBox")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L3, T3, R66, B20)
+   |    |    |    |    |    |    | ['Static24']
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Button - '열기'    (L105, T1763, R120, B1784)
+   |    |    |    |    |    |    | ['열기Button7', '열기7', 'Button7']
+   |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L123, T1715, R246, B1745)
+   |    |    |    |    | ['Pane62']
+   |    |    |    |    | child_window(auto_id="133668", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | ComboBox - ''    (L125, T1718, R244, B1743)
+   |    |    |    |    |    | ['ComboBox8']
+   |    |    |    |    |    | child_window(auto_id="133666", control_type="ComboBox")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L3, T3, R99, B22)
+   |    |    |    |    |    |    | ['Static25']
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Button - '열기'    (L228, T1719, R243, B1742)
+   |    |    |    |    |    |    | ['열기Button8', '열기8', 'Button8']
+   |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L123, T1744, R246, B1778)
+   |    |    |    |    | ['Static26']
+   |    |    |    |    | child_window(auto_id="68502", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L628, T1716, R680, B1745)
+   |    |    |    |    | ['Static27']
+   |    |    |    |    | child_window(auto_id="68500", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L433, T1716, R487, B1745)
+   |    |    |    |    | ['Static28']
+   |    |    |    |    | child_window(auto_id="68498", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L123, T1683, R246, B1717)
+   |    |    |    |    | ['Static29']
+   |    |    |    |    | child_window(auto_id="68496", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L433, T1777, R487, B1806)
+   |    |    |    |    | ['Static30']
+   |    |    |    |    | child_window(auto_id="68494", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Static - ''    (L628, T1777, R680, B1806)
+   |    |    |    |    | ['Static31']
+   |    |    |    |    | child_window(auto_id="68492", control_type="Text")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L245, T1715, R434, B1745)
+   |    |    |    |    | ['Pane63']
+   |    |    |    |    | child_window(auto_id="68486", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L349, T1719, R431, B1742)
+   |    |    |    |    |    | ['Edit25']
+   |    |    |    |    |    | child_window(auto_id="68490", control_type="Edit")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L248, T1719, R330, B1742)
+   |    |    |    |    |    | ['Edit26']
+   |    |    |    |    |    | child_window(auto_id="68488", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L486, T1715, R629, B1745)
+   |    |    |    |    | ['Pane64']
+   |    |    |    |    | child_window(auto_id="199188", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L489, T1719, R626, B1742)
+   |    |    |    |    |    | ['Edit27']
+   |    |    |    |    |    | child_window(auto_id="330264", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L679, T1715, R870, B1745)
+   |    |    |    |    | ['Pane65']
+   |    |    |    |    | child_window(auto_id="68482", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L682, T1719, R867, B1742)
+   |    |    |    |    |    | ['Edit28']
+   |    |    |    |    |    | child_window(auto_id="68484", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L245, T1743, R870, B1778)
+   |    |    |    |    | ['Pane66']
+   |    |    |    |    | child_window(auto_id="68478", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L248, T1750, R774, B1773)
+   |    |    |    |    |    | ['Edit29']
+   |    |    |    |    |    | child_window(auto_id="68480", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L123, T1776, R246, B1806)
+   |    |    |    |    | ['Pane67']
+   |    |    |    |    | child_window(auto_id="264730", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | ComboBox - ''    (L125, T1779, R244, B1804)
+   |    |    |    |    |    | ['ComboBox9']
+   |    |    |    |    |    | child_window(auto_id="133832", control_type="ComboBox")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L3, T3, R99, B22)
+   |    |    |    |    |    |    | ['Static32']
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Button - '열기'    (L228, T1780, R243, B1803)
+   |    |    |    |    |    |    | ['열기Button9', '열기9', 'Button9']
+   |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L486, T1775, R629, B1806)
+   |    |    |    |    | ['Pane68']
+   |    |    |    |    | child_window(auto_id="133828", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L489, T1780, R626, B1803)
+   |    |    |    |    |    | ['Edit30']
+   |    |    |    |    |    | child_window(auto_id="133830", control_type="Edit")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L679, T1775, R870, B1806)
+   |    |    |    |    | ['Pane69']
+   |    |    |    |    | child_window(auto_id="68474", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Edit - ''    (L682, T1780, R867, B1803)
+   |    |    |    |    |    | ['Edit31']
+   |    |    |    |    |    | child_window(auto_id="68476", control_type="Edit")
+   |    |    |    | 
+   |    |    |    | Pane - ''    (L6, T1037, R901, B1664)
+   |    |    |    | ['Pane70']
+   |    |    |    | child_window(auto_id="199226", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L35, T1107, R874, B1662)
+   |    |    |    |    | ['Pane71']
+   |    |    |    |    | child_window(auto_id="133672", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L37, T1414, R872, B1436)
+   |    |    |    |    |    | ['Pane72']
+   |    |    |    |    |    | child_window(auto_id="68472", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L37, T1586, R872, B1660)
+   |    |    |    |    |    | ['Pane73']
+   |    |    |    |    |    | child_window(auto_id="68464", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L738, T1592, R857, B1617)
+   |    |    |    |    |    |    | ['Pane74']
+   |    |    |    |    |    |    | child_window(auto_id="68466", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L740, T1594, R834, B1615)
+   |    |    |    |    |    |    |    | ['Edit32']
+   |    |    |    |    |    |    |    | child_window(auto_id="68468", control_type="Edit")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L37, T1436, R872, B1586)
+   |    |    |    |    |    | ['Pane75']
+   |    |    |    |    |    | child_window(auto_id="133674", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - 'Panel3'    (L37, T1436, R785, B1586)
+   |    |    |    |    |    |    | ['Panel3', 'Pane76', 'Panel3Pane']
+   |    |    |    |    |    |    | child_window(title="Panel3", auto_id="133676", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Pane - ''    (L38, T1437, R784, B1585)
+   |    |    |    |    |    |    |    | ['Pane77']
+   |    |    |    |    |    |    |    | child_window(auto_id="133678", control_type="Pane")
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | ScrollBar - '세로'    (L767, T1437, R784, B1585)
+   |    |    |    |    |    |    |    |    | ['세로', '세로ScrollBar', 'ScrollBar', '세로0', '세로1', '세로ScrollBar0', '세로ScrollBar1', 'ScrollBar0', 'ScrollBar1']
+   |    |    |    |    |    |    |    |    | child_window(title="세로", auto_id="NonClientVerticalScrollBar", control_type="ScrollBar")
+   |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    | Button - '위쪽 스크롤 화살표'    (L767, T1437, R784, B1454)
+   |    |    |    |    |    |    |    |    |    | ['위쪽 스크롤 화살표Button', '위쪽 스크롤 화살표', 'Button10', '위쪽 스크롤 화살표Button0', '위쪽 스크롤 화살표Button1', '위쪽 스크롤 화살표0', '위쪽 스크롤 화살표1']
+   |    |    |    |    |    |    |    |    |    | child_window(title="위쪽 스크롤 화살표", auto_id="UpButton", control_type="Button")
+   |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    | Button - '아래쪽 스크롤 화살표'    (L767, T1568, R784, B1585)
+   |    |    |    |    |    |    |    |    |    | ['아래쪽 스크롤 화살표', 'Button11', '아래쪽 스크롤 화살표Button', '아래쪽 스크롤 화살표0', '아래쪽 스크롤 화살표1', '아래쪽 스크롤 화살표Button0', '아래쪽 스크롤 화살표Button1']
+   |    |    |    |    |    |    |    |    |    | child_window(title="아래쪽 스크롤 화살표", auto_id="DownButton", control_type="Button")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - 'pnl_tuk'    (L37, T1110, R872, B1414)
+   |    |    |    |    |    | ['pnl_tukPane', 'Pane78', 'pnl_tuk']
+   |    |    |    |    |    | child_window(title="pnl_tuk", auto_id="133684", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - 'Panel4'    (L37, T1110, R785, B1414)
+   |    |    |    |    |    |    | ['Panel4', 'Pane79', 'Panel4Pane']
+   |    |    |    |    |    |    | child_window(title="Panel4", auto_id="133682", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Pane - '1.본 주택의 임대차에 관한 중개대상물확인·설명서 및 계약서상의 시설물 상태는 임대인이 고지한 사항과 임차인 및\r\n  공인중개사의 현장 확인 사항을 기초로 한 것이다.\r\n2.임대할 부분의 면적은 현장 방문시 가늠한 어림 면적이다.\r\n3.본 주택을 인도받은 임차인은         2024년   7 월   10 일까지 전입신고와 임대차계약서에 확정일자를 받아야 하며,\r\n  임대인은 위 약정 일자의 다음 날까지 임차 주택에 저당권 등 담보권 설정을 할 수 없다.\r\n4.임대인은 본 계약체결 당시 국세·지방세 체납, 근저당권 이자체납 사실이 없음을 고지한다.\r\n5.거래당사자는 본 계약과 관련하여 분쟁이 있는 경우 법원에 소를 제기하기 전에 먼저 주택임대차분쟁조정위원회에\r\n  조정을 신청할 수 있다.\r\n ※ 주택임대차분쟁조정위원회 조정을 통할 경우 60일(최대 90일) 이내 신속하게 조정 결과를 받아볼 수 있습니다.\r\n6.주택임대차계약 신고는 계약체결일로부터 30일 이내 관할 주민센터를 방문 또는 국토부거래관리시스템을 통하여\r\n  임대인과 임차인이 주택임대차계약신고서에 공동으로 서명·날인하여 신고하여야 한다.\r\n7.본 계약에 명시되지 않은 사항은 주택임대차보호법 및 민법과 주택임대차계약의 일반관례에 따른다.\r\n9.첨부서류 : 중개대상물확인·설명서, 공제증서 사본 각 1부.\r\n입금계좌 229-890224-75007 강홍구(임대인의 자계좌) 차임입금계좌\r\n'    (L38, T1111, R784, B1413)
+   |    |    |    |    |    |    |    | ['1.본 주택의 임대차에 관한 중개대상물확인·설명서 및 계약서상의 시설물 상태는 임대인이 고지한 사항과 임차인 및\r\n  공인중개사의 현장 확인 사항을 기초로 한 것이다.\r\n2.임대할 부분의 면적은 현장 방문시 가늠한 어림 면적이다.\r\n3.본 주택을 인도받은 임차인은         2024년   7 월   10 일까지 전입신고와 임대차계약서에 확정일자를 받아야 하며,\r\n  임대인은 위 약정 일자의 다음 날까지 임차 주택에 저당권 등 담보권 설정을 할 수 없다.\r\n4.임대인은 본 계약체결 당시 국세·지방세 체납, 근저당권 이자체납 사실이 없음을 고지한다.\r\n5.거래당사자는 본 계약과 관련하여 분쟁이 있는 경우 법원에 소를 제기하기 전에 먼저 주택임대차분쟁조정위원회에\r\n  조정을 신청할 수 있다.\r\n ※ 주택임대차분쟁조정위원회 조정을 통할 경우 60일(최대 90일) 이내 신속하게 조정 결과를 받아볼 수 있습니다.\r\n6.주택임대차계약 신고는 계약체결일로부터 30일 이내 관할 주민센터를 방문 또는 국토부거래관리시스템을 통하여\r\n  임대인과 임차인이 주택임대차계약신고서에 공동으로 서명·날인하여 신고하여야 한다.\r\n7.본 계약에 명시되지 않은 사항은 주택임대차보호법 및 민법과 주택임대차계약의 일반관례에 따른다.\r\n9.첨부서류 : 중개대상물확인·설명서, 공제증서 사본 각 1부.\r\n입금계좌 229-890224-75007 강홍구(임대인의 자계좌) 차임입금계좌\r\nPane', 'Pane80', '1.본 주택의 임대차에 관한 중개대상물확인·설명서 및 계약서상의 시설물 상태는 임대인이 고지한 사항과 임차인 및\r\n  공인중개사의 현장 확인 사항을 기초로 한 것이다.\r\n2.임대할 부분의 면적은 현장 방문시 가늠한 어림 면적이다.\r\n3.본 주택을 인도받은 임차인은         2024년   7 월   10 일까지 전입신고와 임대차계약서에 확정일자를 받아야 하며,\r\n  임대인은 위 약정 일자의 다음 날까지 임차 주택에 저당권 등 담보권 설정을 할 수 없다.\r\n4.임대인은 본 계약체결 당시 국세·지방세 체납, 근저당권 이자체납 사실이 없음을 고지한다.\r\n5.거래당사자는 본 계약과 관련하여 분쟁이 있는 경우 법원에 소를 제기하기 전에 먼저 주택임대차분쟁조정위원회에\r\n  조정을 신청할 수 있다.\r\n ※ 주택임대차분쟁조정위원회 조정을 통할 경우 60일(최대 90일) 이내 신속하게 조정 결과를 받아볼 수 있습니다.\r\n6.주택임대차계약 신고는 계약체결일로부터 30일 이내 관할 주민센터를 방문 또는 국토부거래관리시스템을 통하여\r\n  임대인과 임차인이 주택임대차계약신고서에 공동으로 서명·날인하여 신고하여야 한다.\r\n7.본 계약에 명시되지 않은 사항은 주택임대차보호법 및 민법과 주택임대차계약의 일반관례에 따른다.\r\n9.첨부서류 : 중개대상물확인·설명서, 공제증서 사본 각 1부.\r\n입금계좌 229-890224-75007 강홍구(임대인의 자계좌) 차임입금계좌\r\n']
+   |    |    |    |    |    |    |    | child_window(title="1.본 주택의 임대차에 관한 중개대상물확인·설명서 및 계약서상의 시설물 상태는 임대인이 고지한 사항과 임차인 및\r\n  공인중개사의 현장 확인 사항을 기초로 한 것이다.\r\n2.임대할 부분의 면적은 현장 방문시 가늠한 어림 면적이다.\r\n3.본 주택을 인도받은 임차인은         2024년   7 월   10 일까지 전입신고와 임대차계약서에 확정일자를 받아야 하며,\r\n  임대인은 위 약정 일자의 다음 날까지 임차 주택에 저당권 등 담보권 설정을 할 수 없다.\r\n4.임대인은 본 계약체결 당시 국세·지방세 체납, 근저당권 이자체납 사실이 없음을 고지한다.\r\n5.거래당사자는 본 계약과 관련하여 분쟁이 있는 경우 법원에 소를 제기하기 전에 먼저 주택임대차분쟁조정위원회에\r\n  조정을 신청할 수 있다.\r\n ※ 주택임대차분쟁조정위원회 조정을 통할 경우 60일(최대 90일) 이내 신속하게 조정 결과를 받아볼 수 있습니다.\r\n6.주택임대차계약 신고는 계약체결일로부터 30일 이내 관할 주민센터를 방문 또는 국토부거래관리시스템을 통하여\r\n  임대인과 임차인이 주택임대차계약신고서에 공동으로 서명·날인하여 신고하여야 한다.\r\n7.본 계약에 명시되지 않은 사항은 주택임대차보호법 및 민법과 주택임대차계약의 일반관례에 따른다.\r\n9.첨부서류 : 중개대상물확인·설명서, 공제증서 사본 각 1부.\r\n입금계좌 229-890224-75007 강홍구(임대인의 자계좌) 차임입금계좌\r\n", auto_id="133680", control_type="Pane")
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | ScrollBar - '세로'    (L767, T1111, R784, B1413)
+   |    |    |    |    |    |    |    |    | ['세로2', '세로ScrollBar2', 'ScrollBar2']
+   |    |    |    |    |    |    |    |    | child_window(title="세로", auto_id="NonClientVerticalScrollBar", control_type="ScrollBar")
+   |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    | Button - '위쪽 스크롤 화살표'    (L767, T1111, R784, B1128)
+   |    |    |    |    |    |    |    |    |    | ['위쪽 스크롤 화살표Button2', '위쪽 스크롤 화살표2', 'Button12']
+   |    |    |    |    |    |    |    |    |    | child_window(title="위쪽 스크롤 화살표", auto_id="UpButton", control_type="Button")
+   |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    | Button - '아래쪽 스크롤 화살표'    (L767, T1396, R784, B1413)
+   |    |    |    |    |    |    |    |    |    | ['아래쪽 스크롤 화살표2', 'Button13', '아래쪽 스크롤 화살표Button2']
+   |    |    |    |    |    |    |    |    |    | child_window(title="아래쪽 스크롤 화살표", auto_id="DownButton", control_type="Button")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L6, T1037, R901, B1104)
+   |    |    |    |    | ['Pane81']
+   |    |    |    |    | child_window(auto_id="133836", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L437, T1039, R872, B1063)
+   |    |    |    |    |    | ['Pane82']
+   |    |    |    |    |    | child_window(auto_id="68462", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L35, T1040, R431, B1066)
+   |    |    |    |    |    | ['Pane83']
+   |    |    |    |    |    | child_window(auto_id="133838", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | ComboBox - ''    (L73, T1042, R165, B1065)
+   |    |    |    |    |    |    | ['ComboBox10']
+   |    |    |    |    |    |    | child_window(auto_id="133662", control_type="ComboBox")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L3, T3, R72, B20)
+   |    |    |    |    |    |    |    | ['Static33']
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Button - '열기'    (L149, T1043, R164, B1064)
+   |    |    |    |    |    |    |    | ['열기Button10', '열기10', 'Button14']
+   |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | ComboBox - ''    (L195, T1042, R263, B1065)
+   |    |    |    |    |    |    | ['ComboBox11']
+   |    |    |    |    |    |    | child_window(auto_id="133840", control_type="ComboBox")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L3, T3, R48, B20)
+   |    |    |    |    |    |    |    | ['Static34']
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Button - '열기'    (L247, T1043, R262, B1064)
+   |    |    |    |    |    |    |    | ['열기Button11', '열기11', 'Button15']
+   |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Pane - ''    (L6, T171, R901, B1037)
+   |    |    |    | ['Pane84']
+   |    |    |    | child_window(auto_id="395948", control_type="Pane")
+   |    |    |    |    | 
+   |    |    |    |    | Pane - ''    (L6, T171, R896, B1037)
+   |    |    |    |    | ['Pane85']
+   |    |    |    |    | child_window(auto_id="527008", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T1012, R896, B1037)
+   |    |    |    |    |    | ['Pane86']
+   |    |    |    |    |    | child_window(auto_id="133708", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Edit - ''    (L116, T1014, R245, B1035)
+   |    |    |    |    |    |    | ['Edit33']
+   |    |    |    |    |    |    | child_window(auto_id="68460", control_type="Edit")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | ComboBox - ''    (L507, T1012, R652, B1037)
+   |    |    |    |    |    |    | ['ComboBox12']
+   |    |    |    |    |    |    | child_window(auto_id="133696", control_type="ComboBox")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L3, T3, R125, B22)
+   |    |    |    |    |    |    |    | ['Static35']
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Button - '열기'    (L636, T1013, R651, B1036)
+   |    |    |    |    |    |    |    | ['열기Button12', '열기12', 'Button16']
+   |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | ComboBox - ''    (L422, T1012, R479, B1037)
+   |    |    |    |    |    |    | ['ComboBox13']
+   |    |    |    |    |    |    | child_window(auto_id="133710", control_type="ComboBox")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L3, T3, R37, B22)
+   |    |    |    |    |    |    |    | ['Static36']
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Button - '열기'    (L463, T1013, R478, B1036)
+   |    |    |    |    |    |    |    | ['열기Button13', '열기13', 'Button17']
+   |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T353, R896, B381)
+   |    |    |    |    |    | ['Pane87']
+   |    |    |    |    |    | child_window(auto_id="68446", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L744, T351, R873, B381)
+   |    |    |    |    |    |    | ['Pane88']
+   |    |    |    |    |    |    | child_window(auto_id="68456", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L747, T355, R855, B378)
+   |    |    |    |    |    |    |    | ['Edit34']
+   |    |    |    |    |    |    |    | child_window(auto_id="68458", control_type="Edit")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L104, T351, R685, B381)
+   |    |    |    |    |    |    | ['Pane89']
+   |    |    |    |    |    |    | child_window(auto_id="68452", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L106, T355, R681, B378)
+   |    |    |    |    |    |    |    | ['Edit35']
+   |    |    |    |    |    |    |    | child_window(auto_id="68454", control_type="Edit")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L32, T352, R105, B381)
+   |    |    |    |    |    |    | ['Static37']
+   |    |    |    |    |    |    | child_window(auto_id="68450", control_type="Text")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L684, T352, R745, B381)
+   |    |    |    |    |    |    | ['Static38']
+   |    |    |    |    |    |    | child_window(auto_id="68448", control_type="Text")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - 'pnl4'    (L6, T295, R896, B353)
+   |    |    |    |    |    | ['pnl4', 'Pane90', 'pnl4Pane']
+   |    |    |    |    |    | child_window(title="pnl4", auto_id="199378", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L6, T295, R896, B353)
+   |    |    |    |    |    |    | ['Pane91']
+   |    |    |    |    |    |    | child_window(auto_id="199384", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Pane - ''    (L744, T323, R873, B353)
+   |    |    |    |    |    |    |    | ['Pane92']
+   |    |    |    |    |    |    |    | child_window(auto_id="68442", control_type="Pane")
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | Edit - ''    (L747, T326, R855, B349)
+   |    |    |    |    |    |    |    |    | ['Edit36']
+   |    |    |    |    |    |    |    |    | child_window(auto_id="68444", control_type="Edit")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Pane - ''    (L406, T323, R685, B353)
+   |    |    |    |    |    |    |    | ['Pane93']
+   |    |    |    |    |    |    |    | child_window(auto_id="133748", control_type="Pane")
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | ComboBox - ''    (L408, T326, R568, B351)
+   |    |    |    |    |    |    |    |    | ['ComboBox14']
+   |    |    |    |    |    |    |    |    | child_window(auto_id="133750", control_type="ComboBox")
+   |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    | Edit - ''    (L411, T329, R548, B348)
+   |    |    |    |    |    |    |    |    |    | ['Edit37']
+   |    |    |    |    |    |    |    |    |    | child_window(auto_id="1001", control_type="Edit")
+   |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    | Button - '열기'    (L552, T327, R567, B350)
+   |    |    |    |    |    |    |    |    |    | ['열기Button14', '열기14', 'Button18']
+   |    |    |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Pane - ''    (L154, T323, R348, B353)
+   |    |    |    |    |    |    |    | ['Pane94']
+   |    |    |    |    |    |    |    | child_window(auto_id="133758", control_type="Pane")
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | ComboBox - ''    (L156, T326, R347, B351)
+   |    |    |    |    |    |    |    |    | ['ComboBox15']
+   |    |    |    |    |    |    |    |    | child_window(auto_id="133760", control_type="ComboBox")
+   |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    | Edit - ''    (L159, T329, R327, B348)
+   |    |    |    |    |    |    |    |    |    | ['Edit38']
+   |    |    |    |    |    |    |    |    |    | child_window(auto_id="1001", control_type="Edit")
+   |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    | Button - '열기'    (L331, T327, R346, B350)
+   |    |    |    |    |    |    |    |    |    | ['열기Button15', '열기15', 'Button19']
+   |    |    |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L348, T324, R406, B353)
+   |    |    |    |    |    |    |    | ['Static39']
+   |    |    |    |    |    |    |    | child_window(auto_id="68440", control_type="Text")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L104, T324, R154, B353)
+   |    |    |    |    |    |    |    | ['Static40']
+   |    |    |    |    |    |    |    | child_window(auto_id="68438", control_type="Text")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L684, T324, R745, B353)
+   |    |    |    |    |    |    |    | ['Static41']
+   |    |    |    |    |    |    |    | child_window(auto_id="68436", control_type="Text")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L32, T324, R105, B353)
+   |    |    |    |    |    |    |    | ['Static42']
+   |    |    |    |    |    |    |    | child_window(auto_id="68434", control_type="Text")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Pane - ''    (L684, T295, R873, B325)
+   |    |    |    |    |    |    |    | ['Pane95']
+   |    |    |    |    |    |    |    | child_window(auto_id="68430", control_type="Pane")
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | Edit - ''    (L688, T299, R855, B322)
+   |    |    |    |    |    |    |    |    | ['Edit39']
+   |    |    |    |    |    |    |    |    | child_window(auto_id="68432", control_type="Edit")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Pane - ''    (L188, T295, R347, B325)
+   |    |    |    |    |    |    |    | ['Pane96']
+   |    |    |    |    |    |    |    | child_window(auto_id="68420", control_type="Pane")
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | Pane - '대'    (L189, T297, R345, B323)
+   |    |    |    |    |    |    |    |    | ['대Pane', 'Pane97', '대']
+   |    |    |    |    |    |    |    |    | child_window(title="대", auto_id="68422", control_type="Pane")
+   |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    | ComboBox - ''    (L189, T297, R345, B323)
+   |    |    |    |    |    |    |    |    |    | ['ComboBox닫기', 'ComboBox16']
+   |    |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    |    | Edit - ''    (L193, T302, R325, B319)
+   |    |    |    |    |    |    |    |    |    |    | ['Edit40']
+   |    |    |    |    |    |    |    |    |    |    | child_window(auto_id="68422", control_type="Edit")
+   |    |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    |    | Button - '열기'    (L329, T298, R344, B322)
+   |    |    |    |    |    |    |    |    |    |    | ['열기Button16', '열기16', 'Button20']
+   |    |    |    |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Pane - ''    (L104, T295, R189, B325)
+   |    |    |    |    |    |    |    | ['Pane98']
+   |    |    |    |    |    |    |    | child_window(auto_id="199334", control_type="Pane")
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | ComboBox - ''    (L106, T298, R187, B323)
+   |    |    |    |    |    |    |    |    | ['ComboBox17']
+   |    |    |    |    |    |    |    |    | child_window(auto_id="199380", control_type="ComboBox")
+   |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    | Static - ''    (L3, T3, R61, B22)
+   |    |    |    |    |    |    |    |    |    | ['Static43']
+   |    |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    |    | Button - '열기'    (L171, T299, R186, B322)
+   |    |    |    |    |    |    |    |    |    | ['열기Button17', '열기17', 'Button21']
+   |    |    |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L625, T296, R685, B324)
+   |    |    |    |    |    |    |    | ['Static44']
+   |    |    |    |    |    |    |    | child_window(auto_id="68418", control_type="Text")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L32, T296, R105, B325)
+   |    |    |    |    |    |    |    | ['Static45']
+   |    |    |    |    |    |    |    | child_window(auto_id="68416", control_type="Text")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T381, R896, B429)
+   |    |    |    |    |    | ['Pane99']
+   |    |    |    |    |    | child_window(auto_id="133764", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L124, T384, R343, B412)
+   |    |    |    |    |    |    | ['Pane100']
+   |    |    |    |    |    |    | child_window(auto_id="68410", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Pane - '직접입력'    (L263, T388, R333, B408)
+   |    |    |    |    |    |    |    | ['직접입력', 'Pane101', '직접입력Pane']
+   |    |    |    |    |    |    |    | child_window(title="직접입력", auto_id="68414", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Pane - '자동계산'    (L181, T388, R250, B408)
+   |    |    |    |    |    |    |    | ['자동계산Pane', '자동계산', 'Pane102']
+   |    |    |    |    |    |    |    | child_window(title="자동계산", auto_id="68412", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | ComboBox - ''    (L812, T381, R875, B406)
+   |    |    |    |    |    |    | ['ComboBox18']
+   |    |    |    |    |    |    | child_window(auto_id="133770", control_type="ComboBox")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L3, T3, R43, B22)
+   |    |    |    |    |    |    |    | ['Static46']
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Button - '열기'    (L859, T382, R874, B405)
+   |    |    |    |    |    |    |    | ['열기Button18', '열기18', 'Button22']
+   |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | ComboBox - ''    (L649, T381, R746, B406)
+   |    |    |    |    |    |    | ['ComboBox19']
+   |    |    |    |    |    |    | child_window(auto_id="133766", control_type="ComboBox")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L3, T3, R77, B22)
+   |    |    |    |    |    |    |    | ['Static47']
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Button - '열기'    (L730, T382, R745, B405)
+   |    |    |    |    |    |    |    | ['열기Button19', '열기19', 'Button23']
+   |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T260, R896, B295)
+   |    |    |    |    |    | ['Pane103']
+   |    |    |    |    |    | child_window(auto_id="68398", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L32, T265, R105, B295)
+   |    |    |    |    |    |    | ['Pane104']
+   |    |    |    |    |    |    | child_window(auto_id="68408", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L104, T265, R873, B295)
+   |    |    |    |    |    |    | ['Pane105']
+   |    |    |    |    |    |    | child_window(auto_id="68400", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L797, T269, R855, B292)
+   |    |    |    |    |    |    |    | ['Edit41']
+   |    |    |    |    |    |    |    | child_window(auto_id="68406", control_type="Edit")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L719, T269, R777, B292)
+   |    |    |    |    |    |    |    | ['Edit42']
+   |    |    |    |    |    |    |    | child_window(auto_id="68404", control_type="Edit")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L106, T269, R717, B292)
+   |    |    |    |    |    |    |    | ['Edit43']
+   |    |    |    |    |    |    |    | child_window(auto_id="68402", control_type="Edit")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T209, R896, B260)
+   |    |    |    |    |    | ['Pane106']
+   |    |    |    |    |    | child_window(auto_id="68396", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - '부동산(다가구주택) 월세 계약서'    (L6, T171, R896, B209)
+   |    |    |    |    |    | ['부동산(다가구주택) 월세 계약서Pane', 'Pane107', '부동산(다가구주택) 월세 계약서']
+   |    |    |    |    |    | child_window(title="부동산(다가구주택) 월세 계약서", auto_id="68394", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T965, R896, B1012)
+   |    |    |    |    |    | ['Pane108']
+   |    |    |    |    |    | child_window(auto_id="68384", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | CheckBox - '교부일자 미입력'    (L541, T989, R667, B1006)
+   |    |    |    |    |    |    | ['교부일자 미입력CheckBox', 'CheckBox', '교부일자 미입력', 'CheckBox0', 'CheckBox1']
+   |    |    |    |    |    |    | child_window(title="교부일자 미입력", auto_id="68392", control_type="CheckBox")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L409, T986, R522, B1010)
+   |    |    |    |    |    |    | ['Pane109']
+   |    |    |    |    |    |    | child_window(auto_id="68386", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L411, T988, R499, B1009)
+   |    |    |    |    |    |    |    | ['Edit44']
+   |    |    |    |    |    |    |    | child_window(auto_id="68388", control_type="Edit")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T652, R896, B965)
+   |    |    |    |    |    | ['Pane110']
+   |    |    |    |    |    | child_window(auto_id="395938", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L36, T658, R866, B986)
+   |    |    |    |    |    |    | ['Pane111']
+   |    |    |    |    |    |    | child_window(auto_id="395940", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L81, T878, R864, B960)
+   |    |    |    |    |    |    |    | ['Edit45']
+   |    |    |    |    |    |    |    | child_window(auto_id="133716", control_type="Edit")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L81, T817, R864, B876)
+   |    |    |    |    |    |    |    | ['Edit46']
+   |    |    |    |    |    |    |    | child_window(auto_id="133714", control_type="Edit")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L81, T776, R864, B815)
+   |    |    |    |    |    |    |    | ['Edit47']
+   |    |    |    |    |    |    |    | child_window(auto_id="133712", control_type="Edit")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | ComboBox - ''    (L319, T695, R376, B720)
+   |    |    |    |    |    |    |    | ['ComboBox20']
+   |    |    |    |    |    |    |    | child_window(auto_id="395946", control_type="ComboBox")
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | Edit - ''    (L322, T698, R356, B717)
+   |    |    |    |    |    |    |    |    | ['Edit48']
+   |    |    |    |    |    |    |    |    | child_window(auto_id="1001", control_type="Edit")
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | Button - '열기'    (L360, T696, R375, B719)
+   |    |    |    |    |    |    |    |    | ['열기Button20', '열기20', 'Button24']
+   |    |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T600, R896, B652)
+   |    |    |    |    |    | ['Pane112']
+   |    |    |    |    |    | child_window(auto_id="133718", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | ComboBox - ''    (L567, T627, R664, B652)
+   |    |    |    |    |    |    | ['ComboBox21']
+   |    |    |    |    |    |    | child_window(auto_id="133720", control_type="ComboBox")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Static - ''    (L3, T3, R77, B22)
+   |    |    |    |    |    |    |    | ['Static48']
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Button - '열기'    (L648, T628, R663, B651)
+   |    |    |    |    |    |    |    | ['열기Button21', '열기21', 'Button25']
+   |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Edit - ''    (L404, T627, R444, B648)
+   |    |    |    |    |    |    | ['Edit49']
+   |    |    |    |    |    |    | child_window(auto_id="68382", control_type="Edit")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L533, T602, R646, B626)
+   |    |    |    |    |    |    | ['Pane113']
+   |    |    |    |    |    |    | child_window(auto_id="68376", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L535, T604, R624, B625)
+   |    |    |    |    |    |    |    | ['Edit50']
+   |    |    |    |    |    |    |    | child_window(auto_id="68378", control_type="Edit")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L262, T626, R375, B650)
+   |    |    |    |    |    |    | ['Pane114']
+   |    |    |    |    |    |    | child_window(auto_id="68370", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L264, T628, R353, B649)
+   |    |    |    |    |    |    |    | ['Edit51']
+   |    |    |    |    |    |    |    | child_window(auto_id="68372", control_type="Edit")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - '약정사항보기'    (L770, T628, R871, B648)
+   |    |    |    |    |    |    | ['약정사항보기Pane', '약정사항보기', 'Pane115']
+   |    |    |    |    |    |    | child_window(title="약정사항보기", auto_id="68368", control_type="Pane")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T572, R896, B600)
+   |    |    |    |    |    | ['Pane116']
+   |    |    |    |    |    | child_window(auto_id="330414", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L32, T571, R112, B600)
+   |    |    |    |    |    |    | ['Static49']
+   |    |    |    |    |    |    | child_window(auto_id="68366", control_type="Text")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - '`'    (L111, T564, R873, B600)
+   |    |    |    |    |    |    | ['Pane117', '`', '`Pane']
+   |    |    |    |    |    |    | child_window(title="`", auto_id="330408", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | CheckBox - '부가세(별도)'    (L779, T578, R870, B595)
+   |    |    |    |    |    |    |    | ['CheckBox2', '부가세(별도)CheckBox', '부가세(별도)']
+   |    |    |    |    |    |    |    | child_window(title="부가세(별도)", auto_id="68364", control_type="CheckBox")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | ComboBox - ''    (L567, T573, R622, B598)
+   |    |    |    |    |    |    |    | ['ComboBox22']
+   |    |    |    |    |    |    |    | child_window(auto_id="199238", control_type="ComboBox")
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | Static - ''    (L3, T3, R35, B22)
+   |    |    |    |    |    |    |    |    | ['Static50']
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | Button - '열기'    (L606, T574, R621, B597)
+   |    |    |    |    |    |    |    |    | ['열기Button22', '열기22', 'Button26']
+   |    |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | ComboBox - ''    (L489, T573, R546, B598)
+   |    |    |    |    |    |    |    | ['ComboBox23']
+   |    |    |    |    |    |    |    | child_window(auto_id="133728", control_type="ComboBox")
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | Static - ''    (L3, T3, R37, B22)
+   |    |    |    |    |    |    |    |    | ['Static51']
+   |    |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    |    | Button - '열기'    (L530, T574, R545, B597)
+   |    |    |    |    |    |    |    |    | ['열기Button23', '열기23', 'Button27']
+   |    |    |    |    |    |    |    |    | child_window(title="열기", auto_id="DropDown", control_type="Button")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L156, T575, R411, B596)
+   |    |    |    |    |    |    |    | ['Edit52']
+   |    |    |    |    |    |    |    | child_window(auto_id="68362", control_type="Edit")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T544, R896, B572)
+   |    |    |    |    |    | ['Pane118']
+   |    |    |    |    |    | child_window(auto_id="68350", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L32, T543, R112, B572)
+   |    |    |    |    |    |    | ['Static52']
+   |    |    |    |    |    |    | child_window(auto_id="68360", control_type="Text")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L111, T542, R873, B572)
+   |    |    |    |    |    |    | ['Pane119']
+   |    |    |    |    |    |    | child_window(auto_id="68352", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L541, T547, R629, B568)
+   |    |    |    |    |    |    |    | ['Edit53']
+   |    |    |    |    |    |    |    | child_window(auto_id="68356", control_type="Edit")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L156, T546, R473, B569)
+   |    |    |    |    |    |    |    | ['Edit54']
+   |    |    |    |    |    |    |    | child_window(auto_id="68354", control_type="Edit")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T489, R896, B544)
+   |    |    |    |    |    | ['Pane120']
+   |    |    |    |    |    | child_window(auto_id="68326", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L111, T514, R873, B544)
+   |    |    |    |    |    |    | ['Pane121']
+   |    |    |    |    |    |    | child_window(auto_id="68340", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | CheckBox - ' 공란출력'    (L761, T521, R841, B538)
+   |    |    |    |    |    |    |    | [' 공란출력CheckBox', ' 공란출력', 'CheckBox3', ' 공란출력CheckBox0', ' 공란출력CheckBox1', ' 공란출력0', ' 공란출력1']
+   |    |    |    |    |    |    |    | child_window(title=" 공란출력", auto_id="68348", control_type="CheckBox")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L541, T519, R629, B540)
+   |    |    |    |    |    |    |    | ['Edit55']
+   |    |    |    |    |    |    |    | child_window(auto_id="68344", control_type="Edit")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L156, T519, R473, B540)
+   |    |    |    |    |    |    |    | ['Edit56']
+   |    |    |    |    |    |    |    | child_window(auto_id="68342", control_type="Edit")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L111, T487, R873, B518)
+   |    |    |    |    |    |    | ['Pane122']
+   |    |    |    |    |    |    | child_window(auto_id="68330", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | CheckBox - ' 공란출력'    (L761, T494, R841, B511)
+   |    |    |    |    |    |    |    | [' 공란출력CheckBox2', ' 공란출력2', 'CheckBox4']
+   |    |    |    |    |    |    |    | child_window(title=" 공란출력", auto_id="68338", control_type="CheckBox")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L540, T491, R628, B512)
+   |    |    |    |    |    |    |    | ['Edit57']
+   |    |    |    |    |    |    |    | child_window(auto_id="68334", control_type="Edit")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L156, T491, R473, B512)
+   |    |    |    |    |    |    |    | ['Edit58']
+   |    |    |    |    |    |    |    | child_window(auto_id="68332", control_type="Edit")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L32, T488, R112, B544)
+   |    |    |    |    |    |    | ['Static53']
+   |    |    |    |    |    |    | child_window(auto_id="68328", control_type="Text")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T461, R896, B489)
+   |    |    |    |    |    | ['Pane123']
+   |    |    |    |    |    | child_window(auto_id="68316", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L32, T460, R112, B489)
+   |    |    |    |    |    |    | ['Static54']
+   |    |    |    |    |    |    | child_window(auto_id="68324", control_type="Text")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L111, T459, R873, B489)
+   |    |    |    |    |    |    | ['Pane124']
+   |    |    |    |    |    |    | child_window(auto_id="68318", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | CheckBox - ' 공란출력'    (L786, T466, R866, B483)
+   |    |    |    |    |    |    |    | [' 공란출력CheckBox3', ' 공란출력3', 'CheckBox5']
+   |    |    |    |    |    |    |    | child_window(title=" 공란출력", auto_id="68322", control_type="CheckBox")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L156, T464, R473, B485)
+   |    |    |    |    |    |    |    | ['Edit59']
+   |    |    |    |    |    |    |    | child_window(auto_id="68320", control_type="Edit")
+   |    |    |    |    |    | 
+   |    |    |    |    |    | Pane - ''    (L6, T429, R896, B461)
+   |    |    |    |    |    | ['Pane125']
+   |    |    |    |    |    | child_window(auto_id="199346", control_type="Pane")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Static - ''    (L32, T432, R112, B461)
+   |    |    |    |    |    |    | ['Static55']
+   |    |    |    |    |    |    | child_window(auto_id="133630", control_type="Text")
+   |    |    |    |    |    |    | 
+   |    |    |    |    |    |    | Pane - ''    (L111, T431, R873, B461)
+   |    |    |    |    |    |    | ['Pane126']
+   |    |    |    |    |    |    | child_window(auto_id="199348", control_type="Pane")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | CheckBox - ' 공란출력'    (L786, T438, R866, B455)
+   |    |    |    |    |    |    |    | [' 공란출력CheckBox4', ' 공란출력4', 'CheckBox6']
+   |    |    |    |    |    |    |    | child_window(title=" 공란출력", auto_id="133628", control_type="CheckBox")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L539, T436, R754, B459)
+   |    |    |    |    |    |    |    | ['Edit60']
+   |    |    |    |    |    |    |    | child_window(auto_id="133626", control_type="Edit")
+   |    |    |    |    |    |    |    | 
+   |    |    |    |    |    |    |    | Edit - ''    (L156, T436, R473, B457)
+   |    |    |    |    |    |    |    | ['Edit61']
+   |    |    |    |    |    |    |    | child_window(auto_id="133624", control_type="Edit")
+   |    |    | 
+   |    |    | Pane - ''    (L21, T2122, R144, B2140)
+   |    |    | ['Pane127']
+   |    |    | child_window(auto_id="133816", control_type="Pane")
+   |    |    | 
+   |    |    | ScrollBar - '세로'    (L903, T297, R920, B1079)
+   |    |    | ['세로3', '세로ScrollBar3', 'ScrollBar3']
+   |    |    | child_window(title="세로", auto_id="NonClientVerticalScrollBar", control_type="ScrollBar")
+   |    |    |    | 
+   |    |    |    | Button - '위쪽 스크롤 화살표'    (L903, T297, R920, B314)
+   |    |    |    | ['위쪽 스크롤 화살표Button3', '위쪽 스크롤 화살표3', 'Button28']
+   |    |    |    | child_window(title="위쪽 스크롤 화살표", auto_id="UpButton", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Button - '페이지 위로'    (L903, T314, R920, B362)
+   |    |    |    | ['페이지 위로Button', 'Button29', '페이지 위로']
+   |    |    |    | child_window(title="페이지 위로", auto_id="UpPageButton", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Thumb - '위치'    (L903, T362, R920, B655)
+   |    |    |    | ['위치Thumb', '위치', 'Thumb']
+   |    |    |    | child_window(title="위치", auto_id="ScrollbarThumb", control_type="Thumb")
+   |    |    |    | 
+   |    |    |    | Button - '페이지 아래로'    (L903, T655, R920, B1062)
+   |    |    |    | ['페이지 아래로Button', '페이지 아래로', 'Button30']
+   |    |    |    | child_window(title="페이지 아래로", auto_id="DownPageButton", control_type="Button")
+   |    |    |    | 
+   |    |    |    | Button - '아래쪽 스크롤 화살표'    (L903, T1062, R920, B1079)
+   |    |    |    | ['아래쪽 스크롤 화살표3', 'Button31', '아래쪽 스크롤 화살표Button3']
+   |    |    |    | child_window(title="아래쪽 스크롤 화살표", auto_id="DownButton", control_type="Button")
+   | 
+   | TitleBar - ''    (L17, T91, R917, B114)
+   | ['TitleBar']
+   |    | 
+   |    | Menu - '시스템'    (L6, T96, R28, B118)
+   |    | ['Menu', '시스템', '시스템Menu', '시스템0', '시스템1']
+   |    | child_window(title="시스템", auto_id="MenuBar", control_type="MenuBar")
+   |    |    | 
+   |    |    | MenuItem - '시스템'    (L6, T96, R28, B118)
+   |    |    | ['시스템2', '시스템MenuItem', 'MenuItem']
+   |    |    | child_window(title="시스템", control_type="MenuItem")
+   |    | 
+   |    | Button - '최소화'    (L778, T89, R825, B114)
+   |    | ['최소화', '최소화Button', 'Button32']
+   |    | child_window(title="최소화", control_type="Button")
+   |    | 
+   |    | Button - '최대화'    (L825, T89, R871, B114)
+   |    | ['최대화', '최대화Button', 'Button33']
+   |    | child_window(title="최대화", control_type="Button")
+   |    | 
+   |    | Button - '닫기'    (L871, T89, R918, B114)
+   |    | ['Button34', '닫기', '닫기Button']
+   |    | child_window(title="닫기", control_type="Button")

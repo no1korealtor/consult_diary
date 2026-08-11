@@ -1,0 +1,3 @@
+Jibun: 34-12 | bldNm: 경인빌딩 | mainPurp: 제1종근린생활시설 | platArea: 504.57
+Jibun: 34-19 | bldNm: 프라임빌딩 | mainPurp: 제2종근린생활시설 | platArea: 232
+Jibun: 34-20 | bldNm: 주하빌딩 | mainPurp: 제2종근린생활시설 | platArea: 339.52

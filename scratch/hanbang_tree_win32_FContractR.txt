@@ -1,0 +1,9 @@
+Control Identifiers:
+
+TF_Contract_R06_1_20260512 - 'F_Contract_R06_1(상가건물 임대차 표준계약서)'    (L137, T-154, R963, B946)
+['F_Contract_R06_1(상가건물 임대차 표준계약서)TF_Contract_R06_1_20260512', 'F_Contract_R06_1(상가건물 임대차 표준계약서)', 'TF_Contract_R06_1_20260512']
+child_window(title="F_Contract_R06_1(상가건물 임대차 표준계약서)", class_name="TF_Contract_R06_1_20260512")
+   | 
+   | TPageControl - ''    (L145, T-123, R955, B1000)
+   | ['TPageControl']
+   | child_window(class_name="TPageControl")

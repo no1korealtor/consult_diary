@@ -782,6 +782,17 @@
                     meaningEl.classList.remove('hidden');
                 }
                 meaningVisible = true;
+
+                // Reveal the hidden word if it was a multiple choice question
+                const secretWordEl = document.getElementById('secret-word-display');
+                if (secretWordEl) {
+                    secretWordEl.innerText = cleanWord(currentWord.word);
+                    secretWordEl.style = '';
+                }
+                const secretSpeakerEl = document.getElementById('secret-speaker-icon');
+                if (secretSpeakerEl) {
+                    secretSpeakerEl.classList.remove('hidden');
+                }
                 
                 await updateMemorizedState();
                 await insertStudyLog(currentWord.subject || '영어', cleanWord(currentWord.word), '객관식 퀴즈 정답 완료');
@@ -927,6 +938,7 @@
             updateHeader(todayStr);
             updateStatsUI();
             loadMyHistory();
+            loadWords();
         }
 
         function logout() {
@@ -1185,13 +1197,14 @@
             }
 
             const isMath = word.subject && word.subject.includes('수학');
+            const isMc = !!parseMultipleChoice(word.example);
 
             cardContainer.innerHTML = `
         <div class="card">
           ${word.image_url ? `<img src="${word.image_url}" class="word-image" onerror="this.onerror=null; this.src='https://placehold.co/400x200/ffeaa7/ff758c?text=Image+Load+Error';" />` : ''}
           <div class="word">
-              ${cleanWord(word.word)}
-              ${/[a-zA-Z]/.test(cleanWord(word.word)) ? `<span class="speaker-icon" onclick="speakWord('${cleanWord(word.word).replace(/'/g, "\\'")}')" title="발음 듣기">🔊</span>` : ''}
+              <span id="secret-word-display" style="${isMc ? 'color: #ffb8b8; font-size: 0.8em;' : ''}">${isMc ? '❓❓❓' : cleanWord(word.word)}</span>
+              ${/[a-zA-Z]/.test(cleanWord(word.word)) ? `<span id="secret-speaker-icon" class="speaker-icon ${isMc ? 'hidden' : ''}" onclick="speakWord('${cleanWord(word.word).replace(/'/g, "\\'")}')" title="발음 듣기">🔊</span>` : ''}
           </div>
           
           <div style="text-align: center;">
@@ -1210,7 +1223,7 @@
               <div class="category">${word.category}</div>
           </div>
 
-          <div class="example ${parseMultipleChoice(word.example) ? 'mc-mode' : ''}">${renderMultipleChoice(word.example)}</div>
+          <div class="example ${isMc ? 'mc-mode' : ''}">${renderMultipleChoice(word.example)}</div>
 
           <div class="meaning ${meaningVisible ? '' : 'hidden'}">${word.meaning || ''}</div>
 
@@ -1739,7 +1752,7 @@
     </div>
 
 
-            <footer class="site-footer">
+                <footer class="site-footer">
         <div class="site-footer-inner">
             <div class="footer-links">
                 <a href="#">회사소개</a>
@@ -1749,7 +1762,7 @@
             <div class="footer-info">
                 <strong class="footer-strong">신대림공인중개사사무소 (제호: 공인중개사소식지)</strong>
                 <span>대표/발행·편집인: 조항준</span> <span>등록번호: 서울, 아53763</span> <span>등록일자: 2021년 06월 14일</span><br>
-                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 010-9128-0586</span> <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
+                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 02-375-4489</span> <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
             </div>
         </div>
     </footer>

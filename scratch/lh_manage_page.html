@@ -1,0 +1,3029 @@
+<html lang="ko"><head>
+        
+		<meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0">
+	    <meta name="format-detection" content="telephone=no">
+	    <title>전세임대포털</title>
+	    <meta name="keywords" content="전세임대포털">
+	    <meta name="description" content="행복을 나누는 전세임대포털 홈페이지에 오신 것을 환영합니다.">
+	    <link rel="stylesheet" href="/css/web/jw/common_v1.css"> <!-- 공통 common_v1 -->
+	    <link rel="stylesheet" href="/css/web/jw/con_com.css" media="all"> <!-- 공통 con_com -->
+	    <link rel="stylesheet" href="/css/web/jw/webfont.css" media="all"> <!-- 공통 webfont -->
+	    <link rel="stylesheet" href="/css/web/jw/layout.css" media="all">  <!-- 전세임대포털 신규 메인 CSS -->
+	    <link rel="stylesheet" href="/css/web/jw/sub_cnt.css" media="all">
+	    <link rel="stylesheet" href="/css/web/jw/login.css" media="all">
+	    <link rel="stylesheet" href="/css/web/jw/board.css" media="all">
+	    <link rel="stylesheet" href="/css/com/jquery/jquery-ui.min.css" media="all">
+	    <script type="text/javascript" src="/js/html5shiv.js"></script>
+	    <script type="text/javascript" src="/js/jquery.min.js"></script>
+	    <script type="text/javascript" src="/js/jquery-ui.min.js"></script>
+	    <script type="text/javascript" src="/js/jquery.form.min.js"></script>
+	    <script type="text/javascript" src="/js/jquery.easing.1.3.js"></script>
+	    <script type="text/javascript" src="/js/jquery.bpopup.min.js"></script>
+	    <script type="text/javascript" src="/js/common.js"></script>
+	    <script type="text/javascript" src="/js/sha256.js"></script>
+	    <script type="text/javascript" src="/js/crypto-js/crypto-js.js"></script>
+	    <script type="text/javascript" src="/js/layout.js"></script>  <!-- 전세임대포털 신규 메인 JS -->
+	</head>
+    <body>
+    	<!-- 바로가기 -->
+        <div id="skipArea">
+            <a href="#gnb">메인메뉴 바로가기</a>
+            <a href="#container">본문으로 바로가기</a>
+        </div>
+		<!-- //바로가기 -->
+        	<!-- header -->
+			
+
+
+
+
+
+<!-- web -->
+        <!-- web -->
+        <div class="area_header">
+            <!-- header  -->
+            <header id="header">
+                <div class="headerWrap">
+                    <div class="head_top">
+                        <div class="inner">
+                            <!-- 유틸메뉴 -->
+                            <div class="h_util">
+                                <ul class="util_list">
+									
+									
+										
+										<!-- 일반 -->
+										<li class="login">
+											<a href="/jw/lo/login/logout.do" title="로그아웃">
+												<img src="/images/template/00043/layout/ico_login.png" alt="아이콘">로그아웃
+											</a>
+										</li>
+										<li class="mypage">
+											<a href="/jw/sb/sbscrb/selectSbscrbInfo.do?mi=2987" title="마이페이지">
+												<img src="/images/template/00043/layout/ico_setting.png" alt="아이콘">마이페이지
+											</a>
+										</li>
+										
+										
+										
+											<!-- FIXME 관리자에 대해서도 포털을 볼 수 있도록 변경 -->
+											
+											
+										
+									
+                                </ul>
+                            </div>
+                            <!--// 유틸메뉴 -->
+                            
+                            <!-- 관련사이트 -->
+                            <div class="h_quick">
+                                <button type="button" title="관련사이트 열기" class="quick_btn">
+                                    <i class="ri-pages-line"></i>
+                                    <span>관련 사이트</span>
+                                </button>
+                                <div class="quick_wrap">
+                                    <ul class="quick_list">
+                                        <li>
+                                            <a href="https://www.molit.go.kr" target="_blank" title="새창" rel="noopener noreferrer" class="quick_link">국토교통부</a>
+                                        </li>
+                                        <li>
+                                            <a href="https://www.lh.or.kr" target="_blank" title="새창" rel="noopener noreferrer" class="quick_link">한국토지주택공사</a>
+                                        </li>
+                                        <li>
+                                            <a href="https://ziptoss.com" target="_blank" title="새창" rel="noopener noreferrer" class="quick_link">집토스부동산</a>
+                                        </li>
+                                        <li>
+                                            <a href="https://www.myhome.go.kr" target="_blank" title="새창" rel="noopener noreferrer" class="quick_link">마이홈</a>
+                                        </li>
+                                        <li>
+                                            <a href="https://adrhome.reb.or.kr" target="_blank" title="새창" rel="noopener noreferrer" class="quick_link">한국부동산원-<br>LH임대차분쟁조정위원회</a>
+                                        </li>
+                                        <li>
+                                            <a href="https://www.r114.com" target="_blank" title="새창" rel="noopener noreferrer" class="quick_link">부동산114</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <!--// 관련사이트 -->
+                        </div>
+                    </div>
+                    <div class="head_body">
+                        <div class="inner">
+                            <h1 class="logo" id="logo">
+                                <a href="/jw/main.do"><span class="sr-only">전세임대포털</span></a>
+                            </h1>
+                            <div id="nav" style="height: 80px;">
+							<div class="menuBox" id="gnb">
+							<h2 class="sr-only">메뉴</h2>
+							<ul class="group">
+							<li class="menu1 depth1"><a href="/jw/rs/search/selectRthousList.do?mi=2871"><span>전세임대 뱅크</span></a>
+								<ul class="depth_ul">
+									<li><a href="/jw/rs/search/selectRthousList.do?mi=2871">주택검색</a>
+									</li>
+									<li><a href="/jw/li/falseSaleGuide.do?mi=3106">허위매물신고 방법</a>
+									</li>
+									<li><a href="/jw/rm/manage/getRthousList.do?mi=3107">주택등록</a>
+									</li>
+									<li><a href="/jw/br/brkrg/srch.do?mi=3108">중개업소 검색</a>
+									</li>
+								</ul>
+							</li>
+							<li class="menu2 depth1"><a href="/jw/rs/search/selectDdRthousList.do?mi=4220"><span>든든임대인</span></a>
+								<ul class="depth_ul">
+									<li><a href="/jw/rs/search/selectDdRthousList.do?mi=4224">주택검색</a>
+									</li>
+									<li><a href="/jw/li/ddLandlordInfo.do?mi=4221">든든임대인이란</a>
+									</li>
+									<li><a href="/jw/rm/manage/getDdRthousList.do?mi=4222">주택등록</a>
+									</li>
+									<li><a href="/jw/li/firmOverview.do?mi=4280">법무법인 안내</a>
+									</li>
+								</ul>
+							</li>
+							<li class="menu3 depth1"><a href=""><span>소통창구</span></a>
+								<ul class="depth_ul">
+									<li><a href="/jw/na/ntt/selectNttList.do?mi=4240&amp;bbsId=1403">자료실</a>
+									</li>
+									<li><a href="/jw/na/ntt/selectNttList.do?mi=3268&amp;bbsId=1541">홍보자료</a>
+									</li>
+                                                                        <li><a href="/jw/qr/qrspns/selectQrspnsList.do">설문조사</a>
+									</li>
+
+								</ul>
+							</li>
+							<li class="menu4 depth1"><a href="/jw/na/ntt/selectNttList.do?mi=2857&amp;bbsId=1443"><span>전월세상담</span></a>
+								<ul class="depth_ul">
+									<li><a href="/jw/na/ntt/selectNttList.do?mi=2857&amp;bbsId=1443">상담사례</a>
+									</li>
+									<li><a href="/jw/na/ntt/selectNttList.do?mi=2858&amp;bbsId=1442">법률/판례 해설</a>
+									</li>
+								</ul>
+							</li>
+							<li class="menu5 depth1"><a href=""><span>알려드려요</span></a>
+								<ul class="depth_ul">
+									<li><a href="https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?srchUppAisTpCd=13&amp;uppAisTpaCd=13&amp;aisTpCd=17&amp;srchAisTpCd=17&amp;panSs=공고중&amp;listCo=50&amp;mi=1026" target="_blank">입주자 모집공고</a>
+									</li>
+									<li><a href="https://apply.lh.or.kr/lhapply/cm/cntnts/cntntsView.do?mi=1240&amp;cntntsId=1143" target="_blank">전세임대 사업안내</a>
+									</li>
+									<li><a href="/jw/na/ntt/selectNttList.do?mi=3119&amp;bbsId=1401">공지사항</a>
+									</li>
+									<li><a href="/jw/na/ntt/selectNttList.do?mi=3266&amp;bbsId=1522">이벤트</a>
+									</li>
+									<li><a href="/jw/li/areaAcctoCnslt.do?mi=3267">전세임대 상담센터</a>
+									</li>
+								</ul>
+							</li>
+							
+							
+							
+							</ul>
+						</div>
+                            <!-- //PC메뉴 -->
+                            <div class="last_item">
+                                <!-- 검색 -->
+                                <div class="search">
+                                    <form name="searchForm" class="clearfix" id="searchForm" onsubmit="return searchGo(this)" action="/jw/jeonwolse/search.do" method="post" target="_blank">
+                                        <fieldset>
+                                            <legend>통합검색 폼</legend>
+                                            <div class="search_wrap">
+                                                <div class="search_item">
+                                                	<label class="hid" for="total_search">검색어 입력</label>
+                                                    <input type="search" name="query" id="total_search" placeholder="검색어를 입력하세요" value="">
+                                                    <input type="hidden" name="bbsId" value="">
+													<input type="hidden" name="searchType" value="">
+                                                    <button>
+                                                        <span class="sr-only">검색하기</span>
+                                                        <i class="ri-search-line"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </form>
+                                </div>
+                                <!-- // 검색 -->
+                                <!-- 콜센터 -->
+                                <div class="call_info">
+                                    <div class="call_item num">
+                                        <span class="tit">콜센터</span>
+                                        <span class="text">1670-0002</span>
+                                    </div>
+                                    <div class="call_item time">
+                                        <span class="tit">운영시간</span>
+                                        <span class="text">09:00 ~ 18:00</span>
+                                    </div>
+                                </div>
+                                <!--// 콜센터 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div></header>
+            <!-- //header -->
+        </div>
+        <!--// web -->
+        
+        <!-- tablet, moblie -->
+        <div id="tablet">
+            <div id="mNavi" style="display: none; left: -100%; opacity: 1;">
+                <div id="mtitle">
+                    <a href="#">메뉴닫기</a>
+                </div>
+                <nav id="mgnb">
+                    <div class="snb">
+                        <!-- 유틸메뉴 -->
+                        <div class="h_util">
+                            <ul class="util_list">
+                            	
+                                
+									
+									<!-- 일반 -->
+									<li class="login">
+										<a href="/jw/lo/login/logout.do" title="로그아웃">
+											<img src="/images/template/00043/layout/ico_login.png" alt="아이콘">로그아웃
+										</a>
+									</li>
+									<li class="mypage">
+										<a href="/jw/sb/sbscrb/selectSbscrbInfo.do?mi=2987" title="마이페이지">
+											<img src="/images/template/00043/layout/ico_setting.png" alt="아이콘">마이페이지
+										</a>
+									</li>
+									
+									
+									
+										<!-- FIXME 관리자에 대해서도 포털을 볼 수 있도록 변경 -->
+										
+									
+								
+                            </ul>
+                        </div>
+                        <!--// 유틸메뉴 -->
+                        <!-- 관련사이트 -->
+                        <div class="h_quick">
+                            <button type="button" title="관련사이트 열기" class="quick_btn">
+                                <span>관련 사이트</span>
+                            </button>
+                            <div class="quick_wrap">
+                                <ul class="quick_list">
+                                    <li>
+                                        <a href="https://www.molit.go.kr" target="_blank" title="새창" rel="noopener noreferrer" class="quick_link">국토교통부</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.lh.or.kr" target="_blank" title="새창" rel="noopener noreferrer" class="quick_link">한국토지주택공사</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://ziptoss.com" target="_blank" title="새창" rel="noopener noreferrer" class="quick_link">집토스부동산</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.myhome.go.kr" target="_blank" title="새창" rel="noopener noreferrer" class="quick_link">마이홈</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://adrhome.reb.or.kr" target="_blank" title="새창" rel="noopener noreferrer" class="quick_link">한국부동산원-LH임대차분쟁조정위원회</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.r114.com" target="_blank" title="새창" rel="noopener noreferrer" class="quick_link">부동산114</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!--// 관련사이트 -->
+                    </div>
+                    <!--M_START-->
+                    <!--M_END-->
+                <div>
+							<div class="menuBox" id="gnb">
+							<h2 class="sr-only">메뉴</h2>
+							<ul class="group">
+							<li class="menu1 depth1"><a href="/jw/rs/search/selectRthousList.do?mi=2871"><span>전세임대 뱅크</span></a>
+								<ul class="depth_ul">
+									<li><a href="/jw/rs/search/selectRthousList.do?mi=2871">주택검색</a>
+									</li>
+									<li><a href="/jw/li/falseSaleGuide.do?mi=3106">허위매물신고 방법</a>
+									</li>
+									<li><a href="/jw/rm/manage/getRthousList.do?mi=3107">주택등록</a>
+									</li>
+									<li><a href="/jw/br/brkrg/srch.do?mi=3108">중개업소 검색</a>
+									</li>
+								</ul>
+							</li>
+							<li class="menu2 depth1"><a href="/jw/rs/search/selectDdRthousList.do?mi=4220"><span>든든임대인</span></a>
+								<ul class="depth_ul">
+									<li><a href="/jw/rs/search/selectDdRthousList.do?mi=4224">주택검색</a>
+									</li>
+									<li><a href="/jw/li/ddLandlordInfo.do?mi=4221">든든임대인이란</a>
+									</li>
+									<li><a href="/jw/rm/manage/getDdRthousList.do?mi=4222">주택등록</a>
+									</li>
+									<li><a href="/jw/li/firmOverview.do?mi=4280">법무법인 안내</a>
+									</li>
+								</ul>
+							</li>
+							<li class="menu3 depth1"><a href=""><span>소통창구</span></a>
+								<ul class="depth_ul">
+									<li><a href="/jw/na/ntt/selectNttList.do?mi=4240&amp;bbsId=1403">자료실</a>
+									</li>
+									<li><a href="/jw/na/ntt/selectNttList.do?mi=3268&amp;bbsId=1541">홍보자료</a>
+									</li>
+                                                                        <li><a href="/jw/qr/qrspns/selectQrspnsList.do">설문조사</a>
+									</li>
+
+								</ul>
+							</li>
+							<li class="menu4 depth1"><a href="/jw/na/ntt/selectNttList.do?mi=2857&amp;bbsId=1443"><span>전월세상담</span></a>
+								<ul class="depth_ul">
+									<li><a href="/jw/na/ntt/selectNttList.do?mi=2857&amp;bbsId=1443">상담사례</a>
+									</li>
+									<li><a href="/jw/na/ntt/selectNttList.do?mi=2858&amp;bbsId=1442">법률/판례 해설</a>
+									</li>
+								</ul>
+							</li>
+							<li class="menu5 depth1"><a href=""><span>알려드려요</span></a>
+								<ul class="depth_ul">
+									<li><a href="https://apply.lh.or.kr/lhapply/apply/wt/wrtanc/selectWrtancList.do?srchUppAisTpCd=13&amp;uppAisTpaCd=13&amp;aisTpCd=17&amp;srchAisTpCd=17&amp;panSs=공고중&amp;listCo=50&amp;mi=1026" target="_blank">입주자 모집공고</a>
+									</li>
+									<li><a href="https://apply.lh.or.kr/lhapply/cm/cntnts/cntntsView.do?mi=1240&amp;cntntsId=1143" target="_blank">전세임대 사업안내</a>
+									</li>
+									<li><a href="/jw/na/ntt/selectNttList.do?mi=3119&amp;bbsId=1401">공지사항</a>
+									</li>
+									<li><a href="/jw/na/ntt/selectNttList.do?mi=3266&amp;bbsId=1522">이벤트</a>
+									</li>
+									<li><a href="/jw/li/areaAcctoCnslt.do?mi=3267">전세임대 상담센터</a>
+									</li>
+								</ul>
+							</li>
+							
+							
+							
+							</ul>
+						</div>
+                            <!-- //PC메뉴 -->
+                            <div class="last_item">
+                                <!-- 검색 -->
+                                <div class="search">
+                                    <form name="searchForm" class="clearfix" id="searchForm" onsubmit="return searchGo(this)" action="/jw/jeonwolse/search.do" method="post" target="_blank">
+                                        <fieldset>
+                                            <legend>통합검색 폼</legend>
+                                            <div class="search_wrap">
+                                                <div class="search_item">
+                                                	<label class="hid" for="total_search">검색어 입력</label>
+                                                    <input type="search" name="query" id="total_search" placeholder="검색어를 입력하세요" value="">
+                                                    <input type="hidden" name="bbsId" value="">
+													<input type="hidden" name="searchType" value="">
+                                                    <button>
+                                                        <span class="sr-only">검색하기</span>
+                                                        <i class="ri-search-line"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </form>
+                                </div>
+                                <!-- // 검색 -->
+                                <!-- 콜센터 -->
+                                <div class="call_info">
+                                    <div class="call_item num">
+                                        <span class="tit">콜센터</span>
+                                        <span class="text">1670-0002</span>
+                                    </div>
+                                    <div class="call_item time">
+                                        <span class="tit">운영시간</span>
+                                        <span class="text">09:00 ~ 18:00</span>
+                                    </div>
+                                </div>
+                                <!--// 콜센터 -->
+                            </div>
+                        </div></nav>
+            </div>
+            <div id="tabletHeader">
+                <div id="tabletLogo">
+                    <a href="/jw/main.do"><img src="/images/layout/logo.png" alt="LH전세임대포털 로고"></a>
+                </div>
+            </div>
+            <div id="tabletGnb">
+                <div id="menuOpen">
+                    <a href="#"><img src="/images/layout/btn_menu_t.png" alt="메뉴열기"></a>
+                </div>
+            </div>
+            <!--// 태블릿 검색 -->
+            <div id="tabletSearch">
+                <div id="searchOpen">
+                    <a href="#"><img src="/images/layout/btn_search_t.png" alt="검색열기"></a>
+                </div>
+            </div>
+            <div id="mSearch">
+                <form name="searchFrm" id="searchFrm" method="POST" onsubmit="return searchMobGo(this)" action="/jw/jeonwolse/search.do">
+                    <div class="con">
+                        <p>
+                            <input type="text" id="searchText" name="query" class="inputText" title="통합 검색어" value="">
+                            <input type="hidden" name="bbsId" value="1482">
+                            <input type="hidden" name="searchType" value="">
+                            <button class="btnSearch" id="searchTextBtn">
+                                <span>검색</span>
+                            </button>
+                        </p>
+                        <button type="button" class="btnSearchClose">
+                            <span>통합검색 닫기</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <!-- 태블릿 검색 -->
+        </div>
+        <!--// tablet -->
+
+            <!-- //header  -->
+            <div class="box_mot_1">
+                <!-- container -->
+                <a href="#" name="container" title="메인콘텐츠 바로가기" class="hid"></a>
+
+                <div id="sub_container_wrap">
+                    <div class="sub_content_wrap">
+						
+
+
+<script>
+$(document).ready(function() {
+	if($('#menu ul').hasClass('lnb')==true){
+		$('#menu h2 span').removeClass("no-after");
+    }else{
+    	 $('#menu h2 span').addClass("no-after");
+    }
+	$('#2879,#2881,#4021,#3110,#3112,#2858,#4000,#3267').addClass("mob_hide");
+});
+</script>
+<div style="display:none;"><h1></h1><h2></h2><h3></h3><h4></h4><h5></h5><h6></h6></div>
+<!-- 웹용 -->
+<div id="menu">
+	<h2><span>전세임대 뱅크</span></h2>
+	<!--START-->
+										
+										<input type="hidden" id="leftCurrMi" value="3107">
+										<input type="hidden" id="tabBaseMi" value="3107">
+										<input type="hidden" id="tabUpperMi" value="">
+
+												<ul class="lnb">
+													<li><a id="2871" href="/jw/rs/search/selectRthousList.do?mi=2871">주택검색</a>
+													</li>
+													<li><a id="3106" href="/jw/li/falseSaleGuide.do?mi=3106">허위매물신고 방법</a>
+													</li>
+													<li class="on"><a id="3107" href="/jw/rm/manage/getRthousList.do?mi=3107">주택등록</a>
+													</li>
+													<li><a id="3108" href="/jw/br/brkrg/srch.do?mi=3108">중개업소 검색</a>
+													</li>
+												</ul>
+
+
+
+
+
+
+
+
+	<!--END-->
+	<!-- 2차메뉴 --
+                            <ul class="lnb">
+                                <li class="on"><a href="#" title="현재페이지">2차메뉴</a></li>
+                                <li><a href="#">2차메뉴</a></li>
+                                <li><a href="#">2차메뉴</a></li>
+                                <li><a href="#">2차메뉴</a></li>
+                                <li><a href="#">2차메뉴</a></li>
+                            </ul>
+                            !-- //2차메뉴 -->
+	<!-- 3차메뉴 --
+                            <ul class="subLnb">
+                                <li class="on"><a href="#">3차메뉴</a></li>
+                                <li><a href="#" target="_blank" title="새창">3차메뉴</a></li>
+                                <li><a href="#">3차메뉴</a></li>
+                            </ul>
+                            !-- //3차메뉴 -->
+</div>
+<!-- //웹용 -->
+<!-- 모바일용 -->
+<div id="m_menu">
+	<!-- 이쪽의 메뉴는 사용하지 않음. -->
+</div>
+
+                        <!-- sub 내용 -->
+                        <section id="sub_content">
+                            <div class="title_area">
+                            	
+
+
+<div style="display:none;"><h1></h1><h2></h2><h3></h3><h4></h4><h5></h5><h6></h6></div>
+
+                                <h2 class="pageTitle">주택등록</h2>
+                                <div class="location">
+                                    <a href="/jw/main.do" class="home"><i class="ri-home-4-fill"></i>
+                                    <span class="sr-only">HOME</span></a>
+									
+									<span>전세임대 뱅크</span><strong>주택등록</strong>
+                                </div>
+
+                                <!-- sns -->
+								
+
+
+<script src="//developers.kakao.com/sdk/js/kakao.min.js"></script><!-- FIXME : offline 스크립트 필요 -->
+<div class="snsBox">
+                                <button type="button" class="btnPrint">
+                                    <span class="sr-only ">인쇄</span>
+                                    <i class="ri-printer-fill"></i>
+                                </button>
+                                <button type="button" title="SNS 박스 열기" class="btnShare">
+                                    <span class="sr-only ">공유</span>
+                                    <i class="ri-share-fill"></i>
+                                </button>
+                                <div class="sns_more">
+                                    <button type="button" class="btnFbook" title="페이스북"><span class="sr-only">페이스북</span></button>
+                                    <button type="button" class="btnTwt" title="트위터"><span class="sr-only">트위터</span></button>
+                                    <button type="button" class="btnBlog" title="블로그"><span class="sr-only">블로그</span></button>
+                                    <button type="button" class="btnYtb" title="유투브"><span class="sr-only">유투브</span></button>
+                                    <button type="button" class="btnInstar" title="인스타그램"><span class="sr-only">인스타그램</span></button>
+                                </div>
+                            </div>
+<script>
+    (function() {
+        'use strict';
+        $(function() {
+            /**
+            페이스북 버튼 
+            */
+            $(document).on("click", ".btnFbook", function() {
+                window.open('https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(location.href), 'facebook', 'width=626,height=436');
+            });
+
+            /**
+            트위터 버튼
+            */
+            $(document).on("click", ".btnTwt", function() {
+                window.open('https://twitter.com/intent/tweet?url=' + encodeURIComponent(location.href), 'twitter', 'width=626,height=436');
+            });
+
+            /**
+            네이버 버튼 
+            */
+            $(document).on("click", ".btnBlog", function() {
+                var url = encodeURI(encodeURIComponent(location.href));
+                var title = $(".pageTitle").text();
+                window.open('https://share.naver.com/web/shareView.nhn?url=' + url + "&title=" + title, 'naver', 'width=626,height=436');
+            });
+
+            /**
+            카카오 버튼
+            */
+            $(document).on("click", ".btnKakao", function() {
+                var loc = 'https://story.kakao.com/share?url='+encodeURIComponent(location.href);
+                window.open(loc, 'kakao', 'width=626,height=436');
+            });
+        });
+    }());
+</script>
+<script>
+	(function() {
+	    'use strict';
+	    var makeBtnKakao = function() {
+	        Kakao.init('710dbbfe84c5cea8f2b2fc5cb54afe35');	// FIXME : 고유키 필요 
+            //<![CDATA[
+            // // 사용할 앱의 JavaScript 키를 설정해 주세요.
+            // // 카카오링크 버튼을 생성합니다. 처음 한번만 호출하면 됩니다.
+            Kakao.Link.createDefaultButton({
+                container : '.btnKakao',
+                objectType : 'feed',
+                content : {
+                    title : '전세임대포털',
+                    description : $(".pageTitle").text(),
+                    imageUrl : '/images/web/jw/layout/logo.png',
+                    link : {
+                        mobileWebUrl : location.href,
+                        webUrl : location.href
+                    }
+                },
+                buttons : [ {
+                    title : '링크 보기',
+                    link : {
+                        mobileWebUrl : location.href,
+                        webUrl : location.href
+                    }
+                }, ]
+            });
+            //]]>
+	    };
+// 	    makeBtnKakao();
+	}());
+</script>
+                                <!-- //sns -->
+                            </div>
+                            <div class="subCntBody clearfix">
+								<!-- 페이지뷰 : 서브콘텐츠 시작-->
+								
+
+
+
+<div>
+   <!--START-->
+										
+    <!--END-->
+</div>
+	
+
+
+
+
+								
+
+
+
+
+
+
+
+
+
+
+
+
+<title>임대주택 관리 조회</title>
+<link href="/css/ad/rm/rtm.css" rel="stylesheet">
+<style>
+	.inform_bg {width:100%; height:100%; margin:10px 0 20px 0; background-color:#efefef;}
+	.inform_bg img {float:left; width:103px; height:70px; margin:10px 15px 0 0 ;}
+	.inform_bg ul {display:block; font-size:12px; color:#5e5e5e; font-family:NGNormal; line-height:18px; padding:15px 20px 15px 130px;}
+	.inform_bg ul li {background:url('/images/co/na/check.png') no-repeat 0 3px; padding-left:11px; white-space:normal;}
+	.inform_bg ul li span {color:#eb2915; white-space:normal;}
+	.BD_Top .BD_srch button.rtBtnSearch{float:right;}
+	.rthous_lock td:not(.bigo){color:red;text-decoration:line-through;}
+</style>
+
+<script>
+	//숫자로 된 금액을 한글로 변환
+	function convertPrice(number){
+		number = number * 10000;
+	    var inputNumber  = number < 0 ? false : number;
+	    var unitWords    = ['', '만', '억', '조', '경'];
+	    var splitUnit    = 10000;
+	    var splitCount   = unitWords.length;
+	    var resultArray  = [];
+	    var resultString = '';
+
+	    for (var i = 0; i < splitCount; i++){
+	         var unitResult = (inputNumber % Math.pow(splitUnit, i + 1)) / Math.pow(splitUnit, i);
+	        unitResult = Math.floor(unitResult);
+	        if (unitResult > 0){
+	            resultArray[i] = unitResult;
+	        }
+	    }
+
+	    for (var i = 0; i < resultArray.length; i++){
+	        if(!resultArray[i]) continue;
+	        resultString = String(resultArray[i]) + unitWords[i] + resultString;
+	    }
+	    return resultString;
+	}
+</script>
+
+<!-- 머리글 -->
+
+
+
+
+<!-- 
+공지 가능한 게시판에 대해서는 해당 문구가 보이지 않도록 변경 
+공지가 가능함은 관리자 급 권한을 가짐을 의미하기 때문에 일반 계정이 사용하지 않음. 
+-->
+
+	<div class="box_st5 mgb30">
+		<div class="box_st_ico">
+			<div class="ico_boxImg">
+				<img alt="아이콘 이미지" src="/images/web/jw/con_com/ico_boxImg.png">
+			</div>
+			<!-- 200118 : 내용은 리스트로, 타이틀은 titT2 클래스를 사용하여주시기바랍니다.-->
+			<h3 class="titT2">매물등록 주의사항</h3>
+			<ul class="list_st2">
+				<li><span class="pc_red">광고성매물, 도배성중복매물, 허위매물 등</span>사이트에 피해를 줄 우려가 있는 매물등록시 해당매물은 통보없이 삭제될 수 있으며, 해당매물에 대한 피해발생시 모든 책임은 등록자에게 있습니다.</li>
+				<li>이용자 편의를 위해 거래된 매물은 <span class="pc_red">거래완료 처리</span>하여 주십시오. <span class="pc_red">등록된 매물에 대한 모든 책임은 매물등록자에게 있습니다.</span></li>
+				<li>게시되는 글의 본문이나 첨부파일에 개인정보(주민등록번호, 휴대폰번호, 주소, 은행계좌번호, 신용카드번호 등 개인을 식별할 수 있는 모든 정보)를 포함시키지 않도록 주의하고 <span class="pc_red">개인정보가 게시되어 노출 될 경우 해당 매물등록자가 관련 법령에 따라 처분</span>을 받을 수 있으니 유의하시기 바랍니다.</li>
+				<li>동일 물건 재등록은 <span class="pc_red">완전삭제</span> 이후 가능합니다. 해당 물건 삭제를 하여야 <span class="pc_red">완전삭제버튼</span>이 활성화됩니다.</li>
+				<li>권리분석, 계약 진행(다른 사람과 계약 진행이 불가능한 모든 경우) 시 반드시 <span class="pc_red">거래완료 확정으로 상태를 변경</span>해주시기 바랍니다.<br>
+				    * 거래 취소 등으로 상태 변경 필요 시 관리자에게 문의 바랍니다.</li>
+			</ul>
+		</div>
+	</div>
+
+<!-- 검색 조건 -->
+<div class="BD_Top">
+	<form method="post" name="searchRthous" id="searchRthous">
+		<p class="BD_total">
+			<span>전체 <strong class="pc_blue">10</strong>건
+			</span> <span class="mgl10"><strong class="pc_blue">1</strong>/1페이지</span>
+		</p>
+
+		<fieldset class="BD_cate" style="width:100%">
+			<div class="flterBox">
+				<div class="flter_wrap">
+					<div class="box">
+						<!-- 주택유형 -->
+						<select name="rthousBdtyp" title="주택유형를 선택해주세요" class="mob_w30pct">
+							<option value="9" style="font-weight: bold;" title="전체">주택유형</option>
+							
+								<option value="0" title="아파트">아파트</option>
+							
+								<option value="1" title="단독">단독</option>
+							
+								<option value="2" title="다가구">다가구</option>
+							
+								<option value="3" title="연립">연립</option>
+							
+								<option value="4" title="다세대">다세대</option>
+							
+								<option value="5" title="오피스텔">오피스텔</option>
+							
+								<option value="6" title="근생주택">근생주택</option>
+							
+								<option value="7" title="빌라">빌라</option>
+							
+						</select>
+						<!-- 임대유형 -->
+						<select name="rthousRentStle" id="rthousRentStle" title="임대유형를 선택해주세요" onchange="selectRentStle()" class="mob_w30pct">
+							<option value="9" style="font-weight: bold;" title="전체">임대유형</option>
+							
+								<option value="1" title="전세">전세</option>
+							
+								<option value="2" title="월세">월세</option>
+							
+								<option value="3" title="반전세">반전세</option>
+							
+						</select>
+						<!-- 거래상황 -->
+						<select name="rthousDelngSttus" title="거래상황을 선택해주세요" class="mob_w30pct">
+							<option value="9" style="font-weight: bold;" title="전체">거래상황</option>
+							
+								<option value="0" title="임시저장">임시저장</option>
+							
+								<option value="1" title="거래가능">거래가능</option>
+							
+								<option value="2" title="거래완료">거래완료</option>
+							
+								<option value="3" title="신고확인">신고확인</option>
+							
+								<option value="4" title="노출종료">노출종료</option>
+							
+							
+						</select>
+					</div>
+					<div class="box">
+						<!-- 등록일 -->
+						<span id="rthousRgsde"><strong>등록일</strong><input type="text" class="optDate hasDatepicker" name="rthousRgsdeFrom" id="rthousRgsdeFrom" value="" onchange="selectDate(this)" style="text-align:center;" placeholder="yyyy-mm-dd"> ~ <input type="text" class="optDate hasDatepicker" name="rthousRgsdeTo" id="rthousRgsdeTo" value="" onchange="selectDate(this)" style="text-align:center;" placeholder="yyyy-mm-dd"></span>
+					</div>
+					<div class="box">
+						<!-- 키워드(매물명칭 검색으로 변경) -->
+						
+						<!-- 매물명칭/주소 -->
+						<span><strong>매물명/주소</strong>
+							<input type="text" class="mob100pct txt inpTxt" name="rthousNm" value="" title="매물명/주소 검색" placeholder="매물명/주소 검색" style="width: 243px;">
+						</span>
+					</div>
+					<div class="box">
+						<!-- 공급면적 -->
+						<span class="RM_w70">
+							<strong>공급면적</strong>
+							<input type="text" name="hpprFrom" id="hpprFrom" onkeypress="onlyNum(event, 0)" onkeyup="calcArea(this);checkNum(this);" value="" placeholder="최소" title="공급면적 최소" style="width: 80px;">
+							 ~
+							<input type="text" name="hpprTo" id="hpprTo" onkeypress="onlyNum(event, 0)" onkeyup="calcArea(this);checkNum(this);" value="" placeholder="최대" title="공급면적 최대" style="width: 80px;"><em>㎡</em>
+							(<span id="scrhAreaFrom">0.00</span>
+							 ~
+							<span id="scrhAreaTo">0.00</span><em>평)</em>
+							<input type="hidden" name="rthousHpprFrom" id="rthousHpprFrom" value="0">
+							<input type="hidden" name="rthousHpprTo" id="rthousHpprTo" value="900000000">
+						</span>
+					</div>
+					<div class="box">
+						<!-- 보증금 -->
+						<span class="RM_w70">
+							<strong>보증금</strong>
+							<input type="text" name="gtnFrom" id="gtnFrom" value="" placeholder="최소" onkeypress="onlyNum(event, 1)" onkeyup="checkNum(this)" title="보증금 최소" style="width: 80px;">
+							 ~
+							<input type="text" name="gtnTo" id="gtnTo" value="" placeholder="최대" onkeypress="onlyNum(event, 1)" onkeyup="checkNum(this)" title="보증금 최대" style="width: 80px;"><em>만원</em>
+							<input type="hidden" name="rthousGtnFrom" id="rthousGtnFrom" value="0">
+							<input type="hidden" name="rthousGtnTo" id="rthousGtnTo" value="900000000">
+						</span>
+					</div>
+					<div class="box">
+						<!-- 월세 -->
+						<span class="RM_w70">
+							<strong>월세</strong>
+							<input type="text" name="mthtFrom" id="mthtFrom" value="" onkeypress="onlyNum(event, 1)" onkeyup="checkNum(this)" title="월세 최소" placeholder="최소" style="width: 80px;">
+							 ~
+							 <input type="text" name="mthtTo" id="mthtTo" value="" onkeypress="onlyNum(event, 1)" onkeyup="checkNum(this)" title="월세 최대" placeholder="최대" style="width: 80px;"><em>만원</em>
+							 <input type="hidden" name="rthousMthtFrom" id="rthousMthtFrom" value="0">
+							 <input type="hidden" name="rthousMthtTo" id="rthousMthtTo" value="900000000">
+						</span>
+					</div>
+					<div class="BD_srch">
+						<p class="BD_total" style="margin: 8px 0;">
+							<input type="button" class="btnSearch rtBtnSearch" onclick="selectList(1);" value="검색">
+						</p>
+					</div>
+				</div>
+			</div>
+		</fieldset>
+	</form>
+	<!-- //게시판 검색 -->
+</div>
+<p class="bu_atte f_weightB"> 2개월 지난 매물 또는 거래완료 매물은 주택검색 화면에 노출되지 않습니다.</p>
+
+
+<div class="btn_st ar">
+	
+</div>
+<!-- 조회 목록 -->
+<div class="btn_st ar">
+
+</div>
+<div class="BD_list scroll_gr">
+    <table style="table-layout: fixed;">
+        <thead>
+            <tr>
+                <th style="width: 4%"><input type="checkbox" id="rthousAllChk" title="전체체크"></th>
+                <th style="width: 8%">등록일</th>
+                <th style="width: 6%">임대<br>유형</th>
+                <th style="width: 7%">주택<br>유형</th>
+                <th style="width: auto">매물<br>명칭</th>
+                <!-- <th style="width: 9%">키워드</th> -->
+                <th style="width: 14%">가격<br>(원)</th>
+                <th style="width: 10%">
+      				
+      					
+      					면적<br>(공급)
+      				
+                </th>
+                <th style="width: 9%">층(해당/전체)</th>
+                <th style="width: 10%">거래<br>상황</th>
+                <th style="width: 11%">관리</th>
+				
+	                <th style="width: 8%">비고</th>
+				
+            </tr>
+        </thead>
+        <tbody>	
+        
+            <tr style="text-align:center;">
+                <td style="width: 30px"><input type="checkbox" name="rthousCheckbox" data-value="281138eddb324022a507bafce2009f3d" title="행체크"></td>
+                <td>
+                    
+                    
+                    26.07.02
+                </td>
+                <td>
+                    
+                        
+                            전세
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                    
+                        
+                            다가구
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                
+	                <td style="overflow: hidden;text-overflow: ellipsis; white-space:nowrap; cursor:pointer;" title="LH 방2 " onclick="showDetailPopup(this);" data-value="281138eddb324022a507bafce2009f3d">LH 방2 </td>
+                
+                
+            
+                <td>
+                    
+                        
+                            <script type="text/javascript">document.write(convertPrice('12000'))</script>1억2000만/없음
+                        
+                        
+                    
+                </td>
+                <td>
+                	
+      					
+      					
+      					 	
+                    		34.61㎡/<br>10.47평
+      					
+      				
+                </td>
+                <td>
+                -1층/3층
+                
+                
+                </td>
+                <td id="tempGubun">
+                    
+                        
+                    
+                        
+                            
+                            
+	                            거래가능
+	                            
+                            
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                	
+                     
+                        
+	                    
+	                    	
+	                    		
+
+	                    		
+	                    		
+	                    			
+		                    		
+		                    			<span class="diID"><a href="javascript:void(0)" class="btn_bl mini" id="updateButton" onclick="showUpdatePopup(this)" data-value="281138eddb324022a507bafce2009f3d">수정</a></span>
+		                    		
+		                    		
+		                    		
+			                    		
+				                        	<span class="diID"><a href="javascript:void(0)" class="btn_or mini" id="deleteButton" onclick="showDeletePopup(this)" data-value="281138eddb324022a507bafce2009f3d">삭제</a></span>
+				                        
+			                    		
+			                        
+			                        
+			                       	 	
+			                            
+			                                <span class="diID"><a href="javascript:void(0)" class="btn_gr mini" onclick="showCompletePopup(this)" data-value="281138eddb324022a507bafce2009f3d">거래완료확정</a></span>
+			                            
+			                            
+			                        
+	                    		
+	                    	
+	                    
+                    
+                </td>
+				<td class="bigo">
+					
+	                <!-- 2026-07-02 10:28:15.0_Y -->
+	                
+	                
+		                
+		                
+					
+                </td>
+            </tr>
+        
+            <tr style="text-align:center;">
+                <td style="width: 30px"><input type="checkbox" name="rthousCheckbox" data-value="2b89457804be4a888f118d087cbd022e" title="행체크"></td>
+                <td>
+                    
+                    
+                    26.06.10
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                            월세
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                            단독
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                
+	                <td style="overflow: hidden;text-overflow: ellipsis; white-space:nowrap; cursor:pointer;" title="다가구 월세 " onclick="showDetailPopup(this);" data-value="2b89457804be4a888f118d087cbd022e">다가구 월세 </td>
+                
+                
+            
+                <td>
+                    
+                        
+                        
+                            <script type="text/javascript">document.write(convertPrice('12000'))</script>1억2000만/
+                            <script type="text/javascript">document.write(convertPrice('50'))</script>50만
+                        
+                    
+                </td>
+                <td>
+                	
+      					
+      					
+      					 	
+                    		57.12㎡/<br>17.28평
+      					
+      				
+                </td>
+                <td>
+                2층/2층
+                
+                
+                </td>
+                <td id="tempGubun">
+                    
+                        
+                    
+                        
+                    
+                        
+                            
+                            
+	                            거래완료
+	                            
+                            
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                	
+                     
+                        
+	                    
+	                    	
+	                    		
+
+	                    		
+	                    		
+	                    			
+		                    		
+		                    			<span class="diID"><a href="javascript:void(0)" class="btn_bl mini" id="updateButton" onclick="showUpdatePopup(this)" data-value="2b89457804be4a888f118d087cbd022e">수정</a></span>
+		                    		
+		                    		
+		                    		
+			                    		
+				                        	<span class="diID"><a href="javascript:void(0)" class="btn_or mini" id="deleteButton" onclick="showDeletePopup(this)" data-value="2b89457804be4a888f118d087cbd022e">삭제</a></span>
+				                        
+			                    		
+			                        
+			                        
+			                       	 	
+			                            
+			                            
+			                                <span class="diID"><a href="javascript:void(0)" class="btn_grL mini" title="거래완료 항목입니다" onclick="showDeCompletePopup(this)" data-value="2b89457804be4a888f118d087cbd022e" data-reason="">거래완료확정</a></span>
+			                            
+			                        
+	                    		
+	                    	
+	                    
+                    
+                </td>
+				<td class="bigo">
+					
+	                <!-- 2026-07-01 18:07:55.0_Y -->
+	                
+	                
+		                
+			                <p>수정가능</p>
+			                
+		                
+		                
+					
+                </td>
+            </tr>
+        
+            <tr style="text-align:center;">
+                <td style="width: 30px"><input type="checkbox" name="rthousCheckbox" data-value="1910accb69814bd5952790379e6188cd" title="행체크"></td>
+                <td>
+                    
+                    
+                    26.05.19
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                            월세
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                            근생주택
+                        
+                    
+                        
+                    
+                </td>
+                
+	                <td style="overflow: hidden;text-overflow: ellipsis; white-space:nowrap; cursor:pointer;" title="상가주택 " onclick="showDetailPopup(this);" data-value="1910accb69814bd5952790379e6188cd">상가주택 </td>
+                
+                
+            
+                <td>
+                    
+                        
+                        
+                            <script type="text/javascript">document.write(convertPrice('12000'))</script>1억2000만/
+                            <script type="text/javascript">document.write(convertPrice('15'))</script>15만
+                        
+                    
+                </td>
+                <td>
+                	
+      					
+      					
+      					 	
+                    		35㎡/<br>10.59평
+      					
+      				
+                </td>
+                <td>
+                5층/5층
+                
+                
+                </td>
+                <td id="tempGubun">
+                    
+                        
+                    
+                        
+                            
+                            
+	                            거래가능
+	                            
+                            
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                	
+                     
+                        
+	                    
+	                    	
+	                    		
+
+	                    		
+	                    		
+	                    			
+		                    		
+		                    			<span class="diID"><a href="javascript:void(0)" class="btn_bl mini" id="updateButton" onclick="showUpdatePopup(this)" data-value="1910accb69814bd5952790379e6188cd">수정</a></span>
+		                    		
+		                    		
+		                    		
+			                    		
+				                        	<span class="diID"><a href="javascript:void(0)" class="btn_or mini" id="deleteButton" onclick="showDeletePopup(this)" data-value="1910accb69814bd5952790379e6188cd">삭제</a></span>
+				                        
+			                    		
+			                        
+			                        
+			                       	 	
+			                            
+			                                <span class="diID"><a href="javascript:void(0)" class="btn_gr mini" onclick="showCompletePopup(this)" data-value="1910accb69814bd5952790379e6188cd">거래완료확정</a></span>
+			                            
+			                            
+			                        
+	                    		
+	                    	
+	                    
+                    
+                </td>
+				<td class="bigo">
+					
+	                <!-- 2026-06-10 11:11:31.0_Y -->
+	                
+	                
+		                
+		                
+					
+                </td>
+            </tr>
+        
+            <tr style="text-align:center;">
+                <td style="width: 30px"><input type="checkbox" name="rthousCheckbox" data-value="e184203c19c3479c8e1caedc55272bcf" title="행체크"></td>
+                <td>
+                    
+                    
+                    26.04.23
+                </td>
+                <td>
+                    
+                        
+                            전세
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                    
+                        
+                            다가구
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                
+	                <td style="overflow: hidden;text-overflow: ellipsis; white-space:nowrap; cursor:pointer;" title="다가구 반지하 방2 전세" onclick="showDetailPopup(this);" data-value="e184203c19c3479c8e1caedc55272bcf">다가구 반지하 방2 전세</td>
+                
+                
+            
+                <td>
+                    
+                        
+                            <script type="text/javascript">document.write(convertPrice('13000'))</script>1억3000만/없음
+                        
+                        
+                    
+                </td>
+                <td>
+                	
+      					
+      					
+      					 	
+                    		38.93㎡/<br>11.78평
+      					
+      				
+                </td>
+                <td>
+                -1층/2층
+                
+                
+                </td>
+                <td id="tempGubun">
+                    
+                        
+                    
+                        
+                    
+                        
+                            
+                            
+	                            거래완료
+	                            
+                            
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                	
+                     
+                        
+	                    
+	                    	
+	                    		
+
+	                    		
+	                    		
+	                    			
+		                    		
+		                    		
+		                    		
+			                    		
+				                        	<span class="diID"><a href="javascript:void(0)" class="btn_or mini" id="deleteButton" onclick="showDeletePopup(this)" data-value="e184203c19c3479c8e1caedc55272bcf">삭제</a></span>
+				                        
+			                    		
+			                        
+			                        
+			                       	 	
+			                            
+			                            
+			                                <span class="diID"><a href="javascript:void(0)" class="btn_grL mini" title="거래완료 항목입니다" onclick="showDeCompletePopup(this)" data-value="e184203c19c3479c8e1caedc55272bcf" data-reason="">거래완료확정</a></span>
+			                            
+			                        
+	                    		
+	                    	
+	                    
+                    
+                </td>
+				<td class="bigo">
+					
+	                <!-- 2026-05-09 18:53:20.0_N -->
+	                
+	                
+		                
+			                
+			                <p>수정불가</p>
+		                
+		                
+					
+                </td>
+            </tr>
+        
+            <tr style="text-align:center;">
+                <td style="width: 30px"><input type="checkbox" name="rthousCheckbox" data-value="48acb629dbb74102acf09bfa5b472209" title="행체크"></td>
+                <td>
+                    
+                    
+                    26.04.22
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                            월세
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                    
+                        
+                            다가구
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                
+	                <td style="overflow: hidden;text-overflow: ellipsis; white-space:nowrap; cursor:pointer;" title="중동초등학교 인근 저렴한 반전세(10만원/월)" onclick="showDetailPopup(this);" data-value="48acb629dbb74102acf09bfa5b472209">중동초등학교 인근 저렴한 반전세(10만원/월)</td>
+                
+                
+            
+                <td>
+                    
+                        
+                        
+                            <script type="text/javascript">document.write(convertPrice('8000'))</script>8000만/
+                            <script type="text/javascript">document.write(convertPrice('10'))</script>10만
+                        
+                    
+                </td>
+                <td>
+                	
+      					
+      					
+      					 	
+                    		33㎡/<br>9.98평
+      					
+      				
+                </td>
+                <td>
+                -1층/2층
+                
+                
+                </td>
+                <td id="tempGubun">
+                    
+                        
+                    
+                        
+                    
+                        
+                            
+                            
+	                            거래완료
+	                            
+                            
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                	
+                     
+                        
+	                    
+	                    	
+	                    		
+
+	                    		
+	                    		
+	                    			
+		                    		
+		                    		
+		                    		
+			                    		
+				                        	<span class="diID"><a href="javascript:void(0)" class="btn_or mini" id="deleteButton" onclick="showDeletePopup(this)" data-value="48acb629dbb74102acf09bfa5b472209">삭제</a></span>
+				                        
+			                    		
+			                        
+			                        
+			                       	 	
+			                            
+			                            
+			                                <span class="diID"><a href="javascript:void(0)" class="btn_grL mini" title="거래완료 항목입니다" onclick="showDeCompletePopup(this)" data-value="48acb629dbb74102acf09bfa5b472209" data-reason="">거래완료확정</a></span>
+			                            
+			                        
+	                    		
+	                    	
+	                    
+                    
+                </td>
+				<td class="bigo">
+					
+	                <!-- 2026-05-09 18:53:24.0_N -->
+	                
+	                
+		                
+			                
+			                <p>수정불가</p>
+		                
+		                
+					
+                </td>
+            </tr>
+        
+            <tr style="text-align:center;">
+                <td style="width: 30px"><input type="checkbox" name="rthousCheckbox" data-value="c13199b9c8ec4583ab41df2f0890e387" title="행체크"></td>
+                <td>
+                    
+                    
+                    26.03.31
+                </td>
+                <td>
+                    
+                        
+                            전세
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                            다세대
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                
+	                <td style="overflow: hidden;text-overflow: ellipsis; white-space:nowrap; cursor:pointer;" title="원룸 풀옵션 전세 " onclick="showDetailPopup(this);" data-value="c13199b9c8ec4583ab41df2f0890e387">원룸 풀옵션 전세 </td>
+                
+                
+            
+                <td>
+                    
+                        
+                            <script type="text/javascript">document.write(convertPrice('10000'))</script>1억/없음
+                        
+                        
+                    
+                </td>
+                <td>
+                	
+      					
+      					
+      					 	
+                    		27.26㎡/<br>8.25평
+      					
+      				
+                </td>
+                <td>
+                3층/4층
+                
+                
+                </td>
+                <td id="tempGubun">
+                    
+                        
+                    
+                        
+                    
+                        
+                            
+                            
+	                            거래완료
+	                            
+                            
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                	
+                     
+                        
+	                    
+	                    	
+	                    		
+
+	                    		
+	                    		
+	                    			
+		                    		
+		                    		
+		                    		
+			                    		
+				                        	<span class="diID"><a href="javascript:void(0)" class="btn_or mini" id="deleteButton" onclick="showDeletePopup(this)" data-value="c13199b9c8ec4583ab41df2f0890e387">삭제</a></span>
+				                        
+			                    		
+			                        
+			                        
+			                       	 	
+			                            
+			                            
+			                                <span class="diID"><a href="javascript:void(0)" class="btn_grL mini" title="거래완료 항목입니다" onclick="showDeCompletePopup(this)" data-value="c13199b9c8ec4583ab41df2f0890e387" data-reason="">거래완료확정</a></span>
+			                            
+			                        
+	                    		
+	                    	
+	                    
+                    
+                </td>
+				<td class="bigo">
+					
+	                <!-- 2026-04-18 15:07:43.0_N -->
+	                
+	                
+		                
+			                
+			                <p>수정불가</p>
+		                
+		                
+					
+                </td>
+            </tr>
+        
+            <tr style="text-align:center;">
+                <td style="width: 30px"><input type="checkbox" name="rthousCheckbox" data-value="97c51b1ce59b4f869e38f8cc145edcfe" title="행체크"></td>
+                <td>
+                    
+                    
+                    26.03.25
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                            월세
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                    
+                        
+                            다가구
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                
+	                <td style="overflow: hidden;text-overflow: ellipsis; white-space:nowrap; cursor:pointer;" title="다가구 SH 가능매물 " onclick="showDetailPopup(this);" data-value="97c51b1ce59b4f869e38f8cc145edcfe">다가구 SH 가능매물 </td>
+                
+                
+            
+                <td>
+                    
+                        
+                        
+                            <script type="text/javascript">document.write(convertPrice('10000'))</script>1억/
+                            <script type="text/javascript">document.write(convertPrice('50'))</script>50만
+                        
+                    
+                </td>
+                <td>
+                	
+      					
+      					
+      					 	
+                    		40㎡/<br>12.10평
+      					
+      				
+                </td>
+                <td>
+                1층/3층
+                
+                
+                </td>
+                <td id="tempGubun">
+                    
+                        
+                    
+                        
+                    
+                        
+                            
+                            
+	                            거래완료
+	                            
+                            
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                	
+                     
+                        
+	                    
+	                    	
+	                    		
+
+	                    		
+	                    		
+	                    			
+		                    		
+		                    		
+		                    		
+			                    		
+				                        	<span class="diID"><a href="javascript:void(0)" class="btn_or mini" id="deleteButton" onclick="showDeletePopup(this)" data-value="97c51b1ce59b4f869e38f8cc145edcfe">삭제</a></span>
+				                        
+			                    		
+			                        
+			                        
+			                       	 	
+			                            
+			                            
+			                                <span class="diID"><a href="javascript:void(0)" class="btn_grL mini" title="거래완료 항목입니다" onclick="showDeCompletePopup(this)" data-value="97c51b1ce59b4f869e38f8cc145edcfe" data-reason="">거래완료확정</a></span>
+			                            
+			                        
+	                    		
+	                    	
+	                    
+                    
+                </td>
+				<td class="bigo">
+					
+	                <!-- 2026-04-18 15:07:49.0_N -->
+	                
+	                
+		                
+			                
+			                <p>수정불가</p>
+		                
+		                
+					
+                </td>
+            </tr>
+        
+            <tr style="text-align:center;">
+                <td style="width: 30px"><input type="checkbox" name="rthousCheckbox" data-value="5360c53753f94828bb1fc888c59641fc" title="행체크"></td>
+                <td>
+                    
+                    
+                    26.01.21
+                </td>
+                <td>
+                    
+                        
+                            전세
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                            다세대
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                
+	                <td style="overflow: hidden;text-overflow: ellipsis; white-space:nowrap; cursor:pointer;" title="lh sh 가능 전세매물 " onclick="showDetailPopup(this);" data-value="5360c53753f94828bb1fc888c59641fc">lh sh 가능 전세매물 </td>
+                
+                
+            
+                <td>
+                    
+                        
+                            <script type="text/javascript">document.write(convertPrice('7500'))</script>7500만/없음
+                        
+                        
+                    
+                </td>
+                <td>
+                	
+      					
+      					
+      					 	
+                    		32.65㎡/<br>9.88평
+      					
+      				
+                </td>
+                <td>
+                3층/4층
+                
+                
+                </td>
+                <td id="tempGubun">
+                    
+                        
+                    
+                        
+                    
+                        
+                            
+                            
+	                            거래완료
+	                            
+                            
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                	
+                     
+                        
+	                    
+	                    	
+	                    		
+
+	                    		
+	                    		
+	                    			
+		                    		
+		                    		
+		                    		
+			                    		
+				                        	<span class="diID"><a href="javascript:void(0)" class="btn_or mini" id="deleteButton" onclick="showDeletePopup(this)" data-value="5360c53753f94828bb1fc888c59641fc">삭제</a></span>
+				                        
+			                    		
+			                        
+			                        
+			                       	 	
+			                            
+			                            
+			                                <span class="diID"><a href="javascript:void(0)" class="btn_grL mini" title="거래완료 항목입니다" onclick="showDeCompletePopup(this)" data-value="5360c53753f94828bb1fc888c59641fc" data-reason="">거래완료확정</a></span>
+			                            
+			                        
+	                    		
+	                    	
+	                    
+                    
+                </td>
+				<td class="bigo">
+					
+	                <!-- 2026-02-04 11:43:14.0_N -->
+	                
+	                
+		                
+			                
+			                <p>수정불가</p>
+		                
+		                
+					
+                </td>
+            </tr>
+        
+            <tr style="text-align:center;">
+                <td style="width: 30px"><input type="checkbox" name="rthousCheckbox" data-value="70ed6af86305441789a233c131b373ec" title="행체크"></td>
+                <td>
+                    
+                    
+                    25.09.15
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                            월세
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                            다세대
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                
+	                <td style="overflow: hidden;text-overflow: ellipsis; white-space:nowrap; cursor:pointer;" title="전용넓은 1층 " onclick="showDetailPopup(this);" data-value="70ed6af86305441789a233c131b373ec">전용넓은 1층 </td>
+                
+                
+            
+                <td>
+                    
+                        
+                        
+                            <script type="text/javascript">document.write(convertPrice('10000'))</script>1억/
+                            <script type="text/javascript">document.write(convertPrice('10'))</script>10만
+                        
+                    
+                </td>
+                <td>
+                	
+      					
+      					
+      					 	
+                    		63.16㎡/<br>19.11평
+      					
+      				
+                </td>
+                <td>
+                1층/4층
+                
+                
+                </td>
+                <td id="tempGubun">
+                    
+                        
+                    
+                        
+                    
+                        
+                            
+                            
+	                            거래완료
+	                            
+                            
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                	
+                     
+                        
+	                    
+	                    	
+	                    		
+
+	                    		
+	                    		
+	                    			
+		                    		
+		                    		
+		                    		
+			                    		
+				                        	<span class="diID"><a href="javascript:void(0)" class="btn_or mini" id="deleteButton" onclick="showDeletePopup(this)" data-value="70ed6af86305441789a233c131b373ec">삭제</a></span>
+				                        
+			                    		
+			                        
+			                        
+			                       	 	
+			                            
+			                            
+			                                <span class="diID"><a href="javascript:void(0)" class="btn_grL mini" title="거래완료 항목입니다" onclick="showDeCompletePopup(this)" data-value="70ed6af86305441789a233c131b373ec" data-reason="">거래완료확정</a></span>
+			                            
+			                        
+	                    		
+	                    	
+	                    
+                    
+                </td>
+				<td class="bigo">
+					
+	                <!-- 2025-10-01 16:14:29.0_N -->
+	                
+	                
+		                
+			                
+			                <p>수정불가</p>
+		                
+		                
+					
+                </td>
+            </tr>
+        
+            <tr style="text-align:center;">
+                <td style="width: 30px"><input type="checkbox" name="rthousCheckbox" data-value="b5884b401e024a30b007479a1ea0a89f" title="행체크"></td>
+                <td>
+                    
+                    
+                    25.08.14
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                            월세
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                            다세대
+                        
+                    
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                
+	                <td style="overflow: hidden;text-overflow: ellipsis; white-space:nowrap; cursor:pointer;" title="다세대 전세" onclick="showDetailPopup(this);" data-value="b5884b401e024a30b007479a1ea0a89f">다세대 전세</td>
+                
+                
+            
+                <td>
+                    
+                        
+                        
+                            <script type="text/javascript">document.write(convertPrice('13000'))</script>1억3000만/
+                            <script type="text/javascript">document.write(convertPrice('10'))</script>10만
+                        
+                    
+                </td>
+                <td>
+                	
+      					
+      					
+      					 	
+                    		40.48㎡/<br>12.25평
+      					
+      				
+                </td>
+                <td>
+                1층/2층
+                
+                
+                </td>
+                <td id="tempGubun">
+                    
+                        
+                    
+                        
+                    
+                        
+                            
+                            
+	                            거래완료
+	                            
+                            
+                        
+                    
+                        
+                    
+                        
+                    
+                </td>
+                <td>
+                	
+                     
+                        
+	                    
+	                    	
+	                    		
+
+	                    		
+	                    		
+	                    			
+		                    		
+		                    		
+		                    		
+			                    		
+				                        	<span class="diID"><a href="javascript:void(0)" class="btn_or mini" id="deleteButton" onclick="showDeletePopup(this)" data-value="b5884b401e024a30b007479a1ea0a89f">삭제</a></span>
+				                        
+			                    		
+			                        
+			                        
+			                       	 	
+			                            
+			                            
+			                                <span class="diID"><a href="javascript:void(0)" class="btn_grL mini" title="거래완료 항목입니다" onclick="showDeCompletePopup(this)" data-value="b5884b401e024a30b007479a1ea0a89f" data-reason="">거래완료확정</a></span>
+			                            
+			                        
+	                    		
+	                    	
+	                    
+                    
+                </td>
+				<td class="bigo">
+					
+	                <!-- 2025-10-01 16:14:40.0_N -->
+	                
+	                
+		                
+			                
+			                <p>수정불가</p>
+		                
+		                
+					
+                </td>
+            </tr>
+        
+        </tbody>
+    </table>
+</div>
+<div class="BD_paging">
+    <form name="pagingForm" action="/jw/rm/manage/getRthousList.do" method="post">
+<input type="hidden" name="currPage" value="1">
+<input type="hidden" name="maxSn" value="10">
+<input type="hidden" name="rthousIsAdmin" value="0">
+<input type="hidden" name="mberId" value="no1korealtor">
+<input type="hidden" name="mi" value="3107">
+<input type="hidden" name="minSn" value="0">
+<input type="hidden" name="rthousLreaId" value="no1korealtor">
+<div class="ac">
+<ul class="pagination">
+<li class="active"><a class="on" title="현재페이지">1</a></li>
+</ul>
+</div>
+</form>
+<script>function goPaging(pageSn){document.pagingForm.currPage.value=pageSn;document.pagingForm.submit();}</script>
+
+</div>
+<form name="registerData" id="registerData" method="post">
+</form>
+<form name="updateData" id="updateData" method="post">
+    <input type="hidden" name="rthousId" id="rthousId">
+</form>
+<form name="fakeSendData" id="fakeSendData" method="post">
+	<input type="hidden" id="uid" name="uid">
+	<input type="hidden" id="treatCode" name="treatCode">
+</form>
+<!-- 상세보기 form -->
+<form name="showDetailData" id="showDetailData" method="post" target="임대주택정보상세보기281138eddb324022a507bafce2009f3d" action="../../rs/search/selectRthousInfo.do">
+	<input type="hidden" name="rthousId" id="detailRthousId" value="281138eddb324022a507bafce2009f3d">
+</form>
+<!-- 버튼 -->
+<div id="Progress_Bar" style="display: none; position: absolute; bottom: 40px; left: 87%; transform: translateX(-50%); z-index: 100;-moz-opacity: 0.8; opacity:.80; filter: alpha(opacity=60);">
+	<img src="/images/web/jw/sub_cnt/progressbar.gif" title="Progress_Bar" style="width:100px;">
+</div>
+<div class="btn_st ar">
+	<!-- 등록 권한이 불확실하여 일단 모두에게 보이도록 유지 -->
+	<input type="hidden" id="pntChk" name="pntChk" value="error">
+	<a href="javascript:void(0)" onclick="showRegisterPopup(event);" title="신규등록" class="blue">신규등록</a>
+	
+		<!-- 로그인만 가능하면 삭제될 것으로 예상되어 일단 특정 권한에 대해서만 가능하도록 변경 -->
+		<a href="javascript:void(0)" onclick="showAllDeletePopup(event)" title="선택삭제" class="red">선택삭제</a>
+	
+</div>
+<script type="text/javascript" src="/js/jquery.ajax-cross-origin.min.js"></script>
+<script>
+	$(document).ready(function(){
+		//중개업소 패널티 조회
+		var mberId = "no1korealtor";
+		var mberTy = "4";
+		var brkrBizrno = "2190150737";
+		var rmAdminLevel = "0";
+		//중개업소일때
+		if ((mberTy == "4" && brkrBizrno != "") || mberTy == "1" || rmAdminLevel == "1"){
+			if(mberTy == "4" && rmAdminLevel != "1"){
+				penaltyInfo();
+			}
+		}
+
+	});
+	// 페이지 접속 했을때 조회
+	function penaltyInfo(event) {
+		var brkrBizrno = "2190150737";
+		brkrBizrno = brkrBizrno.replace(/^\s+|\s+$/g,'');
+		brkrBizrno = brkrBizrno.replace(/\-/g,'');
+		var frmData = document.registerData;
+		//사업자등록번호 체크
+		if(brkrBizrno.length != 10){
+			alert('사업자등록번호를 수정 하셔야합니다. 마이페이지로 이동됩니다.');
+			frmData.target = "" ;
+			frmData.action = "/jw/sb/sbscrb/selectSbscrbInfo.do";
+		    frmData.submit();
+		}else{
+			//패널티 조회
+			$.ajax({
+				//url : "/js/penalty2.json",
+				url : "/proxy?bizNo="+brkrBizrno,
+				type : 'GET',
+				dataType:'json',
+				success : function(data) {
+					penaltySave(data.result.penaltyList);
+				},
+				error: function (data,error,xhr) {
+					alert("오류가 발생했습니다.\n 관리자에게 문의해주세요.");
+				}
+			});
+		}
+	}
+
+	function penaltySave(data) {
+		var writeAt = null;
+		$.ajax({
+			url : 'getPenaltyInfo.do',
+			type : 'POST',
+			data: JSON.stringify(data),
+			dataType:'json',
+			contentType: "application/json",
+			success : function(data) {
+				writeAt = data.writeAt;
+				if(writeAt == "Y" || writeAt == "N"){
+					$('#pntChk').val(writeAt);
+				}else{
+					$('#pntChk').val('error');
+				}
+			},
+			error: function(xhr, status, error) {
+				alert("오류가 발생했습니다.\n 관리자에게 문의해주세요.");
+			}
+		});
+	}
+
+	$(function(){
+		// jquery ui datepicker 사용
+		// 2024-04-02 datepicker ui 언어 한글 적용
+	 	function setDatepicker(){
+		 	var rthousRgsdeFrom = $('#rgsdeFrom').val();
+		 	var rthousRgsdeTo = $('#rgsdeTo').val();
+			var datepickerOpt = {
+				dateFormat: "yy-mm-dd", 
+		 		maxDate: 0,
+		 		prevText: '이전 달',
+		 		nextText: '다음 달',
+		 		monthNames: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+		 		monthNamesShort: ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'],
+		 		dayNames: ['일', '월', '화', '수', '목', '금', '토'],
+		 		dayNamesShort: ['일', '월', '화', '수', '목', '금', '토'],
+		 		dayNamesMin: ['일', '월', '화', '수', '목', '금', '토'],
+		 		showMonthAfterYear: true,
+		 		yearSuffix: ''
+		 	};
+
+		 	$('#rthousRgsde').empty();
+		 	$('#rthousRgsde').append('<strong>등록일</strong><input type="text" class="optDate" name="rthousRgsdeFrom" id="rthousRgsdeFrom" value="' + rthousRgsdeFrom + '" onchange="selectDate(this)" style="text-align:center;" placeholder="yyyy-mm-dd"> ~ <input type="text" class="optDate" name="rthousRgsdeTo" id="rthousRgsdeTo" value="' + rthousRgsdeTo + '" onchange="selectDate(this)" style="text-align:center;" placeholder="yyyy-mm-dd">');
+		 	$('#rthousRgsdeFrom').datepicker(datepickerOpt);
+		 	$('#rthousRgsdeTo').datepicker(datepickerOpt);
+	 	}
+
+	 	setDatepicker();
+
+		// 테이블 전체 선택/해제
+		$('#rthousAllChk').click(function(){
+			if($(this).prop('checked')){
+				$('input[name=rthousCheckbox]').prop('checked', true);
+			}else{
+				$('input[name=rthousCheckbox]').prop('checked', false);
+			}
+		});
+	});
+
+	// 검색 버튼 클릭
+	function selectList(index) {
+		// 보증금, 월세, 공급면적 hidden value
+		$('#rthousGtnFrom').val( !$('#gtnFrom').val() ? 0 : $('#gtnFrom').val() );
+		$('#rthousGtnTo').val( !$('#gtnTo').val() ? 900000000: $('#gtnTo').val() );
+		$('#rthousMthtFrom').val( !$('#mthtFrom').val() ? 0 : $('#mthtFrom').val() );
+		$('#rthousMthtTo').val( !$('#mthtTo').val() ? 900000000 : $('#mthtTo').val() );
+		$('#rthousHpprFrom').val( !$('#hpprFrom').val() ? 0 : $('#hpprFrom').val() );
+		$('#rthousHpprTo').val( !$('#hpprTo').val() ? 900000000 : $('#hpprTo').val() );
+
+		//	검색 validation
+		// 보증금 최소 > 최대인 경우
+	    if(($('#rthousGtnFrom').val() && $('#rthousGtnTo').val()) && (parseInt($('#rthousGtnFrom').val()) > parseInt($('#rthousGtnTo').val()))){
+	    	alert('보증금을 확인하세요.');
+	    	$('#gtnFrom').focus();
+	    	return false;
+	    }
+		// 월세 최소 > 최대인 경우
+	    if(($('#rthousMthtFrom').val() && $('#rthousMthtTo').val()) && (parseInt($('#rthousMthtFrom').val()) > parseInt($('#rthousMthtTo').val()))){
+	    	alert('월세를 확인하세요.');
+	    	$('#mthtFrom').focus();
+	    	return false;
+	    }
+		// 면적 최소 > 최대인 경우
+	    if(($('#rthousHpprFrom').val() && $('#rthousHpprTo').val()) && (parseInt($('#rthousHpprFrom').val()) > parseInt($('#rthousHpprTo').val()))){
+	    	alert('공급 면적을 확인하세요.');
+	    	$('#hpprFrom').focus();
+	    	return false;
+	    }
+
+		if($('#rthousHpprFrom').val() == '.'){
+			alert('공급 면적을 확인하세요.');
+	    	$('#hpprFrom').focus();
+	    	return false;
+		}
+
+		if($('#rthousHpprTo').val() == '.'){
+			alert('공급 면적을 확인하세요.');
+	    	$('#hpprTo').focus();
+	    	return false;
+		}
+
+		var totalCnt = "10";
+		if (index == 1){
+			$("#searchRthous").attr("action", "/jw/rm/manage/getRthousList.do?mi=3107").submit();
+		}
+		if (index == 2){
+			var result = confirm("엑셀 다운로드 하시겠습니까?");
+			if(result) {
+
+			} else {
+				 return false;
+			}
+			$("#searchRthous").attr("action", "/jw/rm/manage/getRthousListExcelDownload.do").submit();
+		}
+	    return false;
+	}
+
+	// 신규등록 버튼 클릭
+	function showRegisterPopup(event) {
+		// 20200727 법무사(7), 개인(9)은 주택등록 할 수 없음
+		var mberId = "no1korealtor";
+		var mberTy = "4";
+		var brkrBizrno = "2190150737";
+		var rmAdminLevel = "0";
+		var frmData = document.registerData;
+		var brkrRprsntv = "조항준";
+		var brkrRegistNumber = "923800004131";
+		var pntChk = $('#pntChk').val();
+
+		if(mberTy == "8" || mberTy == "7" || (mberTy == "9" && rmAdminLevel != "1")){
+			alert('중개업소만 주택등록이 가능합니다.');
+			frmData.target = "" ;
+			frmData.action = "" ;
+		    //frmData.submit();
+		    event.stopImmediatePropagation();
+		}else if(mberTy == "4" && brkrBizrno == "" && rmAdminLevel != 1){
+			alert('사업자등록번호를 등록 하셔야합니다. 마이페이지로 이동됩니다.');
+			frmData.target = "" ;
+			frmData.action = "/jw/sb/sbscrb/selectSbscrbInfo.do";
+		    frmData.submit();
+		}else if(mberTy == "4" && (brkrRprsntv == "" || brkrRegistNumber == "") && rmAdminLevel != 1){
+			alert('중개업소 정보를 등록 하셔야합니다. 마이페이지로 이동됩니다.');
+			frmData.target = "" ;
+			frmData.action = "/jw/sb/sbscrb/selectSbscrbInfo.do";
+			frmData.submit();
+		}else if ((mberTy == "4" && brkrBizrno != "") || mberTy == "1" || rmAdminLevel == "1"){
+			//중개업소일때
+			if(mberTy == "4" && rmAdminLevel != "1"){
+				if(pntChk == "N"){
+					alert("매물등록금지 패널티가 적용되어 등록할 수 없습니다.");
+					event.stopImmediatePropagation();
+					return;
+				}
+			}
+			window.open("", "임대주택등록", "width=1000,height=900,status=no,toolbar=no,menubar=no,location=no,scrollbars=yes");
+		    frmData.target = "임대주택등록" ;
+		    frmData.action = "getRegInitInfo.do" ;
+		    frmData.submit();
+		    event.stopImmediatePropagation(); 	// 페이지 새로고침 방지, 같은 DOM에 걸린 다른 이벤트에도 전파 막음
+		}else{
+			event.stopImmediatePropagation();
+		}
+	}
+
+	//수정 버튼 클릭
+	function showUpdatePopup(element) {
+		// 20200727 법무사(7), 개인(9)은 주택등록 할 수 없음
+		var mberTy = "4";
+		var brkrBizrno = "2190150737";
+		var rmAdminLevel = "0";
+		var frmData = document.updateData;
+		var brkrRprsntv = "조항준";
+		var brkrRegistNumber = "923800004131";
+
+		if(mberTy == "7" || (mberTy == "9" && rmAdminLevel != "1")){
+			alert('중개업소만 수정이 가능합니다.');
+			frmData.target = "" ;
+			frmData.action = "" ;
+		    //frmData.submit();
+		    event.stopImmediatePropagation();
+		}else if(mberTy == "4" && brkrBizrno == "" && rmAdminLevel != 1){
+			alert('사업자등록번호를 등록 하셔야합니다. 마이페이지로 이동됩니다.');
+			frmData.target = "" ;
+			frmData.action = "/jw/sb/sbscrb/selectSbscrbInfo.do";
+		    frmData.submit();
+		    event.stopImmediatePropagation();
+		}else if(mberTy == "4" && (brkrRprsntv == "" || brkrRegistNumber == "") && rmAdminLevel != 1){
+			alert('중개업소 정보를 등록 하셔야합니다. 마이페이지로 이동됩니다.');
+			frmData.target = "" ;
+			frmData.action = "/jw/sb/sbscrb/selectSbscrbInfo.do";
+			frmData.submit();
+			event.stopImmediatePropagation();
+		}else if((mberTy == "4" && brkrBizrno != "") || mberTy == "1" || rmAdminLevel == "1"){
+			$('#rthousId').val($(element).data('value'));
+			window.open("", "임대주택수정" + $(element).data('value'), "width=1000,height=900,status=no,toolbar=no,menubar=no,location=no,scrollbars=yes");
+			frmData.target = "임대주택수정" + $(element).data('value');
+			frmData.action = "getRthous.do" ;
+			frmData.submit() ;
+		}else{
+			event.stopImmediatePropagation();
+		}
+	}
+
+	// 삭제버튼 클릭
+	function showDeletePopup(element) {
+		//var check = confirm("거래가 완료된 매물의 경우 거래완료 버튼을 눌러주세요.\n거래완료 시 노출이 종료됩니다.\n\n삭제된 매물은 조회 및 복구할 수 없습니다.\n정말 삭제하시겠습니까?");
+		var check = confirm("거래가 완료된 매물의 경우 거래완료 버튼을 눌러주세요.\n거래완료 시 노출이 종료됩니다.\n\n삭제된 매물은 삭제후 3개월까지 복구할 수 있으며 그이후 조회 및 복구할 수 없습니다.\n정말 삭제하시겠습니까?");
+		if(check){
+			deleteRthous($(element).data('value'));
+		}
+	}
+
+	// 선택삭제 버튼 클릭
+	function showAllDeletePopup(event) {
+		var chkItems = $('input[name=rthousCheckbox]:checked').length;
+
+		if(chkItems == 0){
+			event.stopImmediatePropagation();  	// 페이지 새로고침 방지, 같은 DOM에 걸린 다른 이벤트에도 전파 막음
+			alert('선택된 매물이 없습니다.');
+		}else{
+			//var check = confirm("삭제된 매물은 조회 및 복구할 수 없습니다. 삭제하시겠습니까?");
+			var check = confirm("삭제된 매물은 삭제후 3개월까지 복구할 수 있으며 그이후 조회 및 복구할 수 없습니다.\n정말 삭제하시겠습니까?");
+			if(check){
+				var ids = [];
+				$('input[name=rthousCheckbox]').each(function(idx, item){
+					if($(item).prop('checked')){
+						ids.push($(item).data('value'));
+					}
+				})
+				deleteRthous(ids);
+			}else{
+		        event.stopImmediatePropagation();
+			}
+		}
+	}
+
+	// 삭제할 id 서버로 전송
+	function deleteRthous(ids){
+		$.ajax({
+			//url : 'deleteRthous.do', //request 보낼 서버의 경로
+			url : 'deactivateRthous.do', //request 보낼 서버의 경로(24.07.05 삭제(비활성화)로 변경)
+			type : 'POST', // 메소드(get, post, put 등)
+			data: {'rthousIds': ids} , //보낼 데이터
+			traditional : true,
+			success : function(data) { //서버로부터 정상적으로 응답이 왔을 때 실행
+				//location.reload();
+				//console.log("삭제되었습니다.");
+			},error: function (data) {
+				alert("오류가 발생했습니다.\n 관리자에게 문의해주세요.");
+			}
+			, beforeSend: function () {
+	              var width = 0;
+	              var height = 0;
+	              var left = 0;
+	              var top = 0;
+	              width = 50;
+	              height = 50;
+	              top = ( $(window).height() - height ) / 2 + $(window).scrollTop();
+	              left = ( $(window).width() - width ) / 2 + $(window).scrollLeft();
+
+	              if($("#div_ajax_load_image").length != 0) {
+	                     $("#div_ajax_load_image").css({
+	                            "top": top+"px",
+	                            "left": left+"px"
+	                     });
+	                     $("#div_ajax_load_image").show();
+	              } else {
+	                     $('body').append('<div id="div_ajax_load_image" style="position:absolute; top:' + top + 'px; left:' + left + 'px; width:' + width + 'px; height:' + height + 'px; z-index:9999; margin:auto; padding:0; "><img src="/images/com/loding.gif" style="width:50px; height:50px;"></div>');
+	              }
+	       }, complete: function () {
+                $("#div_ajax_load_image").hide();
+                location.reload();
+	       }
+		});
+	}
+	
+	// 완전삭제버튼 클릭
+	function showRealDeletePopup(element) {
+		var check = confirm("완전삭제 이후 조회 및 복구할 수 없습니다.\n정말 삭제하시겠습니까?");
+		if(check){
+			realDeleteRthous($(element).data('value'));
+		}
+	}
+	
+	// 완전삭제할 id 서버로 전송
+	function realDeleteRthous(ids){
+		$.ajax({
+			url : 'deleteRthous.do', //request 보낼 서버의 경로
+			type : 'POST', // 메소드(get, post, put 등)
+			data: {'rthousIds': ids} , //보낼 데이터
+			traditional : true,
+			success : function(data) { //서버로부터 정상적으로 응답이 왔을 때 실행
+				//location.reload();
+				//console.log("삭제되었습니다.");
+			},error: function (data) {
+				alert("오류가 발생했습니다.\n 관리자에게 문의해주세요.");
+			}
+			, beforeSend: function () {
+	              var width = 0;
+	              var height = 0;
+	              var left = 0;
+	              var top = 0;
+	              width = 50;
+	              height = 50;
+	              top = ( $(window).height() - height ) / 2 + $(window).scrollTop();
+	              left = ( $(window).width() - width ) / 2 + $(window).scrollLeft();
+
+	              if($("#div_ajax_load_image").length != 0) {
+	                     $("#div_ajax_load_image").css({
+	                            "top": top+"px",
+	                            "left": left+"px"
+	                     });
+	                     $("#div_ajax_load_image").show();
+	              } else {
+	                     $('body').append('<div id="div_ajax_load_image" style="position:absolute; top:' + top + 'px; left:' + left + 'px; width:' + width + 'px; height:' + height + 'px; z-index:9999; margin:auto; padding:0; "><img src="/images/com/loding.gif" style="width:50px; height:50px;"></div>');
+	              }
+	       }, complete: function () {
+                $("#div_ajax_load_image").hide();
+                location.reload();
+	       }
+		});
+	}
+
+	// 복구버튼 클릭
+	function showRecoveryPopup(element) {
+		var check = confirm("삭제된 매물을 북구하시겠습니까?");
+		if(check){
+			recoveryRthous($(element).data('value'));
+		}
+	}
+	
+	// 복구할 id 서버로 전송
+	function recoveryRthous(ids){
+		$.ajax({
+			url : 'recoveryRthous.do', //request 보낼 서버의 경로
+			type : 'POST', // 메소드(get, post, put 등)
+			data: {'rthousIds': ids} , //보낼 데이터
+			traditional : true,
+			success : function(data) { //서버로부터 정상적으로 응답이 왔을 때 실행
+				//location.reload();
+				//console.log("복구되었습니다.");
+			},error: function (data) {
+				alert("오류가 발생했습니다.\n 관리자에게 문의해주세요.");
+			}
+			, beforeSend: function () {
+	              var width = 0;
+	              var height = 0;
+	              var left = 0;
+	              var top = 0;
+	              width = 50;
+	              height = 50;
+	              top = ( $(window).height() - height ) / 2 + $(window).scrollTop();
+	              left = ( $(window).width() - width ) / 2 + $(window).scrollLeft();
+
+	              if($("#div_ajax_load_image").length != 0) {
+	                     $("#div_ajax_load_image").css({
+	                            "top": top+"px",
+	                            "left": left+"px"
+	                     });
+	                     $("#div_ajax_load_image").show();
+	              } else {
+	                     $('body').append('<div id="div_ajax_load_image" style="position:absolute; top:' + top + 'px; left:' + left + 'px; width:' + width + 'px; height:' + height + 'px; z-index:9999; margin:auto; padding:0; "><img src="/images/com/loding.gif" style="width:50px; height:50px;"></div>');
+	              }
+	       }, complete: function () {
+                $("#div_ajax_load_image").hide();
+                location.reload();
+	       }
+		});
+	}
+	
+	// 거래완료 버튼 클릭 -> 서버에 거래완료 요청
+	function showCompletePopup(element) {
+		//var check = confirm("거래 완료 상태로 수정하시겠습니까?");
+		var check = confirm("거래 완료 상태로 수정 후 해제할 수 없습니다.\n거래 완료 상태로 수정하시겠습니까?");
+		if(check){
+			var check_new = confirm("거래완료확정후 15일초과시에는 수정이 불가하며 삭제만 가능합니다.\n그래도 거래완료확정 하시겠습니까?");
+			if(check_new){
+				completeRthous($(element).data('value'));
+			}
+		}
+	}
+
+	// 거래완료 id 서버로 전송
+	function completeRthous(ids){
+		$.ajax({
+			url : 'updateRthousStsComp.do', //request 보낼 서버의 경로
+			type : 'POST', // 메소드(get, post, put 등)
+			data: {'rthousId': ids} , //보낼 데이터
+			traditional : true,
+			success : function(data) { //서버로부터 정상적으로 응답이 왔을 때 실행
+				location.reload();
+			}
+		});
+	}
+
+	// 거래완료 해제 버튼 클릭 -> 서버에 거래완료 해제 요청
+	function showDeCompletePopup(element) {
+		//var rCode = $(this).data('reason');
+		var rmAdminLevel = "0";
+		if(rmAdminLevel != 1){
+			alert('거래가 완료된 매물입니다.\n거래 완료 상태를 해제할 수 없습니다.');
+			return false;
+		}
+
+		if($(element).data('reason') == "CMPL"){
+			alert("거래완료로 신고된 매물입니다. 해제가 불가능합니다.");
+			return false;
+		}else{
+			var check = confirm("거래 완료 상태를 해제하시겠습니까?");
+			if(check){
+				deCompleteRthous($(element).data('value'));
+			}
+		}
+
+	}
+
+	// 거래완료 해제 id 서버로 전송
+	function deCompleteRthous(ids){
+		$.ajax({
+			url : 'updateRthousStsDeComp.do', //request 보낼 서버의 경로
+			type : 'POST', // 메소드(get, post, put 등)
+			data: {'rthousId': ids} , //보낼 데이터
+			traditional : true,
+			success : function(data) { //서버로부터 정상적으로 응답이 왔을 때 실행
+				location.reload();
+			}
+		});
+	}
+
+	// 숫자만 입력가능하도록 input 제어
+	function onlyNum(evt, idx){
+		var code = (evt.which) ? evt.which : evt.keyCode;
+		if ((code< 48) || (code > 57)){
+			if(code != 46 || idx == 1){
+				alert("숫자만 입력 가능합니다.");
+		        evt.returnValue=false;
+			}
+	    }
+	}
+
+	// 숫자 외 문자 확인
+	function checkNum(element){
+    	var pattern_eng = /[a-zA-Z]/;	// 문자
+    	var pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/; // 특수문자
+    	var pattern_kor = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/; // 한글체크
+
+    	if(pattern_eng.test(element.value)){
+    		element.value = element.value.replace(pattern_eng, '');
+    	}
+
+    	if(pattern_spc.test(element.value)){
+    		element.value = element.value.replace(pattern_spc, '');
+    	}
+
+    	if(pattern_kor.test(element.value)){
+    		alert("숫자만 입력 가능합니다.");
+    		element.value = element.value.replace(pattern_kor, '');
+    	}
+	}
+
+	// 면적 계산하기(제곱미터 → 평)
+	function calcArea(element){
+		if(element.id == 'hpprTo'){
+			$('#scrhAreaTo').text((element.value * 0.3025).toFixed(2));
+		}
+		if(element.id == 'hpprFrom'){
+			$('#scrhAreaFrom').text((element.value * 0.3025).toFixed(2));
+		}
+	}
+
+	// 임대유형 변경 이벤트
+	function selectRentStle(){
+		var selItem = $('#rthousRentStle').val();
+
+		if(selItem == 1){
+			$('#mthtFrom').attr('disabled', true);
+			$('#mthtTo').attr('disabled', true);
+			$('#mthtFrom').val('');
+			$('#mthtTo').val('');
+			$('#rthousMthtFrom').val(0);
+			$('#rthousMthtTo').val(900000000);
+		}else{
+			$('#mthtFrom').attr('disabled', false);
+			$('#mthtTo').attr('disabled', false);
+		}
+	}
+
+	// 등록일 선택 이벤트
+	function selectDate(element){
+		var selRgsdeFrom = $('#rthousRgsdeFrom').val();
+		var selRgsdeTo = $('#rthousRgsdeTo').val();
+		if((selRgsdeFrom && selRgsdeTo) && (selRgsdeFrom > selRgsdeTo)){
+			alert('등록일을 확인하세요.');
+			$(element).val('');
+		}
+	}
+
+	//매물명칭 클릭 시 상세보기 팝업
+	function showDetailPopup(element) {
+		var rthousId = $(element).data('value');
+        $('#detailRthousId').val(rthousId);
+        window.open("", "임대주택정보상세보기" + rthousId, "width=840,height=900,status=no,toolbar=no,menubar=no,location=no,scrollbars=yes");
+        var frmData = document.showDetailData;
+        frmData.target = "임대주택정보상세보기" + rthousId;
+		var tempGubun = $('#tempGubun').text().trim();
+		if (tempGubun == '삭제매물') {
+	        frmData.action = "../../rs/search/selectRthousInfo.do?tempGubun=ss";
+		} else {
+	        frmData.action = "../../rs/search/selectRthousInfo.do";
+		}
+        frmData.submit();
+	}
+
+	// 중개사 처리 -> KISO 서버에 보내기
+	var treatCode = "";
+	var reasonCode = "";
+	var fakeSendForm = $("#fakeSendData");
+	function getCode(sel) {
+		treatCode = sel.value;
+	}
+	$("select[name=treat]").on("propertychange change keyup paste input",function(){
+		var currentVal = $(this).val();
+	    if(currentVal == treatCode) {
+	        return;
+	    }
+	    treatCode = currentVal;
+	});
+
+	$(".fakeSend").on("click",function(){
+		//tc = treatCode , rc = reasonCode
+		var tc = $(this).parents('td').find('select').val();
+		reasonCode = $(this).data('reason');
+
+		if(tc == ""){
+			alert("처리상태를 선택해주세요.");
+			return false;
+		}
+
+		if(reasonCode != "CMPL" && tc == "CMPL"){
+			alert("거래완료 처리는 신고사유가 거래완료일때만 가능합니다.");
+			return false;
+		}
+		var check = confirm("처리상태를 변경하시겠습니까?");
+		if(check){
+			$("#uid").val($(this).data('value'));
+			$("#treatCode").val(tc);
+			fakeSendRthous(fakeSendForm.serialize());
+		}
+	});
+
+
+	// 중개사 처리 KISO 서버에 보내고 응답
+	function fakeSendRthous(fdata){
+		$.ajax({
+			url : 'updateFakeSend.do', //request 보낼 서버의 경로
+			type : 'POST', // 메소드(get, post, put 등)
+			data: fdata, //보낼 데이터
+			traditional : true,
+			success : function(data) { //서버로부터 정상적으로 응답이 왔을 때 실행
+				//location.reload();
+			},
+			error: function (data) {
+				alert("오류가 발생했습니다.\n 관리자에게 문의해주세요.");
+			}
+		});
+
+		$.ajax({
+			url : 'https://landcenter.kiso.or.kr:11000/lhco/R4HAUYtTEGyB0JitJzNAYRNXsWCWEd1I/clean/3.0/receiveRealtorTreatResult',
+			type : 'GET', // 메소드(get, post, put 등)
+			data: fdata, //보낼 데이터
+			dataType: "jsonp",
+			jsonpCallback:"callbackData",
+			success : function(data) { //서버로부터 정상적으로 응답이 왔을 때 실행
+				location.reload();
+			},
+			error: function (data,error) {
+				if(data.readyState == 4 && data.status == 200){
+    				alert("처리되었습니다.");
+            		location.reload();
+				}else{
+					//alert(data.message+"\n 관리자에게 문의해주세요.");
+    				alert("오류가 발생했습니다.\n 관리자에게 문의해주세요.");
+				}
+			}
+
+		});
+	}
+
+	//20210621 주택 등록 시 패널티 정보 조회 수정
+	function searchPenaltyInfo(pdata){
+	    var writeAt = null;
+		$.ajax({
+			url : 'getPenaltyInfo.do',
+			type : 'GET',
+			data: "bizNo="+pdata, //보낼 데이터
+			dataType:'json',
+			success : function(data) { //서버로부터 정상적으로 응답이 왔을 때 실행
+				writeAt = data.writeAt;
+			},
+			beforeSend: function (){
+				$("#Progress_Bar").show();
+			},
+			complete : function (){
+				$("#Progress_Bar").hide();
+			},
+			error: function(xhr, status, error) {
+				console.log("오류가 발생했습니다.\n 관리자에게 문의해주세요.");
+			}
+		});
+		if(writeAt == "Y" || writeAt == "N"){
+			return writeAt;
+		}else{
+			return "error";
+		}
+	}
+
+	// 마지막으로 수정한지 2달 지났지만 거래가능한 매물 옆 빨간 느낌표 클릭 시 마지막 수정일 알려주는 함수
+	function noShowChk(updde) {
+		var updde = updde;
+		alert('마지막 수정날짜는 ' + updde + ' 입니다.\n\n2개월 지난 매물은 주택검색 화면에 노출되지 않습니다.');
+	}
+
+</script>
+
+								
+                            </div>
+                            
+
+
+								
+								
+                        </section>
+                        <!-- // sub 내용-->
+						<!-- 챗봇 -->
+						<!-- <div class="link-chatbot-pc">
+							<a title="전세임대 챗봇상담" href="#chatbot"><img src="/images/web/jw/layout/chatbot_icon_04.png" alt="전세임대챗봇 아이콘"></a>
+						</div> -->
+                    </div>
+                </div>
+                <!-- //container -->
+                <!-- footer -->
+                
+
+
+<!-- footer -->
+        <footer id="footer">
+            <div class="foot_wrap">
+                <div class="foot_top">
+                    <div class="logo">
+                        <a href="/jw/main.do"><span class="sr-only">전세임대포털</span></a>
+                    </div>
+                </div>
+                <div class="foot_body">
+                    <div class="foot_info">
+                        <ul class="info_list">
+                            <li><a href="/jw/utility/privacy.do?mi=3009">개인정보처리방침</a></li>
+                            <li><a href="/jw/utility/fakeSale.do?mi=4140">매물신고운영</a></li>
+                            <li><a href="/jw/utility/sitemap.do?mi=3011">사이트맵</a></li>
+                            <li><a href="/jw/utility/location.do?mi=3012">찾아오시는 길</a></li>
+							<li><a href="javascript:;" style="pointer-events: none; font-size: 1.2rem;">홈페이지 오류 문의(🕘09:00~12:00, 13:00~18:00) 070-4018-1095</a></li> 
+                        </ul>
+                    </div>
+                    <div class="foot_add">
+                        <ul class="add_list">
+                            <li>
+                                <address>(우)52852 경상남도 진주시 충의로 19</address>
+                            </li>
+                            <li>전세임대상담 : 1670-0002</li>
+                        </ul>
+                    </div>
+                    <p class="copyright">Copyright © KOREA LAND &amp; HOUSING CORPORATION All Rights Reserved.</p>
+                </div>
+                <div class="foot_etc">
+                    <ul class="etc_list">
+                        <li>
+                            <a href="https://www.molit.go.kr/portal.do" target="_blank" title="새창" rel="noopener noreferrer" class="etc_link">
+                                <img src="/images/layout/ft_etc_logo1.png" alt="국토교통부 로고">
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.lh.or.kr" target="_blank" title="새창" rel="noopener noreferrer" class="etc_link">
+                                <img src="/images/layout/ft_etc_logo2.png" alt="살고 싶은 집과 도시로 국민의 희망을 가꾸는 기업 LH 로고">
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </footer>
+        <!--// footer -->
+                <!-- // footer -->
+            </div>
+    <script type="text/javascript" src="/js/template/common.js"></script>
+   
+		<!-- menuForm -->
+        
+
+
+<!--공통 메뉴 Form -->
+<form name="mainMenuForm" id="mainMenuForm" method="post">
+	<input type="hidden" name="mi" id="nowMenuId" value="3107">
+	<input type="hidden" name="paramNm" id="paramNm" value="">
+	<input type="hidden" name="paramVal" id="paramVal" value="">
+</form>
+<!--/공통 메뉴 Form -->
+	
+<script>
+$(function() {
+	
+	//공통 submit
+	$(".menuFormBtn").click(function(){
+		var paramVal = $(this).attr('data-param'); 
+		var paramNm = $(this).attr('data-nm');
+		var paramUrl = $(this).attr('data-url');
+		$("#paramVal").val(paramVal);
+		$("#paramNm").val(paramNm);
+		setTrimMenuId();
+		$("#mainMenuForm").attr('action', paramUrl).submit();
+	});
+	
+});
+
+//파라미터 페이지 이동 
+function goParamPage( setVal, setNm, setUrl ) {
+	$("#paramNm").val(setNm);
+	$("#paramVal").val(setVal);
+	setTrimMenuId();
+	$("#mainMenuForm").attr('action', setUrl).submit();
+};
+
+//메뉴 아이디 공백제거
+function setTrimMenuId(){
+	var nowMenuId = $.trim($("#nowMenuId").val());
+	$("nowMenuId").val(nowMenuId);
+};
+</script>
+	
+	 
+	
+	
+
+	
+        <!-- /menuForm -->
+    
+
+
+<div id="ui-datepicker-div" class="ui-datepicker ui-widget ui-widget-content ui-helper-clearfix ui-corner-all"></div>
+                <footer class="site-footer">
+        <div class="site-footer-inner">
+            <div class="footer-links">
+                <a href="#">회사소개</a>
+                <a href="#" style="color: #fca5a5;">개인정보처리방침</a>
+                <a href="#">이용약관</a>
+            </div>
+            <div class="footer-info">
+                <strong class="footer-strong">신대림공인중개사사무소 (제호: 공인중개사소식지)</strong>
+                <span>대표/발행·편집인: 조항준</span> <span>등록번호: 서울, 아53763</span> <span>등록일자: 2021년 06월 14일</span><br>
+                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 02-375-4489</span> <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
+            </div>
+        </div>
+    </footer>
+</body></html>

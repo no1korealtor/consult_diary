@@ -1,0 +1,36 @@
+Control Identifiers:
+
+Dialog - '계약서번호 : 48736583 확인설명서번호 : 38774510'    (L156, T22, R1066, B1037)
+['Dialog', '계약서번호 : 48736583 확인설명서번호 : 38774510Dialog', '계약서번호 : 48736583 확인설명서번호 : 38774510']
+child_window(title="계약서번호 : 48736583 확인설명서번호 : 38774510", control_type="Window")
+   | 
+   | Pane - ''    (L159, T48, R1056, B1034)
+   | ['Pane', 'Pane0', 'Pane1']
+   | child_window(auto_id="68668", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L160, T85, R1055, B1033)
+   |    | ['Pane2']
+   |    | child_window(auto_id="68684", control_type="Pane")
+   |    | 
+   |    | Pane - ''    (L160, T49, R1055, B85)
+   |    | ['Pane54']
+   |    | child_window(auto_id="68670", control_type="Pane")
+   | 
+   | TitleBar - ''    (L175, T25, R1063, B48)
+   | ['TitleBar']
+   |    | 
+   |    | Menu - '시스템'    (L164, T30, R186, B52)
+   |    | ['Menu', '시스템', '시스템Menu', '시스템0', '시스템1']
+   |    | child_window(title="시스템", auto_id="MenuBar", control_type="MenuBar")
+   |    | 
+   |    | Button - '최소화'    (L924, T23, R971, B48)
+   |    | ['Button4', '최소화Button', '최소화']
+   |    | child_window(title="최소화", control_type="Button")
+   |    | 
+   |    | Button - '최대화'    (L971, T23, R1017, B48)
+   |    | ['최대화', 'Button5', '최대화Button']
+   |    | child_window(title="최대화", control_type="Button")
+   |    | 
+   |    | Button - '닫기'    (L1017, T23, R1064, B48)
+   |    | ['닫기', '닫기Button', 'Button6']
+   |    | child_window(title="닫기", control_type="Button")

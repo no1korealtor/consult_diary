@@ -1,0 +1,2487 @@
+<!DOCTYPE html>
+<!-- saved from url=(0054)https://jeonse.lh.or.kr/jw/rm/manage/getRegInitInfo.do -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0">
+		<link rel="stylesheet" href="./lh_files/common_v1.css"> <!-- 공통 common_v1 -->
+		<link rel="stylesheet" href="./lh_files/con_com.css" media="all"> <!-- 공통 con_com -->
+		<link rel="stylesheet" href="./lh_files/webfont.css" media="all"> <!-- 공통 webfont -->
+		<link rel="stylesheet" href="./lh_files/layout.css" media="all">
+		<link rel="stylesheet" href="./lh_files/sub_cnt.css" media="all">
+		<link rel="stylesheet" href="./lh_files/main.css" media="all">
+		<link href="./lh_files/ntt.css" rel="stylesheet">
+        <link href="./lh_files/sub.css" rel="stylesheet">
+        <link href="./lh_files/jquery-ui.min.css" rel="stylesheet">
+        <link href="./lh_files/rtm.css" rel="stylesheet">
+        <script type="text/javascript" src="./lh_files/html5shiv.js.다운로드"></script>
+		<script type="text/javascript" src="./lh_files/jquery.min.js.다운로드"></script>
+		<script type="text/javascript" src="./lh_files/jquery-ui.min.js.다운로드"></script>
+        <script type="text/javascript" src="./lh_files/jquery.form.min.js.다운로드"></script>
+		<script type="text/javascript" src="./lh_files/jquery.easing.1.3.js.다운로드"></script>
+		<script type="text/javascript" src="./lh_files/jquery.bpopup.min.js.다운로드"></script>
+		<script type="text/javascript" src="./lh_files/common.js.다운로드"></script>
+
+		<!-- 다음 주소 찾기  -->
+		<script src="./lh_files/postcode.v2.js.다운로드"></script>
+		<!-- kakao map -->
+		
+<!-- <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=2b88a607104553258f58133b5169c645&libraries=services,clusterer,drawing"></script> -->
+<!-- <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=77bd788fabed856e506b18e7d6f73be0&libraries=services,clusterer,drawing"></script> -->
+
+<!-- <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=3258652c8a02a5ec3173c8f743b12df9&libraries=services,clusterer,drawing"></script> -->
+<!-- <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8e4a8236b1984bb693d2dc08d0db32b9&libraries=services,clusterer,drawing"></script> -->
+<!-- <script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=cabc6acb46d768332fd6b63836ce566d&libraries=services,clusterer,drawing"></script>-->
+<!-- ������ �ȳ����� �Ʒ� ���� -->
+<!--<script src="//dapi.kakao.com/v2/maps/sdk.js?appkey=bfb5572df41acc301d138b201808622e&libraries=services,clusterer,drawing"></script>-->
+<script src="./lh_files/sdk.js.다운로드"></script><script charset="UTF-8" src="./lh_files/kakao.js.다운로드"></script><script charset="UTF-8" src="./lh_files/services.js.다운로드"></script><script charset="UTF-8" src="./lh_files/clusterer.js.다운로드"></script><script charset="UTF-8" src="./lh_files/drawing.js.다운로드"></script>
+
+
+		<title>신규 매물 등록 - 전세임대포털</title>
+		<link rel="shortcut icon" type="image/x-icon" href="https://jeonse.lh.or.kr/images/web/jw/layout/logo.jpg">
+		<style>
+			.tab_st2_box a{
+				padding: 8px 5px;
+			}
+			.box_st3 .inner{
+				padding:10px 5px;
+			}
+			.opt_area {
+			    display: inline-table;
+				width: 16%;
+				height:1em;
+				text-align:left;
+			}
+			.opt_area lable {
+				font-size: 12px;
+			}
+			.mgtb10{
+				margin-top:10px;
+				margin-bottom:10px;
+			}
+			.bu_atte{background-position:left 4px}
+			.tab_st2 li{width:14%;}
+			.RM_Top .RM_w80p input{margin-left: 10px; width:70%;}
+			.addr_box .RM_total{width:100px;}
+			.slideList{margin-top:10px;}
+			.slideList > dl > dt{padding:10px 10px 10px 20px;}
+			.cnckrInfo .titL{margin-top:30px;}
+
+			.modal .btn{cursor: pointer;border: 1px solid #999999;text-align: center;border-radius: 5px;outline: none;font-weight: 500;}
+			.dimLayer{display: block;width: 100%;background-color: rgba(0, 0, 0, 0.3);position: fixed;left: 0;top: 0px;margin: 0;padding: 0;z-index: 9998;}
+			.modal{width: auto;height: 222px;border-radius: 10px;padding: 60px 24px;box-sizing: border-box;text-align: center;}
+			.modal-section{background: #ffffff;box-sizing: border-box;display: none;position: fixed;top: 40%;left: 25%;right: 25%;bottom: 0;z-index: 9999;}
+			.menu_msg{font-size: 15px;font-weight: 500;}
+			.enroll_box p{padding-bottom: 15px;}
+			.gray_btn {width: 20%;background: #ffffff;color: #999999;height: 36px;line-height: 36px;transition: 0.5s;font-size: 15px;}
+			.pink_btn {width: 20%;background: #80bd00;color: #fff;height: 36px;line-height: 36px;transition: 0.5s;font-size: 15px;border: none;}
+
+			@media screen and (max-width:950px){
+				.box_st3 .inner{padding:10px;}
+				.box_st4{padding:15px;}
+			}
+
+			@media screen and (max-width:900px){
+				.tab_st2 li{width:20%;}
+				.addr_box .RM_total{width:100%;}
+				.addr_box .RM_w80p{width:100%;}
+				.pos{display:flex !important; margin-left:10px !important;}
+			}
+			@media (max-width: 690px){
+				.box_st4{padding:8px;}
+				.bu_atte{font-size:.85em; background-position:left 2px}
+				.tab_st2 li{width:33%;}
+				.RM_Top .RM_w80p input{margin-left:0px;width:95%;}
+				.addr_box .RM_total{text-align:left;}
+				.addr_box{position:relative;}
+				.addr_box a{position:absolute !important; top:0px; right:0px;}
+				.addr_box a.chkAddrBtn{position:absolute !important; top: 63px; right:0px;}
+			}
+
+			@media (max-width: 450px){
+				.tab_st2 li{width:50%;}
+				.cnckrInfo .titL{margin:10px 0 10px;}
+				.cnckrInfo .titL::before{display:none;}
+				.cnckrInfo .titL span{position:relative; display:inline-block; border-radius:0px; background:#fff; color:#1f59be; border:2px solid #1f59be; padding:8px 20px; width:80%;}
+				.cnckrInfo .box_st1{padding:8px;}
+
+				.slideList > dl > dd{padding:10px 5px;}
+				.slideList > dl > dd div p{font-size:.85em;}
+
+				.pos{font-size:13px !important; margin-left:5px !important;}
+			}
+
+			@media (max-width: 375px){
+				.modal{width: 314px;height: 190px;border-radius: 10px;padding: 60px 24px;box-sizing: border-box;text-align: center;}
+				.modal-section{background: #ffffff;box-sizing: border-box;display: none;position: fixed;top: 40%;left: 6%;right: 0;bottom: 0;z-index: 9999;}
+				.menu_msg{font-size: 12px;font-weight: 500;}
+				.gray_btn {width: 20%;background: #ffffff;color: #999999;height: 36px;line-height: 36px;transition: 0.5s;font-size: 12px;}
+				.pink_btn {width: 20%;background: #80bd00;color: #fff;height: 36px;line-height: 36px;transition: 0.5s;font-size: 12px;border: none;}
+			}
+
+		</style>
+	</head>
+	<body>
+		<div class="box_st3">
+			<div class="inner">
+				<!-- title -->
+				<div class="con_com_st">
+					<h1 style="display:none;"></h1>
+					<h2 style="display:none;"></h2>
+					<h3 style="display:none;"></h3>
+					<h4 style="display:none;"></h4>
+					<h5 class="titT3">신규 매물 등록</h5>
+				</div>
+
+				<!-- content -->
+				<div class="box_st4">
+
+					<section>
+			            <button type="button" id="confirm" style="display: none;">hiddenConfirm</button>
+			        </section>
+					<section class="modal modal-section type-confirm">
+			            <div class="enroll_box">
+			                <p class="menu_msg"></p>
+			            </div>
+			            <div class="enroll_btn">
+			                <button class="btn pink_btn btn_ok">확인</button>
+			                <button class="btn gray_btn modal_close">취소</button>
+			            </div>
+			        </section>
+			        <section class="modal modal-section type-alert">
+			            <div class="enroll_box">
+			                <p class="menu_msg"></p>
+			            </div>
+			            <div class="enroll_btn">
+			                <button class="btn pink_btn modal_close">확인</button>
+			            </div>
+			        </section>
+
+					<p class="mgb10"><span class="bu_atte">허위 매물을 등록하여 적발될 경우 서비스 이용에 제한을 받는 등 불이익이 있을 수 있습니다.</span></p>
+					<form method="post" name="rthousRegisterFrm" id="rthousRegisterFrm" enctype="multipart/form-data">
+						<!-- 매물 종류 -->
+						<div class="box_st1 RM_Top">
+							<span class="tit3"><strong class="pc_black">매물 종류</strong></span>
+							<div class="line_dot"></div>
+							<!-- 아파트, 단독, 다가구, 연립, 다세대, 오피스텔, 근생주택(0/1/2/3/4/5/6), 빌라(7) 제외 -->
+							<div class="con_com_st">
+								<ul class="tab_st2 tab_st2_box" id="roomType">
+									
+										
+											
+											
+												
+											
+											<li id="roomType0" onclick="selectRoomType(this)" data-value="0" class="off">
+												<a href="javascript:void(0)">아파트</a>
+											</li>
+										
+									
+										
+											
+											
+											<li id="roomType1" onclick="selectRoomType(this)" data-value="1" class="off">
+												<a href="javascript:void(0)">단독</a>
+											</li>
+										
+									
+										
+											
+											
+											<li id="roomType2" onclick="selectRoomType(this)" data-value="2" class="on">
+												<a href="javascript:void(0)">다가구</a>
+											</li>
+										
+									
+										
+											
+											
+											<li id="roomType3" onclick="selectRoomType(this)" data-value="3" class="off">
+												<a href="javascript:void(0)">연립</a>
+											</li>
+										
+									
+										
+											
+											
+											<li id="roomType4" onclick="selectRoomType(this)" data-value="4" class="off">
+												<a href="javascript:void(0)">다세대</a>
+											</li>
+										
+									
+										
+											
+											
+											<li id="roomType5" onclick="selectRoomType(this)" data-value="5" class="off">
+												<a href="javascript:void(0)">오피스텔</a>
+											</li>
+										
+									
+										
+											
+											
+											<li id="roomType6" onclick="selectRoomType(this)" data-value="6" class="off">
+												<a href="javascript:void(0)">근생주택</a>
+											</li>
+										
+									
+										
+									
+								</ul>
+								<input type="hidden" name="rthousBdtyp" id="rthousBdtyp" value="2">
+							</div>
+						</div>
+
+						<div class="line_dot"></div>
+						<!-- 위치 정보 -->
+						<div class="box_st1 RM_Top">
+							<span class="tit3"><strong class="pc_black">위치 정보</strong></span>
+							<div class="line_dot"></div>
+							<!-- 주소 -->
+							<div class="con_com_st addr_box">
+								<div style="margin-bottom: 4px;">
+									<p class="RM_total">
+										<span><strong class="pc_black">* 주소</strong></span>
+									</p>
+									<div class="RM_srch">
+										<p class="RM_w80p">
+											<input class="txt inpTxt" type="text" name="rthousAddr" id="rthousAddr" readonly="readonly" title="주소" value="">
+											<a href="javascript:void(0)" onclick="findAddress();" title="주소 찾기" class="btn_bl mini ico_w">주소 찾기
+												<span class="search"></span>
+											</a>
+										</p>
+										<input type="hidden" name="rthousRdnmadr" id="rthousRdnmadr">
+										<input type="hidden" name="rthousLnmAdres" id="rthousLnmAdres">
+										<input type="hidden" name="sggCd" id="sggCd">
+									</div>
+								</div>
+								<div style="margin-bottom: 4px;">
+									<p class="RM_total">
+										<span><strong class="pc_black">* 상세주소</strong></span>
+									</p>
+									<div class="RM_srch">
+										<p class="RM_w80p">
+											<input class="txt inpTxt detail" type="text" id="detailAddr" title="상세주소" value="" placeholder="OOO동 OOO호">
+											<span><a href="https://jeonse.lh.or.kr/jw/rm/manage/getRegInitInfo.do#" title="새창" class="btn_blL mini ico_w chkAddrBtn" style="position:relative">주소중복확인</a></span>
+											<span class="pos" style="font-size:14px;font-weight:700;display:inline-block;margin-left:110px;">※ 동일한 매물을 악의적으로 중복 등록하면 제재(노출제한, 매물 삭제) 조치가 이뤄질 수 있고, 허위매물로 신고될 수 있습니다.</span><br>
+										</p>
+										<input type="hidden" name="rthousRdnmadrDetail" id="rthousRdnmadrDetail">
+										<input type="hidden" name="rthousLnmAdresDetail" id="rthousLnmAdresDetail">
+									</div>
+								</div>
+								<div>
+									<p class="RM_total">
+										<span class="pc_black">&nbsp;&nbsp;&nbsp;기타주소</span>
+									</p>
+									<div class="RM_srch">
+										<p class="RM_w80p">
+											<input class="txt inpTxt" type="text" id="etcAddr" title="기타주소" style="margin-left: 10px;">
+										</p>
+										<p>
+											<span class="pos" style="font-size:15px;display:inline-block;margin-left:110px;">상세/기타 주소는 매물 상세 보기에서 노출되지 않습니다.(등록한 계정에서만 노출 됨)</span>
+											<span class="pos" style="font-size:16px; color:#f00;display:block;margin-top:10px;">※ 등록한 매물은 <b class="f_weightB">주소 수정이 불가</b>하므로 매물 등록 시 유념하여주시기 바랍니다.</span>
+											<span class="pos" style="font-size:16px; color:#f00;display:block;margin-left:15px;">주소 수정이 필요한 경우 기 등록한 매물 삭제 후 신규등록만 가능합니다.</span>
+										</p>
+										<input type="hidden" name="rthousRdnmadrEtc" id="rthousRdnmadrEtc">
+										<input type="hidden" name="rthousLnmAdresEtc" id="rthousLnmAdresEtc">
+									</div>
+								</div>
+									<input type="hidden" id="chkAddrAt" name="chkAddrAt" value="">
+								<!-- // -->
+							</div>
+							<!-- 지도 -->
+							<div class="box_st5" style="display:none;">
+								<div id="rthousRegisterMap" style="position: relative; overflow: hidden; background: url(&quot;https://t1.daumcdn.net/mapjsapi/images/bg_tile.png&quot;);">
+									<input type="hidden" name="rthousXcnts" id="rthousXcnts" value="126.9756149637474">
+									<input type="hidden" name="rthousYdnts" id="rthousYdnts" value="37.56455490632751">
+								<div style="position: absolute; left: 0px; top: 0px; width: 100%; height: 100%; touch-action: none; cursor: default;"><div style="position: absolute;"><div style="position: absolute; z-index: 0;"></div><div style="position: absolute; z-index: 1; left: 0px; top: 0px;"><img src="./lh_files/216.png" alt="" draggable="false" style="position: absolute; user-select: none; -webkit-user-drag: none; min-width: 0px; min-height: 0px; max-width: none; max-height: none; left: -210px; top: -9px; opacity: 1; transition-property: opacity; transition-duration: 0.2s; transition-timing-function: ease; width: 256px; height: 256px;"></div><div style="position: absolute; z-index: 1;"></div><div style="width: 0px; height: 0px; position: absolute; z-index: 1;"></div><div style="position: absolute; z-index: 1;"><svg version="1.1" style="stroke: none; stroke-dashoffset: 0.5; stroke-linejoin: round; fill: none; transform: translateZ(0px); position: absolute; width: 0px; height: 0px; left: 0px; top: 0px;" viewBox="0 0 0 0"><defs></defs></svg></div><div style="position: absolute; z-index: 1; width: 100%; height: 0px; transform: translateZ(0px);"></div></div></div><div style="position: absolute; cursor: default; z-index: 1; margin: 0px 6px; height: 19px; line-height: 14px; left: 0px; bottom: 0px; color: rgb(0, 0, 0);"><div style="color: rgb(0, 0, 0); text-align: center; font-size: 10px; float: left; display: none;"><div style="float: left; margin: 2px 3px 0px 4px; height: 6px; transition: width 0.1s; border-width: medium 2px 2px; border-style: none solid solid; border-color: rgb(0, 0, 0); border-image: initial; width: 58px;"></div><div style="float: left; margin: 0px 4px 0px 0px; font-family: AppleSDGothicNeo-Regular, 돋움, dotum, sans-serif; font-weight: bold; color: rgb(0, 0, 0);">250m</div></div><div style="margin: 0px 4px; float: left;"><a target="_blank" href="http://map.kakao.com/" style="float: left; width: 32px; height: 10px;"><img src="./lh_files/m_bi_b.png" alt="Kakao 맵으로 이동(새창열림)" style="float: left; width: 32px; height: 10px; border-width: medium; border-style: none; border-color: currentcolor; border-image: initial;"></a><div style="font: 11px / 11px Arial, Tahoma, Dotum, sans-serif; float: left;"></div></div></div><div style="cursor: auto; position: absolute; z-index: 2; left: 0px; top: 0px;"></div></div>
+							</div>
+						</div>
+						<div class="line_dot"></div>
+
+						<!-- 상세설명 -->
+						<div class="box_st1 RM_Top">
+							<span class="tit3"><strong class="pc_black">상세 설명</strong></span>
+							<div class="line_dot"></div>
+
+							<div class="con_com_st">
+								<table class="tbl_st_row">
+									<caption>상세 설명</caption>
+	                                <colgroup>
+	                                    <col style="width:20%;">
+	                                    <col style="width:80%;">
+	                                </colgroup>
+	                                <tbody>
+	                                	<tr class="RM_Table">
+	                                		<th scope="col">* 제목</th>
+	                                		<td class="long">
+		                                		<input type="text" name="rthousNm" id="rthousNm" title="제목" value="">
+	                                		</td>
+	                                	</tr>
+	                                	<tr class="RM_Table">
+	                                		<th scope="col">키워드</th>
+	                                		<td class="long">
+		                                		<input type="text" name="rthousSumryKwrd" id="rthousSumryKwrd" title="키워드">
+	                                		</td>
+	                                	</tr>
+	                                	<tr class="RM_Table">
+											<th scope="col">상세설명</th>
+											<td class="long">
+												<textarea name="rthousSumryDc" id="rthousSumryDc" rows="10" style="resize: none;" placeholder="내용을 입력하세요." title="상세설명"></textarea>
+											</td>
+										</tr>
+										<tr class="RM_Table">
+											<th scope="col">중개사 메모<br><span style="color:gray;">(비공개)</span></th>
+											<td class="long">
+												<textarea name="rthousBrkrMemo" id="rthousBrkrMemo" rows="7" style="resize: none;" placeholder="매물 노출 시에 공개되지 않습니다." title="중개사 메모(비공개)"></textarea>
+											</td>
+										</tr>
+	                                </tbody>
+                                </table>
+							</div>
+						</div>
+						<div class="line_dot"></div>
+
+						<!-- 거래 정보 -->
+						<div class="box_st1 RM_Top">
+							<span class="tit3"><strong class="pc_black">거래 정보</strong></span>
+							<div class="line_dot"></div>
+
+							<!-- 거래종류에 따른 거래 정보 -->
+							<div class="con_com_st">
+								<table class="tbl_st_row" id="hideTable">
+									<caption>거래 정보</caption>
+	                                <colgroup>
+	                                    <col span="4" style="width:18%;">
+	                                    <col style="width:32%;">
+	                                </colgroup>
+	                                <tbody>
+	                                <!-- 1 line(거래종류) -->
+	                                	<tr>
+	                                		<th scope="col" style="width:20%;">* 거래형태</th>
+	                                		<td>임대차</td>
+	                                		<th scope="col" style="width:20%;">* 거래종류</th>
+	                                		<td style="width:80%;">
+		                                		<div class="con_com_st">
+													<ul class="tab_st2 tab_st2_box" id="rentStle" style="margin-bottom: 0px">
+														
+															
+															
+																
+															
+															<li id="rentStle1" onclick="selectRentStle(this)" data-value="1" class="on" style="width: 33.333333%">
+																<a href="javascript:void(0)">전세</a>
+															</li>
+														
+															
+															
+															<li id="rentStle2" onclick="selectRentStle(this)" data-value="2" style="width: 33.333333%">
+																<a href="javascript:void(0)">월세</a>
+															</li>
+														
+															
+															
+															<li id="rentStle3" onclick="selectRentStle(this)" data-value="3" style="width: 33.333333%">
+																<a href="javascript:void(0)">반전세</a>
+															</li>
+														
+													</ul>
+													<input type="hidden" name="rthousRentStle" id="rthousRentStle" value="1">
+													<input type="hidden" name="rthousGtn" id="rthousGtn">
+													<input type="hidden" name="rthousMtht" id="rthousMtht">
+													<input type="hidden" name="rthousMthtThou" id="rthousMthtThou">
+												</div>
+	                                		</td>
+	                                	</tr>
+
+	                                	<!-- 2 line(가격대, change td) -->
+	                                	<tr data-id="rentStle" class="RM_Table">
+											<th scope="col" style="width:20%;">* 가격</th>
+											<td style="width:30%;" class="middle">
+												<p style="float: left; text-align: left;"> 보증금
+													<input type="text" id="gtn" style="ime-mode:disabled;text-align: right;" onkeypress="onlyNum(event, 1)" onkeyup="checkNum(this)" title="보증금" value="">만원
+												</p>
+											</td>
+											<th scope="col" style="width:20%;" id="thMtht">월세</th>
+											<td style="width:30%;" class="middle">
+												<p style="float: left;text-align: left;">
+													<input type="text" id="mtht" style="ime-mode:disabled;text-align: right;width:30%;" onkeypress="onlyNum(event, 1)" onkeyup="checkNum(this)" title="월세" disabled="">만
+													<input type="text" id="mthtThou" style="ime-mode:disabled;text-align: right;width:30%;" onkeypress="onlyNum(event, 1)" onkeyup="checkNum(this)" title="월세2" maxlength="1" value="0" disabled="">천원
+												</p>
+											</td>
+										</tr>
+
+										<!-- 3 line(관리비) -->
+										<tr class="RM_Table">
+											<th scope="col" style="width:20%;">* 관리비</th>
+											<td colspan="3" style="width:80%;">
+												<p style="float: left;text-align: left;">
+													평균 <input type="text" name="rthousManagect" id="rthousManagect" style="ime-mode:disabled;text-align: right; width:20%; height:28px; border:1px solid #c8d1db;" onkeypress="onlyNum(event, 0)" onkeyup="checkNum(this)" title="월관리비" value="">만원
+													<label>
+														<input type="checkbox" id="managectChk">없음
+													</label>
+													<br><span style="font-size:15px;">※ 관리비 포함 항목(별도 항목은 상세설명에 기재해주세요)</span><br>
+													<label>
+														<input type="checkbox" id="elctyChrge" class="managectInclsIem" value="전기료">전기료
+													</label>&nbsp;
+													<label>
+														<input type="checkbox" id="gas" class="managectInclsIem" value="가스">가스
+													</label>&nbsp;
+													<label>
+														<input type="checkbox" id="wtway" class="managectInclsIem" value="수도">수도
+													</label>&nbsp;
+													<label>
+														<input type="checkbox" id="intnet" class="managectInclsIem" value="인터넷">인터넷
+													</label>&nbsp;
+													<label>
+														<input type="checkbox" id="_TV" class="managectInclsIem" value="TV">TV
+													</label>
+													<input type="hidden" id="rthousManagectIncls" name="rthousManagectIncls">
+												</p>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="line_dot"></div>
+
+						<!-- 기본 정보 -->
+						<div class="box_st1 RM_Top">
+							<span class="tit3"><strong class="pc_black">기본 정보</strong></span>
+							<div class="line_dot"></div>
+
+							<div class="con_com_st">
+								<table class="tbl_st_row">
+									<caption>기본 정보</caption>
+	                                <colgroup>
+	                                    <col span="3" style="width:20%;">
+	                                    <col style="width:30%;">
+	                                </colgroup>
+	                                <tbody>
+	                                	<!-- 1 line(동) -->
+	                                	<tr class="RM_Table">
+	                                		<th scope="col" style="width:20%;"><span id="bdDong" style="display: none;">* </span>건물의 동</th>
+	                                		<td colspan="3" class="short" style="width:30%;">
+	                                			<p class="pc_black" style="float: left;text-align: left;"><input class="txt inpTxt" type="text" id="bulddong" title="해당 동" style="margin-left: 10px;margin-bottom:4px;" value="">동
+	                                			<input type="hidden" id="rthousBulddong" name="rthousBulddong">
+	                                			<span style="font-size:15px; color:#666;"> &nbsp;&nbsp;&nbsp;&nbsp;예시)가동, A동, 101동</span>
+	                                			</p>
+	                                		</td>
+	                                	</tr>
+
+	                                	<!-- 2 line(층수) -->
+	                                	<tr>
+	                                		<th scope="col" style="width:20%;"><span id="bdFloor">* </span>층 수</th>
+	                                		<td colspan="3" class="short" style="width:30%;">
+	                                			<p class="pc_black" style="float: left;text-align: left;">
+	                                				</p><div style="text-align: left;">
+		                                				<label for="floorLow"><input type="radio" name="rthousFloorHeight" id="floorLow" value="1" title="저층">&nbsp;저층</label>&nbsp;
+		                                				<label for="floorMiddle"><input type="radio" name="rthousFloorHeight" id="floorMiddle" value="2" title="중층">&nbsp;중층</label>&nbsp;
+		                                				<label for="floorHigh"><input type="radio" name="rthousFloorHeight" id="floorHigh" value="3" title="고층">&nbsp;고층</label>
+	                                				</div>
+	                                			<br>
+	                                				<div style="text-align: left; margin-top: -15px; margin-bottom: -15px;">
+	                                				해당 층 수
+			                                		<select id="floorKind" title="층 종류를 선택해주세요.">
+														<option value="+" title="지상" selected="">지상</option>
+														<option value="-" title="지하">지하</option>
+													</select>
+													<input type="text" id="floor" style="ime-mode:disabled;text-align: right;" onkeypress="onlyNum(event, 1)" onkeyup="checkNum(this)" title="층" size="10" value="">층
+													<input type="hidden" name="rthousFloor" id="rthousFloor">
+	                                				 | 건물 층 수
+													<input type="text" name="rthousAllFloor" id="rthousAllFloor" style="ime-mode:disabled;text-align: right;" onkeypress="onlyNum(event, 1)" onkeyup="checkNum(this)" title="전체 층" size="10" value="">층
+													</div>
+												<br>
+													<div style="text-align: left;">
+														<label for="floorShowY"><input type="radio" name="rthousFloorShow" id="floorShowY" value="Y" title="층 노출함">&nbsp;<span style="font-size:14px;">층 노출함</span></label>&nbsp;
+														<label for="floorShowN"><input type="radio" name="rthousFloorShow" id="floorShowN" value="N" title="층 노출안함">&nbsp;<span style="font-size:14px;">층 노출안함(층 노출안함을 선택하시면 저층, 중층, 고층으로 대체 표시됩니다.)</span></label>
+													</div>
+												<p></p>
+											</td>
+										</tr>
+
+	                                	<!-- 3 line(면적) -->
+	                                	<tr class="RM_Table">
+											<th scope="col" style="width:20%;">* 면적</th>
+	                                		<td colspan="3" class="short" style="width:30%;">
+		                                		<p class="pc_black" style="float: left;text-align: left;">공급면적
+			                                		<input type="text" name="rthousHppr" id="rthousHppr" style="ime-mode:disabled;text-align: right;" onkeypress="onlyNum(event, 0)" onkeyup="calcArea(this)" title="공급면적">㎡
+													(<span id="rthousHpprConversion">00.00</span>평)
+		                                		 | 전용면적
+													<input type="text" name="rthousExclAr" id="rthousExclAr" style="ime-mode:disabled;text-align: right;" onkeypress="onlyNum(event, 0)" onkeyup="calcArea(this)" title="전용면적">㎡
+													(<span id="rthousExclArConversion">00.00</span>평)
+		                                		</p>
+
+	                                		</td>
+	                                	</tr>
+
+	                                	<!-- 4 line(건축물 용도/방 수) -->
+	                                	<tr class="RM_Table">
+		                                	<th scope="col">* 건축물 용도</th>
+											<td>
+												<p class="pc_black" style="float: left;text-align: left;">
+													<select id="rthousBildPrpos" name="rthousBildPrpos" title="건축물 용도를 선택해주세요.">
+														<option value="">선택</option>
+														
+															
+															<option value="SLH">단독주택</option>
+														
+															
+															<option value="APHUS">공동주택</option>
+														
+															
+															<option value="SRBLD1">제1종 근린생활시설</option>
+														
+															
+															<option value="SRBLD2">제2종 근린생활시설</option>
+														
+													</select>
+												</p>
+											</td>
+	                                		<th scope="col">* 방 수</th>
+											<td class="short">
+												<p class="pc_black" style="float: left;text-align: left;">
+													<input type="text" name="rthousRoomCo" id="rthousRoomCo" style="ime-mode:disabled;text-align: right;" onkeypress="onlyNum(event, 1)" onkeyup="checkNum(this)" title="방 수" value="">개
+												</p>
+											</td>
+	                                	</tr>
+
+										<!-- 5 line(입주일/화장실 수) -->
+										<tr>
+											<th scope="col">* 입주 가능일</th>
+											<td id="mvnPosblDe"><div style="float:left; text-align:left;"><input type="text" name="rthousMvnPosblDe" id="rthousMvnPosblDe" class="dateFormatChk hasDatepicker" placeholder="yyyy-mm-dd" size="12"><button type="button" class="ui-datepicker-trigger"><img src="./lh_files/btn_calendar.png" alt="..." title="..."></button><label for="rthousMvnImdtlPosbl"> <br><input type="checkbox" name="rthousMvnImdtlPosbl" id="rthousMvnImdtlPosbl" title="즉시입주"><span style="font-size:14px;"> 즉시입주</span></label></div></td>
+											<th scope="col">* 화장실 수</th>
+											<td class="short">
+												<p class="pc_black" style="float: left;text-align: left;">화장실(욕실)
+													<input type="text" name="rthousToiletCo" id="rthousToiletCo" style="ime-mode:disabled;text-align: right;" onkeypress="onlyNum(event, 1)" onkeyup="checkNum(this)" title="화장실/욕실 수" size="3" value="">개
+												</p>
+											</td>
+										</tr>
+
+										<!-- 6 line(행정기관 승인일자/방향) -->
+										<tr>
+											<th scope="col">* 행정기관<br>승인일자</th>
+											<td id="confmDe"><div style="float:left; text-align:left;"><select id="rthousAdmnstmachConfmStdr" name="rthousAdmnstmachConfmStdr" title="행정기관 승인기준 선택해주세요." class="mgb5"><option value="">선택</option><option value="USE_INSPCT_DE">사용검사일</option><option value="USE_CONFM_DE">사용승인일</option><option value="COMPET_CNFM_DE">준공인가일</option></select> <br><input type="text" name="rthousAdmnstmachConfmDe" id="rthousAdmnstmachConfmDe" class="dateFormatChk hasDatepicker" placeholder="yyyy-mm-dd" size="12"><button type="button" class="ui-datepicker-trigger"><img src="./lh_files/btn_calendar.png" alt="..." title="..."></button></div></td>
+											<th>* 방향</th>
+											<td style="text-align:left;">
+												<span class="pc_black">
+													<select id="rthousDrc" name="rthousDrc" title="방향을 선택해주세요." class="mgb5">
+														<option value="">선택</option>
+														
+															
+															<option value="0">동</option>
+														
+															
+															<option value="1">서</option>
+														
+															
+															<option value="2">남</option>
+														
+															
+															<option value="3">북</option>
+														
+															
+															<option value="4">남동</option>
+														
+															
+															<option value="5">남서</option>
+														
+															
+															<option value="6">북서</option>
+														
+															
+															<option value="7">북동</option>
+														
+													</select>
+													(
+													<select id="rthousDrcStdr" name="rthousDrcStdr" title="방향의 기준을 선택해주세요.">
+														<option value="">선택</option>
+														
+															
+															<option value="거실">거실</option>
+														
+															
+															<option value="안방">안방</option>
+														
+															
+															<option value="기타">기타</option>
+														
+													</select>
+													<input type="text" id="rthousDrcStdrEtc" name="rthousDrcStdrEtc" style="display:none;" size="6" placeholder="입력">
+													기준)
+												</span>
+											</td>
+										</tr>
+
+										<!-- 7 line(준공일/난방 종류) -->
+										<tr>
+											<th scope="col">준공일</th>
+											<td id="competDe"><div style="float:left;"><input type="text" name="rthousCompetDe" id="rthousCompetDe" class="dateFormatChk hasDatepicker" placeholder="yyyy-mm-dd" size="12"><button type="button" class="ui-datepicker-trigger"><img src="./lh_files/btn_calendar.png" alt="..." title="..."></button></div></td>
+											<th scope="col">* 난방 종류</th>
+											<td>
+												<p class="pc_black" style="float: left;text-align: left;">
+													<select id="rthousHeatMthd" name="rthousHeatMthd" title="난방 종류를 선택해주세요." style="width:180%;">
+														
+															
+															
+															<option value="1">중앙난방</option>
+														
+															
+															
+															<option value="2">지역난방</option>
+														
+															
+															
+															<option value="3">난방없음</option>
+														
+															
+															
+																
+															
+															<option value="0" selected="">개별난방</option>
+														
+													</select>
+												</p>
+											</td>
+										</tr>
+										<!-- 8 line(주차대수) -->
+										<tr>
+											<th>* 주차대수</th>
+											<td colspan="3" style="text-align:left;">
+												<p class="pc_black">총 <input type="text" name="rthousParkngTotcnt" id="rthousParkngTotcnt" size="6" value="">대 | 가구 당 <input type="text" name="rthousParkngCnt" id="rthousParkngCnt" size="5" value="">대</p>
+												<p style="font-size:15px;">※ 정확하지 않을 시 '0'으로 입력</p>
+											</td>
+										</tr>
+	                                </tbody>
+								</table>
+							</div>
+						</div>
+						<div class="line_dot"></div>
+
+						<!-- 추가 정보 -->
+						<div class="box_st1 RM_Top">
+							<span class="tit3"><strong class="pc_black">추가 정보</strong></span>
+							<div class="line_dot"></div>
+
+							<div class="con_com_st" id="facilitiesInfo">
+								<table class="tbl_st_row">
+									<caption>추가 정보</caption>
+	                                <colgroup>
+	                                    <col style="width:20%;">
+	                                    <col style="width:80%;">
+	                                </colgroup>
+	                                <tbody>
+	                                	<!-- 1 line(특이사항) -->
+	                                	<tr>
+	                                		<th scope="col">특이사항</th>
+											<td>
+												<div style="text-align: left;">
+													
+														<div class="opt_area">
+															<label>
+																<input type="checkbox" name="rthousAditOptn" value="도어락"> 도어락
+															</label>
+														</div>
+													
+														<div class="opt_area">
+															<label>
+																<input type="checkbox" name="rthousAditOptn" value="신축"> 신축
+															</label>
+														</div>
+													
+														<div class="opt_area">
+															<label>
+																<input type="checkbox" name="rthousAditOptn" value="무인택배함"> 무인택배함
+															</label>
+														</div>
+													
+														<div class="opt_area">
+															<label>
+																<input type="checkbox" name="rthousAditOptn" value="비디오폰"> 비디오폰
+															</label>
+														</div>
+													
+														<div class="opt_area">
+															<label>
+																<input type="checkbox" name="rthousAditOptn" value="주차가능"> 주차가능
+															</label>
+														</div>
+													
+														<div class="opt_area">
+															<label>
+																<input type="checkbox" name="rthousAditOptn" value="경비원"> 경비원
+															</label>
+														</div>
+													
+														<div class="opt_area">
+															<label>
+																<input type="checkbox" name="rthousAditOptn" value="방범창"> 방범창
+															</label>
+														</div>
+													
+														<div class="opt_area">
+															<label>
+																<input type="checkbox" name="rthousAditOptn" value="반려동물"> 반려동물
+															</label>
+														</div>
+													
+														<div class="opt_area">
+															<label>
+																<input type="checkbox" name="rthousAditOptn" value="엘리베이터"> 엘리베이터
+															</label>
+														</div>
+													
+														<div class="opt_area">
+															<label>
+																<input type="checkbox" name="rthousAditOptn" value="사설경비"> 사설경비
+															</label>
+														</div>
+													
+													<input type="hidden" name="rthousAditOptn" id="rthousAditOptn">
+												</div>
+											</td>
+										</tr>
+
+										<!-- 2 line(냉방시설) -->
+	                                	<tr>
+	                                		<th scope="col">냉방 시설</th>
+	                                		<td>
+                                				<div style="text-align: left;">
+			                                		
+			                                			<div class="opt_area">
+				                                			<label>
+																<input type="checkbox" name="rthousArclngFcltyInfo" value="스탠드"> 스탠드
+															</label>
+														</div>
+													
+			                                			<div class="opt_area">
+				                                			<label>
+																<input type="checkbox" name="rthousArclngFcltyInfo" value="천장형"> 천장형
+															</label>
+														</div>
+													
+			                                			<div class="opt_area">
+				                                			<label>
+																<input type="checkbox" name="rthousArclngFcltyInfo" value="벽걸이"> 벽걸이
+															</label>
+														</div>
+													
+												</div>
+	                                		</td>
+	                                	</tr>
+	                                	<!-- 3 line(생활시설) -->
+	                                	<tr>
+	                                		<th scope="col">생활 시설</th>
+	                                		<td>
+												<div style="text-align: left;">
+			                                		
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="욕조" step="white-space: normal;"> 욕조
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="비데" step="white-space: normal;"> 비데
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="싱크대" step="white-space: normal;"> 싱크대
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="식기세척기" step="white-space: normal;"> 식기세척기
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="가스레인지" step="white-space: normal;"> 가스레인지
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="인덕션" step="white-space: normal;"> 인덕션
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="전자레인지" step="white-space: normal;"> 전자레인지
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="오븐" step="white-space: normal;"> 오븐
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="샤워부스" step="white-space: normal;"> 샤워부스
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="건조기" step="white-space: normal;"> 건조기
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="세탁기" step="white-space: normal;"> 세탁기
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="냉장고" step="white-space: normal;"> 냉장고
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="신발장" step="white-space: normal;"> 신발장
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="소파" step="white-space: normal;"> 소파
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="식탁" step="white-space: normal;"> 식탁
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="옷장" step="white-space: normal;"> 옷장
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="책상" step="white-space: normal;"> 책상
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="침대" step="white-space: normal;"> 침대
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="책장" step="white-space: normal;"> 책장
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="책상/의자" step="white-space: normal;"> 책상/의자
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="인터넷" step="white-space: normal;"> 인터넷
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="TV" step="white-space: normal;"> TV
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="에어컨" step="white-space: normal;"> 에어컨
+				                                			</label>
+			                                			</div>
+													
+			                                			<div class="opt_area">
+					                                		<label>
+																<input type="checkbox" name="rthousLvlhFcltyInfo" value="공기청정기" step="white-space: normal;"> 공기청정기
+				                                			</label>
+			                                			</div>
+													
+												</div>
+	                                		</td>
+	                                	</tr>
+	                                	<!-- 4 line(보안/기타) -->
+	                                	<tr>
+	                                		<th scope="col">보안/기타</th>
+	                                		<td>
+	                                			<div style="text-align: left;">
+			                                		
+			                                			<div class="opt_area">
+				                                			<label>
+																<input type="checkbox" name="rthousScrtyFcltyInfo" value="마당"> 마당
+															</label>
+														</div>
+													
+			                                			<div class="opt_area">
+				                                			<label>
+																<input type="checkbox" name="rthousScrtyFcltyInfo" value="CCTV"> CCTV
+															</label>
+														</div>
+													
+			                                			<div class="opt_area">
+				                                			<label>
+																<input type="checkbox" name="rthousScrtyFcltyInfo" value="베란다"> 베란다
+															</label>
+														</div>
+													
+			                                			<div class="opt_area">
+				                                			<label>
+																<input type="checkbox" name="rthousScrtyFcltyInfo" value="테라스"> 테라스
+															</label>
+														</div>
+													
+			                                			<div class="opt_area">
+				                                			<label>
+																<input type="checkbox" name="rthousScrtyFcltyInfo" value="인터폰"> 인터폰
+															</label>
+														</div>
+													
+			                                			<div class="opt_area">
+				                                			<label>
+																<input type="checkbox" name="rthousScrtyFcltyInfo" value="소화기"> 소화기
+															</label>
+														</div>
+													
+			                                			<div class="opt_area">
+				                                			<label>
+																<input type="checkbox" name="rthousScrtyFcltyInfo" value="현관보안"> 현관보안
+															</label>
+														</div>
+													
+			                                			<div class="opt_area">
+				                                			<label>
+																<input type="checkbox" name="rthousScrtyFcltyInfo" value="화재경보기"> 화재경보기
+															</label>
+														</div>
+													
+			                                			<div class="opt_area">
+				                                			<label>
+																<input type="checkbox" name="rthousScrtyFcltyInfo" value="카드키"> 카드키
+															</label>
+														</div>
+													
+												</div>
+	                                		</td>
+	                                	</tr>
+	                                </tbody>
+                                </table>
+							</div>
+						</div>
+						<div class="line_dot"></div>
+
+						<!-- 사진 등록 -->
+						<div class="box_st1 RM_Top">
+							<span class="tit3"><strong class="pc_black">사진 등록</strong></span>
+							<div class="line_dot"></div>
+
+							<div class="con_com_st">
+								<div class="inner">
+									<p class="pc_navy">
+									- 사진 등록 시 최대 15장(총 20MB이내)까지 등록이 가능합니다.<br>
+									- 워터마크, 상호, 전화번호 등이 포함된 사진이나 관련없는 사진 등록 시 이용이 제한됩니다.
+									</p>
+								</div>
+								<div class="box_st2">
+					 				
+										
+									
+
+
+
+
+<title>fileImageUpload</title>
+<style>
+.imgs_wrap {
+	width:auto;
+	overflow:auto;
+	white-space:nowrap
+}
+
+.img_preview {
+    position: relative;
+    display: inline-block;
+    margin-right: 1px;
+}
+
+.img_preview .close {
+    width:15px;
+    height:15px;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    z-index: 100;
+    padding: 5px 2px 2px;
+    cursor: pointer;
+    opacity: .2;
+}
+.img_preview:hover .close {
+    opacity: 1;
+}
+
+/* 기존 file 불러오기 숨김 */
+#input_imgs { display:none; }
+
+
+ #loading_bar {
+    position: relative;
+    display:inline-block;
+ 	margin: 10px 0;
+ 	padding: 3px;
+ 	font-size: 14px;
+ 	clear: both;
+ 	opacity: 0;
+ 	-moz-transition: opacity 1s linear;
+ 	-o-transition: opacity 1s linear;
+ 	-webkit-transition: opacity 1s linear;
+ }
+ #loading_bar.loading {
+ 	opacity: 1.0;
+ }
+ #loading_bar .loading_img_cnt {
+ 	height: auto;
+ 	width: 0;
+ }
+</style>
+
+<link href="./lh_files/fileUpload.css" rel="stylesheet" type="text/css">
+<link href="./lh_files/jquery-ui.min.css" rel="stylesheet">
+
+<script src="./lh_files/html5shiv.js.다운로드"></script>
+<script src="./lh_files/jquery.min.js.다운로드"></script>
+<script src="./lh_files/jquery-ui.min.js.다운로드"></script>
+<script src="./lh_files/jquery.form.min.js.다운로드"></script>
+<script src="./lh_files/jquery.easing.1.3.js.다운로드"></script>
+<script src="./lh_files/jquery.bpopup.min.js.다운로드"></script>
+<script src="./lh_files/fileUpload.js.다운로드"></script>
+
+<div>
+	<h1 style="display:none;">&nbsp;</h1>
+	<h2>첨부파일 미리보기</h2>
+	<!-- type="file" 대신에 label에서 처리 -->
+	<label class="btn_or mini ico_w" for="input_imgs">업로드 <span class="more"></span></label>
+	<input type="file" name="input_imgs" id="input_imgs" accept=".jpeg, .jpg, .png" multiple="">
+	<div class="imgs_wrap">
+	</div>
+</div>
+<script>
+
+// 이미지 정보들을 담을 배열
+var total_file_list = [];
+var total_file_size_list = [];
+//사진 삭제 및 중복 처리를 위한 변수
+var index = 0;
+// 실제 파일 리스트
+var real_file = [];
+var totalFileSize = 0;
+var totalFsize = 0;
+var delFileSize = 0;
+
+$(function() {
+	$("#input_imgs").on("click", function(){
+		$("#input_imgs").val('');
+	});
+	$("#input_imgs").on("change", handleImgFileSelect);
+
+});
+
+function fileUploadAction() {
+    $("#input_imgs").trigger('click');
+}
+HashMap = function(){
+	this.map = new Array();
+}
+HashMap.prototype = {
+	put : function(key, value){
+		this.map[key] = value;
+	},
+	get : function(key){
+		return this.map[key];
+	},
+	getAll : function(){
+		return this.map;
+	},
+	clear : function(){
+		this.map = new Array();
+	},
+	getKeys : function(){
+		var keys = new Array();
+		for(i in this.map){
+			keys.push(i);
+		}
+		return keys;
+	}
+};
+
+function handleImgFileSelect(e) {
+    var files = e.target.files;
+    var filesArr = Array.prototype.slice.call(files);
+
+    var map = new HashMap();
+
+    filesArr.forEach(function(f,index) {
+    	map.put("id",index);
+    	map.put("fsize",f.size);
+
+    	//파일 총용량 체크
+    	if(totalFileSize < 20971519){
+    		totalFileSize = totalFileSize + f.size;
+    		totalFsize = totalFileSize;
+    		if (totalFileSize > 20971518){
+    			totalFsize = totalFileSize - map.get("fsize");
+    		}
+    	}
+
+    	if(f.size > 5000000) {
+            alert('첨부파일 사이즈는 5MB 이내로 등록 가능합니다.');
+            return;
+        }
+
+     	/* 확장자(1.jpeg 2. jpg 3. png) Check */
+        if(!f.type.match("image.*")) {
+            alert("확장자는 이미지 확장자만 가능합니다.");
+            return;
+        }
+
+        if(total_file_list.length >= 15){
+        	alert("총 파일 갯수가 16장이 넘어 15장만 등록됩니다.");
+	 		return;
+        }
+        if(totalFileSize > 20971520){
+	 		return;
+        }
+
+        /* 파일 이름 중복 처리  Check */
+ 		if(total_file_list.indexOf(f.name) != -1){
+ 	        alert("중복된 파일이 존재합니다.");
+ 		    return;
+ 		}else{
+ 			if(total_file_list.length > 15){
+ 	 			return;
+ 	 		}else{
+ 	 			total_file_size_list.push(f.size);
+		      	total_file_list.push(f.name);
+			  	real_file.push(f);
+ 	 		}
+ 		}
+ 		if(total_file_list.length > 15){
+ 			return;
+ 		}else{
+	 		var reader = new FileReader();
+	        reader.onload = function(e) {
+	        	/* 이미지 불러오기 및 삭제 처리 html */
+	        	var html = "<div class=\"img_preview\" id=\"img_pre_"+index+"\">"	+
+	        					"<img src=\"../../../../../../../images/template/00043/layout/btn_close.gif\" class=\"close\" title='삭제' id=\"img_del_"+index+"\" onclick=\"deleteImageAction("+index+", '"+f.name+"')\">"+
+	        					"<img src=\"" + e.target.result + "\" id=\"img_id_"+index+"\" data-file='"+f.name+"' data-filesize='"+f.size+"' data-value= '" + f + "' style=\"width:200px; height:150px;\">"+
+	       					"</div>";
+	            $(".imgs_wrap").append(html);
+
+	            index++;
+	        }
+	        reader.readAsDataURL(f);
+ 		 }
+  	});
+
+
+	if( totalFileSize > 20971520 ){
+		alert("첨부파일 전체 사이즈는 20MB 이내로 등록 가능합니다.");
+		return;
+	}
+}
+
+function deleteImageAction(index, name) {
+	/* (삭제) 1. total_file_list 리스트안에 있는 데이터  2. 이미지 삭제  3. 사진 갯수 차감 4. 실제 파일 */
+	var fileIdx = total_file_list.indexOf(name);
+	total_file_list.splice(fileIdx, 1);
+	total_file_size_list.splice(fileIdx, 1);
+
+	for(var i in real_file){
+		if(real_file[i].name == name){
+			var realIdx = i;
+			real_file.splice(realIdx, 1);
+		}
+	}
+
+    var img_id = "#img_pre_"+index;
+    delFileSize = $("#img_id_"+index).data("filesize");
+    $(img_id).remove();
+
+    totalFileSize = totalFsize - delFileSize;
+    totalFsize = totalFileSize;
+}
+</script>
+
+								</div>
+							</div>
+						</div>
+						<div class="line_dot"></div>
+
+						<!-- 등록자 연락처 정보 -->
+						<div class="box_st1 RM_Top">
+							<span class="tit3"><strong class="pc_black">연락처</strong></span>
+							<div class="line_dot"></div>
+
+							<!-- 이름 및 연락처 -->
+							<div class="con_com_st">
+								<table class="tbl_st_row">
+									<caption>연락처</caption>
+	                                <colgroup>
+	                                    <col style="width:20%;">
+	                                    <col style="width:80%;">
+	                                </colgroup>
+	                                <tbody>
+	                                	<tr class="RM_Table">
+	                                		<th scope="col">등록자 성명</th>
+	                                		<td class="long" style="text-align: left;">조항준</td>
+	                                	</tr>
+	                                	<tr class="RM_Table">
+	                                		<th scope="col">휴대폰번호</th>
+	                                		<td class="long">
+		                                		<input type="text" name="rthousMberMbtlnum" id="rthousMberMbtlnum" title="휴대폰" maxlength="11" placeholder="숫자만 입력 가능합니다.">
+	                                		</td>
+	                                	</tr>
+	                                	<tr class="RM_Table">
+											<th scope="col">전화번호</th>
+											<td class="long">
+												<input type="text" name="rthousMberTelno" id="rthousMberTelno" title="전화번호" maxlength="11" placeholder="숫자만 입력 가능합니다.">
+											</td>
+										</tr>
+	                                </tbody>
+                                </table>
+							</div>
+						</div>
+						<div class="line_dot"></div>
+
+						<!-- 집주인 동의 확인 -->
+						<div class="box_st1 RM_Top" id="ownerConfm">
+							<span class="tit3"><strong class="pc_black">집주인 동의 확인</strong></span>
+							<div class="line_dot"></div>
+
+							<!-- 이름 및 연락처 -->
+							<div class="con_com_st">
+								<div class="inner">
+									<p class="pc_navy">
+									- 입력한 집주인 번호로 매물 확인 SMS가 발송됩니다. <br>
+									- 응답한 매물에 한해 [집주인확인] 태그가 붙게되며 매물과 관련이 없거나 집주인 동의없이 번호를 입력하여 발생하는 모든 책임은 등록자 본인에게 있습니다. <br>
+									- 숫자만 입력 가능합니다. <br>
+									- 매물 최초 임시저장 또는 신규등록 시 입력 가능하며 수정이 불가합니다. 정확하게 입력해주세요.
+									</p>
+								</div>
+								<table class="tbl_st_row">
+									<caption>집주인 동의 확인</caption>
+	                                <colgroup>
+	                                    <col style="width:20%;">
+	                                    <col style="width:80%;">
+	                                </colgroup>
+	                                <tbody>
+	                                	<tr class="RM_Table">
+	                                		<th scope="col">연락처</th>
+	                                		<td class="long">
+		                                		<input type="text" name="sendPhoneNum" id="ownerPhoneNum" value="" placeholder="숫자만 입력 가능합니다." disabled="" title="연락처" maxlength="11">
+		                                		<p style="text-align: left;margin-top:5px">
+		                                			<label>
+			                                			<input type="checkbox" name="" id="isUseSmsChk" onchange="checkOwner(this)" style="width:auto; height:auto;border:none;"> 동의합니다.
+		                                				<input type="hidden" name="isUseSms" id="isUseSms" value="">
+		                                			</label>
+		                                		</p>
+	                                		</td>
+	                                	</tr>
+	                                </tbody>
+                                </table>
+							</div>
+						</div>
+						<div class="line_dot"></div>
+
+						<!-- <p class="pc_gray">
+							<img src="/images/web/jw/con_com/bu_atte2_line.png" alt="bu_att2_line"> 주택 등록 후 이튿날부터 계약 체결(당일 등록 제외)되는 주택에 한해 임대인 중개수수료를 지원합니다.(2020년 12월 31일까지 계약 체결되는 건에 한해 지원한도액 범위 내에서 전액 지원)
+						</p> -->
+						<div class="slideList cnckrInfo">
+					        <dl class="">
+					            <dt>▶ 개인정보 수집 및 이용 안내 </dt>
+					            <dd style=" padding-top: 10px; margin-top: 0px; padding-bottom: 10px; margin-bottom: 0px; display: none;">
+					                <p class="bu_st2">전세임대포털은 주택등록 업무 수행과 관련하여 아래와 같은 개인정보를 수집하고 있습니다. <a style="display:inline-block;background-position:left 7px;" href="https://jeonse.lh.or.kr/jw/utility/privacy.do?mi=3009" title="개인정보처리방침" class="bu_linkL mgl5" target="_blank">개인정보처리방침 확인하기</a></p>
+					                <div class="box_st1">
+					                	<h4 class="titL" style="margin-top:0px;"> <span>수집하는 개인정보의 항목</span> </h4>
+					                	<p class="bu_st1">필수적 정보: 성명, 주소, 휴대폰 번호</p>
+					                	<p class="bu_st1">선택적 정보: 전화번호, 중개사 등록번호</p>
+
+					                    <h4 class="titL"> <span>개인정보 수집 및 이용 목적</span> </h4>
+					                    <p class="bu_st1">주택 등록 및 사후 모니터링</p>
+					                    <!-- <p class="bu_st1">입주대상자가 전세임대 가능 물건을 온라인으로 검색 가능케 하여 고객 편의성 제공</p> -->
+
+					                    <h4 class="titL"> <span>개인정보 처리 및 보유기간</span> </h4>
+					                    <p class="bu_st1 pc_red f_weightB">보유기간: 게시삭제 시까지 또는 1년</p>
+
+					                    <h4 class="titL"> <span>정보제공의 거부에 따른 불이익</span> </h4>
+					                    <p class="bu_st1">개인정보를 제공하는 본 동의에 거부할 수 있으며, 개인정보 제공 거부 시 주택 등록을 할 수 없습니다.</p>
+					                </div>
+					            </dd>
+					        </dl>
+					        <dl class="">
+					            <dt>▶ 전세임대포털 - 개인정보 제3자 제공 동의 안내 </dt>
+					            <dd style=" padding-top: 10px; margin-top: 0px; padding-bottom: 10px; margin-bottom: 0px; display: none;">
+					                <p class="bu_s2" style="font-size:17px; line-height:1.4;">전세임대포털은 허위매물 여부 확인과 관련하여 아래와 같은 개인정보를 한국인터넷자율정책기구에 제공하고 있습니다.<br> 자세한 내용은 <a style="display:inline-block;background-position:left 7px; text-decoration: underline;" href="https://jeonse.lh.or.kr/jw/utility/fakeSale.do?mi=4140" title="매물신고운영" class="bu_linkL mgl5" target="_blank">매물신고운영</a> 또는 <a style="display:inline-block;background-position:left 7px;text-decoration: underline;" href="https://www.kiso.or.kr/%EC%A0%95%EB%B3%B4%EC%84%BC%ED%84%B0/%EB%B6%80%EB%8F%99%EC%82%B0%EB%A7%A4%EB%AC%BC%ED%81%B4%EB%A6%B0%EA%B4%80%EB%A6%AC%EC%84%BC%ED%84%B0-2/%EB%B6%80%EB%8F%99%EC%82%B0%EB%A7%A4%EB%AC%BC%ED%81%B4%EB%A6%B0%EA%B4%80%EB%A6%AC%EC%84%BC%ED%84%B0/" title="매물신고운영" class="bu_linkL mgl5" target="_blank">부동산매물클린관리센터</a>에서 확인해주세요.</p>
+					                <div class="box_st1">
+
+					                	<h4 class="titL" style="margin-top:0px; margin-bottom:10px;"> <span>제공받는 자</span> </h4>
+					                    <p class="bu_st1 pc_red f_weightB">한국인터넷자율정책기구</p>
+
+					                    <h4 class="titL" style="margin-top:10px; margin-bottom:10px;"> <span>개인정보 제공 목적</span> </h4>
+					                    <p class="bu_st1 pc_red f_weightB">허위매물 여부 확인</p>
+
+					                	<h4 class="titL" style="margin-top:10px; margin-bottom:10px;"> <span>제공하는 개인정보의 항목</span> </h4>
+					                	<p class="bu_st1">제공 정보: 매물 주소, 중개사 등록번호, 거래종류, 가격</p>
+
+					                    <h4 class="titL" style="margin-top:10px; margin-bottom:10px;"> <span>개인정보 보유 및 이용 기간</span> </h4>
+					                    <p class="bu_st1 pc_red f_weightB">제공 후 60일간 보관</p>
+
+					                    <h4 class="titL" style="margin-top:10px; margin-bottom:10px;"> <span>정보제공의 거부에 따른 불이익</span> </h4>
+					                    <p class="bu_st1" style="margin-bottom:10px;">한국인터넷자율정책기구에 개인정보를 제공하는 본 동의에 거부할 수 있으며, 개인정보 제공 거부 시 주택 등록을 할 수 없습니다.</p>
+					                </div>
+					            </dd>
+					        </dl>
+						</div>
+
+						<p class="pc_black mgt10">
+							<label>
+								<input type="checkbox" id="chkPrivacy" style="width:auto; height:auto;border:none;">
+								<span class="pc_blue" style="text-decoration: underline;">(필수)개인정보수집 및 이용 안내</span>를 확인하였으며, 입력된 정보는 실제 매물과 다름이 없습니다.
+							</label>
+							<label>
+								<br><input type="checkbox" id="chkKisoPrivacyNcsr" style="width:auto; height:auto;border:none;">
+								<span class="pc_blue" style="text-decoration: underline;">(필수)</span>한국인터넷자율정책기구에 개인정보 제공하는 것에 대해 동의합니다.
+							</label>
+							<label>
+								<br><input type="checkbox" id="chkPrivacyNcsr" style="width:auto; height:auto;border:none;">
+								<span class="pc_blue" style="text-decoration: underline;">(필수)</span>필수적인 항목에 대한 개인정보 수집 및 이용하는 것에 대해 동의합니다.
+							</label>
+							<label>
+								<br><input type="checkbox" id="chkPrivacySlct" style="width:auto; height:auto;border:none;">
+								선택적인 항목에 대한 개인정보 수집 및 이용하는 것에 대해 동의합니다.
+							</label>
+						</p>
+						<!-- 버튼 영역 -->
+						<div class="btn_st ar mgt20">
+							<a href="javascript:void(0)" onclick="window.close();" title="취소" class="red">취소</a>
+							<a href="javascript:void(0)" onclick="checkFrm(0)" title="임시저장" class="navy">임시저장</a>
+							<a href="javascript:void(0)" onclick="checkFrm(1)" title="등록" class="blue">등록</a>
+							<input type="hidden" name="jspPageUrl" value="nfu/ad/rm/web/rthousRegister.jsp">
+							<input type="hidden" name="rthousDelngSttus" id="rthousDelngSttus">
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		<div style="display:none !important;">
+			
+			<input id="hasLogined" type="hidden" value="true">
+		</div>
+
+		<script>
+			var latitude;
+			var longitude;
+
+			window.onload=function(){
+				setInterval(hasLoginedChk, 2000);
+				/*
+					초기 접속 시 현재 지역의 위치를 확인
+				*/
+				if(navigator.geolocation){
+					navigator.geolocation.getCurrentPosition(
+						function(pos) {
+							//허용 클릭 시->latitude: 위도, longitude : 경도
+						    latitude = pos.coords.latitude;
+						    longitude = pos.coords.longitude;
+							drawMap();
+						},
+						function(error) {
+							//차단 클릭 시
+							drawMap();
+						}
+					);
+				}
+				else
+					drawMap();
+			}
+
+			//로그인 여부 확인
+			var hasLogined = null;
+			function hasLoginedChk(){
+				hasLogined = opener.$("#hasLogined").eq(0).val();
+				if(hasLogined === "false"){
+					window.close();
+				}
+			}
+
+			// 200730 상세주소 숫자, '-'만 입력 가능
+			/*function fn_numHyChck(obj){
+				var regex = /^[0-9,-]+$/g;
+				var val = $(obj).val();
+				if(!regex.test(val)){
+					 val = val.replace(/(^0+)/, '');
+					$(obj).val(val);
+				}
+			};*/
+			$("#detailAddr").on("keyup", function() {
+			    /* $(this).val($(this).val().replace(/[^B|0-9,-]/g,""));
+			    $(this).val($(this).val().replace(/(^0+)/,""));
+			    $(this).val($(this).val().replace(/,/g,""));
+
+			    var firstCharacter = $(this).val().charAt(0);
+			    var count = $(this).val().split('B').length - 1;
+				if(firstCharacter=='B'){
+					if(count > 1){
+						document.getElementById("detailAddr").value = null;
+						return;
+					}
+				}else{
+					if(count > 0){
+						document.getElementById("detailAddr").value = null;
+						return;
+					}
+				} */
+			});
+			//총 주차대수 숫자만 입력 가능
+			$("#rthousParkngTotcnt").on("keyup", function() {
+			    $(this).val($(this).val().replace(/[^0-9]/g,""));
+			});
+			//가구당 주차대수 숫자만 입력 가능
+			$("#rthousParkngCnt").on("keyup", function() {
+			    $(this).val($(this).val().replace(/[^0-9\.]/g,""));
+			});
+			//중개업소 휴대폰번호 숫자만 입력 가능
+			$("#rthousMberMbtlnum").on("keyup", function() {
+			    $(this).val($(this).val().replace(/[^0-9\.]/g,""));
+			});
+			//중개업소 전화번호 숫자만 입력 가능
+			$("#rthousMberTelno").on("keyup", function() {
+			    $(this).val($(this).val().replace(/[^0-9\.]/g,""));
+			});
+			//집주인 연락처 숫자만 입력 가능
+			$("#ownerPhoneNum").on("keyup", function() {
+			    $(this).val($(this).val().replace(/[^0-9\.]/g,""));
+			});
+
+			//중복검사
+			$(document).on("click", ".chkAddrBtn", function() {
+				var rthousAddr = $("#rthousAddr").val().trim();
+				var detailAddr = $("#detailAddr").val().trim();
+				if (rthousAddr == "") {
+					alert("주소를 입력해주세요");
+					$("#rthousAddr").focus();
+					return false;
+				}
+				if (detailAddr == "") {
+					alert("상세주소를 입력해주세요");
+					$("#detailAddr").focus();
+					return false;
+				}
+
+				var addr = rthousAddr + " " + detailAddr;
+				var brkrBizrno = '2190150737';
+
+				$.ajax({
+					type : "POST",
+					datatype : "json",
+					data : {
+						rthousAddr : rthousAddr,
+						detailAddr : detailAddr,
+						brkrBizrno : brkrBizrno
+					},
+					url : "/jw/rm/manage/selectAddrInfo.do",
+					success : function(data) {
+						var resultMap = JSON.parse(data);
+						if ( resultMap.addrCnt == 0 ) {
+							 $("#chkAddrAt").val(addr);
+							 alert('등록 가능한 매물 주소 입니다.');
+						} else {
+							alert('본 계정 또는 같은 중개사에서 동일한 주소로 등록된 이력이 있습니다.\n주택등록 목록을 확인해주세요.');
+							$("#detailAddr").val("");
+						}
+					}
+				});
+
+			});
+
+
+			$(function() {
+				//동의 체크 시 펼치기
+				$('input#chkPrivacy').change(function() {
+					if($(this).is(":checked")){
+						if($(".slideList").children("dl:nth-child(2)").hasClass("open")){
+							$(".slideList").children("dl:nth-child(2)").removeClass("open");
+							$(".slideList").children("dl:nth-child(2)").children("dd").css("display","none");
+						}
+						$(".slideList").children("dl:nth-child(1)").addClass("open");
+						$(".slideList").children("dl:nth-child(1)").children("dd").css("display","block");
+					}else {
+						$(".slideList").children("dl:nth-child(1)").removeClass("open");
+						$(".slideList").children("dl:nth-child(1)").children("dd").css("display","none");
+					}
+				});
+				$('input#chkKisoPrivacyNcsr').change(function() {
+					if($(this).is(":checked")){
+						if($(".slideList").children("dl:nth-child(1)").hasClass("open")){
+							$(".slideList").children("dl:nth-child(1)").removeClass("open");
+							$(".slideList").children("dl:nth-child(1)").children("dd").css("display","none");
+						}
+						$(".slideList").children("dl:nth-child(2)").addClass("open");
+						$(".slideList").children("dl:nth-child(2)").children("dd").css("display","block");
+					}else {
+						$(".slideList").children("dl:nth-child(2)").removeClass("open");
+						$(".slideList").children("dl:nth-child(2)").children("dd").css("display","none");
+					}
+				});
+
+				// 월관리비 없음 체크박스 이벤트
+				$('#managectChk').click(function() {
+					if ($(this).prop('checked')) {
+						$('#rthousManagect').val('');
+						$('#rthousManagect').prop('disabled', true);
+						$('.managectInclsIem').prop('checked', false);
+						$('.managectInclsIem').prop('disabled', true);
+					} else {
+						$('#rthousManagect').prop('disabled', false);
+						$('.managectInclsIem').prop('disabled', false);
+					}
+				});
+
+				// 관리비 포함 항목 체크박스 이벤트
+				$('.managectInclsIem').click(function() {
+					var rthousManagectIncls = $('#rthousManagectIncls').val();
+
+					var output = $.map($('.managectInclsIem:checked'), function(n, i){
+					 return n.value;
+					}).join(',');
+
+					rthousManagectIncls = $('#rthousManagectIncls').val(output);
+				});
+
+				// jquery ui datepicker 사용
+				function setDatepicker(){
+					// 입주 가능일
+					$('#mvnPosblDe').empty();
+					$('#mvnPosblDe').append('<div style="float:left; text-align:left;"><input type="text" name="rthousMvnPosblDe" id="rthousMvnPosblDe" class="dateFormatChk" placeholder="yyyy-mm-dd" size="12"/><label for="rthousMvnImdtlPosbl"> <br><input type="checkbox" name="rthousMvnImdtlPosbl" id="rthousMvnImdtlPosbl" title="즉시입주"/><span style="font-size:14px;"> 즉시입주</span></label></div>');
+					$('#rthousMvnPosblDe').datepicker({showOn:"button", buttonImage:"/images/btn_calendar.png", dateFormat: "yy-mm-dd", showButtonPanel: true, changeMonth: true, yearRange: 'c-100:c+10',
+						closeText: '닫기',prevText: '이전 달',nextText: '다음 달',currentText: '오늘',
+						monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+						monthNamesShort: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+				        dayNames: ['일','월','화','수','목','금','토'],
+				        dayNamesShort: ['일','월','화','수','목','금','토'],
+				        dayNamesMin: ['일','월','화','수','목','금','토'],
+				        weekHeader: 'Wk',
+					    changeYear: true});
+					// 준공일
+					$('#competDe').empty();
+					$('#competDe').append('<div style="float:left;"><input type="text" name="rthousCompetDe" id="rthousCompetDe" class="dateFormatChk" placeholder="yyyy-mm-dd" size="12"/></div>');
+					$('#rthousCompetDe').datepicker({showOn:"button", buttonImage:"/images/btn_calendar.png", dateFormat: "yy-mm-dd", showButtonPanel: true, changeMonth: true, yearRange: 'c-100:c+10',
+						closeText: '닫기',prevText: '이전 달',nextText: '다음 달',currentText: '오늘',
+						monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+						monthNamesShort: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+				        dayNames: ['일','월','화','수','목','금','토'],
+				        dayNamesShort: ['일','월','화','수','목','금','토'],
+				        dayNamesMin: ['일','월','화','수','목','금','토'],
+				        weekHeader: 'Wk',
+					    changeYear: true});
+					// 행정기관 승인일자
+					$('#confmDe').empty();
+					$('#confmDe').append('<div style="float:left; text-align:left;"><select id="rthousAdmnstmachConfmStdr" name="rthousAdmnstmachConfmStdr" title="행정기관 승인기준 선택해주세요." class="mgb5"><option value="">선택</option><option value="USE_INSPCT_DE">사용검사일</option><option value="USE_CONFM_DE">사용승인일</option><option value="COMPET_CNFM_DE">준공인가일</option></select> <br><input type="text" name="rthousAdmnstmachConfmDe" id="rthousAdmnstmachConfmDe" class="dateFormatChk" placeholder="yyyy-mm-dd" size="12"/></div>');
+					$('#rthousAdmnstmachConfmDe').datepicker({showOn:"button", buttonImage:"/images/btn_calendar.png", dateFormat: "yy-mm-dd", showButtonPanel: true, changeMonth: true, yearRange: 'c-100:c+10',
+						closeText: '닫기',prevText: '이전 달',nextText: '다음 달',currentText: '오늘',
+						monthNames: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+						monthNamesShort: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
+				        dayNames: ['일','월','화','수','목','금','토'],
+				        dayNamesShort: ['일','월','화','수','목','금','토'],
+				        dayNamesMin: ['일','월','화','수','목','금','토'],
+				        weekHeader: 'Wk',
+					    changeYear: true});
+				}
+
+				setDatepicker();
+
+				// 입주 가능일, 준공일, 행정기관 승인일자 체크
+				$('.dateFormatChk').change(function(){
+					var dateRegex = /^(19|20)\d{2}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[0-1])$/;
+					var inputDate = $(this).val();
+					if(inputDate.length > 0){
+						if(!dateRegex.test($(this).val())){
+							alert("날짜 형식을 yyyy-mm-dd 형식으로 입력해주세요.");
+							$(this).val("");
+						}
+					}
+				});
+
+				// 즉시입주 체크박스 이벤트
+				$('#rthousMvnImdtlPosbl').click(function() {
+					if ($(this).prop('checked')) {
+						$('#rthousMvnImdtlPosbl').val('Y');
+					} else {
+						$('#rthousMvnImdtlPosbl').val('');
+					}
+				});
+
+				//동의 탭
+				$('.slideList .allShow').on('click', function(e) {
+	                e.preventDefault();
+	                if ($(this).hasClass('show')) {
+	                    $('.slideList > dl').removeClass('open')
+	                    $('.slideList > dl > dd').stop().slideUp(400);
+	                    //$(this).text('모두보기').removeClass('show');
+	                } else {
+	                    $('.slideList > dl').addClass('open');
+	                    $('.slideList > dl > dd').stop().slideDown(400);
+	                    //$(this).text('모두닫기').addClass('show');
+	                }
+	            });
+
+	            $('.slideList dt').on('click', function() {
+	                if ($(this).parent('dl').hasClass('open')) {
+	                    $('.slideList > dl').removeClass('open');
+	                    $('.slideList > dl > dd').stop().slideUp(400);
+	                    //$('.slideList .allShow').text('모두보기').removeClass('show');
+	                } else {
+	                    $('.slideList > dl').removeClass('open')
+	                    $('.slideList > dl > dd').stop().slideUp(400);
+	                    $($(this)).next('dd').stop().slideDown(400);
+	                    $($(this)).parent('dl').addClass('open');
+	                }
+	            });
+			});
+
+			// 집주인 동의 체크
+			function checkOwner(element){
+				$('#isUseSms').val(element.checked);
+				if(element.checked){
+					$('#ownerPhoneNum').attr('disabled', false);
+				}else{
+					$('#ownerPhoneNum').attr('disabled', true);
+				}
+			}
+
+			/* 20200902 중복주택등록 방지 */
+			var doubleSubmitFlag = false;
+			function doubleSubmitCheck(){
+				if(doubleSubmitFlag){
+					return doubleSubmitFlag;
+				}else{
+					doubleSubmitFlag = true;
+					return false;
+				}
+			}
+
+
+			//월관리비
+			var returnManagect=null;
+			var returnVal=null;
+
+			$("#rthousManagect").on("keyup", function() {
+				f1();
+			});
+			function f1(){
+				returnManagect = $('#rthousManagect').val().replace(/[^0-9\.]/g,"");
+				returnVal = returnManagect;
+
+				var count = returnVal.split('.').length - 1;
+				if(count > 1){
+					document.getElementById("rthousManagect").value = null;
+					return;
+				}
+
+				if(returnManagect >= 1000){
+ 					alert('월관리비 단위는 만원입니다. 금액을 다시 확인해주세요.');
+ 					document.getElementById("rthousManagect").value = null;
+ 					return;
+				}
+
+				$("#rthousManagect").val(returnVal);
+			}
+			$("#rthousManagect").on("contextmenu", function() {
+				return false;
+			});
+
+			// 임대주택등록
+			function checkFrm(status) {
+				if(doubleSubmitCheck()){
+					return; // 중복주택등록 방지
+				}
+
+				var validation = registerValidation();
+
+				if(validation){
+					// 집주인 동의 확인
+					if($('#ownerPhoneNum').val() == "" || $('#ownerPhoneNum').val() == null){
+						if(confirm('\"집주인확인\" 문구 출력을 원할 경우 [확인]을 눌러 집주인 동의 확인란에 연락처를 입력해주세요.\n원하지 않을 경우 [취소]를 눌러 매물등록을 계속 진행해주세요.')){
+							$('#isUseSmsChk').focus();
+							$('#ownerConfm').css({
+								"border" : "2px solid #000000"
+							});
+							doubleSubmitFlag = false;
+							return false;
+						}else{
+							doubleSubmitFlag = false;
+						}
+					}
+
+
+					var message = "";
+					if (status == 0) {
+						message = "입력한 정보로 매물 정보로 신규 매물을  임시 저장합니다";
+					} else {
+						message = "입력한 정보로 매물 정보로 신규 매물을  등록합니다";
+					}
+
+					var check = confirm(message + '.\n진행하시겠습니까?');
+
+					if (check) {
+						// 거래상태(0:임시저장, 1:거래가능)
+						$('#rthousDelngSttus').val(status);
+
+						// 상세주소
+						var detailAddr = $('#detailAddr').val();
+						$('#rthousRdnmadrDetail').val(detailAddr);
+						$('#rthousLnmAdresDetail').val(detailAddr);
+
+						// 해당 동
+						var bulddong = $('#bulddong').val();
+						$('#rthousBulddong').val(bulddong);
+
+						// 기타주소
+						var etcAddr = $('#etcAddr').val();
+						$('#rthousRdnmadrEtc').val(etcAddr);
+						$('#rthousLnmAdresEtc').val(etcAddr);
+
+						// 해당 층rthous
+						if ($('#floorKind').val() == '+') {
+							$('#rthousFloor').val($('#floor').val());
+						} else {
+							$('#rthousFloor').val($('#floor').val() * -1);
+						}
+
+						// 보증금/월세(거래유형)
+						if ($('#rthousRentStle').val() == 1) { // 전세
+							$('#rthousGtn').val($('#gtn').val());
+						} else { // 월세, 반전세
+							$('#rthousGtn').val($('#gtn').val());
+							$('#rthousMtht').val($('#mtht').val());
+							$('#rthousMthtThou').val($('#mthtThou').val());
+						}
+
+						//html5 지원 여부 파악
+						var formData = "";
+						if (fn_html5Support() && fn_FormDataSupport("rthousRegisterFrm")) {
+
+							// 자바 스크립트 in -> 명시된 속성이 명시된 객체에 존재하면 true 반환, 속성 in 객체명
+							formData = new FormData($("#rthousRegisterFrm")[0]);
+
+							for(key in real_file){
+								formData.append("multifile", real_file[key]);
+								formData.append("file", real_file[key]);
+							}
+
+						} else {
+							formData = $("#rthousRegisterFrm").serialize();
+						}
+
+						if(fn_html5Support() && fn_FormDataSupport("rthousRegisterFrm")) {
+							$("#rthousRegisterFrm").ajaxSubmit({
+								url : 'addRthous.do', //request 보낼 서버의 경로
+								type : 'post', // 메소드(get, post, put 등)
+								async : false,
+								formData : formData,
+								dataType : 'json',
+								processData: false,
+								contentType: false,
+								cache: false,
+								beforeSend: function() {
+							        //마우스 커서를 로딩 중 커서로 변경
+							        $('html').css("cursor", "wait");
+							        doubleSubmitCheck();
+							    },
+								success : function(data) { //서버로부터 정상적으로 응답이 왔을 때 실행
+									var rthousId = data.rthousId;
+									if(status==1){
+										if(sendIntrstAreaSms(rthousId) == 1){
+											opener.parent.location.reload();
+											window.close();
+										}
+									}else{
+										opener.parent.location.reload();
+										window.close();
+									}
+								}
+							});
+						}else {
+					        $("#rthousRegisterFrm").ajaxForm({
+								url : 'addRthous.do', //request 보낼 서버의 경로
+								type : 'post', // 메소드(get, post, put 등)
+								async : false,
+								formData : formData,
+								dataType : 'json',
+								processData: false,
+								contentType: false,
+								cache: false,
+								beforeSend: function() {
+							        //마우스 커서를 로딩 중 커서로 변경
+							        $('html').css("cursor", "wait");
+							        doubleSubmitCheck();
+							    },
+								success : function(data) { //서버로부터 정상적으로 응답이 왔을 때 실행
+									var rthousId = data.rthousId;
+									if(status==1){
+										if(sendIntrstAreaSms(rthousId) == 1){
+											opener.parent.location.reload();
+											window.close();
+										}
+									}else{
+										opener.parent.location.reload();
+										window.close();
+									}
+								}
+					        }).submit();
+						}
+					}else{
+						doubleSubmitFlag = false;
+					}
+				}
+			};
+
+			// 임대주택등록 valiation
+			function registerValidation(){
+
+				// 주소 입력 확인
+				if(!$('#rthousAddr').val()){
+					alert('주소를 입력하세요.');
+					$('#rthousAddr').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 상세주소 입력 확인
+				if(!$('#detailAddr').val()){
+					alert('상세주소를 입력하세요.');
+					$('#detailAddr').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				//중복검사 체크
+				var addr = $("#rthousAddr").val().trim() + " " + $("#detailAddr").val().trim();
+				var chkAddrAt = $("#chkAddrAt").val();
+
+				if ( chkAddrAt == "") {
+					 alert("주소 중복검사를 해주세요.");
+					 $('.chkAddrBtn').focus();
+					 doubleSubmitFlag = false;
+					 return;
+				}
+
+				if ( chkAddrAt != addr) {
+					 alert("주소 중복검사를 해주세요.");
+					 $('.chkAddrBtn').focus();
+					 doubleSubmitFlag = false;
+					 return false;
+				}
+
+				// 제목 빈 칸 확인
+				if(!$('#rthousNm').val()){
+					alert('제목을 입력하세요.');
+					$('#rthousNm').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 보증금 입력 확인(거래종류 상관없이 확인)
+				if(!$('#gtn').val()){
+					alert('보증금을 입력하세요.');
+					$('#gtn').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 보증금 금액 확인
+				if($('#gtn').val()>60000){
+					alert('보증금은 6억원을 초과할 수 없습니다. 금액을 확인해주세요.');
+					$('#gtn').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 월세 입력 확인(거래 종류가 월세, 반전세 일 때)
+				if($('#rthousRentStle').val() != 1 && !$('#mtht').val()){
+					alert('월세를 입력하세요.');
+					$('#mtht').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+				if($('#rthousRentStle').val() != 1 && !$('#mthtThou').val()){
+					alert('월세를 입력하세요.');
+					$('#mthtThou').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 월관리비 입력 확인
+				if(!$('#managectChk').is(':checked') && !$('#rthousManagect').val()){
+					alert('월관리비를 입력하세요.');
+					$('#rthousManagect').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 월관리비 입력 확인
+				if($('#rthousManagect').val()>=1000){
+					alert('월관리비 단위는 만원입니다. 금액을 다시 확인해주세요.');
+					$('#rthousManagect').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 해당 동 입력 확인(공동주택)
+				if($('#rthousBdtyp').val()==0 || $('#rthousBdtyp').val()==5){
+					if(!$('#bulddong').val()){
+						alert('건물의 동을 입력하세요.');
+						$('#bulddong').focus();
+						doubleSubmitFlag = false;
+						return false;
+					}
+				}
+
+				/* 주택 유형(매물 종류) 선택에 따른 동·층수 필수 여부 체크 : 단독주택(단독, 다가구) 외 주택-동·층수 포함 */
+				/* if($('#rthousBdtyp').val() != 1 && $('#rthousBdtyp').val() != 2){ */
+					// 저층, 중층, 고층 선택 여부 확인
+					if($('input[name=rthousFloorHeight]:checked').val() === undefined) {
+						alert('층 높이를 선택하세요.');
+						$('input[name=rthousFloorHeight]').focus();
+						doubleSubmitFlag = false;
+						return false;
+					}
+
+					// 해당 층 입력 확인, 0 확인
+					if(!$('#floor').val() || $('#floor').val() == 0){
+						alert('해당 층을 입력하세요.');
+						$('#floor').focus();
+						doubleSubmitFlag = false;
+						return false;
+					}
+
+					// 전체 층 입력 확인, 0 확인
+					if(!$('#rthousAllFloor').val() || $('#rthousAllFloor').val() == 0){
+						alert('전체 층을 입력하세요.');
+						$('#rthousAllFloor').focus();
+						doubleSubmitFlag = false;
+						return false;
+					}
+
+					// 층 노출 여부 확인
+					if($('input[name=rthousFloorShow]:checked').val() === undefined) {
+						alert('층 노출 여부를 선택하세요.');
+						$('input[name=rthousFloorShow]').focus();
+						doubleSubmitFlag = false;
+						return false;
+					}
+
+				/* } */
+
+				// 전체 층 < 해당 층 확인
+				if(($('#rthousAllFloor').val() && $('#floor').val()) && parseInt($('#rthousAllFloor').val()) < parseInt($('#floor').val())){
+					alert('전체 층, 해당 층을 확인해주세요.');
+					$('#floor').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 공급면적 입력 확인, 0 확인
+				if(!$('#rthousHppr').val() || $('#rthousHppr').val() == 0){
+					alert('공급면적을 입력하세요.');
+					$('#rthousHppr').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 전용면적 입력 확인, 0 확인
+				if(!$('#rthousExclAr').val() || $('#rthousExclAr').val() == 0){
+					alert('전용면적을 입력하세요.');
+					$('#rthousExclAr').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 공급면적 < 전용면적 확인
+				if(($('#rthousHppr').val() && $('#rthousExclAr').val()) && parseInt($('#rthousHppr').val()) < parseInt($('#rthousExclAr').val())){
+					alert('공급면적, 전용면적을 확인해주세요.');
+					$('#rthousHppr').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				//건축물 용도 확인
+				if(!$('#rthousBildPrpos').val()){
+					alert('건축물 용도를 선택하세요.');
+					$('#rthousBildPrpos').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 방 수 입력 확인, 0 확인
+				if(!$('#rthousRoomCo').val() || $('#rthousRoomCo').val() == 0){
+					alert('방 수를 입력하세요.');
+					$('#rthousRoomCo').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				//입주가능일 확인
+				if(!$('#rthousMvnPosblDe').val()){
+					alert('입주 가능일을 입력하세요.');
+					$('#rthousMvnPosblDe').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 화장실 수 입력 확인, 0 확인
+				if(!$('#rthousToiletCo').val() || $('#rthousToiletCo').val() == 0){
+					alert('화장실 수를 입력하세요.');
+					$('#rthousToiletCo').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				//행정기관 승인 기준 확인
+				if(!$('#rthousAdmnstmachConfmStdr').val()){
+					alert('행정기관 승인 기준을 선택하세요.');
+					$('#rthousAdmnstmachConfmStdr').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				//행정기관 승인일자 확인
+				if(!$('#rthousAdmnstmachConfmDe').val()){
+					alert('행정기관 승인일자를 입력하세요.');
+					$('#rthousAdmnstmachConfmDe').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 입주 가능일 < 준공일 확인
+				if(($('#rthousMvnPosblDe').val() && $('#rthousCompetDe').val()) && $('#rthousMvnPosblDe').val() < $('#rthousCompetDe').val()){
+					alert('입주 가능일, 준공일을 확인해주세요.');
+					$('#rthousMvnPosblDe').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				//총 주차대수 확인
+				if(!$('#rthousParkngTotcnt').val()){
+					alert('총 주차대수를 선택하세요.');
+					$('#rthousParkngTotcnt').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				//가구 당 주차대수 확인
+				if(!$('#rthousParkngCnt').val()){
+					alert('가구 당 주차대수를 선택하세요.');
+					$('#rthousParkngCnt').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				//방향 확인
+				if(!$('#rthousDrc').val()){
+					alert('방향을 선택하세요.');
+					$('#rthousDrc').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				//방향의 기준 확인
+				if(!$('#rthousDrcStdr').val()){
+					alert('방향의 기준을 선택하세요.');
+					$('#rthousDrcStdr').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				//방향의 기준 기타 입력 확인
+				if($('#rthousDrcStdr').val()=="기타" && !$('#rthousDrcStdrEtc').val()){
+					alert('방향의 기준을 입력하세요.');
+					$('#rthousDrcStdrEtc').focus();
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 사진 첨부 확인(사진 등록 시에만 확인)
+				if(total_file_list.length > 0){
+					if(total_file_list.length > 15){
+						alert('사진 등록은 최대 15장(총 20MB이내)까지 가능합니다.');
+						$('#input_imgs').focus();
+						doubleSubmitFlag = false;
+						return false;
+					}
+				}
+
+				// 집주인 동의 체크, 연락처 확인
+				if($('#isUseSmsChk').is(':checked') && !$('#ownerPhoneNum').val()){
+					alert('집주인 연락처를 입력하세요.');
+					$('#ownerPhoneNum').focus();
+					doubleSubmitFlag = false;
+					return false;
+				} else if ($('#isUseSmsChk').is(':checked') && $('#ownerPhoneNum').val()) {
+					// 집주인 연락처 양식 확인
+					if($('#ownerPhoneNum').val().length != 11 || $('#ownerPhoneNum').val().substring(0, 3) != '010') {
+						alert('집주인 연락처를 확인하세요.');
+						$('#ownerPhoneNum').focus();
+						doubleSubmitFlag = false;
+						return false;
+					}
+				}
+
+				// 개인정보처리방침 확인
+				//실제 매물과 다름 없음 동의
+				if(!$('#chkPrivacy').is(':checked')){
+					alert('개인정보수집 및 이용 안내를 확인하였으며, 입력된 정보는 실제 매물과 다름이 없음에 동의해주세요');
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				// 필수 동의
+				if(!$('#chkPrivacyNcsr').is(':checked')){
+					alert('필수적인 항목에 대한 개인정보 수집 및 이용하는 것에 대해 동의해주세요');
+					doubleSubmitFlag = false;
+					return false;
+				}
+				// 선택 동의
+				if($('#rthousMberMbtlnum').val() || $('#rthousMberTelno').val() || $('#ownerPhoneNum').val()){
+
+					if(!$('#chkPrivacySlct').is(':checked')){
+						alert('선택적인 항목에 대한 개인정보 수집 및 이용하는 것에 대해 동의해주세요');
+						doubleSubmitFlag = false;
+						return false;
+					}
+				}
+				// KISO 개인정보 제공 동의
+				if(!$('#chkKisoPrivacyNcsr').is(':checked')){
+					alert('한국인터넷자율정책기구에 개인정보 제공하는 것에 대해 동의해주세요');
+					doubleSubmitFlag = false;
+					return false;
+				}
+
+				return true;
+			}
+
+			// 숫자만 입력가능하도록 input 제어
+			function onlyNum(evt, idx){
+				var code = (evt.which) ? evt.which : evt.keyCode;
+				if ((code< 48) || (code > 57)){
+					if(code != 46 || idx == 1){
+						alert("숫자만 입력 가능합니다.");
+				        evt.returnValue=false;
+					}
+			    }
+			}
+
+			// 숫자 외 문자 확인
+			function checkNum(element){
+		    	var pattern_eng = /[a-zA-Z]/;	// 문자
+		    	var pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/; // 특수문자
+		    	var pattern_kor = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/; // 한글체크
+
+		    	if(pattern_eng.test(element.value)){
+		    		element.value = element.value.replace(pattern_eng, '');
+		    	}
+
+		    	if(pattern_spc.test(element.value)){
+		    		element.value = element.value.replace(pattern_spc, '');
+		    	}
+
+		    	if(pattern_kor.test(element.value)){
+		    		alert("숫자만 입력 가능합니다.");
+		    		element.value = element.value.replace(pattern_kor, '');
+		    	}
+			}
+
+			// 면적 계산하기(제곱미터 → 평)
+			function calcArea(element) {
+			   	var pattern_eng = /[a-zA-Z]/;	// 문자
+		    	var pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/; // 특수문자
+		    	var pattern_kor = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/; // 한글체크
+
+	    		if(pattern_eng.test(element.value)){
+	    			element.value = element.value.replace(pattern_eng, '');
+		    	}else if(pattern_spc.test(element.value)){
+		    		element.value = element.value.replace(pattern_spc, '');
+		    	}else if(pattern_kor.test(element.value)){
+		    		alert("숫자만 입력 가능합니다.");
+		    		element.value = element.value.replace(pattern_kor, '');
+		    	}else{
+		    		if(element.id == 'rthousHppr'){
+						$('#rthousHpprConversion').text((element.value * 0.3025).toFixed(2));
+					}
+					if(element.id == 'rthousExclAr'){
+						$('#rthousExclArConversion').text((element.value * 0.3025).toFixed(2));
+					}
+		    	}
+			}
+
+			function openPictureWindow() {
+				var ret = window.open("./photo.html", "사진 등록", "width=800,height=400");
+			}
+
+			// 주소 찾기 버튼 클릭 이벤트
+			function findAddress() {
+				new daum.Postcode({
+					oncomplete : function(data) {
+						$("#rthousAddr").val(data.address);
+
+						if(data.roadAddress)
+							$("#rthousRdnmadr").val(data.roadAddress);
+						else
+							$("#rthousRdnmadr").val(data.autoRoadAddress);
+
+						if(data.userSelectedType == 'R'){		// 도로명 주소 선택
+							if(data.autoJibunAddress != '')
+								$("#rthousLnmAdres").val(data.autoJibunAddress);
+							else
+								$("#rthousLnmAdres").val(data.jibunAddress);
+						}
+						else{		// data.userSelectedType == 'J' 지번 주소 선택
+							$("#rthousLnmAdres").val(data.jibunAddress);
+						}
+						$("#sggCd").val(data.bcode); 
+						drawMap();
+					}
+				}).open();
+			}
+
+			// 지도
+			function drawMap(){
+				// x, y 좌표
+				var mapContainer = document.getElementById('rthousRegisterMap'); // 지도를 표시할 div
+				var mapOption;
+
+				if(latitude && longitude){
+					//접속 지역을 확인할 수 있는 경우 해당 위치로 이동
+					mapOption = {
+						center: new kakao.maps.LatLng(latitude, longitude), // 지도의 중심좌표
+						level: 5 // 지도의 확대 레벨
+					};
+				}
+				else{
+					//접속 지역이 확인되지 않는 경우 서울
+					mapOption = {
+						center: new kakao.maps.LatLng(37.566826005485716, 126.9786567859313), // 지도의 중심좌표
+						level: 5 // 지도의 확대 레벨
+					};
+				}
+
+				// 지도를 생성합니다
+			   var map = new kakao.maps.Map(mapContainer, mapOption);
+			   map.setDraggable(false)
+			   map.setZoomable(false);
+
+			 	// 주소-좌표 변환 객체를 생성합니다
+			    var geocoder = new kakao.maps.services.Geocoder();
+			 	var coords;
+
+			 	if($('#rthousRdnmadr').val()){
+				 	// 주소로 좌표를 검색합니다
+				    geocoder.addressSearch($('#rthousRdnmadr').val(), function(result, status) {
+				        // 정상적으로 검색이 완료됐으면
+				         if (status === kakao.maps.services.Status.OK) {
+				            coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+
+				        	$('#rthousXcnts').val(result[0].x);
+				        	$('#rthousYdnts').val(result[0].y);
+
+				        	// 결과값으로 받은 위치를 마커로 표시합니다
+				            var marker = new kakao.maps.Marker({
+				                map: map,
+				                position: coords
+				            });
+				            // 지도의 중심을 결과값으로 받은 위치로 이동시킵니다
+				            map.setCenter(coords);
+				        }
+				    });
+			 	}
+
+		 	   kakao.maps.event.addListener(map, 'idle', function() {
+		 		   if(coords)
+		 		 	 map.setCenter(coords);
+		 	   });
+			}
+
+			/* 주택 유형 선택 시 on-off change*/
+			function selectRoomType(element){
+				var selItem = $(element).data('value');
+
+				if(element.getAttribute('class') == 'off' || !element.getAttribute('class')){
+					element.setAttribute('class', 'on');
+
+					for(var i = 0; i < 7; i++) {
+						if(i != selItem)
+							document.getElementById("roomType" + i).setAttribute('class', 'off');
+					}
+				}
+				$('#rthousBdtyp').val(selItem);
+
+				/* 아파트,오피스텔일 경우 동 필수, 그 외 주택일 경우 동 선택 */
+				if($('#rthousBdtyp').val()==0 || $('#rthousBdtyp').val()==5){
+					$("#bdDong").show();
+				}else{
+					$("#bdDong").hide();
+				}
+
+				/* 단독주택(단독/다가구)일  경우 층수 선택, 그 외 주택일 경우 층수 필수 */
+				/* if($('#rthousBdtyp').val()==1 || $('#rthousBdtyp').val()==2){
+					$("#bdFloor").hide();
+				}else{
+					$("#bdFloor").show();
+				} */
+			}
+
+			/* 주택 임대 유형 선택 시 on-off change */
+			function selectRentStle(element){
+				var childrenNum = $('#rentStle').children().length + 1;
+				var selItem = $(element).data('value');
+				$('#rthousRentStle').val(selItem);
+
+				if(element.getAttribute('class') == 'off' || !element.getAttribute('class')){
+					element.setAttribute('class', 'on');
+
+					for(var i = 1; i < childrenNum; i++) {
+						if(i != selItem)
+							document.getElementById("rentStle" + i).setAttribute('class', 'off');
+					}
+				}
+
+				if(selItem == 1){
+					$('#mtht').val('');
+					$('#mthtThou').val('');
+					$('#thMtht').text('월세');
+					$('#mtht').attr('disabled', true);
+					$('#mthtThou').attr('disabled', true);
+				}else{
+					$('#thMtht').text('* 월세');
+					$('#mtht').attr('disabled', false);
+					$('#mthtThou').attr('disabled', false);
+				}
+			}
+
+			// 방향의 기준 기타 선택 시 입력란 출력
+			$('#rthousDrcStdr').change(function(){
+				if($(this).val()=="기타"){
+					$('#rthousDrcStdrEtc').show();
+				}else{
+					$('#rthousDrcStdrEtc').val("");
+					$('#rthousDrcStdrEtc').hide();
+				}
+			});
+
+
+			$(function(){
+				var pattern_kor=/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
+		        var pattern_eng=/[a-zA-Z]/;
+		        var pattern_blank=/\s/;
+		        var pattern_endline=/(\n|\r\n)/;
+
+		        var func = function(name, mByte){
+
+		        	$(name).keyup(function(){
+
+			        	var content = $(this).val();
+			            var byte_n = 0;
+			            var maxByte= mByte;
+			            var temp;
+			            var contentLength = 0;
+
+
+			            for(i=0; i<content.length; i+=1)
+			            {
+			                temp=content.charAt(i);
+			                if(pattern_kor.test(temp)) {
+			                    byte_n+=3;
+			                } else if(pattern_eng.test(temp)) {
+			                    byte_n+=1;
+			                } else if(pattern_blank.test(temp)) {
+			                    if(pattern_endline.test(temp)) {
+			                        byte_n+=2;
+			                    } else {
+			                        byte_n+=1;
+			                    }
+			                } else {
+			                    byte_n+=1;
+			                }
+			                if(byte_n <= maxByte) contentLength = i + 1;
+			            }
+
+		                if(byte_n > maxByte){
+							alert(maxByte+'byte 이하로 입력하세요');
+							returnVal = content.substr(0, contentLength); //문자열 자름
+							$(name).val(returnVal);
+						}
+					});
+		        }
+		      	func(rthousNm, 1000);
+			    func(rthousSumryKwrd, 1000);
+				func(rthousSumryDc, 3000);
+			});
+
+			//등록 매물 문자 전송
+			function sendIntrstAreaSms(rthousId){
+				var retData;
+				$.ajax({
+					url : '/jw/rm/sendIntrstAreaSms.do',
+					type : 'post',
+					async : false,
+					data : $("#rthousRegisterFrm").serialize() + '&' + $.param({'rthousId' : rthousId}),
+					success : function(data){},
+					complete : function(){
+						retData = 1;
+					}
+				});
+				return retData;
+			}
+
+
+
+
+		</script>
+	
+<div id="ui-datepicker-div" class="ui-datepicker ui-widget ui-widget-content ui-helper-clearfix ui-corner-all"></div>
+                <footer class="site-footer">
+        <div class="site-footer-inner">
+            <div class="footer-links">
+                <a href="#">회사소개</a>
+                <a href="#" style="color: #fca5a5;">개인정보처리방침</a>
+                <a href="#">이용약관</a>
+            </div>
+            <div class="footer-info">
+                <strong class="footer-strong">신대림공인중개사사무소 (제호: 공인중개사소식지)</strong>
+                <span>대표/발행·편집인: 조항준</span> <span>등록번호: 서울, 아53763</span> <span>등록일자: 2021년 06월 14일</span><br>
+                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 02-375-4489</span> <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
+            </div>
+        </div>
+    </footer>
+</body></html>

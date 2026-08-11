@@ -1453,12 +1453,13 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         if expansion_mode == "auto":
             expansion_mode = CURRENT_EXPANSION_MODE
         if is_expanded and expansion_mode == "none":
-            expansion_mode = "strict"
+                    expansion_mode = "strict"
         import os
+        from datetime import datetime
         os.makedirs("시세브리핑", exist_ok=True)
         masked_address = mask_address_string(address)
         safe_addr = "".join([c for c in address if c not in (" ", "-", "_")]).strip()
-        filename = f"시세브리핑/시세브리핑_{safe_addr.replace(" ", "_")}.txt"
+        filename = f"시세브리핑/시세브리핑_{safe_addr.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         apt_groups = []
         if prop_type_name == "아파트":
             all_items = trades + jeonses + wolses
@@ -1725,8 +1726,9 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         import shutil
         unified_dir = "종합분석보고서"
         os.makedirs(unified_dir, exist_ok=True)
-        unified_txt = os.path.join(unified_dir, f"시세브리핑_{safe_addr.replace(' ', '_')}.txt")
-        unified_pdf = os.path.join(unified_dir, f"시세브리핑_{safe_addr.replace(' ', '_')}.pdf")
+        time_str = datetime.now().strftime('%Y%m%d_%H%M%S')
+        unified_txt = os.path.join(unified_dir, f"시세브리핑_{safe_addr.replace(' ', '_')}_{time_str}.txt")
+        unified_pdf = os.path.join(unified_dir, f"시세브리핑_{safe_addr.replace(' ', '_')}_{time_str}.pdf")
         shutil.copy2(filename, unified_txt)
         if os.path.exists(pdf_filename):
             shutil.copy2(pdf_filename, unified_pdf)

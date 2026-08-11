@@ -1,0 +1,17 @@
+{
+  "profile": {
+    "id": "1039d621-af0f-4a8b-8e6e-76c3f83e2a0f",
+    "created_at": "2026-05-02T04:47:29.495437+00:00",
+    "name": "조항준",
+    "role": "admin",
+    "office_address": "서울 마포구 성산동 137-21",
+    "phone": "01091280586",
+    "office_name": "신대림공인중개사사무소",
+    "registration_number": "92380000-4131"
+  },
+  "token": {
+    "access_token": "eyJhbGciOiJFUzI1NiIsImtpZCI6IjNiMjA5ODU3LTdmM2ItNDI4OS04NTA2LTAyY2VlODEyMWZjZCIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJodHRwczovL3lxb2xrdm1yZnZ1bXB3bHhqaW1wLnN1cGFiYXNlLmNvL2F1dGgvdjEiLCJzdWIiOiIxMDM5ZDYyMS1hZjBmLTRhOGItOGU2ZS03NmMzZjgzZTJhMGYiLCJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNzg1MzIyMDIwLCJpYXQiOjE3ODUzMTg0MjAsImVtYWlsIjoibm8xa29yZWFsdG9yQG5hdGUuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCIsImtha2FvIl19LCJ1c2VyX21ldGFkYXRhIjp7ImF2YXRhcl91cmwiOiJodHRwOi8vay5rYWthb2Nkbi5uZXQvZG4vS1o3TzIvZEpNY2FmazU4UDMvekRSS01BczhsY1N1U012S1N2RXlxSy9pbWdfNjQweDY0MC5qcGciLCJlbWFpbCI6Im5vMWtvcmVhbHRvckBuYXRlLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmdWxsX25hbWUiOiLpnZLom5kg7KGw7ZWt7KSAIiwiaXNzIjoiaHR0cHM6Ly9rYXBpLmtha2FvLmNvbSIsIm5hbWUiOiLpnZLom5kg7KGw7ZWt7KSAIiwicGhvbmVfdmVyaWZpZWQiOmZhbHNlLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiLpnZLom5kg7KGw7ZWt7KSAIiwicHJvdmlkZXJfaWQiOiI0ODY2NzQ3NDc2Iiwic3ViIjoiNDg2Njc0NzQ3NiIsInVzZXJfbmFtZSI6IumdkuibmSDsobDtla3spIAifSwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTc4NDE4ODE2NX1dLCJzZXNzaW9uX2lkIjoiZWJmYzhkNjUtODhmNC00MzkxLTkzOWUtNDA1OTk0NDc1MjA5IiwiaXNfYW5vbnltb3VzIjpmYWxzZX0.VQGfGniT2DdMKK2CW9CyxRWF5tD_q2_8rvyToPMDB-vS_QvNQizRCdFl0d8wuIYlQNVLAp7H5BLkhEsWw_-xdQ",
+    "refresh_token": "5pqxsjfqpzx5",
+    "user_id": "1039d621-af0f-4a8b-8e6e-76c3f83e2a0f"
+  }
+}

@@ -109,6 +109,106 @@
             font-family: 'Jua', sans-serif;
             font-size: 18px;
         }
+        
+        /* Modal Overlay & Input styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        .name-modal {
+            background: #fff;
+            padding: 30px;
+            border-radius: 24px;
+            text-align: center;
+            width: 80%;
+            max-width: 320px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .name-modal h2 {
+            font-family: 'Jua', sans-serif;
+            color: #ff758c;
+            margin-top: 0;
+        }
+        .name-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ff758c;
+            border-radius: 12px;
+            font-size: 16px;
+            margin: 15px 0;
+            text-align: center;
+            box-sizing: border-box;
+            font-family: 'Nunito', sans-serif;
+        }
+        .name-btn {
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        /* YouTube Channel Styles */
+        .youtube-link-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: #f8f9fa;
+            border: 2px solid #dfe6e9;
+            border-radius: 16px;
+            margin-bottom: 12px;
+            font-family: 'Nunito', 'Jua', sans-serif;
+            font-weight: bold;
+        }
+        .youtube-link-info {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #2d3436;
+        }
+        .youtube-link-info:hover {
+            color: #ff758c;
+        }
+        .youtube-icon {
+            font-size: 24px;
+            margin-right: 12px;
+        }
+        .delete-btn {
+            background: none;
+            border: 2px solid #ff758c;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff758c;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 0;
+        }
+        .delete-btn:hover {
+            background: #ff758c;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -135,6 +235,30 @@
         <ul class="log-list" id="log-list">
             <div class="empty-state">데이터를 불러오는 중입니다...</div>
         </ul>
+    </div>
+    
+    <div class="dashboard-container" style="margin-top: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="font-family: 'Jua', sans-serif; color: #2c3e50; margin: 0;">📺 추천 유튜브 학습 채널 관리</h3>
+            <button onclick="showAddYoutubeModal()" style="border: none; background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); color: #4a69bd; font-family: 'Jua', sans-serif; padding: 8px 16px; border-radius: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(161, 196, 253, 0.3); transition: all 0.2s;">➕ 추가</button>
+        </div>
+        <div id="youtube-list">
+            <div class="empty-state">유튜브 채널을 불러오는 중입니다...</div>
+        </div>
+    </div>
+
+    <!-- 유튜브 링크 추가 모달 -->
+    <div class="modal-overlay hidden" id="youtube-modal-overlay">
+        <div class="name-modal">
+            <h2 style="font-size:22px; margin-bottom:15px; font-family: 'Jua', sans-serif;">📺 추천 링크 추가 📺</h2>
+            <input type="text" id="yt-title" class="name-input" placeholder="채널/영상 제목 (예: 과학드림)">
+            <input type="text" id="yt-url" class="name-input" placeholder="유튜브 링크 URL">
+            <input type="text" id="yt-icon" class="name-input" placeholder="이모지 하나 (기본값: 📺)" value="📺">
+            <div style="display:flex; gap:10px; margin-top: 20px;">
+                <button class="name-btn" onclick="submitYoutubeModal()">추가하기 💖</button>
+                <button class="name-btn" style="background: #dfe6e9; color: #636e72; box-shadow:none;" onclick="closeYoutubeModal()">취소</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -224,13 +348,106 @@
             document.getElementById('eng-count').innerText = engCount;
         }
 
+        async function loadYoutubeLinks() {
+            const { data, error } = await supabaseClient
+                .from('study_words')
+                .select('*')
+                .eq('subject', 'YOUTUBE_LINK')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("YouTube 로드 에러:", error);
+                document.getElementById('youtube-list').innerHTML = `<div class="empty-state">추천 채널을 불러오지 못했어요.</div>`;
+                return;
+            }
+
+            renderYoutubeLinks(data);
+        }
+
+        function renderYoutubeLinks(links) {
+            const listEl = document.getElementById('youtube-list');
+            if (links.length === 0) {
+                listEl.innerHTML = `<div class="empty-state">등록된 추천 채널이 없습니다. 채널을 추가해 보세요! 📺</div>`;
+                return;
+            }
+
+            let html = '';
+            links.forEach(link => {
+                html += `
+                    <div class="youtube-link-card">
+                        <a href="${link.meaning}" target="_blank" class="youtube-link-info">
+                            <span class="youtube-icon">${link.example || '📺'}</span>
+                            <span>${link.word}</span>
+                        </a>
+                        <button class="delete-btn" onclick="deleteYoutubeLink('${link.id}')" title="삭제">❌</button>
+                    </div>
+                `;
+            });
+            listEl.innerHTML = html;
+        }
+
+        async function deleteYoutubeLink(id) {
+            if(!confirm('이 추천 링크를 삭제할까요?')) return;
+            const { error } = await supabaseClient.from('study_words').delete().eq('id', id);
+            if (!error) {
+                alert('삭제되었습니다!');
+                loadYoutubeLinks();
+            } else {
+                alert('삭제에 실패했습니다.');
+            }
+        }
+
+        function showAddYoutubeModal() {
+            const overlay = document.getElementById('youtube-modal-overlay');
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                document.getElementById('yt-title').value = '';
+                document.getElementById('yt-url').value = '';
+                document.getElementById('yt-icon').value = '📺';
+                document.getElementById('yt-title').focus();
+            }
+        }
+
+        function closeYoutubeModal() {
+            const overlay = document.getElementById('youtube-modal-overlay');
+            if (overlay) overlay.classList.add('hidden');
+        }
+
+        async function submitYoutubeModal() {
+            const title = document.getElementById('yt-title').value.trim();
+            const url = document.getElementById('yt-url').value.trim();
+            const icon = document.getElementById('yt-icon').value.trim() || '📺';
+
+            if (!title) { alert('제목을 입력해주세요!'); return; }
+            if (!url) { alert('유튜브 링크를 입력해주세요!'); return; }
+
+            const { error } = await supabaseClient.from('study_words').insert([{
+                word: title,
+                meaning: url,
+                example: icon,
+                subject: 'YOUTUBE_LINK'
+            }]);
+
+            if (error) {
+                alert('추천 링크 추가에 실패했습니다.');
+            } else {
+                alert('추천 링크가 추가되었습니다! 💖');
+                loadYoutubeLinks();
+                closeYoutubeModal();
+            }
+        }
+
         loadTodayLogs();
+        loadYoutubeLinks();
         
         // 1분마다 새로고침
-        setInterval(loadTodayLogs, 60000);
+        setInterval(() => {
+            loadTodayLogs();
+            loadYoutubeLinks();
+        }, 60000);
     </script>
 
-            <footer class="site-footer">
+                <footer class="site-footer">
         <div class="site-footer-inner">
             <div class="footer-links">
                 <a href="#">회사소개</a>
@@ -240,7 +457,7 @@
             <div class="footer-info">
                 <strong class="footer-strong">신대림공인중개사사무소 (제호: 공인중개사소식지)</strong>
                 <span>대표/발행·편집인: 조항준</span> <span>등록번호: 서울, 아53763</span> <span>등록일자: 2021년 06월 14일</span><br>
-                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 010-9128-0586</span> <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
+                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 02-375-4489</span> <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
             </div>
         </div>
     </footer>

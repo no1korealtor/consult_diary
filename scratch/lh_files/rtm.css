@@ -1,0 +1,47 @@
+/*
+	임대주택 관리 CSS
+ */
+ /* 검색 */
+.RM_Top {position:relative; padding:15px 25px; border-top:1px solid #c8d1db; border-left:1px solid #c8d1db; border-bottom:1px solid #9298af; border-right:1px solid #9298af; border-radius:10px; overflow:hidden;}
+.RM_Top .RM_total {float:left; line-height:30px;}
+.RM_Top .RM_total select {height:30px; padding:2px; border:1px solid #c8d1db;}
+.RM_Top .RM_srch {float:inherit;}
+.RM_Top .RM_srch select {height:30px; padding:2px; border:1px solid #c8d1db;}
+.RM_Top .RM_srch input {width:200px; height:28px; border:1px solid #c8d1db;}
+.RM_Top .RM_srch button {width:80px; height:32px; line-height:32px; border:none; color:#fff; background:#394b61;}
+.RM_Top .RM_w150 input {width:150px; height:28px; border:1px solid #c8d1db; text-align: right;}
+.RM_Top .RM_w70 input {width:70px; height:28px; border:1px solid #c8d1db; text-align: right;}
+.RM_Top .RM_w10p input {width:10%; min-width:80px; height:28px; border:1px solid #c8d1db;}
+.RM_Top .RM_w50p input {width:50%; height:28px; border:1px solid #c8d1db;}
+.RM_Top .RM_w60p input {width:60%; height:28px; border:1px solid #c8d1db;}
+.RM_Top .RM_w70p input {width:70%; height:28px; border:1px solid #c8d1db;}
+.RM_Top .RM_w80p input {width:80%; height:28px; border:1px solid #c8d1db;}
+.RM_Top .RM_w90p input {width:90%; height:28px; border:1px solid #c8d1db;}
+.RM_Top .RM_srch .RM_term .inpTerm {color: black;font-weight: bold;height: 23px;width:120px;text-align: center;}
+.RM_Top .RM_srch .RM_term button {padding-top:2px;margin-top:3px;width:50px}
+
+/* input */
+.RM_Table input{height:28px; padding:0 1%; margin-right:5px; line-height;35px; font-size:15px; border:1px solid #c8d1db;}
+.RM_Table .short input {width:20%;}
+.RM_Table .long input {width:98%;}
+.RM_Table .middle input {width:50%;}
+.RM_Table .long textarea {width:100%; border:1px solid #c8d1db;}
+.RM_Table select {height:30px; padding:2px; border:1px solid #c8d1db;}
+
+@media (max-width:690px) {
+
+	/* 검색 */
+	.RM_Top .RM_total {float:none; text-align:center;}
+	.RM_Top .RM_srch {float:none; text-align:center;}
+	.RM_Top .RM_srch select {width:25%}
+	.RM_Top .RM_srch input {width:45%;}
+	.RM_Top .RM_srch button {width:20%;}
+
+	/* 게시판 list */
+	.RM_list td {font-family:"NanumSquareR"; font-size:13px}
+	.RM_tm_none {display:none;}
+	.widS15 {width:20% !important; }
+
+	/* 게시판 VIew */
+	.RM_table th, .RM_table td {display:block;}
+}

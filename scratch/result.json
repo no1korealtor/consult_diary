@@ -1,0 +1,18 @@
+[
+  {
+    "bldNm": "해오름",
+    "dongNm": " ",
+    "platArea": 473.8,
+    "totArea": 947.09,
+    "strctCdNm": "철근콘크리트구조",
+    "mainPurpsCdNm": "공동주택",
+    "grndFlrCnt": 5,
+    "ugrndFlrCnt": 0,
+    "hhldCnt": 27,
+    "fmlyCnt": 0,
+    "useAprDay": "20130730",
+    "violBldYn": null,
+    "mainPurpsCd": "02000",
+    "strctCd": "21"
+  }
+]
