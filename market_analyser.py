@@ -19,11 +19,19 @@ from reportlab.graphics.shapes import Drawing, Rect, String, Line, Circle
 # Import utilities from trade_viewer
 from trade_viewer import (
     get_kakao_address_info,
-    get_recent_transactions
+    get_recent_transactions,
+    get_cached_admin_dong,
+    normalize_h_dong_name,
+    save_admin_dong_cache,
+    load_admin_dong_cache
 )
 
 # Mapping of administrative dongs and minor legal dongs to legal dongs for combined analysis
 DONG_GROUPS = {
+    "성산1동": {
+        "dongs": ["성산동"],
+        "display": "성산1동 (성산동)"
+    },
     "성산2동": {
         "dongs": ["성산동", "중동"],
         "display": "성산2동 (성산동, 중동)"
@@ -31,6 +39,18 @@ DONG_GROUPS = {
     "중동": {
         "dongs": ["성산동", "중동"],
         "display": "성산2동 (성산동, 중동)"
+    },
+    "망원1동": {
+        "dongs": ["망원동"],
+        "display": "망원1동 (망원동)"
+    },
+    "망원2동": {
+        "dongs": ["망원동"],
+        "display": "망원2동 (망원동)"
+    },
+    "망원동": {
+        "dongs": ["망원동"],
+        "display": "망원동"
     },
     "서강동": {
         "dongs": ["창전동", "상수동", "하중동", "신정동", "당인동"],
@@ -71,6 +91,10 @@ DONG_GROUPS = {
     "동교동": {
         "dongs": ["서교동", "동교동"],
         "display": "서교동 (서교/동교동)"
+    },
+    "용강동": {
+        "dongs": ["용강동", "토정동", "마포동", "대흥동", "염리동"],
+        "display": "용강동"
     }
 }
 
@@ -144,85 +168,7 @@ def is_basement_transaction(t):
     return False
 
 
-_admin_dong_cache = {}
-
-def get_kakao_admin_dong(address_str):
-    url = "https://dapi.kakao.com/v2/local/search/address.json"
-    headers = {"Authorization": "KakaoAK 133155e52871811db4337080ae0a2d13"}
-    params = urllib.parse.urlencode({"query": address_str})
-    req = urllib.request.Request(f"{url}?{params}", headers=headers)
-    try:
-        with urllib.request.urlopen(req) as response:
-            res_text = response.read().decode('utf-8')
-            data = json.loads(res_text)
-            if data.get("documents"):
-                doc = data["documents"][0]
-                addr = doc.get("address", {})
-                if addr:
-                    return addr.get("region_3depth_h_name", "")
-    except Exception as e:
-        pass
-    return ""
-
-_cache_loaded = False
-
-import threading
-_cache_lock = threading.Lock()
-
-def load_admin_dong_cache():
-    global _admin_dong_cache, _cache_loaded
-    if _cache_loaded:
-        return
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    cache_path = os.path.join(base_dir, "admin_dong_cache.json")
-    with _cache_lock:
-        if _cache_loaded:
-            return
-        if os.path.exists(cache_path):
-            try:
-                with open(cache_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    for k, v in data.items():
-                        parts = k.split("|")
-                        if len(parts) == 3:
-                            _admin_dong_cache[tuple(parts)] = v
-            except Exception as e:
-                print(f"Error loading admin dong cache: {e}")
-        _cache_loaded = True
-
-def save_admin_dong_cache():
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    cache_path = os.path.join(base_dir, "admin_dong_cache.json")
-    try:
-        data = {}
-        with _cache_lock:
-            for k, v in _admin_dong_cache.items():
-                data["|".join(k)] = v
-            with open(cache_path, "w", encoding="utf-8") as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print(f"Error saving admin dong cache: {e}")
-
-def get_cached_admin_dong(full_region_name, bjdong, jibun):
-    if not jibun:
-        return ""
-    load_admin_dong_cache()
-    key = (full_region_name, bjdong, jibun)
-    if key in _admin_dong_cache:
-        return _admin_dong_cache[key]
-        
-    query_str = f"{full_region_name} {bjdong} {jibun}"
-    h_dong = get_kakao_admin_dong(query_str)
-    _admin_dong_cache[key] = h_dong
-    save_admin_dong_cache()
-    return h_dong
-
-def normalize_h_dong_name(name):
-    if not name:
-        return ""
-    name = name.strip()
-    name = re.sub(r'제(\d+동)', r'\1', name)
-    return name
+# Note: Admin dong cache and helper functions are imported from trade_viewer
 
 
 def local_format_price(val):
@@ -293,6 +239,225 @@ def load_member_info():
         except:
             pass
     return None
+
+def load_serve_listings_cache():
+    """부동산써브 캐시 파일(serve_listings_cache.json)에서 매물 목록을 불러옵니다."""
+    if getattr(sys, 'frozen', False):
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+    cache_path = os.path.join(base_dir, "serve_listings_cache.json")
+    if os.path.exists(cache_path):
+        try:
+            with open(cache_path, "r", encoding="utf-8") as f:
+                listings = json.load(f)
+                if isinstance(listings, list):
+                    return listings
+        except Exception as e:
+            pass
+    return []
+
+def extract_target_dongs(target_dong_name):
+    """'성산2동 (성산동, 중동)' 등의 다양한 형태의 동네 명칭에서 실제 법정동/행정동 목록을 추출합니다."""
+    target_dongs = set()
+    # 1. 정규표현식으로 모든 '..동' 형태 추출
+    raw_dongs = re.findall(r'([가-힣0-9]+동)', target_dong_name)
+    for d in raw_dongs:
+        target_dongs.add(d)
+        clean_d = re.sub(r'\d+동', '동', d)
+        target_dongs.add(clean_d)
+        if d in DONG_GROUPS:
+            target_dongs.update(DONG_GROUPS[d].get('dongs', []))
+        if clean_d in DONG_GROUPS:
+            target_dongs.update(DONG_GROUPS[clean_d].get('dongs', []))
+            
+    # 2. 구분자(괄호, 쉼표, 슬래시 등) 기준 분할
+    for chunk in re.split(r'[\s(),/]+', target_dong_name):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        if not chunk.endswith('동'):
+            chunk_dong = chunk + '동'
+        else:
+            chunk_dong = chunk
+        target_dongs.add(chunk_dong)
+        clean_chunk = re.sub(r'\d+동', '동', chunk_dong)
+        target_dongs.add(clean_chunk)
+        if chunk_dong in DONG_GROUPS:
+            target_dongs.update(DONG_GROUPS[chunk_dong].get('dongs', []))
+        if clean_chunk in DONG_GROUPS:
+            target_dongs.update(DONG_GROUPS[clean_chunk].get('dongs', []))
+            
+    return [d for d in target_dongs if len(d) >= 2]
+
+def select_cma_recommended_listings(target_dong_name, filtered_villa_txs, max_picks=2):
+    """
+    부동산써브 매물 중 분석 대상 동네의 다세대/빌라를 대상으로
+    최근 6개월 실거래 통계(CMA)와 비교하여 가장 가격 경쟁력이 뛰어난 매물 2~3개를 엄선합니다.
+    """
+    listings = load_serve_listings_cache()
+    if not listings:
+        return []
+        
+    # 1. 대상 동네 키워드 매핑 (예: 성산2동 (성산동, 중동) -> ['성산동', '중동', '성산2동'])
+    target_dongs = extract_target_dongs(target_dong_name)
+    if not target_dongs:
+        target_dongs = [target_dong_name]
+        
+    # 2. 실거래가 벤치마크 통계 산출 (방수 그룹 & 거래 유형별)
+    benchmarks = {
+        "원룸형 (전용 20㎡ 미만)": {"매매": [], "전세": [], "월세": []},
+        "투룸형 (전용 20~40㎡)": {"매매": [], "전세": [], "월세": []},
+        "쓰리룸 이상형 (전용 40㎡ 이상)": {"매매": [], "전세": [], "월세": []}
+    }
+    
+    for t in filtered_villa_txs:
+        if is_basement_transaction(t):
+            continue
+        try:
+            area = float(t.get('excluUseAr', t.get('totalFloorAr', 0)))
+            if area <= 0:
+                continue
+            grp = get_villa_group(area)
+            tt = t.get('_trade_type', '')
+            val_str = str(t.get('dealAmount', '') or t.get('rowPrice', '') or t.get('deposit', '') or t.get('guaranteeAmt', '')).strip().replace(',', '')
+            if val_str and tt in ["매매", "전세"]:
+                benchmarks[grp][tt].append(float(val_str))
+            elif tt == "월세":
+                dep_str = str(t.get('deposit', '') or t.get('guaranteeAmt', '') or t.get('rowPrice', '')).strip().replace(',', '')
+                rent_str = str(t.get('monthlyRent', '') or t.get('monthly', '')).strip().replace(',', '')
+                if dep_str and rent_str:
+                    benchmarks[grp]["월세"].append((float(dep_str), float(rent_str)))
+        except:
+            pass
+
+    # 3. 매물 필터링 및 CMA 평가
+    candidates = []
+    for item in listings:
+        addr = item.get("address", "")
+        # 지역 일치 여부
+        if not any(d in addr for d in target_dongs):
+            continue
+            
+        prop_type = item.get("prop_type", "주택")
+        # 다세대/빌라/주택 여부 (아파트, 상가, 오피스텔 등 제외)
+        if any(ex in prop_type for ex in ["아파트", "상가", "오피스텔", "토지", "공장", "사무실"]):
+            continue
+            
+        floor_info = item.get("floor_info", "")
+        # 반지하/지하 제외 (지상층 우선)
+        if "지하" in floor_info or "-1층" in floor_info:
+            continue
+            
+        # 면적 파싱
+        area_info = item.get("area_info", "")
+        excl_area = None
+        if "/" in area_info:
+            try:
+                excl_area = float(area_info.split("/")[1].replace("(㎡)", "").replace("㎡", "").strip())
+            except:
+                pass
+        if not excl_area:
+            try:
+                m = re.search(r'([0-9.]+)', area_info)
+                if m:
+                    excl_area = float(m.group(1))
+            except:
+                pass
+        if not excl_area:
+            excl_area = 30.0 # fallback
+            
+        room_grp = get_villa_group(excl_area)
+        trade_type = item.get("trade_type", "전세")
+        price_str = str(item.get("price_str", "")).strip()
+        
+        cma_reason = ""
+        cma_score = 0 # 높을수록 우수한 가성비
+        price_display = ""
+        
+        if trade_type in ["매매", "전세"]:
+            try:
+                p_val = float(price_str.replace(',', '').replace(' ', ''))
+            except:
+                continue
+                
+            price_display = f"{trade_type} {local_format_price(p_val)}"
+            bm_prices = benchmarks[room_grp][trade_type]
+            
+            if bm_prices:
+                avg_p = sum(bm_prices) / len(bm_prices)
+                min_p = min(bm_prices)
+                max_p = max(bm_prices)
+                diff = avg_p - p_val
+                
+                if diff >= 1000:
+                    cma_score = diff
+                    cma_reason = f"최근 6개월 동일 평형({room_grp.split()[0]}) 평균 실거래가({local_format_price(avg_p)}) 대비 약 {local_format_price(diff)} 저렴한 급매성 추천 매물"
+                elif p_val <= min_p * 1.05:
+                    cma_score = 1500
+                    cma_reason = f"최근 6개월 동일 평형 실거래 최저가 수준({local_format_price(min_p)})에 형성된 가성비 우수 매물"
+                else:
+                    cma_score = 500
+                    cma_reason = f"동일 평형 실거래 시세 형성선({local_format_price(min_p)}~{local_format_price(max_p)}) 내 합리적 가격 및 우수 입지"
+            else:
+                cma_score = 300
+                cma_reason = f"해당 지역 {room_grp.split()[0]} 대비 양호한 관리상태 및 실입주/임대 적합 매물"
+                
+        elif trade_type == "월세":
+            parts = price_str.split("/")
+            if len(parts) == 2:
+                try:
+                    dep_val = float(parts[0].replace(',', '').strip())
+                    rent_val = float(parts[1].replace(',', '').strip())
+                    price_display = f"보증금 {local_format_price(dep_val)} / 월 {local_format_price(rent_val)}"
+                    cma_score = 800
+                    cma_reason = "동네 평균 전월세 전환율 대비 합리적인 월차임 조건 및 주거 편의성 우수"
+                except:
+                    continue
+            else:
+                continue
+                
+        candidates.append({
+            "serve_id": item.get("serve_id", ""),
+            "room_grp": room_grp,
+            "prop_type": prop_type,
+            "address": addr,
+            "detailed_address": item.get("detailed_address", ""),
+            "floor_info": floor_info,
+            "excl_area": excl_area,
+            "trade_type": trade_type,
+            "price_display": price_display,
+            "feature": item.get("feature", "올수리 상태 양호, 주차 및 대중교통 편리"),
+            "move_in": item.get("move_in", "즉시입주 협의"),
+            "cma_reason": cma_reason,
+            "cma_score": cma_score
+        })
+        
+    if not candidates:
+        return []
+        
+    # 4. 다양성 보장하며 상위 max_picks 선별 (예: 투룸 1건, 쓰리룸/매매 1건 등)
+    candidates.sort(key=lambda x: x["cma_score"], reverse=True)
+    
+    selected = []
+    seen_types = set()
+    
+    for cand in candidates:
+        key = (cand["room_grp"], cand["trade_type"])
+        if key not in seen_types:
+            selected.append(cand)
+            seen_types.add(key)
+            if len(selected) >= max_picks:
+                break
+                
+    if len(selected) < max_picks:
+        for cand in candidates:
+            if cand not in selected:
+                selected.append(cand)
+                if len(selected) >= max_picks:
+                    break
+                    
+    return selected
 
 def calculate_market_conversion_rate(transactions):
     jeonses = [t for t in transactions if t.get('_trade_type') == '전세']
@@ -588,12 +753,16 @@ def create_group_scatter_plot_drawing(transactions, title="평형별 단지 비�
         
     return d
 
-def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_dots=True):
+def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_dots=True, target_bld_nm=None):
     trades = []
     jeonses = []
     min_date = None
     max_date = None
     
+    clean_target_nm = ""
+    if target_bld_nm:
+        clean_target_nm = re.sub(r'\s*(?:제\s*)?[0-9A-Za-z가-힣]{1,4}\s*동\s*$', '', str(target_bld_nm)).strip().lower()
+
     for t in transactions:
         try:
             dy = t.get("dealYear")
@@ -614,17 +783,29 @@ def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_
             price = int(price_str)
             if price <= 0: continue
             
+            # Target property determination
+            is_target = t.get("_is_target_property")
+            if is_target is None:
+                if clean_target_nm:
+                    apt_raw = (t.get("aptNm") or t.get("mhouseNm") or "").strip().lower()
+                    apt_clean = re.sub(r'\s*(?:제\s*)?[0-9A-Za-z가-힣]{1,4}\s*동\s*$', '', apt_raw).strip()
+                    is_target = bool(clean_target_nm in apt_clean or apt_clean in clean_target_nm)
+                else:
+                    is_target = True
+            else:
+                is_target = bool(is_target)
+
             if not min_date or dt < min_date: min_date = dt
             if not max_date or dt > max_date: max_date = dt
             
             if t.get("_trade_type") == "매매":
-                trades.append((dt, price))
+                trades.append((dt, price, is_target))
             elif t.get("_trade_type") == "전세":
-                jeonses.append((dt, price))
+                jeonses.append((dt, price, is_target))
         except Exception as e:
             pass
                 
-    all_prices = [p for _, p in trades + jeonses]
+    all_prices = [p for _, p, _ in trades + jeonses]
     if not all_prices:
         d = Drawing(515, 100)
         d.add(Rect(0, 0, 515, 100, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0')))
@@ -645,12 +826,40 @@ def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_
     d.add(Rect(0, 0, dw, dh, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=1, rx=5, ry=5))
     d.add(String(15, dh - 20, f"🎯 {title} (최근 거래)", fontName='KoreanFont', fontSize=9, fillColor=colors.HexColor('#0F172A'), textAnchor='start'))
     
-    # Legends
-    d.add(Circle(dw - 100, dh - 17, 3, fillColor=colors.HexColor('#EF4444'), strokeColor=None))
-    d.add(String(dw - 90, dh - 20, "매매", fontName='KoreanFont', fontSize=8, fillColor=colors.HexColor('#475569')))
+    # Check if we have mixed targets (both target apartment and similar/other apartments)
+    all_targets = [is_t for _, _, is_t in trades + jeonses]
+    has_mixed = any(not is_t for is_t in all_targets) and any(is_t for is_t in all_targets)
     
-    d.add(Rect(dw - 53, dh - 20, 6, 6, fillColor=colors.HexColor('#3B82F6'), strokeColor=None))
-    d.add(String(dw - 40, dh - 20, "전세", fontName='KoreanFont', fontSize=8, fillColor=colors.HexColor('#475569')))
+    def draw_cross_marker(drawing_obj, x, y, size=4.0, color='#B91C1C', stroke_width=2.0):
+        # White outline underlay for distinct visibility
+        drawing_obj.add(Line(x - size - 0.8, y, x + size + 0.8, y, strokeColor=colors.HexColor('#FFFFFF'), strokeWidth=stroke_width + 1.8, strokeLineCap=1))
+        drawing_obj.add(Line(x, y - size - 0.8, x, y + size + 0.8, strokeColor=colors.HexColor('#FFFFFF'), strokeWidth=stroke_width + 1.8, strokeLineCap=1))
+        # Foreground cross lines
+        drawing_obj.add(Line(x - size, y, x + size, y, strokeColor=colors.HexColor(color), strokeWidth=stroke_width, strokeLineCap=1))
+        drawing_obj.add(Line(x, y - size, x, y + size, strokeColor=colors.HexColor(color), strokeWidth=stroke_width, strokeLineCap=1))
+        # Center core dot
+        drawing_obj.add(Circle(x, y, 1.2, fillColor=colors.HexColor(color), strokeColor=None))
+
+    # Legends
+    if has_mixed:
+        # Layout 4 legend items: 매매(유사), 매매(대상), 전세(유사), 전세(대상)
+        d.add(Circle(dw - 245, dh - 17, 2.5, fillColor=colors.HexColor('#EF4444'), strokeColor=colors.HexColor('#B91C1C'), strokeWidth=0.5))
+        d.add(String(dw - 238, dh - 20, "매매(유사)", fontName='KoreanFont', fontSize=7.5, fillColor=colors.HexColor('#475569')))
+        
+        draw_cross_marker(d, dw - 180, dh - 17, size=3.5, color='#B91C1C', stroke_width=1.8)
+        d.add(String(dw - 172, dh - 20, "매매(대상)", fontName='KoreanFont', fontSize=7.5, fillColor=colors.HexColor('#B91C1C')))
+        
+        d.add(Rect(dw - 115, dh - 20, 5, 5, fillColor=colors.HexColor('#3B82F6'), strokeColor=colors.HexColor('#1D4ED8'), strokeWidth=0.5))
+        d.add(String(dw - 106, dh - 20, "전세(유사)", fontName='KoreanFont', fontSize=7.5, fillColor=colors.HexColor('#475569')))
+        
+        draw_cross_marker(d, dw - 50, dh - 17, size=3.5, color='#1D4ED8', stroke_width=1.8)
+        d.add(String(dw - 42, dh - 20, "전세(대상)", fontName='KoreanFont', fontSize=7.5, fillColor=colors.HexColor('#1D4ED8')))
+    else:
+        d.add(Circle(dw - 100, dh - 17, 3, fillColor=colors.HexColor('#EF4444'), strokeColor=None))
+        d.add(String(dw - 90, dh - 20, "매매", fontName='KoreanFont', fontSize=8, fillColor=colors.HexColor('#475569')))
+        
+        d.add(Rect(dw - 53, dh - 20, 6, 6, fillColor=colors.HexColor('#3B82F6'), strokeColor=None))
+        d.add(String(dw - 40, dh - 20, "전세", fontName='KoreanFont', fontSize=8, fillColor=colors.HexColor('#475569')))
     
     cx = 50
     cy = 30
@@ -674,10 +883,10 @@ def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_
         def draw_trend_line(data_points, line_color):
             if len(data_points) < 2: return
             N = len(data_points)
-            sum_x = sum((dt - min_date).days for dt, p in data_points)
-            sum_y = sum(p for dt, p in data_points)
-            sum_x2 = sum(((dt - min_date).days)**2 for dt, p in data_points)
-            sum_xy = sum(((dt - min_date).days) * p for dt, p in data_points)
+            sum_x = sum((dt - min_date).days for dt, p, _ in data_points)
+            sum_y = sum(p for dt, p, _ in data_points)
+            sum_x2 = sum(((dt - min_date).days)**2 for dt, p, _ in data_points)
+            sum_xy = sum(((dt - min_date).days) * p for dt, p, _ in data_points)
             
             denom = (N * sum_x2 - sum_x**2)
             if denom == 0: return
@@ -685,8 +894,8 @@ def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_
             m = (N * sum_xy - sum_x * sum_y) / denom
             c = (sum_y - m * sum_x) / N
             
-            min_x_days = min((dt - min_date).days for dt, p in data_points)
-            max_x_days = max((dt - min_date).days for dt, p in data_points)
+            min_x_days = min((dt - min_date).days for dt, p, _ in data_points)
+            max_x_days = max((dt - min_date).days for dt, p, _ in data_points)
             
             p1 = m * min_x_days + c
             p2 = m * max_x_days + c
@@ -703,15 +912,37 @@ def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_
         draw_trend_line(jeonses, '#1D4ED8')
 
         if draw_dots:
-            for dt, p in trades:
-                x = cx + ((dt - min_date).days / total_days) * cw
-                y = cy + ((p - min_p) / (max_p - min_p)) * ch
-                d.add(Circle(x, y, 2.5, fillColor=colors.HexColor('#EF4444'), strokeColor=colors.HexColor('#B91C1C'), strokeWidth=0.5))
-                
-            for dt, p in jeonses:
-                x = cx + ((dt - min_date).days / total_days) * cw
-                y = cy + ((p - min_p) / (max_p - min_p)) * ch
-                d.add(Rect(x - 2.5, y - 2.5, 5, 5, fillColor=colors.HexColor('#3B82F6'), strokeColor=colors.HexColor('#1D4ED8'), strokeWidth=0.5))
+            # 1. 유사 단지 점 먼저 그리기 (배경 레이어)
+            for dt, p, is_t in trades:
+                if not is_t:
+                    x = cx + ((dt - min_date).days / total_days) * cw
+                    y = cy + ((p - min_p) / (max_p - min_p)) * ch
+                    d.add(Circle(x, y, 2.5, fillColor=colors.HexColor('#EF4444'), strokeColor=colors.HexColor('#B91C1C'), strokeWidth=0.5))
+                    
+            for dt, p, is_t in jeonses:
+                if not is_t:
+                    x = cx + ((dt - min_date).days / total_days) * cw
+                    y = cy + ((p - min_p) / (max_p - min_p)) * ch
+                    d.add(Rect(x - 2.5, y - 2.5, 5, 5, fillColor=colors.HexColor('#3B82F6'), strokeColor=colors.HexColor('#1D4ED8'), strokeWidth=0.5))
+            
+            # 2. 분석 대상 단지 점 그리기 (전경 레이어 - 십자 마킹 또는 기본 모드)
+            for dt, p, is_t in trades:
+                if is_t:
+                    x = cx + ((dt - min_date).days / total_days) * cw
+                    y = cy + ((p - min_p) / (max_p - min_p)) * ch
+                    if has_mixed:
+                        draw_cross_marker(d, x, y, size=4.2, color='#B91C1C', stroke_width=2.0)
+                    else:
+                        d.add(Circle(x, y, 2.5, fillColor=colors.HexColor('#EF4444'), strokeColor=colors.HexColor('#B91C1C'), strokeWidth=0.5))
+                        
+            for dt, p, is_t in jeonses:
+                if is_t:
+                    x = cx + ((dt - min_date).days / total_days) * cw
+                    y = cy + ((p - min_p) / (max_p - min_p)) * ch
+                    if has_mixed:
+                        draw_cross_marker(d, x, y, size=4.2, color='#1D4ED8', stroke_width=2.0)
+                    else:
+                        d.add(Rect(x - 2.5, y - 2.5, 5, 5, fillColor=colors.HexColor('#3B82F6'), strokeColor=colors.HexColor('#1D4ED8'), strokeWidth=0.5))
             
         d.add(String(cx, cy - 15, min_date.strftime("%Y.%m.%d"), fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='middle'))
         d.add(String(cx + cw, cy - 15, max_date.strftime("%Y.%m.%d"), fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='middle'))
@@ -732,6 +963,284 @@ def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_
             if curr_m > 12: curr_m = 1; curr_y += 1
             curr_dt = datetime(curr_y, curr_m, 1)
         
+    return d
+
+def create_jeonse_ratio_trend_drawing(transactions, title="📈 전세가율 추세 (추세선 기반)"):
+    trades = []
+    jeonses = []
+    min_date = None
+    max_date = None
+    
+    for t in transactions:
+        try:
+            dy, dm, dd = t.get("dealYear"), t.get("dealMonth"), t.get("dealDay", 1)
+            if not dy or not dm: continue
+            dt = datetime(int(dy), int(dm), int(dd))
+            
+            is_trade = t.get("_trade_type") == "매매"
+            is_jeonse = t.get("_trade_type") == "전세"
+            if not is_trade and not is_jeonse: continue
+            
+            p_str = str(t.get("dealAmount", "0") if is_trade else t.get("deposit", "0") or t.get("guaranteeAmt", "0")).replace(",", "").strip()
+            price = int(p_str)
+            if price <= 0: continue
+            
+            if not min_date or dt < min_date: min_date = dt
+            if not max_date or dt > max_date: max_date = dt
+            
+            if is_trade: trades.append((dt, price))
+            elif is_jeonse: jeonses.append((dt, price))
+        except: pass
+        
+    if len(trades) < 2 or len(jeonses) < 2 or min_date == max_date:
+        return None
+        
+    total_days = (max_date - min_date).days
+    if total_days == 0: total_days = 1
+    
+    def get_trend_params(data_points):
+        N = len(data_points)
+        sum_x = sum((dt - min_date).days for dt, p in data_points)
+        sum_y = sum(p for dt, p in data_points)
+        sum_x2 = sum(((dt - min_date).days)**2 for dt, p in data_points)
+        sum_xy = sum(((dt - min_date).days) * p for dt, p in data_points)
+        denom = (N * sum_x2 - sum_x**2)
+        if denom == 0: return None
+        m = (N * sum_xy - sum_x * sum_y) / denom
+        c = (sum_y - m * sum_x) / N
+        return m, c
+
+    trade_trend = get_trend_params(trades)
+    jeonse_trend = get_trend_params(jeonses)
+    if not trade_trend or not jeonse_trend: return None
+    
+    m_t, c_t = trade_trend
+    m_j, c_j = jeonse_trend
+    
+    ratios = []
+    for d_val in range(0, total_days + 1, max(1, total_days // 20)):
+        t_price = m_t * d_val + c_t
+        j_price = m_j * d_val + c_j
+        if t_price > 0 and j_price > 0:
+            ratios.append((d_val, (j_price / t_price) * 100))
+            
+    if not ratios: return None
+    
+    min_r = min(r for _, r in ratios)
+    max_r = max(r for _, r in ratios)
+    diff = max_r - min_r
+    if diff == 0: diff = 10
+    min_r = max(0, min_r - diff * 0.2)
+    max_r = min(100, max_r + diff * 0.2)
+    if max_r - min_r < 5: max_r = min_r + 5
+
+    dw, dh = 515, 130
+    d = Drawing(dw, dh)
+    d.add(Rect(0, 0, dw, dh, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=1, rx=5, ry=5))
+    d.add(String(15, dh - 18, title, fontName='KoreanFont', fontSize=9, fillColor=colors.HexColor('#0F172A'), textAnchor='start'))
+    
+    cx, cy = 50, 25
+    cw, ch = dw - 70, dh - 60
+    
+    for i in range(4):
+        y_val = cy + i * (ch / 3)
+        r_val = min_r + i * ((max_r - min_r) / 3)
+        d.add(Line(cx, y_val, cx + cw, y_val, strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=0.5))
+        d.add(String(cx - 5, y_val - 3, f"{r_val:.1f}%", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='end'))
+
+    from reportlab.graphics.shapes import PolyLine
+    points = []
+    for days, ratio in ratios:
+        x = cx + (days / total_days) * cw
+        y = cy + ((ratio - min_r) / (max_r - min_r)) * ch
+        points.extend([x, y])
+        
+    if len(points) >= 4:
+        d.add(PolyLine(points, strokeColor=colors.HexColor('#8B5CF6'), strokeWidth=2))
+        
+    d.add(String(cx, cy - 12, min_date.strftime("%Y.%m"), fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#718096'), textAnchor='middle'))
+    d.add(String(cx + cw, cy - 12, max_date.strftime("%Y.%m"), fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#718096'), textAnchor='middle'))
+
+    return d
+
+
+def create_trend_chart_drawing(trend_data, apt_name, pyung_label="30평대"):
+    prices = []
+    jeonse_prices = []
+    counts = []
+    jeonse_counts = []
+    
+    for item in trend_data:
+        if item.get('avg') is not None:
+            prices.append(item['avg'])
+        if item.get('jeonse_avg') is not None:
+            jeonse_prices.append(item['jeonse_avg'])
+        counts.append(item.get('count', 0))
+        jeonse_counts.append(item.get('jeonse_count', 0))
+        
+    all_prices = prices + jeonse_prices
+    if not all_prices:
+        d = Drawing(515, 100)
+        d.add(Rect(0, 0, 515, 100, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0')))
+        d.add(String(257, 50, "최근 12개월간 매매 및 전세 거래 내역이 없습니다.", textAnchor='middle', fontName='KoreanFont', fontSize=10, fillColor=colors.HexColor('#718096')))
+        return d
+
+    min_p = min(all_prices)
+    max_p = max(all_prices)
+    if min_p == max_p:
+        min_p = max(0, min_p - 10000)
+        max_p = max_p + 10000
+    else:
+        diff = max_p - min_p
+        min_p = max(0, min_p - diff * 0.2)
+        max_p = max_p + diff * 0.2
+
+    # Volume (count) Y-axis scale
+    max_c = max(counts + jeonse_counts) if (counts + jeonse_counts) else 0
+    if max_c < 4:
+        max_c = 4
+    
+    dw = 515
+    dh = 180
+    d = Drawing(dw, dh)
+    
+    # Background card
+    d.add(Rect(0, 0, dw, dh, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=1, rx=5, ry=5))
+    
+    # Title
+    d.add(String(15, dh - 20, f"📈 {apt_name} {pyung_label} 거래 동향", fontName='KoreanFont', fontSize=8.5, fillColor=colors.HexColor('#0F172A'), textAnchor='start'))
+    
+    # Legends (dw = 515)
+    # 매매 평균가
+    d.add(Rect(dw - 230, dh - 22, 8, 6, fillColor=colors.HexColor('#1E293B'), strokeColor=colors.HexColor('#0F172A'), strokeWidth=0.5))
+    d.add(String(dw - 218, dh - 23, "매매가", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#475569')))
+    
+    # 전세 평균가
+    d.add(Rect(dw - 180, dh - 22, 8, 6, fillColor=colors.HexColor('#64748B'), strokeColor=colors.HexColor('#475569'), strokeWidth=0.5))
+    d.add(String(dw - 168, dh - 23, "전세가", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#475569')))
+    
+    # 매매 건수
+    d.add(Line(dw - 125, dh - 19, dw - 115, dh - 19, strokeColor=colors.HexColor('#B45309'), strokeWidth=1.5))
+    d.add(Circle(dw - 120, dh - 19, 1.5, fillColor=colors.HexColor('#B45309'), strokeColor=None))
+    d.add(String(dw - 110, dh - 23, "매매건수", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#475569')))
+    
+    # 전세 건수
+    d.add(Line(dw - 65, dh - 19, dw - 55, dh - 19, strokeColor=colors.HexColor('#0D9488'), strokeWidth=1.5))
+    d.add(Circle(dw - 60, dh - 19, 1.5, fillColor=colors.HexColor('#0D9488'), strokeColor=None))
+    d.add(String(dw - 50, dh - 23, "전세건수", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#475569')))
+
+    cx = 45
+    cy = 30
+    cw = dw - 85 
+    ch = dh - 70
+    
+    # Left Y-axis Grid Lines & Labels (Price)
+    for i in range(3):
+        y_val = cy + i * (ch / 2)
+        price_val = min_p + i * ((max_p - min_p) / 2)
+        d.add(Line(cx, y_val, cx + cw, y_val, strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=0.5))
+        if price_val >= 10000:
+            lbl = f"{price_val/10000:.1f}억"
+        else:
+            lbl = f"{int(price_val):,}만"
+        d.add(String(cx - 5, y_val - 3, lbl, fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='end'))
+        
+    # Right Y-axis Grid Labels (Count)
+    for i in range(3):
+        y_val = cy + i * (ch / 2)
+        c_val = int(i * (max_c / 2))
+        d.add(String(cx + cw + 5, y_val - 3, f"{c_val}건", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='start'))
+
+    num_bars = len(trend_data)
+    bar_space = (cw / num_bars)
+    bar_width = bar_space * 0.35
+    
+    # Draw bars (price) first
+    for idx, item in enumerate(trend_data):
+        x_center = cx + idx * bar_space + bar_space / 2
+        month = item['month']
+        avg_val = item.get('avg')
+        jeonse_val = item.get('jeonse_avg')
+        
+        # X-axis label
+        d.add(String(x_center, cy - 15, month, fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#4A5568'), textAnchor='middle'))
+        
+        # 1. 매매 막대 (왼쪽 배치)
+        x_trade = x_center - bar_width - 1
+        if avg_val is not None:
+            h_trade = ((avg_val - min_p) / (max_p - min_p)) * ch
+            h_trade = max(5, h_trade)
+            d.add(Rect(x_trade, cy, bar_width, h_trade, fillColor=colors.HexColor('#1E293B'), strokeColor=colors.HexColor('#0F172A'), strokeWidth=0.5, rx=1, ry=1))
+            
+            # 매매 가격 텍스트 (막대 위)
+            if avg_val >= 10000:
+                eok = int(avg_val // 10000)
+                man = int(avg_val % 10000)
+                price_lbl = f"{eok}.{int(man/1000)}억" if man > 0 else f"{eok}억"
+            else:
+                price_lbl = f"{int(avg_val):,}만"
+            d.add(String(x_trade + bar_width / 2, cy + h_trade + 3, price_lbl, fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#1E293B'), textAnchor='middle'))
+        else:
+            d.add(String(x_trade + bar_width / 2, cy + 5, "-", fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#CBD5E0'), textAnchor='middle'))
+            
+        # 2. 전세 막대 (오른쪽 배치)
+        x_jeonse = x_center + 1
+        if jeonse_val is not None:
+            h_jeonse = ((jeonse_val - min_p) / (max_p - min_p)) * ch
+            h_jeonse = max(5, h_jeonse)
+            d.add(Rect(x_jeonse, cy, bar_width, h_jeonse, fillColor=colors.HexColor('#64748B'), strokeColor=colors.HexColor('#475569'), strokeWidth=0.5, rx=1, ry=1))
+            
+            # 전세 가격 텍스트 (막대 위)
+            if jeonse_val >= 10000:
+                eok = int(jeonse_val // 10000)
+                man = int(jeonse_val % 10000)
+                j_price_lbl = f"{eok}.{int(man/1000)}억" if man > 0 else f"{eok}억"
+            else:
+                j_price_lbl = f"{int(jeonse_val):,}만"
+            d.add(String(x_jeonse + bar_width / 2, cy + h_jeonse + 3, j_price_lbl, fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#475569'), textAnchor='middle'))
+        else:
+            d.add(String(x_jeonse + bar_width / 2, cy + 5, "-", fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#CBD5E0'), textAnchor='middle'))
+
+    # Draw lines (count) on top of bars
+    points_trade = []
+    points_jeonse = []
+    
+    for idx, item in enumerate(trend_data):
+        x_center = cx + idx * bar_space + bar_space / 2
+        count_trade = item.get('count', 0)
+        count_jeonse = item.get('jeonse_count', 0)
+        
+        px = x_center
+        py_trade = cy + (count_trade / max_c) * ch
+        py_jeonse = cy + (count_jeonse / max_c) * ch
+        
+        points_trade.append((px, py_trade, count_trade))
+        points_jeonse.append((px, py_jeonse, count_jeonse))
+        
+    # Draw connecting lines for trade
+    for i in range(len(points_trade) - 1):
+        x1, y1, _ = points_trade[i]
+        x2, y2, _ = points_trade[i+1]
+        d.add(Line(x1, y1, x2, y2, strokeColor=colors.HexColor('#B45309'), strokeWidth=1.2))
+        
+    # Draw connecting lines for jeonse
+    for i in range(len(points_jeonse) - 1):
+        x1, y1, _ = points_jeonse[i]
+        x2, y2, _ = points_jeonse[i+1]
+        d.add(Line(x1, y1, x2, y2, strokeColor=colors.HexColor('#0D9488'), strokeWidth=1.2))
+        
+    # Draw dots and count labels for trade
+    for px, py, count in points_trade:
+        if count > 0:
+            d.add(Circle(px - 4, py, 2, fillColor=colors.HexColor('#B45309'), strokeColor=colors.white, strokeWidth=0.5))
+            d.add(String(px - 4, py + 4, f"{count}", fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#B45309'), textAnchor='middle'))
+            
+    # Draw dots and count labels for jeonse
+    for px, py, count in points_jeonse:
+        if count > 0:
+            d.add(Circle(px + 4, py, 2, fillColor=colors.HexColor('#0D9488'), strokeColor=colors.white, strokeWidth=0.5))
+            d.add(String(px + 4, py + 4, f"{count}", fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#0D9488'), textAnchor='middle'))
+            
     return d
 
 def fit_log_curve_points(pts):
@@ -1069,288 +1578,8 @@ def build_villa_land_stat_table(villa_txs, cell_style, header_style):
         
     return stat_table
 
-def create_jeonse_ratio_trend_drawing(transactions, title="📈 전세가율 추세 (추세선 기반)"):
-    trades = []
-    jeonses = []
-    min_date = None
-    max_date = None
-    
-    for t in transactions:
-        try:
-            dy, dm, dd = t.get("dealYear"), t.get("dealMonth"), t.get("dealDay", 1)
-            if not dy or not dm: continue
-            dt = datetime(int(dy), int(dm), int(dd))
-            
-            is_trade = t.get("_trade_type") == "매매"
-            is_jeonse = t.get("_trade_type") == "전세"
-            if not is_trade and not is_jeonse: continue
-            
-            p_str = str(t.get("dealAmount", "0") if is_trade else t.get("deposit", "0") or t.get("guaranteeAmt", "0")).replace(",", "").strip()
-            price = int(p_str)
-            if price <= 0: continue
-            
-            if not min_date or dt < min_date: min_date = dt
-            if not max_date or dt > max_date: max_date = dt
-            
-            if is_trade: trades.append((dt, price))
-            elif is_jeonse: jeonses.append((dt, price))
-        except: pass
-        
-    if len(trades) < 2 or len(jeonses) < 2 or min_date == max_date:
-        return None
-        
-    total_days = (max_date - min_date).days
-    if total_days == 0: total_days = 1
-    
-    def get_trend_params(data_points):
-        N = len(data_points)
-        sum_x = sum((dt - min_date).days for dt, p in data_points)
-        sum_y = sum(p for dt, p in data_points)
-        sum_x2 = sum(((dt - min_date).days)**2 for dt, p in data_points)
-        sum_xy = sum(((dt - min_date).days) * p for dt, p in data_points)
-        denom = (N * sum_x2 - sum_x**2)
-        if denom == 0: return None
-        m = (N * sum_xy - sum_x * sum_y) / denom
-        c = (sum_y - m * sum_x) / N
-        return m, c
-
-    trade_trend = get_trend_params(trades)
-    jeonse_trend = get_trend_params(jeonses)
-    if not trade_trend or not jeonse_trend: return None
-    
-    m_t, c_t = trade_trend
-    m_j, c_j = jeonse_trend
-    
-    ratios = []
-    for d_val in range(0, total_days + 1, max(1, total_days // 20)):
-        t_price = m_t * d_val + c_t
-        j_price = m_j * d_val + c_j
-        if t_price > 0 and j_price > 0:
-            ratios.append((d_val, (j_price / t_price) * 100))
-            
-    if not ratios: return None
-    
-    min_r = min(r for _, r in ratios)
-    max_r = max(r for _, r in ratios)
-    diff = max_r - min_r
-    if diff == 0: diff = 10
-    min_r = max(0, min_r - diff * 0.2)
-    max_r = min(100, max_r + diff * 0.2)
-    if max_r - min_r < 5: max_r = min_r + 5
-
-    dw, dh = 515, 120
-    d = Drawing(dw, dh)
-    d.add(Rect(0, 0, dw, dh, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=1, rx=5, ry=5))
-    d.add(String(15, dh - 20, title, fontName='KoreanFont', fontSize=9, fillColor=colors.HexColor('#0F172A'), textAnchor='start'))
-    
-    cx, cy = 50, 25
-    cw, ch = dw - 70, dh - 45
-    
-    for i in range(4):
-        y_val = cy + i * (ch / 3)
-        r_val = min_r + i * ((max_r - min_r) / 3)
-        d.add(Line(cx, y_val, cx + cw, y_val, strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=0.5))
-        d.add(String(cx - 5, y_val - 3, f"{r_val:.1f}%", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='end'))
-
-    from reportlab.graphics.shapes import PolyLine
-    points = []
-    for days, ratio in ratios:
-        x = cx + (days / total_days) * cw
-        y = cy + ((ratio - min_r) / (max_r - min_r)) * ch
-        points.extend([x, y])
-        
-    if len(points) >= 4:
-        d.add(PolyLine(points, strokeColor=colors.HexColor('#8B5CF6'), strokeWidth=2))
-        
-    d.add(String(cx, cy - 12, min_date.strftime("%Y.%m"), fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#718096'), textAnchor='middle'))
-    d.add(String(cx + cw, cy - 12, max_date.strftime("%Y.%m"), fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#718096'), textAnchor='middle'))
-
-    return d
-
-
-def create_trend_chart_drawing(trend_data, apt_name, pyung_label="30평대"):
-    prices = []
-    jeonse_prices = []
-    counts = []
-    jeonse_counts = []
-    
-    for item in trend_data:
-        if item.get('avg') is not None:
-            prices.append(item['avg'])
-        if item.get('jeonse_avg') is not None:
-            jeonse_prices.append(item['jeonse_avg'])
-        counts.append(item.get('count', 0))
-        jeonse_counts.append(item.get('jeonse_count', 0))
-        
-    all_prices = prices + jeonse_prices
-    if not all_prices:
-        d = Drawing(515, 100)
-        d.add(Rect(0, 0, 515, 100, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0')))
-        d.add(String(257, 50, "최근 12개월간 매매 및 전세 거래 내역이 없습니다.", textAnchor='middle', fontName='KoreanFont', fontSize=10, fillColor=colors.HexColor('#718096')))
-        return d
-
-    min_p = min(all_prices)
-    max_p = max(all_prices)
-    if min_p == max_p:
-        min_p = max(0, min_p - 10000)
-        max_p = max_p + 10000
-    else:
-        diff = max_p - min_p
-        min_p = max(0, min_p - diff * 0.2)
-        max_p = max_p + diff * 0.2
-
-    # Volume (count) Y-axis scale
-    max_c = max(counts + jeonse_counts) if (counts + jeonse_counts) else 0
-    if max_c < 4:
-        max_c = 4
-    
-    dw = 515
-    dh = 180
-    d = Drawing(dw, dh)
-    
-    # Background card
-    d.add(Rect(0, 0, dw, dh, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=1, rx=5, ry=5))
-    
-    # Title
-    d.add(String(15, dh - 20, f"📈 {apt_name} {pyung_label} 거래 동향", fontName='KoreanFont', fontSize=8.5, fillColor=colors.HexColor('#0F172A'), textAnchor='start'))
-    
-    # Legends (dw = 515)
-    # 매매 평균가
-    d.add(Rect(dw - 230, dh - 22, 8, 6, fillColor=colors.HexColor('#1E293B'), strokeColor=colors.HexColor('#0F172A'), strokeWidth=0.5))
-    d.add(String(dw - 218, dh - 23, "매매가", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#475569')))
-    
-    # 전세 평균가
-    d.add(Rect(dw - 180, dh - 22, 8, 6, fillColor=colors.HexColor('#64748B'), strokeColor=colors.HexColor('#475569'), strokeWidth=0.5))
-    d.add(String(dw - 168, dh - 23, "전세가", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#475569')))
-    
-    # 매매 건수
-    d.add(Line(dw - 125, dh - 19, dw - 115, dh - 19, strokeColor=colors.HexColor('#B45309'), strokeWidth=1.5))
-    d.add(Circle(dw - 120, dh - 19, 1.5, fillColor=colors.HexColor('#B45309'), strokeColor=None))
-    d.add(String(dw - 110, dh - 23, "매매건수", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#475569')))
-    
-    # 전세 건수
-    d.add(Line(dw - 65, dh - 19, dw - 55, dh - 19, strokeColor=colors.HexColor('#0D9488'), strokeWidth=1.5))
-    d.add(Circle(dw - 60, dh - 19, 1.5, fillColor=colors.HexColor('#0D9488'), strokeColor=None))
-    d.add(String(dw - 50, dh - 23, "전세건수", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#475569')))
-
-    cx = 45
-    cy = 30
-    cw = dw - 85 
-    ch = dh - 70
-    
-    # Left Y-axis Grid Lines & Labels (Price)
-    for i in range(3):
-        y_val = cy + i * (ch / 2)
-        price_val = min_p + i * ((max_p - min_p) / 2)
-        d.add(Line(cx, y_val, cx + cw, y_val, strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=0.5))
-        if price_val >= 10000:
-            lbl = f"{price_val/10000:.1f}억"
-        else:
-            lbl = f"{int(price_val):,}만"
-        d.add(String(cx - 5, y_val - 3, lbl, fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='end'))
-        
-    # Right Y-axis Grid Labels (Count)
-    for i in range(3):
-        y_val = cy + i * (ch / 2)
-        c_val = int(i * (max_c / 2))
-        d.add(String(cx + cw + 5, y_val - 3, f"{c_val}건", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='start'))
-
-    num_bars = len(trend_data)
-    bar_space = (cw / num_bars)
-    bar_width = bar_space * 0.35
-    
-    # Draw bars (price) first
-    for idx, item in enumerate(trend_data):
-        x_center = cx + idx * bar_space + bar_space / 2
-        month = item['month']
-        avg_val = item.get('avg')
-        jeonse_val = item.get('jeonse_avg')
-        
-        # X-axis label
-        d.add(String(x_center, cy - 15, month, fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#4A5568'), textAnchor='middle'))
-        
-        # 1. 매매 막대 (왼쪽 배치)
-        x_trade = x_center - bar_width - 1
-        if avg_val is not None:
-            h_trade = ((avg_val - min_p) / (max_p - min_p)) * ch
-            h_trade = max(5, h_trade)
-            d.add(Rect(x_trade, cy, bar_width, h_trade, fillColor=colors.HexColor('#1E293B'), strokeColor=colors.HexColor('#0F172A'), strokeWidth=0.5, rx=1, ry=1))
-            
-            # 매매 가격 텍스트 (막대 위)
-            if avg_val >= 10000:
-                eok = int(avg_val // 10000)
-                man = int(avg_val % 10000)
-                price_lbl = f"{eok}.{int(man/1000)}억" if man > 0 else f"{eok}억"
-            else:
-                price_lbl = f"{int(avg_val):,}만"
-            d.add(String(x_trade + bar_width / 2, cy + h_trade + 3, price_lbl, fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#1E293B'), textAnchor='middle'))
-        else:
-            d.add(String(x_trade + bar_width / 2, cy + 5, "-", fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#CBD5E0'), textAnchor='middle'))
-            
-        # 2. 전세 막대 (오른쪽 배치)
-        x_jeonse = x_center + 1
-        if jeonse_val is not None:
-            h_jeonse = ((jeonse_val - min_p) / (max_p - min_p)) * ch
-            h_jeonse = max(5, h_jeonse)
-            d.add(Rect(x_jeonse, cy, bar_width, h_jeonse, fillColor=colors.HexColor('#64748B'), strokeColor=colors.HexColor('#475569'), strokeWidth=0.5, rx=1, ry=1))
-            
-            # 전세 가격 텍스트 (막대 위)
-            if jeonse_val >= 10000:
-                eok = int(jeonse_val // 10000)
-                man = int(jeonse_val % 10000)
-                j_price_lbl = f"{eok}.{int(man/1000)}억" if man > 0 else f"{eok}억"
-            else:
-                j_price_lbl = f"{int(jeonse_val):,}만"
-            d.add(String(x_jeonse + bar_width / 2, cy + h_jeonse + 3, j_price_lbl, fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#475569'), textAnchor='middle'))
-        else:
-            d.add(String(x_jeonse + bar_width / 2, cy + 5, "-", fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#CBD5E0'), textAnchor='middle'))
-
-    # Draw lines (count) on top of bars
-    points_trade = []
-    points_jeonse = []
-    
-    for idx, item in enumerate(trend_data):
-        x_center = cx + idx * bar_space + bar_space / 2
-        count_trade = item.get('count', 0)
-        count_jeonse = item.get('jeonse_count', 0)
-        
-        px = x_center
-        py_trade = cy + (count_trade / max_c) * ch
-        py_jeonse = cy + (count_jeonse / max_c) * ch
-        
-        points_trade.append((px, py_trade, count_trade))
-        points_jeonse.append((px, py_jeonse, count_jeonse))
-        
-    # Draw connecting lines for trade
-    for i in range(len(points_trade) - 1):
-        x1, y1, _ = points_trade[i]
-        x2, y2, _ = points_trade[i+1]
-        d.add(Line(x1, y1, x2, y2, strokeColor=colors.HexColor('#B45309'), strokeWidth=1.2))
-        
-    # Draw connecting lines for jeonse
-    for i in range(len(points_jeonse) - 1):
-        x1, y1, _ = points_jeonse[i]
-        x2, y2, _ = points_jeonse[i+1]
-        d.add(Line(x1, y1, x2, y2, strokeColor=colors.HexColor('#0D9488'), strokeWidth=1.2))
-        
-    # Draw dots and count labels for trade
-    for px, py, count in points_trade:
-        if count > 0:
-            d.add(Circle(px - 4, py, 2, fillColor=colors.HexColor('#B45309'), strokeColor=colors.white, strokeWidth=0.5))
-            d.add(String(px - 4, py + 4, f"{count}", fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#B45309'), textAnchor='middle'))
-            
-    # Draw dots and count labels for jeonse
-    for px, py, count in points_jeonse:
-        if count > 0:
-            d.add(Circle(px + 4, py, 2, fillColor=colors.HexColor('#0D9488'), strokeColor=colors.white, strokeWidth=0.5))
-            d.add(String(px + 4, py + 4, f"{count}", fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#0D9488'), textAnchor='middle'))
-            
-    return d
-
-def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, member_info=None, region_prefix="서울특별시 마포구", rep_apt_name=None, trend_data=None, filtered_apt_txs=None):
+def generate_market_report_pdf(pdf_filename, bjdong_nm, villa_txs, member_info=None, region_prefix="서울특별시 마포구"):
     font_name = register_korean_font()
-    if filtered_apt_txs is None:
-        filtered_apt_txs = apt_txs
         
     # Calculate 24-month period range dynamically
     now = datetime.now()
@@ -1423,7 +1652,8 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
         textColor=colors.HexColor('#1E293B'),
         spaceBefore=12,
         spaceAfter=6,
-        bold=True
+        bold=True,
+        keepWithNext=True
     )
     
     body_style = ParagraphStyle(
@@ -1569,7 +1799,7 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
     story.append(meta_table)
     story.append(Spacer(1, 10))
     
-    def build_prop_section(label, txs, prop_type):
+    def build_prop_section(label, txs, prop_type, full_txs=None):
         sect_story = []
         sect_story.append(Paragraph(f"■ {label} 시장 분석 동향", h2_style))
         
@@ -1582,6 +1812,17 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
         jeonses = [t for t in txs if t.get('_trade_type') == '전세']
         wolses = [t for t in txs if t.get('_trade_type') == '월세']
         overall_rate = calculate_market_conversion_rate(txs)
+        
+        prop_name = label.split()[1] if len(label.split()) > 1 else "해당 부동산"
+        chart_drawing = create_scatter_plot_drawing(txs, title=f"📈 {prop_name} 실거래 점분포 (매매/전세)")
+        if chart_drawing:
+            sect_story.append(chart_drawing)
+            sect_story.append(Spacer(1, 10))
+            
+        ratio_drawing = create_jeonse_ratio_trend_drawing(txs, title=f"📊 {prop_name} 매매가 대비 전세가율 추세 (추세선 기반)")
+        if ratio_drawing:
+            sect_story.append(ratio_drawing)
+            sect_story.append(Spacer(1, 10))
         
         def get_price_range(subset):
             prices = []
@@ -1736,7 +1977,8 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
             sect_story.append(Paragraph("※ 지하층(반지하)은 전세보증금 규모가 작아 전월세 전환율이 지상층 대비 높게 산출되는 특징이 있으나, 환금성 및 채광/습기 등 특수성을 고려해야 합니다.", b_expl_style))
 
             # --- 모아타운·개발지 대지지분 평당가 분석 차트 및 5년 신축/구축 듀얼 곡선 ---
-            land_chart = create_villa_land_scatter_plot_drawing(txs, title="개발지/모아타운 대지지분 평당가 산점도")
+            target_land_txs = full_txs if full_txs else txs
+            land_chart = create_villa_land_scatter_plot_drawing(target_land_txs, title="개발지/모아타운 대지지분 평당가 산점도")
             if land_chart:
                 land_block = [
                     Spacer(1, 12),
@@ -1745,7 +1987,7 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
                     land_chart,
                     Spacer(1, 6)
                 ]
-                land_table = build_villa_land_stat_table(txs, table_cell_center, table_hdr_style)
+                land_table = build_villa_land_stat_table(target_land_txs, table_cell_center, table_hdr_style)
                 if land_table:
                     land_block.append(land_table)
                     land_block.append(Spacer(1, 6))
@@ -1855,143 +2097,112 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
                 sect_story.append(Spacer(1, 10))
         return sect_story
         
-    # Add main sections
-    story.extend(build_prop_section("🏢 아파트 (최근 24개월 기준)", filtered_apt_txs, '1'))
-    
-    # Representative Apartment section
-    if apt_txs:
-        if not rep_apt_name:
-            apt_counts = {}
-            for t in filtered_apt_txs:
-                name = t.get('aptNm')
-                if name:
-                    apt_counts[name] = apt_counts.get(name, 0) + 1
-            if apt_counts:
-                rep_apt_name = max(apt_counts, key=apt_counts.get)
-        
-        if rep_apt_name:
-            rep_count = sum(1 for t in apt_txs if t.get('aptNm') == rep_apt_name)
-            
-            story.append(Paragraph(f"■ 대표 지표 아파트 단지 상세 분석: <b>{rep_apt_name}</b>", h2_style))
-            story.append(Spacer(1, 5))
-            
-            rep_txs = [t for t in apt_txs if t.get('aptNm') == rep_apt_name]
-            
-            # Draw chart if rep_txs is provided
-            if rep_txs:
-                chart_drawing = create_scatter_plot_drawing(rep_txs, title=f"📈 {rep_apt_name} 실거래 점분포")
-                if chart_drawing:
-                    story.append(chart_drawing)
-                    story.append(Spacer(1, 10))
-                    
-                ratio_drawing = create_jeonse_ratio_trend_drawing(rep_txs, title=f"📊 {rep_apt_name} 매매가 대비 전세가율 추세 (추세선 기반)")
-                if ratio_drawing:
-                    story.append(ratio_drawing)
-                    story.append(Spacer(1, 10))
-                
-            if rep_count > 0:
-                story.append(Paragraph(f"• 최근 24개월 ({period_str}) 실거래 건수: 총 {rep_count}건", body_style))
-            else:
-                story.append(Paragraph(f"• 지정된 지표 아파트 단지 분석 정보입니다.", body_style))
-            story.append(Spacer(1, 5))
-            
-            groups = {}
-            for t in rep_txs:
-                try:
-                    ar = float(t.get('excluUseAr'))
-                    pyung = estimate_supply_pyung(ar)
-                    if pyung >= 40:
-                        pyung = 40
-                    groups.setdefault(pyung, []).append(t)
-                except:
-                    pass
-                    
-            apt_headers = [
-                Paragraph("<b>평형</b>", table_hdr_style),
-                Paragraph("<b>전용면적</b>", table_hdr_style),
-                Paragraph("<b>매매가 (최저~최고)</b>", table_hdr_style),
-                Paragraph("<b>전세금 (최저~최고)</b>", table_hdr_style),
-                Paragraph("<b>월세 (최저~최고)</b>", table_hdr_style),
-                Paragraph("<b>거래 건수</b>", table_hdr_style)
-            ]
-            apt_table_rows = [apt_headers]
-            
-            for pyung in sorted(groups.keys()):
-                g_txs = groups[pyung]
-                trades = [t for t in g_txs if t.get('_trade_type') == '매매']
-                jeonses = [t for t in g_txs if t.get('_trade_type') == '전세']
-                wolses = [t for t in g_txs if t.get('_trade_type') == '월세']
-                
-                def get_price_range(subset, is_rent=False):
-                    prices = []
-                    rents = []
-                    for item in subset:
-                        val = str(item.get('dealAmount', '') or item.get('deposit', '') or item.get('guaranteeAmt', '')).strip().replace(',', '')
-                        if val:
-                            try: prices.append(float(val))
-                            except: pass
-                        if is_rent:
-                            rent_val = str(item.get('monthlyRent', '') or item.get('monthly', '')).strip().replace(',', '')
-                            if rent_val:
-                                try: rents.append(float(rent_val))
-                                except: pass
-                    if not prices: return None
-                    min_p = min(prices)
-                    max_p = max(prices)
-                    
-                    if is_rent and rents:
-                        min_r = min(rents)
-                        max_r = max(rents)
-                        if min_p == max_p and min_r == max_r:
-                            return f"{local_format_price(min_p)}/{int(min_r)}만"
-                        else:
-                            return f"보증금: {local_format_price(min_p)}~{local_format_price(max_p)}<br/>월세: {int(min_r)}~{int(max_r)}만"
-                    else:
-                        if min_p == max_p:
-                            return local_format_price(min_p)
-                        return f"{local_format_price(min_p)} ~ {local_format_price(max_p)}"
-                        
-                t_str = get_price_range(trades) or '-'
-                j_str = get_price_range(jeonses) or '-'
-                w_str = get_price_range(wolses, is_rent=True) or '-'
-                
-                avg_area = sum([float(t.get('excluUseAr')) for t in g_txs]) / len(g_txs)
-                
-                pyung_label = "40평 이상<br/>(대형)" if pyung == 40 else f"{pyung}평형"
-                area_label = f"전용 {avg_area:.1f}㎡ 평균" if pyung == 40 else f"전용 {avg_area:.1f}㎡"
-                
-                apt_table_rows.append([
-                    Paragraph(pyung_label, table_cell_center),
-                    Paragraph(area_label, table_cell_center),
-                    Paragraph(t_str, table_cell_center),
-                    Paragraph(j_str, table_cell_center),
-                    Paragraph(w_str, table_cell_center),
-                    Paragraph(f"총 {len(g_txs)}건<br/>(매{len(trades)}/전{len(jeonses)}/월{len(wolses)})", table_cell_count)
-                ])
-                
-            apt_rep_table = Table(apt_table_rows, colWidths=[60, 80, 95, 95, 100, 85])
-            apt_rep_table.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#1E293B')),
-                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-                ('LINEABOVE', (0,0), (-1,0), 1, colors.HexColor('#0F172A')),
-                ('LINEBELOW', (0,0), (-1,0), 1, colors.HexColor('#0F172A')),
-                ('LINEBELOW', (0,1), (-1,-1), 0.5, colors.HexColor('#E2E8F0')),
-                ('LINEBELOW', (0,-1), (-1,-1), 1, colors.HexColor('#0F172A')),
-                ('TOPPADDING', (0,0), (-1,-1), 5),
-                ('BOTTOMPADDING', (0,0), (-1,-1), 5),
-            ]))
-            
-            for idx in range(1, len(apt_table_rows)):
-                bg_color = colors.HexColor('#FFFFFF') if idx % 2 == 1 else colors.HexColor('#F7FAFC')
-                apt_rep_table.setStyle(TableStyle([('BACKGROUND', (0, idx), (-1, idx), bg_color)]))
-                
-            story.append(apt_rep_table)
-            story.append(Spacer(1, 10))
+    pass
             
     # Add Villa sections
-    story.extend(build_prop_section("🏡 연립/다세대/빌라 (지상층·최근 6개월 기준)", filtered_villa_txs, '2'))
+    story.extend(build_prop_section("🏡 연립/다세대/빌라 (지상층·최근 6개월 기준)", filtered_villa_txs, '2', full_txs=villa_txs))
     
+    # [CMA 정밀 시세 분석 기반] 이달의 추천 매물 (Best Value Pick)
+    cma_picks = select_cma_recommended_listings(bjdong_nm, filtered_villa_txs, max_picks=2)
+    if cma_picks:
+        rec_title_style = ParagraphStyle(
+            'RecTitle',
+            parent=styles['Normal'],
+            fontName=font_name,
+            fontSize=10.5,
+            leading=14,
+            textColor=colors.HexColor('#0F172A'),
+            bold=True,
+            spaceBefore=14,
+            spaceAfter=3,
+            keepWithNext=True
+        )
+        rec_sub_style = ParagraphStyle(
+            'RecSub',
+            parent=styles['Normal'],
+            fontName=font_name,
+            fontSize=7.5,
+            leading=11,
+            textColor=colors.HexColor('#64748B'),
+            spaceAfter=6,
+            keepWithNext=True
+        )
+        card_header_left = ParagraphStyle(
+            'CardHdrLeft',
+            parent=styles['Normal'],
+            fontName=font_name,
+            fontSize=8.5,
+            leading=12,
+            textColor=colors.HexColor('#0F172A'),
+            bold=True
+        )
+        card_header_right = ParagraphStyle(
+            'CardHdrRight',
+            parent=styles['Normal'],
+            fontName=font_name,
+            fontSize=9,
+            leading=12,
+            textColor=colors.HexColor('#0284C7'),
+            alignment=2, # Right
+            bold=True
+        )
+        card_cma_style = ParagraphStyle(
+            'CardCMA',
+            parent=styles['Normal'],
+            fontName=font_name,
+            fontSize=7.5,
+            leading=11,
+            textColor=colors.HexColor('#1E40AF')
+        )
+        card_feat_style = ParagraphStyle(
+            'CardFeat',
+            parent=styles['Normal'],
+            fontName=font_name,
+            fontSize=7.5,
+            leading=11,
+            textColor=colors.HexColor('#475569')
+        )
+        
+        story.append(Spacer(1, 10))
+        story.append(Paragraph("■ [CMA 기반 엄선] 이달의 추천 매물 (Best Value Pick)", rec_title_style))
+        story.append(Paragraph("※ 최근 6개월 국토교통부 실거래 데이터 대비 가격 경쟁력 및 거주/투자가치(CMA)가 검증된 추천 매물입니다.", rec_sub_style))
+        
+        for idx, p in enumerate(cma_picks, 1):
+            short_addr = p['address'].replace("서울특별시 ", "").replace("서울시 ", "")
+            flr_disp = p['floor_info'].split('/')[0].strip() if '/' in p['floor_info'] else p['floor_info']
+            if not flr_disp: flr_disp = "지상층"
+            
+            card_data = [
+                [
+                    Paragraph(f"<b><font color='#0284C7'>[추천 {idx}]</font> {p['prop_type']} ({short_addr})</b> <font size=7.5 color='#64748B'>| 전용 {p['excl_area']:.1f}㎡ / {flr_disp}</font>", card_header_left),
+                    Paragraph(f"<b>{p['price_display']}</b>", card_header_right)
+                ],
+                [
+                    Paragraph(f"<b>📊 CMA 분석 근거:</b> {p['cma_reason']}", card_cma_style),
+                    ""
+                ],
+                [
+                    Paragraph(f"<b>📌 매물 특징:</b> {p['feature']}" + (f" <font color='#64748B'>(입주: {p['move_in']})</font>" if p.get('move_in') else ""), card_feat_style),
+                    ""
+                ]
+            ]
+            card_table = Table(card_data, colWidths=[385, 130])
+            card_table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#FFFFFF')),
+                ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#CBD5E1')),
+                ('SPAN', (0,1), (1,1)),
+                ('SPAN', (0,2), (1,2)),
+                ('BACKGROUND', (0,1), (1,1), colors.HexColor('#EFF6FF')),
+                ('TOPPADDING', (0,0), (-1,-1), 4),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+                ('LEFTPADDING', (0,0), (-1,-1), 8),
+                ('RIGHTPADDING', (0,0), (-1,-1), 8),
+                ('LINEBELOW', (0,0), (-1,0), 0.5, colors.HexColor('#E2E8F0')),
+                ('LINEBELOW', (0,1), (-1,1), 0.5, colors.HexColor('#DBEAFE')),
+            ]))
+            story.append(card_table)
+            story.append(Spacer(1, 5))
+            
     # 정밀 시세 분석(CMA) 및 상담 안내 (CTA)
     if member_info:
         cta_title_style = ParagraphStyle(
@@ -2003,7 +2214,8 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
             textColor=colors.HexColor('#1E293B'),
             bold=True,
             spaceBefore=12,
-            spaceAfter=5
+            spaceAfter=5,
+            keepWithNext=True
         )
         cta_body_style = ParagraphStyle(
             'CtaBody',
@@ -2044,14 +2256,16 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
             leading=14,
             textColor=colors.HexColor('#1E293B'),
             bold=True,
-            spaceAfter=5
+            spaceAfter=5,
+            keepWithNext=True
         )
         
         # Add analyst job title to broker name
         broker_name = member_info.get('name', '')
-        formatted_broker_name = f"{broker_name} (지역 담당 자문 공인중개사)" if broker_name else "-"
-        
-        story.append(Paragraph("■ 담당 분석 및 자문 공인중개사", sig_title_style))
+        if broker_name == "조항준 공인중개사":
+            formatted_broker_name = "공인중개사 조항준"
+        else:
+            formatted_broker_name = broker_name if broker_name else "-"
         
         sig_phone = member_info.get("phone", "-")
         if sig_phone == "01091280586" or sig_phone == "010-9128-0586":
@@ -2076,7 +2290,7 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
                 Paragraph(sig_reg, body_style)
             ],
             [
-                Paragraph("<b>담당 공인중개사</b>", body_style),
+                Paragraph("<b>대표</b>", body_style),
                 Paragraph(formatted_broker_name, body_style),
                 Paragraph("<b>중개의뢰 및 문의</b>", body_style),
                 Paragraph(sig_phone, body_style)
@@ -2129,6 +2343,23 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
     
     doc.build(story)
 
+def clean_and_extract_dong(user_input):
+    raw = user_input.strip()
+    words = raw.split()
+    if words:
+        last = words[-1]
+        if not any(last.endswith(s) for s in ['동', '가', '리', '로', '길']):
+            words[-1] = last + '동'
+        raw = ' '.join(words)
+    pure = raw
+    while True:
+        m = re.match(r'^(?:서울(?:특별)?시|서울|경기(?:도)?|인천(?:광역시)?|부산(?:광역시)?|대구(?:광역시)?|대전(?:광역시)?|광주(?:광역시)?|울산(?:광역시)?|세종(?:특별자치시)?|[가-힣]{2,}(?:시|도|구|군))\s*(.*)$', pure)
+        if m and m.group(1):
+            pure = m.group(1).strip()
+        else:
+            break
+    return raw, pure
+
 def run_market_analysis():
     print("==================================================")
     print("      동네별 부동산 시장 동향 및 전월세 분석      ")
@@ -2138,14 +2369,7 @@ def run_market_analysis():
     if not dong_input:
         return
         
-    # Clean up input dynamically (keep numbers initially for administrative dongs)
-    clean_dong = dong_input
-    words = clean_dong.split()
-    if words:
-        last_word = words[-1]
-        if not (last_word.endswith('동') or last_word.endswith('가') or last_word.endswith('리') or last_word.endswith('로') or last_word.endswith('길')):
-            words[-1] = last_word + '동'
-        clean_dong = " ".join(words)
+    raw_dong, pure_dong = clean_and_extract_dong(dong_input)
         
     # Determine default region prefix from member_info if available
     member_info = load_member_info()
@@ -2156,65 +2380,66 @@ def run_market_analysis():
             default_prefix = f"{addr_parts[0]} {addr_parts[1]}"
             
     # Check if the input already contains regional terms
-    has_region = False
-    for word in clean_dong.split():
-        if word.endswith('시') or word.endswith('도') or word.endswith('구') or word.endswith('군'):
-            has_region = True
-            break
-            
+    has_region = any(word.endswith(('시', '도', '구', '군')) for word in raw_dong.split()[:-1])
     if has_region:
-        search_query = clean_dong
+        search_query = raw_dong
     else:
-        search_query = f"{default_prefix} {clean_dong}"
+        search_query = f"{default_prefix} {pure_dong}"
         
     print(f"\n -> 주소 확인 및 코드 조회 중: {search_query}...")
     addr_info = get_kakao_address_info(search_query)
     
-    # Fallback with numeric stripping if initial search fails (e.g. if they typed a typo or non-existent administrative name)
-    if not addr_info:
-        fallback_dong = re.sub(r'\s*\d+\s*동$', '동', clean_dong)
-        if has_region:
-            search_query = fallback_dong
-        else:
-            search_query = f"{default_prefix} {fallback_dong}"
-        print(f" -> '{dong_input}' 검색 실패. '{search_query}'(으)로 재시도 중...")
-        addr_info = get_kakao_address_info(search_query)
+    # Fallback with numeric stripping if initial search fails or if bjdongNm is empty (e.g. administrative dong query)
+    if not addr_info or not addr_info.get('bjdongNm'):
+        fallback_dong = re.sub(r'\s*\d+\s*동$', '동', pure_dong)
+        search_query_fb = fallback_dong if has_region else f"{default_prefix} {fallback_dong}"
+        fb_info = get_kakao_address_info(search_query_fb)
+        if fb_info:
+            if not addr_info:
+                addr_info = fb_info
+            else:
+                if not addr_info.get('bjdongNm'):
+                    addr_info['bjdongNm'] = fb_info.get('bjdongNm', '')
         
-    if not addr_info:
+    if not addr_info or not addr_info.get('sigunguCd'):
         print(" [!] 주소 변환 실패! 올바른 동 이름을 입력해주세요.")
         return
         
-    bjdong_nm = addr_info['bjdongNm']
+    bjdong_nm = addr_info.get('bjdongNm', '')
     sigunguCd = addr_info['sigunguCd']
     sido_nm = addr_info.get('sidoNm', '')
     sigungu_nm = addr_info.get('sigunguNm', '')
     full_region_name = f"{sido_nm} {sigungu_nm}" if (sido_nm and sigungu_nm) else default_prefix
     
     # Resolve administrative/legal dong mapping
+    norm_dong = pure_dong.replace(" ", "")
     matched_group = None
-    norm_input = clean_dong.replace(" ", "")
+    matched_key = None
     for k in DONG_GROUPS.keys():
-        if norm_input == k or norm_input.replace("동", "") == k.replace("동", ""):
+        if norm_dong == k or norm_dong.replace("동", "") == k.replace("동", "") or normalize_h_dong_name(norm_dong) == normalize_h_dong_name(k):
             matched_group = DONG_GROUPS[k]
+            matched_key = k
             break
             
     if matched_group:
         target_dongs = matched_group["dongs"]
         display_dong_name = matched_group["display"]
+        target_admin_dong = matched_key if re.search(r'\d+동$', matched_key) else None
     else:
-        target_dongs = [bjdong_nm]
-        display_dong_name = bjdong_nm
-        
-        matched_group = DONG_GROUPS.get(bjdong_nm)
-        if matched_group:
-            target_dongs = matched_group["dongs"]
-            display_dong_name = matched_group["display"]
+        if re.search(r'\d+동$', norm_dong) and bjdong_nm:
+            clean_bjdong = re.sub(r'\d+동$', '동', bjdong_nm)
+            target_dongs = [clean_bjdong]
+            display_dong_name = f"{norm_dong} ({clean_bjdong})"
+            target_admin_dong = norm_dong
+        elif bjdong_nm:
+            target_dongs = [bjdong_nm]
+            display_dong_name = bjdong_nm
+            target_admin_dong = None
         else:
-            # Fallback numeric cleanup: if user typed "수색1동", strip the number for legal querying but keep display name
-            clean_name = re.sub(r'\s*\d+\s*동$', '동', bjdong_nm)
-            if clean_name != bjdong_nm:
-                target_dongs = [clean_name]
-                display_dong_name = bjdong_nm
+            clean_bjdong = re.sub(r'\d+동$', '동', norm_dong)
+            target_dongs = [clean_bjdong]
+            display_dong_name = norm_dong
+            target_admin_dong = None
             
     file_safe_dong = display_dong_name.replace(' ', '_').replace('(', '').replace(')', '').replace(',', '')
     
@@ -2248,15 +2473,7 @@ def run_market_analysis():
     
     for tdong in target_dongs:
         try:
-            apt_res = get_recent_transactions(sigunguCd, '', '', '1', bjdong_nm=tdong, expand_similar=True)
-            if apt_res is None:
-                has_auth_error = True
-            else:
-                apt_txs.extend(apt_res)
-                if getattr(apt_res, "connection_timeout_error", False):
-                    has_timeout = True
-                if getattr(apt_res, "trade_permission_error", False) or getattr(apt_res, "rent_permission_error", False):
-                    has_auth_error = True
+            # [업데이트] 아파트 실거래가 수집은 생략 (개별 단지 조회 기능으로 이관)
                     
             villa_res = get_recent_transactions(sigunguCd, '', '', '2', bjdong_nm=tdong, expand_similar=True)
             if villa_res is None:
@@ -2271,18 +2488,6 @@ def run_market_analysis():
             print(f" -> {tdong} 데이터 수집 중 오류: {e}")
             
     # ── 행정동 필터링 (생활권 단위 일치) ──
-    target_admin_dong = None
-    norm_input = clean_dong.replace(" ", "")
-    if re.search(r'\d+동$', norm_input):
-        target_admin_dong = norm_input
-    else:
-        if matched_group:
-            for k in DONG_GROUPS.keys():
-                if norm_input == k or norm_input.replace("동", "") == k.replace("동", ""):
-                    if re.search(r'\d+동$', k):
-                        target_admin_dong = k
-                    break
-
     if target_admin_dong:
         norm_target_admin = normalize_h_dong_name(target_admin_dong)
         print(f" -> 행정동 필터링 활성화: {target_admin_dong} 관할 주소 매물만 추출합니다...")
@@ -2324,165 +2529,20 @@ def run_market_analysis():
 
         apt_txs = filter_by_h_dong(apt_txs)
         villa_txs = filter_by_h_dong(villa_txs)
+        save_admin_dong_cache()
             
-    # ── 아파트 단지 필터링 (시세 왜곡 방지) ──
-    filtered_apt_txs = list(apt_txs)
-    if apt_txs:
-        apt_counts = {}
-        for t in apt_txs:
-            name = t.get('aptNm')
-            if name:
-                apt_counts[name] = apt_counts.get(name, 0) + 1
-        
-        if apt_counts:
-            sorted_apts = sorted(apt_counts.items(), key=lambda x: x[1], reverse=True)
-            print("\n" + "="*50)
-            print(" 🏢 [아파트 통계 필터링 (시세 왜곡 방지)]")
-            print(" 평균가 계산에 포함할 아파트 단지를 선택해 주세요.")
-            print(" (재건축 단지 등 시세 왜곡을 유발하는 단지는 제외하는 것을 권장합니다.)")
-            print("-" * 50)
-            for idx, (name, count) in enumerate(sorted_apts):
-                print(f" [{idx+1}] {name} (총 {count}건)")
-            print("="*50)
-            import json
-            import os
-            preset_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'apt_presets.json')
-            presets = {}
-            if os.path.exists(preset_file):
-                try:
-                    with open(preset_file, 'r', encoding='utf-8') as f:
-                        presets = json.load(f)
-                except:
-                    pass
-            
-            while True:
-                print("\n [저장된 단지 세트]")
-                if presets:
-                    for pname, pdata in presets.items():
-                        ptype = "포함" if pdata.get("type") == "include" else "제외"
-                        print(f"  - {pname} : {len(pdata.get('names', []))}개 단지 {ptype}")
-                else:
-                    print("  - 현재 저장된 단지 세트가 없습니다.")
-                        
-                print("\n * 입력 방법:")
-                print("   - 엔터(Enter): 모든 아파트 포함 (기본값)")
-                print("   - 1,2,3 : 1번, 2번, 3번 아파트만 '포함' (나머지 제외)")
-                print("   - -1,-2 : 1번, 2번 아파트만 '제외' (나머지 포함)")
-                print("   - 저장 [이름] [번호]: (예: 저장 재건축 1,2,3) 단지 묶음을 세트로 저장")
-                print("   - 삭제 [이름]: 저장된 세트 삭제")
-                print("   - [이름]: 저장된 세트 이름 입력시 바로 적용")
-                print("-" * 50)
-                
-                filter_input = input(" 선택/명령을 입력하세요: ").strip()
-                
-                if not filter_input:
-                    break
-                    
-                parts = filter_input.split()
-                cmd = parts[0]
-                
-                if cmd == "저장" and len(parts) >= 3:
-                    pname = parts[1]
-                    nums_str = "".join(parts[2:])
-                    num_parts = [x.strip() for x in nums_str.split(',') if x.strip()]
-                    is_exclude = all(x.startswith('-') for x in num_parts if x)
-                    
-                    target_names = []
-                    for x in num_parts:
-                        try:
-                            val = int(x.replace('-', '').strip()) - 1
-                            if 0 <= val < len(sorted_apts):
-                                target_names.append(sorted_apts[val][0])
-                        except: pass
-                    
-                    if target_names:
-                        presets[pname] = {
-                            "type": "exclude" if is_exclude else "include",
-                            "names": target_names
-                        }
-                        try:
-                            with open(preset_file, 'w', encoding='utf-8') as f:
-                                json.dump(presets, f, ensure_ascii=False, indent=2)
-                            print(f" -> '{pname}' 세트가 저장되었습니다! (적용하려면 세트 이름을 입력하세요)")
-                        except Exception as e:
-                            print(f" -> 세트 저장 실패: {e}")
-                    else:
-                        print(" -> 유효한 번호가 없습니다.")
-                    continue
-                    
-                if cmd == "삭제" and len(parts) >= 2:
-                    pname = parts[1]
-                    if pname in presets:
-                        del presets[pname]
-                        try:
-                            with open(preset_file, 'w', encoding='utf-8') as f:
-                                json.dump(presets, f, ensure_ascii=False, indent=2)
-                            print(f" -> '{pname}' 세트가 삭제되었습니다.")
-                        except: pass
-                    else:
-                        print(f" -> '{pname}' 세트를 찾을 수 없습니다.")
-                    continue
-                    
-                if filter_input in presets:
-                    pdata = presets[filter_input]
-                    if pdata.get("type") == "exclude":
-                        excluded_names = set(pdata.get("names", []))
-                        if excluded_names:
-                            candidate_txs = [t for t in apt_txs if t.get('aptNm') not in excluded_names]
-                            if candidate_txs:
-                                filtered_apt_txs = candidate_txs
-                                print(f" -> 제외 세트 '{filter_input}' 적용 완료: {', '.join(excluded_names)}")
-                                break
-                    else:
-                        included_names = set(pdata.get("names", []))
-                        if included_names:
-                            candidate_txs = [t for t in apt_txs if t.get('aptNm') in included_names]
-                            if candidate_txs:
-                                filtered_apt_txs = candidate_txs
-                                print(f" -> 포함 세트 '{filter_input}' 적용 완료: {', '.join(included_names)}")
-                                break
-                                
-                    print(" -> [주의] 해당 세트의 단지 데이터가 현재 데이터에 없어 필터를 적용하지 않습니다.")
-                    break
-                    
-                excluded_names = set()
-                included_names = set()
-                try:
-                    num_parts = [p.strip() for p in filter_input.split(',')]
-                    is_exclude = all(p.startswith('-') for p in num_parts if p)
-                    if is_exclude:
-                        for p in num_parts:
-                            if not p: continue
-                            val = int(p.replace('-', '').strip()) - 1
-                            if 0 <= val < len(sorted_apts):
-                                excluded_names.add(sorted_apts[val][0])
-                        if excluded_names:
-                            candidate_txs = [t for t in apt_txs if t.get('aptNm') not in excluded_names]
-                            if candidate_txs:
-                                filtered_apt_txs = candidate_txs
-                                print(f" -> 제외 단지: {', '.join(excluded_names)}")
-                            break
-                    else:
-                        for p in num_parts:
-                            if not p: continue
-                            val = int(p.strip()) - 1
-                            if 0 <= val < len(sorted_apts):
-                                included_names.add(sorted_apts[val][0])
-                        if included_names:
-                            candidate_txs = [t for t in apt_txs if t.get('aptNm') in included_names]
-                            if candidate_txs:
-                                filtered_apt_txs = candidate_txs
-                                print(f" -> 포함 단지: {', '.join(included_names)}")
-                            break
-                except ValueError:
-                    print(f" -> '{filter_input}'(은)는 알 수 없는 명령어이거나 저장되지 않은 세트 이름입니다. (새로 저장하려면 '저장 [이름] [번호]' 형식을 사용하세요)")
-                except Exception as e:
-                    print(f" -> 입력 파싱 오류 ({e}). 다시 입력하세요.")
+    pass
                     
     report_lines = []
     
     def add_line(text=""):
-        print(text)
+        try:
+            print(text)
+        except Exception:
+            try:
+                print(text.encode('cp949', errors='replace').decode('cp949'))
+            except Exception:
+                pass
         report_lines.append(text)
         
     # Filter villa_txs to only include the last 6 months for the console/TXT report
@@ -2507,7 +2567,6 @@ def run_market_analysis():
 
     add_line("\n" + "="*60)
     add_line(f" 📊 {display_dong_name} 부동산 시장 분석 보고서")
-    add_line(f"   - 아파트: 최근 24개월 ({period_str})")
     add_line(f"   - 연립/빌라: 최근 6개월 ({period_str_6})")
     add_line(f"   - 분석 일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     add_line(f"   - 대상 지역: {full_region_name} {display_dong_name}")
@@ -2522,304 +2581,23 @@ def run_market_analysis():
         add_line("   잠시 후 다시 시도해 주세요.")
         add_line("!"*60)
     
-    # 1. Main sections
-    for label, txs, prop_type in [("🏢 아파트 (최근 24개월 기준)", filtered_apt_txs, '1')]:
-        if not txs:
-            add_line(f"\n[{label}] 실거래 데이터가 존재하지 않습니다.")
-            continue
-            
-        trades = [t for t in txs if t.get('_trade_type') == '매매']
-        jeonses = [t for t in txs if t.get('_trade_type') == '전세']
-        wolses = [t for t in txs if t.get('_trade_type') == '월세']
-        
-        def get_price_range(subset):
-            prices = []
-            for item in subset:
-                val = str(item.get('dealAmount', '') or item.get('rowPrice', '') or item.get('deposit', '') or item.get('guaranteeAmt', '')).strip().replace(',', '')
-                if val:
-                    try:
-                        prices.append(float(val))
-                    except:
-                        pass
-            if not prices: return None
-            min_p = min(prices)
-            max_p = max(prices)
-            if min_p == max_p: return local_format_price(min_p)
-            return f"{local_format_price(min_p)} ~ {local_format_price(max_p)}"
-            
-        trade_str = get_price_range(trades)
-        jeonse_str = get_price_range(jeonses)
-        
-        add_line(f"\n[{label} 시장 동향]")
-        add_line(f" • 총 실거래 건수: {len(txs):,}건 (매매 {len(trades):,}건 / 전세 {len(jeonses):,}건 / 월세 {len(wolses):,}건)")
-        if trade_str:
-            add_line(f" • 매매가 (최저~최고): {trade_str}")
-        if jeonse_str:
-            add_line(f" • 전세금 (최저~최고): {jeonse_str}")
-            
-        overall_rate = calculate_market_conversion_rate(txs)
-        if overall_rate:
-            add_line(f" • 평균 전월세 전환율: {overall_rate:.2f}%")
-            
-            seg_data = analyze_conversion_rate_segments(txs, prop_type)
-            if seg_data:
-                ths = seg_data['thresholds']
-                add_line(" • 보증금 구간별 전월세 전환율 상세:")
-                
-                t0_str = local_format_price(ths[0]).replace(' ', '')
-                t1_str = local_format_price(ths[1]).replace(' ', '')
-                
-                if seg_data['g1_rate']:
-                    add_line(f"   - 소액 보증금 ({t0_str} 미만): {seg_data['g1_rate']:.2f}% ({seg_data['g1_count']}건)")
-                if seg_data['g2_rate']:
-                    add_line(f"   - 중소 보증금 ({t0_str} ~ {t1_str} 미만): {seg_data['g2_rate']:.2f}% ({seg_data['g2_count']}건)")
-                if seg_data['g3_rate']:
-                    add_line(f"   - 고액 보증금 ({t1_str} 이상): {seg_data['g3_rate']:.2f}% ({seg_data['g3_count']}건)")
-                add_line(f"   ※ 안내: '보증금 구간'은 전환 금액이 아닌 월세 계약의 '최종 월세 보증금' 기준입니다. (예: 전세 4.5억 중 5천을 보증금으로 두고 전환 시 '중소 보증금' 구간 전환율 적용)")
-        else:
-            add_line(" • 전월세 전환율: 분석을 위한 전세/월세 데이터 매칭 사례 부족")
-            
-        add_line("-" * 50)
-        
-    # Representative Apartment section (Console)
-    rep_apt_name = None
-    trend_data = None
-    
-    if apt_txs:
-        apt_counts = {}
-        for t in apt_txs:
-            name = t.get('aptNm')
-            if name:
-                apt_counts[name] = apt_counts.get(name, 0) + 1
-        
-        if apt_counts:
-            sorted_apts = sorted(apt_counts.items(), key=lambda x: x[1], reverse=True)
-            print("\n" + "="*50)
-            print(" 🏢 [지표 아파트 단지 선택]")
-            print(f" 최근 24개월 ({period_str}) 이 법정동에서 거래가 많았던 아파트 단지 목록입니다:")
-            for idx, (name, count) in enumerate(sorted_apts[:5]):
-                print(f" {idx+1}. {name} (총 {count}건)")
-            print(" *. 직접 입력 (원하는 다른 아파트명을 입력)")
-            print("="*50)
-            
-            sel = input(" 분석할 지표 아파트를 선택해 주세요 (번호 또는 아파트명 직접 입력, 기본값: 1): ").strip()
-            
-            if not sel:
-                rep_apt_name = sorted_apts[0][0]
-            elif sel.isdigit():
-                sel_idx = int(sel) - 1
-                if 0 <= sel_idx < len(sorted_apts):
-                    rep_apt_name = sorted_apts[sel_idx][0]
-                else:
-                    print(f"  [!] 잘못된 번호입니다. 가장 거래가 많은 '{sorted_apts[0][0]}' 단지를 선택합니다.")
-                    rep_apt_name = sorted_apts[0][0]
-            else:
-                rep_apt_name = sel
-                
-            matched_name = None
-            rep_clean = rep_apt_name.lower().replace("아파트", "").replace(" ", "").strip()
-            
-            # Step 1: Exact match ignoring space and "아파트" suffix
-            for name in apt_counts.keys():
-                name_clean = name.lower().replace("아파트", "").replace(" ", "").strip()
-                if rep_clean == name_clean:
-                    matched_name = name
-                    break
-                    
-            # Step 2: Search term is a substring of target name
-            if not matched_name:
-                for name in apt_counts.keys():
-                    name_clean = name.lower().replace("아파트", "").replace(" ", "").strip()
-                    if rep_clean in name_clean:
-                        matched_name = name
-                        break
-                        
-            # Step 3: Key words match for specific complexes like "대림월드타운" -> "성산월드타운대림"
-            if not matched_name:
-                for name in apt_counts.keys():
-                    name_clean = name.lower()
-                    if "대림" in name_clean and ("월드타운" in name_clean or "월드" in name_clean):
-                        matched_name = name
-                        break
-                        
-            if matched_name:
-                rep_apt_name = matched_name
-                
-            rep_count = apt_counts.get(rep_apt_name, 0)
-            
-            add_line(f"\n[🏢 대표 지표 아파트 단지 상세 분석: {rep_apt_name}]")
-                
-            trend_data = []
-            rep_txs_trade = [t for t in apt_txs if t.get('aptNm') == rep_apt_name and t.get('_trade_type') == '매매']
-            rep_txs_jeonse = [t for t in apt_txs if t.get('aptNm') == rep_apt_name and t.get('_trade_type') == '전세']
-            
-            trend_txs = []
-            for t in rep_txs_trade:
-                try:
-                    ar = float(t.get('excluUseAr'))
-                    pyung = estimate_supply_pyung(ar)
-                    if 30 <= pyung <= 39:
-                        trend_txs.append(t)
-                except:
-                    pass
-                    
-            trend_jeonse_txs = []
-            for t in rep_txs_jeonse:
-                try:
-                    ar = float(t.get('excluUseAr'))
-                    pyung = estimate_supply_pyung(ar)
-                    if 30 <= pyung <= 39:
-                        trend_jeonse_txs.append(t)
-                except:
-                    pass
-                    
-            now = datetime.now()
-            # Shift the trend period to end at 2 months ago due to the 30-day reporting lag
-            current_year = now.year
-            current_month = now.month
-            months_chrono = []
-            for i in range(13, 1, -1):
-                year = current_year
-                month = current_month - i
-                while month <= 0:
-                    month += 12
-                    year -= 1
-                months_chrono.append((year, month, f"{year}-{str(month).zfill(2)}"))
-                
-            for year, month, month_str in months_chrono:
-                # 매매 집계
-                month_txs = []
-                for t in trend_txs:
-                    try:
-                        t_year = int(t.get('dealYear'))
-                        t_month = int(t.get('dealMonth'))
-                        if t_year == year and t_month == month:
-                            month_txs.append(t)
-                    except:
-                        pass
-                prices = []
-                for t in month_txs:
-                    val = str(t.get('dealAmount', '')).strip().replace(',', '')
-                    if val:
-                        try: prices.append(float(val))
-                        except: pass
-                avg_price = sum(prices) / len(prices) if prices else None
-                
-                # 전세 집계
-                month_jeonse_txs = []
-                for t in trend_jeonse_txs:
-                    try:
-                        t_year = int(t.get('dealYear'))
-                        t_month = int(t.get('dealMonth'))
-                        if t_year == year and t_month == month:
-                            month_jeonse_txs.append(t)
-                    except:
-                        pass
-                j_prices = []
-                for t in month_jeonse_txs:
-                    val = str(t.get('deposit', '') or t.get('guaranteeAmt', '')).strip().replace(',', '')
-                    if val:
-                        try: j_prices.append(float(val))
-                        except: pass
-                avg_jeonse_price = sum(j_prices) / len(j_prices) if j_prices else None
-                
-                short_month = f"{str(year)[2:]}.{str(month).zfill(2)}"
-                trend_data.append({
-                    'month': short_month,
-                    'avg': avg_price,
-                    'count': len(prices),
-                    'jeonse_avg': avg_jeonse_price,
-                    'jeonse_count': len(j_prices)
-                })
-                
-            # Calculate 12-month period range dynamically (ending 2 months ago due to reporting lag)
-            now = datetime.now()
-            end_month = now.month - 2
-            end_year = now.year
-            while end_month <= 0:
-                end_month += 12
-                end_year -= 1
-            start_month = now.month - 13
-            start_year = now.year
-            while start_month <= 0:
-                start_month += 12
-                start_year -= 1
-            trend_period_str = f"{start_year}.{str(start_month).zfill(2)} ~ {end_year}.{str(end_month).zfill(2)}"
 
-            has_trend_data = any(item['avg'] is not None or item.get('jeonse_avg') is not None for item in trend_data)
-            if has_trend_data:
-                add_line(f"\n📈 [{rep_apt_name} 30평대 매매 및 전세 평균가 추이 (최근 12개월: {trend_period_str})]")
-                for item in trend_data:
-                    m = item['month']
-                    avg_val = item['avg']
-                    cnt = item['count']
-                    jeonse_val = item.get('jeonse_avg')
-                    jeonse_cnt = item.get('jeonse_count', 0)
-                    
-                    trade_display = local_format_price(avg_val) if avg_val is not None else "-"
-                    jeonse_display = local_format_price(jeonse_val) if jeonse_val is not None else "-"
-                    
-                    add_line(f"   {m} | 매매: {trade_display:<9s} ({cnt}건) | 전세: {jeonse_display:<9s} ({jeonse_cnt}건)")
-                add_line("-" * 50)
-            
-            if rep_count > 0:
-                add_line(f" • 최근 24개월 ({period_str}) 이 법정동 내 실거래 건수: 총 {rep_count}건")
-            else:
-                add_line(f" • 입력하신 단지는 최근 실거래 내역에 포함되어 있지 않거나 직접 지정되었습니다.")
-                
-            rep_txs_all = [t for t in apt_txs if t.get('aptNm') == rep_apt_name]
-            groups = {}
-            for t in rep_txs_all:
+    def get_price_range(subset):
+        prices = []
+        for item in subset:
+            val = str(item.get('dealAmount', '') or item.get('rowPrice', '') or item.get('deposit', '') or item.get('guaranteeAmt', '')).strip().replace(',', '')
+            if val:
                 try:
-                    ar = float(t.get('excluUseAr'))
-                    pyung = estimate_supply_pyung(ar)
-                    groups.setdefault(pyung, []).append(t)
+                    prices.append(float(val))
                 except:
                     pass
-            
-            for pyung in sorted(groups.keys()):
-                g_txs = groups[pyung]
-                trades = [t for t in g_txs if t.get('_trade_type') == '매매']
-                jeonses = [t for t in g_txs if t.get('_trade_type') == '전세']
-                wolses = [t for t in g_txs if t.get('_trade_type') == '월세']
-                
-                def get_avg(subset):
-                    prices = []
-                    for item in subset:
-                        val = str(item.get('dealAmount', '') or item.get('deposit', '') or item.get('guaranteeAmt', '')).strip().replace(',', '')
-                        if val:
-                            try: prices.append(float(val))
-                            except: pass
-                    return sum(prices)/len(prices) if prices else None
-                    
-                avg_t = get_avg(trades)
-                avg_j = get_avg(jeonses)
-                avg_w_dep = get_avg(wolses)
-                
-                w_rents = []
-                for w in wolses:
-                    val = str(w.get('monthlyRent', '') or w.get('monthly', '')).strip().replace(',', '')
-                    if val:
-                        try: w_rents.append(float(val))
-                        except: pass
-                avg_w_rent = sum(w_rents)/len(w_rents) if w_rents else None
-                
-                t_str = local_format_price(avg_t) if avg_t else '-'
-                if avg_j:
-                    if avg_t:
-                        j_rate = int(round(avg_j / avg_t * 100))
-                        j_str = f"{local_format_price(avg_j)} ({j_rate}%)"
-                    else:
-                        j_str = local_format_price(avg_j)
-                else:
-                    j_str = '-'
-                w_str = f"{local_format_price(avg_w_dep)}/{int(avg_w_rent)}만" if (avg_w_dep and avg_w_rent) else '-'
-                
-                avg_area = sum([float(t.get('excluUseAr')) for t in g_txs]) / len(g_txs)
-                
-                add_line(f" • {pyung:2d}평형 (전용 {avg_area:.1f}㎡): 매매 {t_str:10s} | 전세 {j_str:18s} | 월세 {w_str} (총 {len(g_txs)}건: 매매 {len(trades)}/전세 {len(jeonses)}/월세 {len(wolses)})")
-            add_line("-" * 50)
-            
+        if not prices: return None
+        min_p = min(prices)
+        max_p = max(prices)
+        if min_p == max_p: return local_format_price(min_p)
+        return f"{local_format_price(min_p)} ~ {local_format_price(max_p)}"
+
+    pass
     # Villa section
     for label, txs, prop_type in [("🏡 연립/다세대/빌라 (최근 6개월 기준)", filtered_villa_txs, '2')]:
         if not txs:
@@ -2864,15 +2642,6 @@ def run_market_analysis():
             
         add_line(" ※ 안내: 위 방수(원룸/투룸 등) 분류는 실제 대장상 방수가 아닌, 실거래 전용면적 기준의 추정치입니다. 지하층(반지하)은 지상층 분류에서 제외 후 독립된 항목으로 분리 통계 처리되었습니다.")
             
-        # 대지지분 평당가 5년 신축/구축 비교 통계 (모아타운/개발지 핵심 지표)
-        stats_land = calculate_villa_land_bracket_stats(villa_txs if villa_txs else txs)
-        if stats_land and stats_land.get('total_valid', 0) > 0:
-            add_line("\n 🎯 [모아타운·개발지 핵심 지표] 대지지분 구간별 평당가 및 5년 신축/구축 비교:")
-            add_line(f"   • 전체 평균 지분평단가: 구축 {stats_land['old_avg']:,}만원/평 vs 신축 {stats_land['new_avg']:,}만원/평 (신축 프리미엄: +{stats_land['gap']:,}만원/평)")
-            for b in stats_land['brackets']:
-                add_line(f"   - {b['label']:16s} | 구축({b['old_cnt']:2d}건): {b['old_str']:>9s} (매매 {b['old_deal_str']}) | 신축({b['new_cnt']:2d}건): {b['new_str']:>9s} | 신축 프리미엄: {b['gap_str']}")
-            add_line("   ※ 안내: 준공 5년 이내를 '신축', 5년 초과를 '구축'으로 분류. 모아타운 등 개발지는 건물 감가상각이 완료된 구축 지분단가가 실질 투자 가치선입니다.")
-            
         overall_rate = calculate_market_conversion_rate(txs)
         if overall_rate:
             seg_data = analyze_conversion_rate_segments(txs, prop_type)
@@ -2895,6 +2664,40 @@ def run_market_analysis():
             
         add_line("-" * 50)
         
+    # 대지지분 평단가 5년 신축/구축 듀얼 분석 (모아타운/개발지 핵심 지표)
+    land_stats = calculate_villa_land_bracket_stats(villa_txs)
+    if land_stats and land_stats.get('brackets'):
+        add_line("\n[🎯 개발지/모아타운 핵심 지표: 대지지분 구간별 평당가 분석 (최근 24개월 전수)]")
+        add_line("  ※ 모아타운·재개발 투자 5년 보유 규정 및 노후도 기준 반영 (5년 이하 신축 vs 5년 초과 구축 비교)")
+        add_line(f" {'구간':<15} | {'총건수':<6} | {'구축(>5년) 평당가':<14} | {'신축(≤5년) 평당가':<14} | {'신축 프리미엄':<10}")
+        add_line(" " + "-" * 68)
+        for b in land_stats['brackets']:
+            tot_cnt = b['old_cnt'] + b['new_cnt']
+            cnt_str = f"{tot_cnt}건"
+            old_str = b['old_str'] if b['old_cnt'] > 0 else "-"
+            new_str = b['new_str'] if b['new_cnt'] > 0 else "-"
+            diff_str = b['gap_str'] if b['gap_str'] != "-" else "-"
+            add_line(f"  {b['label']:<13} | {cnt_str:<6} | {old_str:<14} | {new_str:<14} | {diff_str:<10}")
+        add_line(" " + "-" * 68)
+
+    # CMA 추천 매물 (Best Value Pick)
+    cma_picks = select_cma_recommended_listings(display_dong_name, filtered_villa_txs, max_picks=2)
+    if cma_picks:
+        add_line("\n[📌 CMA 시세 분석 기반 이달의 추천 매물 (Best Value Pick)]")
+        add_line(" ※ 최근 6개월 국토교통부 실거래 데이터 대비 가격 경쟁력이 검증된 엄선 매물입니다.")
+        for idx, p in enumerate(cma_picks, 1):
+            short_addr = p['address'].replace("서울특별시 ", "").replace("서울시 ", "")
+            flr_disp = p['floor_info'].split('/')[0].strip() if '/' in p['floor_info'] else p['floor_info']
+            if not flr_disp: flr_disp = "지상층"
+            add_line(f"\n • [추천 {idx}] [{p['trade_type']}] {p['prop_type']} ({short_addr}) - 전용 {p['excl_area']:.1f}㎡ / {flr_disp}")
+            add_line(f"   - 금  액: {p['price_display']}")
+            add_line(f"   - CMA 분석 근거: {p['cma_reason']}")
+            feat_str = p['feature']
+            if p.get('move_in'):
+                feat_str += f" (입주: {p['move_in']})"
+            add_line(f"   - 주요 특징: {feat_str}")
+        add_line("\n" + "-" * 50)
+        
     # Save Report files
     os.makedirs("reports", exist_ok=True)
     base_filename = f"reports/동향분석_{file_safe_dong}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -2905,15 +2708,15 @@ def run_market_analysis():
     try:
         with open(txt_filename, "w", encoding="utf-8") as f:
             f.write("\n".join(report_lines))
-        print(f"\n💾 텍스트 보고서 저장 완료: {os.path.abspath(txt_filename)}")
+        print(f"\n[저장 완료] 텍스트 보고서 저장 완료: {os.path.abspath(txt_filename)}")
     except Exception as e:
         print(f"\n [!] 텍스트 보고서 저장 실패: {e}")
         
     # Generate & Save PDF
     try:
         member_info = load_member_info()
-        generate_market_report_pdf(pdf_filename, display_dong_name, apt_txs, villa_txs, member_info, region_prefix=full_region_name, rep_apt_name=rep_apt_name, trend_data=trend_data, filtered_apt_txs=filtered_apt_txs)
-        print(f"🎨 PDF 보고서 발행 완료 (중개사 서명 포함): {os.path.abspath(pdf_filename)}")
+        generate_market_report_pdf(pdf_filename, display_dong_name, villa_txs, member_info, region_prefix=full_region_name)
+        print(f"[발행 완료] PDF 보고서 발행 완료 (중개사 서명 포함): {os.path.abspath(pdf_filename)}")
     except Exception as e:
         print(f" [!] PDF 보고서 생성 실패: {e}")
         
