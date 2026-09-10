@@ -471,16 +471,53 @@
         <canvas id="oscilloscope" style="width: 100%; height: 35px; background: #1e1e2f; border-radius: 8px; margin-bottom: 0px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);"></canvas>
     </div>
 
-    <!-- Timer Panel -->
+    <!-- Scale Reference Panel (계이름 및 오선보 표기법) -->
     <div class="panel">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <h2 class="panel-title" style="margin: 0;">⏱️ 연습 타이머</h2>
-            <div>
-                <button class="btn-mic" id="timer-btn" onclick="toggleTimer()" style="padding: 8px 16px; font-size: 14px; margin: 0; box-shadow: 0 2px 5px rgba(79, 172, 254, 0.4); background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">▶ 시작</button>
-                <button onclick="resetTimer()" style="padding: 8px 12px; font-size: 14px; margin: 0; margin-left: 5px; border: none; border-radius: 20px; background: #3a3a5a; color: white; cursor: pointer;">초기화</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h2 class="panel-title" style="margin: 0; font-size: 18px;">🎼 계이름 · 오선보 표기</h2>
+            <button type="button" onclick="openScaleModal()" class="btn-toolbar" style="background: #3a3a5a; color: #00f2fe; border: 1px solid #4facfe; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;">🔍 크게보기</button>
+        </div>
+        
+        <!-- Image Container (Clickable for zoom) -->
+        <div onclick="openScaleModal()" title="클릭하면 큰 화면으로 확대됩니다" style="position: relative; background: #ffffff; border-radius: 12px; padding: 6px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.3); transition: transform 0.15s ease, box-shadow 0.15s ease;">
+            <img src="scale_reference.png" alt="계이름 오선보 표기법" style="width: 100%; height: auto; display: block; border-radius: 6px;">
+            <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(30, 30, 47, 0.85); color: #00f2fe; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 8px; pointer-events: none; backdrop-filter: blur(4px);">
+                🔍 클릭 확대
             </div>
         </div>
-        <div id="timer-display" style="font-size: 48px; font-weight: 800; color: #fbc2eb; text-align: center; font-family: 'Nunito', sans-serif;">00:00:00</div>
+
+        <!-- Compact Comparison Table -->
+        <div style="margin-top: 12px; background: #1e1e2f; border-radius: 12px; padding: 10px; border: 1px solid #3a3a5a;">
+            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; font-size: 13px; font-weight: bold;">
+                <div style="color: #ff758c; background: rgba(255, 117, 140, 0.1); padding: 4px 0; border-radius: 6px;">도</div>
+                <div style="color: #4facfe; background: rgba(79, 172, 254, 0.1); padding: 4px 0; border-radius: 6px;">레</div>
+                <div style="color: #1dd1a1; background: rgba(29, 209, 161, 0.1); padding: 4px 0; border-radius: 6px;">미</div>
+                <div style="color: #feca57; background: rgba(254, 202, 87, 0.1); padding: 4px 0; border-radius: 6px;">파</div>
+                <div style="color: #ff9ff3; background: rgba(255, 159, 243, 0.1); padding: 4px 0; border-radius: 6px;">솔</div>
+                <div style="color: #54a0ff; background: rgba(84, 160, 255, 0.1); padding: 4px 0; border-radius: 6px;">라</div>
+                <div style="color: #a29bfe; background: rgba(162, 155, 254, 0.1); padding: 4px 0; border-radius: 6px;">시</div>
+
+                <div style="color: #00f2fe; font-size: 12px; padding-top: 3px;">C</div>
+                <div style="color: #00f2fe; font-size: 12px; padding-top: 3px;">D</div>
+                <div style="color: #00f2fe; font-size: 12px; padding-top: 3px;">E</div>
+                <div style="color: #00f2fe; font-size: 12px; padding-top: 3px;">F</div>
+                <div style="color: #00f2fe; font-size: 12px; padding-top: 3px;">G</div>
+                <div style="color: #00f2fe; font-size: 12px; padding-top: 3px;">A</div>
+                <div style="color: #00f2fe; font-size: 12px; padding-top: 3px;">B</div>
+
+                <div style="color: #cbd5e1; font-size: 12px; padding-top: 2px;">다</div>
+                <div style="color: #cbd5e1; font-size: 12px; padding-top: 2px;">라</div>
+                <div style="color: #cbd5e1; font-size: 12px; padding-top: 2px;">마</div>
+                <div style="color: #cbd5e1; font-size: 12px; padding-top: 2px;">바</div>
+                <div style="color: #cbd5e1; font-size: 12px; padding-top: 2px;">사</div>
+                <div style="color: #cbd5e1; font-size: 12px; padding-top: 2px;">가</div>
+                <div style="color: #cbd5e1; font-size: 12px; padding-top: 2px;">나</div>
+            </div>
+            <div style="margin-top: 8px; font-size: 11px; color: #a0a0b0; display: flex; justify-content: space-between; border-top: 1px solid #2a2a40; padding-top: 6px;">
+                <span>이태리어 / 영어 / 한국어 음이름</span>
+                <span style="color: #4facfe; cursor: pointer;" onclick="openScaleModal()">높은·낮은음자리표 보기 ↗</span>
+            </div>
+        </div>
     </div>
     </div>
 
@@ -1322,46 +1359,36 @@
         }
 
         // ==========================================
-        // 5. Timer Logic
+        // 5. Scale Reference Modal Logic
         // ==========================================
-        let practiceTimerID = null;
-        let practiceSeconds = 0;
-        let isTimerRunning = false;
-
-        function updateTimerDisplay() {
-            const h = String(Math.floor(practiceSeconds / 3600)).padStart(2, '0');
-            const m = String(Math.floor((practiceSeconds % 3600) / 60)).padStart(2, '0');
-            const s = String(practiceSeconds % 60).padStart(2, '0');
-            document.getElementById('timer-display').innerText = `${h}:${m}:${s}`;
-        }
-
-        function toggleTimer() {
-            const btn = document.getElementById('timer-btn');
-            if (isTimerRunning) {
-                clearInterval(practiceTimerID);
-                isTimerRunning = false;
-                btn.innerText = '▶ 시작';
-                btn.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
-            } else {
-                isTimerRunning = true;
-                btn.innerText = '⏸ 정지';
-                btn.style.background = 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)';
-                practiceTimerID = setInterval(() => {
-                    practiceSeconds++;
-                    updateTimerDisplay();
-                }, 1000);
+        function openScaleModal() {
+            const modal = document.getElementById('scale-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
             }
         }
 
-        function resetTimer() {
-            clearInterval(practiceTimerID);
-            isTimerRunning = false;
-            practiceSeconds = 0;
-            updateTimerDisplay();
-            const btn = document.getElementById('timer-btn');
-            btn.innerText = '▶ 시작';
-            btn.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+        function closeScaleModal(e) {
+            if (e && e.target && e.target.id !== 'scale-modal' && !e.target.classList.contains('modal-close-btn')) {
+                return;
+            }
+            const modal = document.getElementById('scale-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
         }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('scale-modal');
+                if (modal && modal.style.display === 'flex') {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            }
+        });
 
         // 초기화
         renderHarmonicaGrid();
@@ -1375,7 +1402,48 @@
         }
         loadScoreFromDB();
     </script>
-                <footer class="site-footer">
+
+    <!-- Scale Image Modal (Lightbox) -->
+    <div id="scale-modal" onclick="closeScaleModal(event)" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10, 10, 20, 0.88); z-index: 99999; backdrop-filter: blur(6px); justify-content: center; align-items: center; padding: 15px; box-sizing: border-box;">
+        <div style="background: #2a2a40; border-radius: 18px; max-width: 900px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid #3a3a5a;" onclick="event.stopPropagation()">
+            <!-- Modal Header -->
+            <div style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3a3a5a;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-family: 'Jua', sans-serif; font-size: 20px; color: #4facfe;">🎼 계이름 및 오선보 표기법</span>
+                    <span style="font-size: 12px; background: #1e1e2f; color: #00f2fe; padding: 2px 8px; border-radius: 8px;">높은음자리표 & 낮은음자리표</span>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeScaleModal()" style="background: #3a3a5a; color: #fff; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">✕</button>
+            </div>
+            <!-- Modal Body -->
+            <div style="padding: 15px; overflow-y: auto; background: #151522; display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                <div style="background: #ffffff; padding: 10px; border-radius: 12px; width: 100%; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.4); text-align: center;">
+                    <img src="scale_reference.png" alt="계이름 및 오선보 상세표" style="max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: 6px;">
+                </div>
+                
+                <!-- Quick Info Card -->
+                <div style="width: 100%; background: #2a2a40; border-radius: 12px; padding: 14px 18px; box-sizing: border-box; font-size: 13px; line-height: 1.7; color: #cbd5e1;">
+                    <div style="font-weight: bold; color: #00f2fe; margin-bottom: 6px; font-size: 14px;">📌 음이름 및 계이름 읽는 법</div>
+                    <div>• <b>높은음자리표 (a)</b>: 하모니카 주 멜로디 및 보통 음역대 표기 (아래 덧줄 1개 = 가온 도 / C4)</div>
+                    <div>• <b>낮은음자리표 (b)</b>: 건반 악기 왼손, 베이스 등 낮은 음 표기</div>
+                    <div>• <b>음이름 대조</b>: 
+                        <span style="color: #ff758c; font-weight: bold;">도(C/다)</span> · 
+                        <span style="color: #4facfe; font-weight: bold;">레(D/라)</span> · 
+                        <span style="color: #1dd1a1; font-weight: bold;">미(E/마)</span> · 
+                        <span style="color: #feca57; font-weight: bold;">파(F/바)</span> · 
+                        <span style="color: #ff9ff3; font-weight: bold;">솔(G/사)</span> · 
+                        <span style="color: #54a0ff; font-weight: bold;">라(A/가)</span> · 
+                        <span style="color: #a29bfe; font-weight: bold;">시(B/나)</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal Footer -->
+            <div style="padding: 10px 20px; background: #1e1e2f; display: flex; justify-content: flex-end; border-top: 1px solid #3a3a5a;">
+                <button type="button" class="modal-close-btn" onclick="closeScaleModal()" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; padding: 7px 20px; border-radius: 12px; font-weight: bold; font-size: 13px; cursor: pointer;">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
         <div class="site-footer-inner">
             <div class="footer-links">
                 <a href="#">회사소개</a>
