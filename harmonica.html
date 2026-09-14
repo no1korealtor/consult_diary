@@ -21,6 +21,12 @@
         }
     </script>
     <style>
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100vw;
+        }
+
         body {
             font-family: 'Nunito', sans-serif;
             background: #1e1e2f;
@@ -37,24 +43,30 @@
         @media(min-width: 900px) {
             body {
                 display: grid;
-                grid-template-columns: 2fr 1fr;
+                grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
                 padding: 20px;
                 gap: 20px;
                 align-items: start;
-                transition: grid-template-columns 0.3s ease;
             }
             body.sidebar-collapsed {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr);
             }
             .score-panel {
                 grid-column: 1 / 2;
+                min-width: 0;
+                width: 100%;
+                box-sizing: border-box;
             }
             body.sidebar-collapsed .score-panel {
                 grid-column: 1 / -1;
             }
             .right-panels {
+                grid-column: 2 / 3;
                 position: sticky;
                 top: 20px;
+                min-width: 0;
+                width: 100%;
+                box-sizing: border-box;
             }
             body.sidebar-collapsed .right-panels {
                 display: none !important;
@@ -63,6 +75,11 @@
         @media(max-width: 899px) {
             body.sidebar-collapsed .right-panels {
                 display: none !important;
+            }
+            .score-panel, .right-panels {
+                min-width: 0;
+                width: 100%;
+                box-sizing: border-box;
             }
         }
 
@@ -269,14 +286,23 @@
 
         /* --- Tuner --- */
         .tuner-note {
-            font-size: 40px;
+            font-size: 36px;
             font-weight: 800;
             color: #1dd1a1;
             text-align: center;
-            margin: 10px 0;
+            margin: 8px 0;
+            min-height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            overflow: hidden;
+            width: 100%;
+            box-sizing: border-box;
         }
         @media(min-width: 900px) {
-            .tuner-note { font-size: 50px; }
+            .tuner-note { font-size: 44px; }
         }
         .tuner-meter {
             width: 100%;
@@ -293,7 +319,7 @@
             background: #ff4757;
             left: 50%;
             transform: translateX(-50%);
-            transition: left 0.1s ease-out;
+            transition: left 0.05s ease-out;
         }
         .meter-center {
             position: absolute;
@@ -369,14 +395,231 @@
         .harmonica-cell.top { height: 40px; border-bottom: 1px solid #2a2a40; }
         .harmonica-cell.middle { background: #ffffff; height: 26px; font-size: 16px; border-bottom: 1px solid #dfe6e9; }
         .harmonica-cell.bottom { background: #dfe6e9; height: 26px; font-size: 16px; }
+
+        /* --- Top Scale Reference Vector UI --- */
+        .scale-header-panel {
+            background: #1e1e32 !important;
+            border-bottom: 2px solid #3a3a5a;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .scale-tab-btn {
+            background: #252538;
+            color: #94a3b8;
+            border: 1px solid #3a3a52;
+            padding: 5px 13px;
+            border-radius: 16px;
+            font-family: 'Jua', 'Nunito', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .scale-tab-btn:hover {
+            background: #33334d;
+            color: #ffffff;
+        }
+        .scale-tab-btn.active {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #ffffff;
+            border-color: #00f2fe;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0, 242, 254, 0.4);
+        }
+        .scale-cards-wrapper {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 6px 4px 8px 4px;
+            align-items: stretch;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+        }
+        .scale-note-card {
+            flex: 1;
+            flex-shrink: 0;
+            min-width: 86px;
+            max-width: 140px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 4px 5px 6px 5px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.22);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            border: 2px solid #e2e8f0;
+            box-sizing: border-box;
+        }
+        .scale-note-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(79, 172, 254, 0.35);
+            border-color: #93c5fd;
+        }
+        .scale-note-card.highlight {
+            border-color: #f59e0b;
+            background: #fffdf5;
+            box-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
+        }
+        /* --- Tuner Reactive Highlight Styles (Zero layout reflow) --- */
+        .scale-note-card.tuner-active {
+            transform: translateY(-2px) !important;
+            z-index: 10 !important;
+            transition: transform 0.08s ease-out, box-shadow 0.08s ease-out, border-color 0.08s ease-out, background 0.08s ease-out !important;
+        }
+        .scale-note-card.tuner-active.in-tune {
+            border-color: #10b981 !important;
+            background: #f0fdf4 !important;
+            box-shadow: 0 0 0 2px #10b981, 0 4px 18px rgba(16, 185, 129, 0.75) !important;
+        }
+        .scale-note-card.tuner-active.in-tune .note-name-kr {
+            color: #059669 !important;
+        }
+        .scale-note-card.tuner-active.off-tune {
+            border-color: #f59e0b !important;
+            background: #fffbeb !important;
+            box-shadow: 0 0 0 2px #f59e0b, 0 4px 14px rgba(245, 158, 11, 0.65) !important;
+        }
+        .scale-note-card.tuner-active.off-tune .note-name-kr {
+            color: #d97706 !important;
+        }
+        .scale-tab-btn.tab-hint {
+            border-color: #10b981 !important;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.8) !important;
+            animation: pulse-tab-hint 0.7s infinite alternate ease-in-out;
+        }
+        @keyframes pulse-tab-hint {
+            from { box-shadow: 0 0 4px rgba(16, 185, 129, 0.4); }
+            to { box-shadow: 0 0 14px rgba(16, 185, 129, 0.95); }
+        }
+        .note-highlight-tag {
+            position: absolute;
+            top: -9px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f59e0b;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 1px 7px;
+            border-radius: 10px;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            letter-spacing: -0.2px;
+            z-index: 5;
+        }
+        .note-svg-box {
+            width: 100%;
+            height: 84px;
+            display: block;
+        }
+        .note-name-kr {
+            font-family: 'Jua', sans-serif;
+            font-size: 17px;
+            font-weight: 900;
+            color: #0f172a;
+            margin-top: 1px;
+            line-height: 1.2;
+        }
+        .note-solfege-num {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            color: #334155;
+            line-height: 1;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .hole-breath-badge {
+            width: 100%;
+            padding: 4px 2px;
+            border-radius: 8px;
+            font-family: 'Jua', 'Nunito', sans-serif;
+            font-size: 13px;
+            font-weight: 900;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            letter-spacing: -0.2px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+            box-sizing: border-box;
+        }
+        .hole-breath-badge.blow {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        }
+        .hole-breath-badge.draw {
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+        }
+        .scale-tip-banner {
+            margin-top: 6px;
+            padding: 6px 12px;
+            background: #151524;
+            border-radius: 8px;
+            border: 1px solid #3a3a52;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
     
-    <!-- Harmonica Layout Panel -->
-    <div class="panel" style="position: sticky; top: 0; z-index: 1000; grid-column: 1 / -1; overflow-x: auto; padding: 6px 10px; margin-bottom: 6px; border-radius: 0 0 15px 15px; border-top: none; box-shadow: 0 10px 20px rgba(0,0,0,0.4);">
-        <h2 class="panel-title" style="margin-bottom: 4px; font-size: 16px;">🎵 C 메이저 트레몰로 22홀 배열도</h2>
-        <div id="harmonica-layout-container"></div>
+    <!-- Top Scale Reference & Harmonica Header Panel -->
+    <div class="panel scale-header-panel" id="scale-header-panel" style="position: sticky; top: 0; z-index: 1000; grid-column: 1 / -1; padding: 6px 12px; margin-bottom: 6px; border-radius: 0 0 16px 16px; border-top: none;">
+        <!-- Header Controls Row -->
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 5px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                <h2 style="font-family: 'Jua', sans-serif; font-size: 19px; color: #4facfe; margin: 0; display: flex; align-items: center; gap: 6px;">
+                    <span>🎼 오선보 계이름표</span>
+                </h2>
+                <!-- 음역대 선택 탭 -->
+                <div class="scale-tabs" style="display: flex; gap: 4px; background: #161626; padding: 3px; border-radius: 18px; border: 1px solid #3a3a52;">
+                    <button type="button" class="scale-tab-btn active" id="tab-low" onclick="switchOctaveTab('low')">저음역 (1~7홀, 덧줄)</button>
+                    <button type="button" class="scale-tab-btn" id="tab-mid" onclick="switchOctaveTab('mid')">중음역 (8~15홀, 기본)</button>
+                    <button type="button" class="scale-tab-btn" id="tab-high" onclick="switchOctaveTab('high')">고음역 (16~22홀, 높은음)</button>
+                    <button type="button" class="scale-tab-btn" id="tab-all" onclick="switchOctaveTab('all')">전체 (1~22홀)</button>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <button type="button" id="btn-toggle-hole-info" onclick="toggleHoleInfo()" class="btn-toolbar" style="background: #252538; color: #cbd5e1; border: 1px solid #3a3a52; padding: 5px 11px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="홀 번호 및 불기/마시기 배지 표시 토글">
+                    <span id="hole-info-btn-text">🏷️ 홀번호 보기</span>
+                </button>
+                <button type="button" id="btn-toggle-grid-view" onclick="toggleHarmonicaGridView()" class="btn-toolbar" style="background: #252538; color: #cbd5e1; border: 1px solid #3a3a52; padding: 5px 11px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="22홀 키보드 배열도 보기/숨기기">
+                    <span>🎹</span> <span id="grid-view-btn-text">22홀 배열도</span>
+                </button>
+                <button type="button" onclick="openScaleModal()" class="btn-toolbar" style="background: #252538; color: #00f2fe; border: 1px solid #4facfe; padding: 5px 11px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;" title="오선보 대조표 크게보기">
+                    🔍 크게보기
+                </button>
+                <button type="button" id="btn-scale-collapse" onclick="toggleScaleCollapse()" class="btn-toolbar" style="background: #3a3a5a; color: #fff; border: 1px solid #4facfe; padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <span id="scale-collapse-icon">⮝</span>
+                    <span id="scale-collapse-text">접기</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Scale Cards Area (Collapsible) -->
+        <div id="scale-cards-collapsible" style="transition: all 0.25s ease; overflow: hidden;">
+            <!-- Vector Cards Container -->
+            <div id="scale-cards-container" class="scale-cards-wrapper"></div>
+            
+            <!-- Dynamic Tip Banner -->
+            <div id="scale-tip-banner" class="scale-tip-banner"></div>
+
+            <!-- Optional 22-Hole Keyboard Layout View (hidden by default) -->
+            <div id="harmonica-layout-container" style="display: none; margin-top: 10px; overflow-x: auto; padding-top: 6px; border-top: 1px dashed #3a3a5a;"></div>
+        </div>
     </div>
 
     <!-- Score Viewer Panel -->
@@ -471,33 +714,34 @@
         <canvas id="oscilloscope" style="width: 100%; height: 35px; background: #1e1e2f; border-radius: 8px; margin-bottom: 0px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);"></canvas>
     </div>
 
-    <!-- Scale Reference Panel (하모니카 오선보 및 계이름 대조표) -->
+    <!-- Quick Scale Guide Card in Sidebar -->
     <div class="panel">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div>
-                <h2 class="panel-title" style="margin: 0; font-size: 18px;">🎼 오선보 계이름표</h2>
-                <span style="font-size: 11px; color: #00f2fe;">높은음자리표 전음역 (저음 덧줄 포함)</span>
-            </div>
-            <button type="button" onclick="openScaleModal()" class="btn-toolbar" style="background: #3a3a5a; color: #00f2fe; border: 1px solid #4facfe; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;">🔍 크게보기</button>
-        </div>
-        
-        <!-- Image Container (Clickable for zoom) -->
-        <div onclick="openScaleModal()" title="클릭하면 큰 화면으로 확대됩니다" style="position: relative; background: #151522; border: 1px solid #3a3a5a; border-radius: 12px; padding: 4px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.3); transition: transform 0.15s ease, box-shadow 0.15s ease;">
-            <img src="scale_reference.png" alt="하모니카 오선보 계이름 대조표" style="width: 100%; height: auto; display: block; border-radius: 8px;">
-            <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(30, 30, 47, 0.9); color: #00f2fe; font-size: 11px; font-weight: bold; padding: 3px 10px; border-radius: 8px; pointer-events: none; backdrop-filter: blur(4px); border: 1px solid #4facfe;">
-                🔍 탭하여 전체 확대
-            </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h2 class="panel-title" style="margin: 0; font-size: 17px;">🎼 오선보 빠른 길잡이</h2>
+            <button type="button" onclick="openScaleModal()" class="btn-toolbar" style="background: #3a3a5a; color: #00f2fe; border: 1px solid #4facfe; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer;">🔍 전체보기</button>
         </div>
 
         <!-- Quick Island Baby Callout -->
-        <div style="margin-top: 10px; background: #1e1e2f; border-radius: 10px; padding: 10px 12px; border: 1px solid #3a3a5a; font-size: 12px; line-height: 1.5;">
+        <div style="background: #1e1e2f; border-radius: 10px; padding: 10px 12px; border: 1px solid #3a3a5a; font-size: 12px; line-height: 1.5; margin-bottom: 8px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <span style="font-weight: bold; color: #f1c40f;">★ 섬집 아기 첫음 '엄' (5.)</span>
-                <span style="font-size: 11px; background: rgba(255, 117, 140, 0.2); color: #ff758c; padding: 1px 6px; border-radius: 6px; border: 1px solid #ff4757;">6번홀 불기</span>
+                <span style="font-size: 11px; background: rgba(255, 117, 140, 0.2); color: #ff758c; padding: 1px 6px; border-radius: 6px; border: 1px solid #ff4757; font-weight: bold;">6번홀 불기 🔴</span>
             </div>
             <div style="color: #cbd5e1; font-size: 11px;">
-                오선 아래 <b>덧줄 2개 밑</b>에 있는 음표는 <b>저음 솔(5.)</b>입니다.<br>
-                [엄(6홀 불어) → 마(8홀 불어) → 가(9홀 마셔) → 섬(10홀 불어)]
+                오선 아래 <b>덧줄 2개 밑</b> = <b>저음 솔(5.)</b><br>
+                [엄(6 불) → 마(8 불) → 가(9 마) → 섬(10 불)]
+            </div>
+        </div>
+
+        <div style="background: #151522; border-radius: 10px; padding: 10px 12px; border: 1px solid #2a2a40; font-size: 11.5px; line-height: 1.6; color: #cbd5e1;">
+            <div style="color: #00f2fe; font-weight: bold; margin-bottom: 4px;">📌 덧줄 세는 법 (아래 방향)</div>
+            • 덧줄 1개 걸침 : <b>가온 도 (8번 불기 🔴)</b><br>
+            • 덧줄 1개 아래 : <b>저음 시 (7번 마시기 🔵)</b><br>
+            • 덧줄 2개 걸침 : <b>저음 라 (5번 마시기 🔵)</b><br>
+            • 덧줄 2개 아래 : <b>저음 솔 (6번 불기 🔴 ★)</b>
+            <div style="margin-top: 8px; display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px dashed #3a3a5a;">
+                <span style="color: #94a3b8; font-size: 11px;">상단 탭에서 자세히 보기</span>
+                <button type="button" onclick="switchOctaveTab('low'); window.scrollTo({top: 0, behavior: 'smooth'});" style="background: #2a2a40; border: 1px solid #4facfe; color: #4facfe; padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;">▲ 저음역 보기</button>
             </div>
         </div>
     </div>
@@ -1189,6 +1433,9 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
             }
+
+            // 튜너가 꺼지면 계이름 카드 하이라이트도 정리
+            clearTunerHighlight();
         }
 
         function drawOscilloscope(dataArray) {
@@ -1213,8 +1460,6 @@
             let x = 0;
             
             for (let i = 0; i < dataArray.length; i++) {
-                // v goes from -1.0 to 1.0. We scale it.
-                // multiply by a factor (e.g. 2.0) to make it more visible
                 let v = dataArray[i] * 2.5; 
                 if (v > 1) v = 1;
                 if (v < -1) v = -1;
@@ -1247,26 +1492,438 @@
                 let note = noteFromPitch(pitch);
                 let cents = centsOffFromPitch(pitch, note);
                 
-                document.getElementById('note-display').innerHTML = `${noteStrings[note % 12]} <span style="font-size:24px; color:#a0a0b0;">(${engStrings[note % 12]})</span>`;
+                const noteLetters = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+                const octaveNum = Math.floor(note / 12) - 1;
+                const pitchString = noteLetters[note % 12] + octaveNum;
+
+                // 하모니카 정보(몇 번 홀, 불기/마시기) 매칭
+                const matchedNote = HARMONICA_NOTES.find(n => n.pitch === pitchString);
+                let holeInfoBadge = '';
+                if (matchedNote) {
+                    const breathBadgeColor = matchedNote.breathType === 'blow' ? '#ef4444' : '#0284c7';
+                    const breathIcon = matchedNote.breathType === 'blow' ? '🔴' : '🔵';
+                    holeInfoBadge = `<span style="font-size:14px; color:#fff; background:${breathBadgeColor}; padding:2px 8px; border-radius:10px; margin-left:6px; font-family:'Jua',sans-serif; vertical-align:middle; box-shadow:0 2px 6px rgba(0,0,0,0.3); white-space:nowrap;">${matchedNote.hole}번 ${matchedNote.breath} ${breathIcon}</span>`;
+                }
+                
+                document.getElementById('note-display').innerHTML = `<span>${noteStrings[note % 12]}</span> <span style="font-size:22px; color:#a0a0b0;">(${pitchString})</span> ${holeInfoBadge}`;
                 
                 let percent = (cents + 50) / 100;
                 percent = Math.max(0, Math.min(1, percent));
                 let meterEl = document.getElementById('meter-indicator');
                 meterEl.style.left = (percent * 100) + '%';
                 
-                if (Math.abs(cents) < 5) {
+                if (Math.abs(cents) < 8) {
                     meterEl.style.background = '#1dd1a1';
                 } else {
                     meterEl.style.background = '#ff4757';
                 }
+
+                // 상단 오선보 계이름 카드 실시간 하이라이트 반응!
+                highlightTunerNote(pitchString, cents);
             }
             
             reqAnimFrame = requestAnimationFrame(updatePitch);
         }
 
         // ==========================================
-        // 4. Harmonica Grid Logic
+        // 4. Harmonica Scale Reference & Grid Logic
         // ==========================================
+        const HARMONICA_NOTES = [
+            // 저음역 (1~7홀, pitch order)
+            {
+                id: 'low-do', octave: 'low', name: '저음 도', pitch: 'C3', num: '1', dot: 'sub',
+                hole: 2, breath: '불어', breathType: 'blow',
+                y: 115, ledgers: [80, 90, 100, 110], guide: '덧줄 4개 밑', isSpecial: false
+            },
+            {
+                id: 'low-re', octave: 'low', name: '저음 레', pitch: 'D3', num: '2', dot: 'sub',
+                hole: 1, breath: '마셔', breathType: 'draw',
+                y: 110, ledgers: [80, 90, 100, 110], guide: '덧줄 4번째 줄', isSpecial: false
+            },
+            {
+                id: 'low-mi', octave: 'low', name: '저음 미', pitch: 'E3', num: '3', dot: 'sub',
+                hole: 4, breath: '불어', breathType: 'blow',
+                y: 105, ledgers: [80, 90, 100], guide: '덧줄 3개 밑', isSpecial: false
+            },
+            {
+                id: 'low-fa', octave: 'low', name: '저음 파', pitch: 'F3', num: '4', dot: 'sub',
+                hole: 3, breath: '마셔', breathType: 'draw',
+                y: 100, ledgers: [80, 90, 100], guide: '덧줄 3번째 줄', isSpecial: false
+            },
+            {
+                id: 'low-sol', octave: 'low', name: '저음 솔', pitch: 'G3', num: '5', dot: 'sub',
+                hole: 6, breath: '불어', breathType: 'blow',
+                y: 95, ledgers: [80, 90], guide: '덧줄 2개 밑 ★', isSpecial: true, specialText: '★ 섬집아기 첫음'
+            },
+            {
+                id: 'low-la', octave: 'low', name: '저음 라', pitch: 'A3', num: '6', dot: 'sub',
+                hole: 5, breath: '마셔', breathType: 'draw',
+                y: 90, ledgers: [80, 90], guide: '덧줄 2번째 줄', isSpecial: false
+            },
+            {
+                id: 'low-si', octave: 'low', name: '저음 시', pitch: 'B3', num: '7', dot: 'sub',
+                hole: 7, breath: '마셔', breathType: 'draw',
+                y: 85, ledgers: [80], guide: '덧줄 1개 밑', isSpecial: false
+            },
+
+            // 중음역 (8~15홀, pitch order)
+            {
+                id: 'mid-do', octave: 'mid', name: '가온 도', pitch: 'C4', num: '1', dot: 'none',
+                hole: 8, breath: '불어', breathType: 'blow',
+                y: 80, ledgers: [80], guide: '덧줄 1번째 줄', isSpecial: true, specialText: '★ 가온 도 (기준)'
+            },
+            {
+                id: 'mid-re', octave: 'mid', name: '중음 레', pitch: 'D4', num: '2', dot: 'none',
+                hole: 9, breath: '마셔', breathType: 'draw',
+                y: 75, ledgers: [], guide: '1줄 아래 칸', isSpecial: false
+            },
+            {
+                id: 'mid-mi', octave: 'mid', name: '중음 미', pitch: 'E4', num: '3', dot: 'none',
+                hole: 10, breath: '불어', breathType: 'blow',
+                y: 70, ledgers: [], guide: '오선 1번째 줄', isSpecial: false
+            },
+            {
+                id: 'mid-fa', octave: 'mid', name: '중음 파', pitch: 'F4', num: '4', dot: 'none',
+                hole: 11, breath: '마셔', breathType: 'draw',
+                y: 65, ledgers: [], guide: '오선 1번째 칸', isSpecial: false
+            },
+            {
+                id: 'mid-sol', octave: 'mid', name: '중음 솔', pitch: 'G4', num: '5', dot: 'none',
+                hole: 12, breath: '불어', breathType: 'blow',
+                y: 60, ledgers: [], guide: '오선 2번째 줄', isSpecial: false
+            },
+            {
+                id: 'mid-la', octave: 'mid', name: '중음 라', pitch: 'A4', num: '6', dot: 'none',
+                hole: 13, breath: '마셔', breathType: 'draw',
+                y: 55, ledgers: [], guide: '오선 2번째 칸', isSpecial: false
+            },
+            {
+                id: 'mid-si', octave: 'mid', name: '중음 시', pitch: 'B4', num: '7', dot: 'none',
+                hole: 15, breath: '마셔', breathType: 'draw',
+                y: 50, ledgers: [], guide: '오선 3번째 줄', isSpecial: false
+            },
+
+            // 고음역 (14, 16~22홀, pitch order)
+            {
+                id: 'high-do', octave: 'high', name: '높은 도', pitch: 'C5', num: '1', dot: 'super',
+                hole: 14, breath: '불어', breathType: 'blow',
+                y: 45, ledgers: [], guide: '오선 3번째 칸', isSpecial: true, specialText: '★ 높은 도 시작'
+            },
+            {
+                id: 'high-re', octave: 'high', name: '높은 레', pitch: 'D5', num: '2', dot: 'super',
+                hole: 17, breath: '마셔', breathType: 'draw',
+                y: 40, ledgers: [], guide: '오선 4번째 줄', isSpecial: false
+            },
+            {
+                id: 'high-mi', octave: 'high', name: '높은 미', pitch: 'E5', num: '3', dot: 'super',
+                hole: 16, breath: '불어', breathType: 'blow',
+                y: 35, ledgers: [], guide: '오선 4번째 칸', isSpecial: false
+            },
+            {
+                id: 'high-fa', octave: 'high', name: '높은 파', pitch: 'F5', num: '4', dot: 'super',
+                hole: 19, breath: '마셔', breathType: 'draw',
+                y: 30, ledgers: [], guide: '오선 5번째 줄', isSpecial: false
+            },
+            {
+                id: 'high-sol', octave: 'high', name: '높은 솔', pitch: 'G5', num: '5', dot: 'super',
+                hole: 18, breath: '불어', breathType: 'blow',
+                y: 25, ledgers: [], guide: '5줄 위 칸', isSpecial: false
+            },
+            {
+                id: 'high-la', octave: 'high', name: '높은 라', pitch: 'A5', num: '6', dot: 'super',
+                hole: 21, breath: '마셔', breathType: 'draw',
+                y: 20, ledgers: [20], guide: '위 덧줄 1줄', isSpecial: false
+            },
+            {
+                id: 'high-si', octave: 'high', name: '높은 시', pitch: 'B5', num: '7', dot: 'super',
+                hole: 22, breath: '마셔', breathType: 'draw',
+                y: 15, ledgers: [20], guide: '위 덧줄 1개 위', isSpecial: false
+            },
+            {
+                id: 'top-do', octave: 'high', name: '최고 도', pitch: 'C6', num: '1', dot: 'super-double',
+                hole: 20, breath: '불어', breathType: 'blow',
+                y: 10, ledgers: [20, 10], guide: '위 덧줄 2줄', isSpecial: false
+            }
+        ];
+
+        let currentOctaveTab = localStorage.getItem('harmonica_octave_tab') || 'low';
+        let isScaleCollapsed = localStorage.getItem('harmonica_scale_collapsed') === 'true';
+        let isHarmonicaGridVisible = false;
+        let showHoleInfo = localStorage.getItem('harmonica_show_hole_info') === 'true'; // 기본값: 숨김 (false)
+
+        function toggleHoleInfo() {
+            showHoleInfo = !showHoleInfo;
+            localStorage.setItem('harmonica_show_hole_info', showHoleInfo);
+            updateHoleInfoBtnUI();
+            renderOctaveCards(currentOctaveTab);
+        }
+
+        function updateHoleInfoBtnUI() {
+            const btnText = document.getElementById('hole-info-btn-text');
+            const btn = document.getElementById('btn-toggle-hole-info');
+            if (showHoleInfo) {
+                if (btnText) btnText.innerText = '🏷️ 홀번호 숨김';
+                if (btn) {
+                    btn.style.background = '#3a3a5a';
+                    btn.style.color = '#00f2fe';
+                }
+            } else {
+                if (btnText) btnText.innerText = '🏷️ 홀번호 보기';
+                if (btn) {
+                    btn.style.background = '#252538';
+                    btn.style.color = '#cbd5e1';
+                }
+            }
+        }
+
+        function createNoteSVG(note) {
+            // Staff lines: y = 30, 40, 50, 60, 70
+            const staffLines = [30, 40, 50, 60, 70].map(y => 
+                `<line x1="6" y1="${y}" x2="86" y2="${y}" stroke="#64748b" stroke-width="1.2" />`
+            ).join('');
+            
+            // Ledger lines (centered at x=58)
+            let ledgerLines = '';
+            if (note.ledgers && note.ledgers.length > 0) {
+                ledgerLines = note.ledgers.map(ly => 
+                    `<line x1="44" y1="${ly}" x2="72" y2="${ly}" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round" />`
+                ).join('');
+            }
+            
+            // Treble clef glyph
+            const clef = `<text x="17" y="65" font-family="'Segoe UI Symbol', 'Noto Music', 'Apple Symbols', sans-serif" font-size="44" fill="#94a3b8" text-anchor="middle" style="user-select:none;">𝄞</text>`;
+            
+            // Notehead: Red for blow, Blue for draw
+            const noteColor = note.breathType === 'blow' ? '#ef4444' : '#0284c7';
+            const noteHead = `<ellipse cx="58" cy="${note.y}" rx="6.2" ry="4.6" transform="rotate(-20 58 ${note.y})" fill="${noteColor}" stroke="#0f172a" stroke-width="1.6" />`;
+            
+            // Stem
+            let stem = '';
+            if (note.y <= 50) {
+                stem = `<line x1="52.4" y1="${note.y}" x2="52.4" y2="${note.y + 26}" stroke="#0f172a" stroke-width="2" stroke-linecap="round" />`;
+            } else {
+                stem = `<line x1="63.6" y1="${note.y}" x2="63.6" y2="${note.y - 26}" stroke="#0f172a" stroke-width="2" stroke-linecap="round" />`;
+            }
+            
+            return `<svg viewBox="0 0 92 125" class="note-svg-box" xmlns="http://www.w3.org/2000/svg">
+                ${clef}
+                ${staffLines}
+                ${ledgerLines}
+                ${stem}
+                ${noteHead}
+            </svg>`;
+        }
+
+        function createNoteCardHTML(note) {
+            // Solfege dot notation
+            let solfegeHTML = '';
+            if (note.dot === 'sub') {
+                solfegeHTML = `<span style="font-size:19px; font-weight:900;">${note.num}</span><span style="font-size:10px; line-height:0.3; color:#ef4444; margin-top:2px;">●</span>`;
+            } else if (note.dot === 'super') {
+                solfegeHTML = `<span style="font-size:10px; line-height:0.3; color:#0284c7; margin-bottom:2px;">●</span><span style="font-size:19px; font-weight:900;">${note.num}</span>`;
+            } else if (note.dot === 'super-double') {
+                solfegeHTML = `<span style="font-size:8px; line-height:0.3; color:#0284c7; margin-bottom:2px; letter-spacing:1px;">●●</span><span style="font-size:19px; font-weight:900;">${note.num}</span>`;
+            } else {
+                solfegeHTML = `<span style="font-size:19px; font-weight:900;">${note.num}</span>`;
+            }
+
+            const breathIcon = note.breathType === 'blow' ? '🔴' : '🔵';
+            const breathClass = note.breathType === 'blow' ? 'blow' : 'draw';
+            const highlightClass = note.isSpecial ? 'highlight' : '';
+            const highlightTag = note.isSpecial ? `<div class="note-highlight-tag">${note.specialText}</div>` : '';
+
+            // 홀 번호 배지는 사용자가 원할 때만 표시
+            const holeBadgeHTML = showHoleInfo ? `
+                <div class="hole-breath-badge ${breathClass}" style="margin-top: 4px;">
+                    <span>${note.hole}번 ${note.breath}</span>
+                    <span style="font-size: 11px;">${breathIcon}</span>
+                </div>` : '';
+
+            return `
+            <div class="scale-note-card ${highlightClass}" data-pitch="${note.pitch}" id="note-card-${note.pitch}">
+                ${highlightTag}
+                ${createNoteSVG(note)}
+                <div class="note-name-kr">${note.name}</div>
+                <div class="note-solfege-num">
+                    <span style="font-size: 11px; color: #64748b;">(${note.pitch})</span>
+                    <div style="display:inline-flex; flex-direction:column; align-items:center; line-height:1;">${solfegeHTML}</div>
+                </div>
+                ${holeBadgeHTML}
+            </div>`;
+        }
+
+        let currentHighlightedPitch = null;
+        let highlightClearTimer = null;
+
+        function highlightTunerNote(pitchString, cents) {
+            if (highlightClearTimer) {
+                clearTimeout(highlightClearTimer);
+                highlightClearTimer = null;
+            }
+
+            const cards = document.querySelectorAll(`.scale-note-card[data-pitch="${pitchString}"]`);
+            const isNewPitch = (currentHighlightedPitch !== pitchString);
+            
+            // 다른 음으로 변경된 경우 기존 하이라이트 즉시 제거
+            if (isNewPitch) {
+                document.querySelectorAll(`.scale-note-card.tuner-active`).forEach(el => {
+                    el.classList.remove('tuner-active', 'in-tune', 'off-tune');
+                });
+                document.querySelectorAll('.scale-tab-btn.tab-hint').forEach(btn => {
+                    btn.classList.remove('tab-hint');
+                });
+            }
+
+            currentHighlightedPitch = pitchString;
+
+            if (cards.length > 0) {
+                cards.forEach(card => {
+                    card.classList.add('tuner-active');
+                    if (Math.abs(cents) < 8) {
+                        card.classList.add('in-tune');
+                        card.classList.remove('off-tune');
+                    } else {
+                        card.classList.add('off-tune');
+                        card.classList.remove('in-tune');
+                    }
+                });
+                
+                // 전체보기 탭일 경우에만 해당 카드가 보이도록 스크롤하되,
+                // window/body 등 상위 부모가 흔들리지 않도록 오직 scale-cards-container 내부만 스크롤하고 음이 바뀔 때만 1회 부드럽게 이동
+                if (isNewPitch && currentOctaveTab === 'all' && cards[0]) {
+                    const container = document.getElementById('scale-cards-container');
+                    if (container) {
+                        const targetLeft = cards[0].offsetLeft - (container.clientWidth / 2) + (cards[0].offsetWidth / 2);
+                        container.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
+                    }
+                }
+            } else {
+                // 현재 선택된 탭 외의 다른 음역대 음이 불렸을 경우 해당 탭 버튼에 펄스 힌트 표시
+                const targetNote = HARMONICA_NOTES.find(n => n.pitch === pitchString);
+                if (targetNote) {
+                    const tabBtn = document.getElementById(`tab-${targetNote.octave}`);
+                    if (tabBtn && !tabBtn.classList.contains('active')) {
+                        tabBtn.classList.add('tab-hint');
+                    }
+                }
+            }
+
+            // 소리가 멈춘 후 280ms 동안 부드럽게 유지 후 페이드아웃
+            highlightClearTimer = setTimeout(() => {
+                clearTunerHighlight();
+            }, 280);
+        }
+
+        function clearTunerHighlight() {
+            currentHighlightedPitch = null;
+            document.querySelectorAll('.scale-note-card.tuner-active').forEach(el => {
+                el.classList.remove('tuner-active', 'in-tune', 'off-tune');
+            });
+            document.querySelectorAll('.scale-tab-btn.tab-hint').forEach(btn => {
+                btn.classList.remove('tab-hint');
+            });
+        }
+
+        function renderOctaveCards(octave) {
+            const container = document.getElementById('scale-cards-container');
+            if (!container) return;
+            
+            let filteredNotes = [];
+            if (octave === 'all') {
+                filteredNotes = HARMONICA_NOTES;
+            } else {
+                filteredNotes = HARMONICA_NOTES.filter(n => n.octave === octave);
+            }
+            
+            container.innerHTML = filteredNotes.map(n => createNoteCardHTML(n)).join('');
+            
+            // Tip banner update
+            const tipBanner = document.getElementById('scale-tip-banner');
+            if (tipBanner) {
+                if (octave === 'low') {
+                    tipBanner.innerHTML = `<span>★ <b>저음역 팁:</b> '섬집 아기' 첫음(엄)은 오선 아래 <b>덧줄 2개 밑(저음 솔 5.) → 6번 홀 불기 🔴</b> 입니다. [엄(6 불) → 마(8 불) → 가(9 마) → 섬(10 불)]</span>
+                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">(1~7번 홀)</span>`;
+                } else if (octave === 'mid') {
+                    tipBanner.innerHTML = `<span>★ <b>중음역 팁:</b> <b>가온 도(8번 홀 불기 🔴)</b>가 악보의 중심 기준음입니다. 대부분의 동요와 대중가요 멜로디가 이 구간에 집중되어 있습니다.</span>
+                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">(8~15번 홀)</span>`;
+                } else if (octave === 'high') {
+                    tipBanner.innerHTML = `<span>★ <b>고음역 팁:</b> 14번 홀부터 고음 도(불기 🔴)가 시작되며, <b>14·16·18·20번 홀</b>이 불기(도·미·솔·최고 도)입니다.</span>
+                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">(16~22번 홀)</span>`;
+                } else {
+                    tipBanner.innerHTML = `<span>★ <b>전체 팁:</b> 하모니카는 오직 <b>높은음자리표</b>만 사용하며, 8번 가온 도보다 낮은 음은 아래 덧줄로 표기합니다. 카드를 좌우로 넘겨보세요.</span>
+                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">(1~22번 홀 전체)</span>`;
+                }
+            }
+
+            renderModalVectorCards(octave);
+        }
+
+        function switchOctaveTab(octave) {
+            currentOctaveTab = octave;
+            localStorage.setItem('harmonica_octave_tab', octave);
+            
+            // Tab button styles
+            document.querySelectorAll('.scale-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            const activeBtn = document.getElementById(`tab-${octave}`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            // If collapsed, expand when user clicks a tab
+            if (isScaleCollapsed) {
+                toggleScaleCollapse(false);
+            }
+            
+            renderOctaveCards(octave);
+        }
+
+        function toggleScaleCollapse(forceState) {
+            if (typeof forceState === 'boolean') {
+                isScaleCollapsed = forceState;
+            } else {
+                isScaleCollapsed = !isScaleCollapsed;
+            }
+            localStorage.setItem('harmonica_scale_collapsed', isScaleCollapsed);
+
+            const collapsible = document.getElementById('scale-cards-collapsible');
+            const icon = document.getElementById('scale-collapse-icon');
+            const txt = document.getElementById('scale-collapse-text');
+
+            if (isScaleCollapsed) {
+                if (collapsible) collapsible.style.display = 'none';
+                if (icon) icon.innerText = '⮟';
+                if (txt) txt.innerText = '펼치기';
+            } else {
+                if (collapsible) collapsible.style.display = 'block';
+                if (icon) icon.innerText = '⮝';
+                if (txt) txt.innerText = '접기';
+            }
+        }
+
+        function toggleHarmonicaGridView() {
+            isHarmonicaGridVisible = !isHarmonicaGridVisible;
+            const container = document.getElementById('harmonica-layout-container');
+            const btnText = document.getElementById('grid-view-btn-text');
+            const btn = document.getElementById('btn-toggle-grid-view');
+
+            if (isHarmonicaGridVisible) {
+                if (container) container.style.display = 'block';
+                if (btnText) btnText.innerText = '배열도 닫기';
+                if (btn) {
+                    btn.style.background = '#3a3a5a';
+                    btn.style.color = '#00f2fe';
+                }
+                renderHarmonicaGrid();
+            } else {
+                if (container) container.style.display = 'none';
+                if (btnText) btnText.innerText = '22홀 배열도';
+                if (btn) {
+                    btn.style.background = '#252538';
+                    btn.style.color = '#cbd5e1';
+                }
+            }
+        }
+
         function renderHarmonicaGrid() {
             const middleRow = ['','도','','미','','솔','','도','','미','','솔','','도','','미','','솔','','도','',''];
             const bottomRow = ['레','','파','','라','','시','','레','','파','','라','','시','','레','','파','','라','시'];
@@ -1306,7 +1963,7 @@
 
             let html = '<div class="harmonica-grid">';
             
-            // 1. Top Row (Numbers)
+            // 1. Top Row (Numbers + Hole numbers)
             for(let i=1; i<=22; i++) {
                 const isHighlight = [2,8,14,20].includes(i);
                 const bg = isHighlight ? '#fbc2eb' : '#faedcd';
@@ -1314,13 +1971,13 @@
                 let numberHTML = '';
                 
                 if (note.dot === 'bottom') {
-                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:3px;"><span style="font-size:16px; font-weight:900; line-height:1;">${note.num}</span><span style="font-size:10px; line-height:0.5; color:rgba(0,0,0,0.6);">●</span></div>`;
+                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:1px;"><span style="font-size:10px; color:#475569; font-weight:800; line-height:1;">${i}</span><span style="font-size:15px; font-weight:900; line-height:1;">${note.num}</span><span style="font-size:9px; line-height:0.3; color:rgba(0,0,0,0.6);">●</span></div>`;
                 } else if (note.dot === 'top') {
-                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:3px;"><span style="font-size:10px; line-height:0.5; color:rgba(0,0,0,0.6);">●</span><span style="font-size:16px; font-weight:900; line-height:1;">${note.num}</span></div>`;
+                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:1px;"><span style="font-size:10px; color:#475569; font-weight:800; line-height:1;">${i}</span><span style="font-size:9px; line-height:0.3; color:rgba(0,0,0,0.6);">●</span><span style="font-size:15px; font-weight:900; line-height:1;">${note.num}</span></div>`;
                 } else if (note.dot === 'top-double') {
-                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:3px;"><span style="font-size:8px; line-height:0.5; color:rgba(0,0,0,0.6); letter-spacing:2px; margin-right:-2px;">●●</span><span style="font-size:16px; font-weight:900; line-height:1;">${note.num}</span></div>`;
+                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:1px;"><span style="font-size:10px; color:#475569; font-weight:800; line-height:1;">${i}</span><span style="font-size:7px; line-height:0.3; color:rgba(0,0,0,0.6); letter-spacing:1px;">●●</span><span style="font-size:15px; font-weight:900; line-height:1;">${note.num}</span></div>`;
                 } else {
-                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;"><span style="font-size:16px; font-weight:900; line-height:1;">${note.num}</span></div>`;
+                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:1px;"><span style="font-size:10px; color:#475569; font-weight:800; line-height:1;">${i}</span><span style="font-size:15px; font-weight:900; line-height:1;">${note.num}</span></div>`;
                 }
 
                 html += `<div class="harmonica-cell top" style="background:${bg}; color:${getColor(i)};">${numberHTML}</div>`;
@@ -1328,26 +1985,77 @@
             
             // 2. Middle Row (Blow/내쉬기)
             for(let i=1; i<=22; i++) {
-                html += `<div class="harmonica-cell middle" style="color:${getColor(i)};">${middleRow[i-1]}</div>`;
+                html += `<div class="harmonica-cell middle" style="color:${getColor(i)}; font-weight:900;">${middleRow[i-1]}</div>`;
             }
             
             // 3. Bottom Row (Draw/마시기)
             for(let i=1; i<=22; i++) {
-                html += `<div class="harmonica-cell bottom" style="color:${getColor(i)};">${bottomRow[i-1]}</div>`;
+                html += `<div class="harmonica-cell bottom" style="color:${getColor(i)}; font-weight:900;">${bottomRow[i-1]}</div>`;
             }
             
             html += '</div>';
-            document.getElementById('harmonica-layout-container').innerHTML = html;
+            const gridContainer = document.getElementById('harmonica-layout-container');
+            if (gridContainer) gridContainer.innerHTML = html;
         }
 
         // ==========================================
         // 5. Scale Reference Modal Logic
         // ==========================================
+        let modalDisplayMode = 'vector'; // 'vector' | 'image'
+
+        function renderModalVectorCards(octave) {
+            const modalContainer = document.getElementById('modal-vector-cards');
+            if (!modalContainer) return;
+
+            let notes = [];
+            if (octave === 'all') {
+                notes = HARMONICA_NOTES;
+            } else {
+                notes = HARMONICA_NOTES.filter(n => n.octave === octave);
+            }
+
+            modalContainer.innerHTML = notes.map(n => createNoteCardHTML(n)).join('');
+        }
+
+        function setModalDisplayMode(mode) {
+            modalDisplayMode = mode;
+            const vectorBox = document.getElementById('modal-vector-wrapper');
+            const imgBox = document.getElementById('modal-img-wrapper');
+            const btnVec = document.getElementById('btn-modal-vector');
+            const btnImg = document.getElementById('btn-modal-img');
+
+            if (mode === 'vector') {
+                if (vectorBox) vectorBox.style.display = 'block';
+                if (imgBox) imgBox.style.display = 'none';
+                if (btnVec) {
+                    btnVec.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+                    btnVec.style.color = '#fff';
+                }
+                if (btnImg) {
+                    btnImg.style.background = '#1e1e2f';
+                    btnImg.style.color = '#a0a0b0';
+                }
+                renderModalVectorCards(currentOctaveTab);
+            } else {
+                if (vectorBox) vectorBox.style.display = 'none';
+                if (imgBox) imgBox.style.display = 'block';
+                if (btnImg) {
+                    btnImg.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+                    btnImg.style.color = '#fff';
+                }
+                if (btnVec) {
+                    btnVec.style.background = '#1e1e2f';
+                    btnVec.style.color = '#a0a0b0';
+                }
+            }
+        }
+
         function openScaleModal() {
             const modal = document.getElementById('scale-modal');
             if (modal) {
                 modal.style.display = 'flex';
                 document.body.style.overflow = 'hidden';
+                setModalDisplayMode('vector');
             }
         }
 
@@ -1373,6 +2081,11 @@
         });
 
         // 초기화
+        updateHoleInfoBtnUI();
+        switchOctaveTab(currentOctaveTab);
+        if (isScaleCollapsed) {
+            toggleScaleCollapse(true);
+        }
         renderHarmonicaGrid();
         renderBeatIndicators();
         if (isSidebarCollapsed) {
@@ -1385,34 +2098,49 @@
         loadScoreFromDB();
     </script>
 
-    <!-- Scale Image Modal (Lightbox) -->
-    <div id="scale-modal" onclick="closeScaleModal(event)" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10, 10, 20, 0.88); z-index: 99999; backdrop-filter: blur(6px); justify-content: center; align-items: center; padding: 15px; box-sizing: border-box;">
-        <div style="background: #2a2a40; border-radius: 18px; max-width: 950px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid #3a3a5a;" onclick="event.stopPropagation()">
+    <!-- Scale Image Modal (Lightbox with Vector & Image modes) -->
+    <div id="scale-modal" onclick="closeScaleModal(event)" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10, 10, 20, 0.88); z-index: 99999; backdrop-filter: blur(6px); justify-content: center; align-items: center; padding: 12px; box-sizing: border-box;">
+        <div style="background: #232338; border-radius: 18px; max-width: 1050px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid #3a3a5a;" onclick="event.stopPropagation()">
             <!-- Modal Header -->
-            <div style="padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3a3a5a;">
+            <div style="padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3a3a5a; flex-wrap: wrap; gap: 8px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-family: 'Jua', sans-serif; font-size: 20px; color: #4facfe;">🎼 하모니카 오선보 계이름 · 음역 대조표</span>
-                    <span style="font-size: 12px; background: #1e1e2f; color: #00f2fe; padding: 2px 8px; border-radius: 8px; border: 1px solid #4facfe;">높은음자리표 전음역 (1~22홀)</span>
+                    <span style="font-family: 'Jua', sans-serif; font-size: 19px; color: #4facfe;">🎼 하모니카 오선보 계이름 대조표</span>
+                    <div style="display: flex; gap: 4px; background: #161626; padding: 2px 4px; border-radius: 14px; border: 1px solid #3a3a52;">
+                        <button type="button" id="btn-modal-vector" onclick="setModalDisplayMode('vector')" class="scale-tab-btn active" style="font-size: 12px; padding: 3px 10px;">🌟 선명한 벡터</button>
+                        <button type="button" id="btn-modal-img" onclick="setModalDisplayMode('image')" class="scale-tab-btn" style="font-size: 12px; padding: 3px 10px;">🖼️ 원본 대조표</button>
+                    </div>
                 </div>
                 <button type="button" class="modal-close-btn" onclick="closeScaleModal()" style="background: #3a3a5a; color: #fff; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">✕</button>
             </div>
             <!-- Modal Body -->
-            <div style="padding: 15px; overflow-y: auto; background: #151522; display: flex; flex-direction: column; align-items: center; gap: 15px;">
-                <div style="background: #1e1e2f; border: 1px solid #3a3a5a; padding: 10px; border-radius: 14px; width: 100%; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.4); text-align: center;">
+            <div style="padding: 15px; overflow-y: auto; background: #151522; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+                <!-- Vector View Wrapper -->
+                <div id="modal-vector-wrapper" style="width: 100%; display: block;">
+                    <div style="display: flex; justify-content: center; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;">
+                        <button type="button" class="scale-tab-btn" onclick="renderModalVectorCards('low')">저음역 (1~7홀)</button>
+                        <button type="button" class="scale-tab-btn" onclick="renderModalVectorCards('mid')">중음역 (8~15홀)</button>
+                        <button type="button" class="scale-tab-btn" onclick="renderModalVectorCards('high')">고음역 (16~22홀)</button>
+                        <button type="button" class="scale-tab-btn" onclick="renderModalVectorCards('all')">전체보기 (1~22홀)</button>
+                    </div>
+                    <div id="modal-vector-cards" class="scale-cards-wrapper" style="justify-content: center; flex-wrap: wrap; gap: 10px; max-height: 48vh; overflow-y: auto;"></div>
+                </div>
+
+                <!-- Image View Wrapper -->
+                <div id="modal-img-wrapper" style="width: 100%; display: none; background: #1e1e2f; border: 1px solid #3a3a5a; padding: 10px; border-radius: 14px; box-sizing: border-box; box-shadow: 0 4px 15px rgba(0,0,0,0.4); text-align: center;">
                     <img src="scale_reference.png" alt="하모니카 오선보 계이름 대조표" style="max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: 8px;">
                 </div>
                 
                 <!-- Quick Info Card -->
-                <div style="width: 100%; background: #2a2a40; border-radius: 12px; padding: 14px 18px; box-sizing: border-box; font-size: 13px; line-height: 1.7; color: #cbd5e1; border: 1px solid #3a3a5a;">
-                    <div style="font-weight: bold; color: #00f2fe; margin-bottom: 6px; font-size: 14px;">📌 하모니카 연주자를 위한 오선보 저음(아래 덧줄) 읽는 요령</div>
+                <div style="width: 100%; background: #232338; border-radius: 12px; padding: 12px 16px; box-sizing: border-box; font-size: 13px; line-height: 1.7; color: #cbd5e1; border: 1px solid #3a3a52;">
+                    <div style="font-weight: bold; color: #00f2fe; margin-bottom: 4px; font-size: 14px;">📌 하모니카 연주자를 위한 오선보 저음(아래 덧줄) 읽는 요령</div>
                     <div>• <b>하모니카는 오직 높은음자리표 하나만 사용합니다</b> : 피아노나 베이스 악기에서 쓰는 낮은음자리표는 하모니카에서 전혀 사용하지 않습니다.</div>
                     <div>• <b>가온 도(8번홀)보다 낮은 음은 아래 덧줄로 표기</b> :
-                        <br>&nbsp;&nbsp;- 덧줄 1개 = <b>가온 도(1)</b> (8번 홀 불기)
-                        <br>&nbsp;&nbsp;- 덧줄 1개 아래 칸 = <b>저음 시(7.)</b> (7번 홀 마시기)
-                        <br>&nbsp;&nbsp;- 덧줄 2개 걸침 = <b>저음 라(6.)</b> (5번 홀 마시기)
-                        <br>&nbsp;&nbsp;- 덧줄 2개 아래 칸 = <b>저음 솔(5.)</b> (6번 홀 불기) ★
+                        <br>&nbsp;&nbsp;- 덧줄 1개 걸침 = <b>가온 도(1)</b> (8번 홀 불기 🔴)
+                        <br>&nbsp;&nbsp;- 덧줄 1개 아래 칸 = <b>저음 시(7.)</b> (7번 홀 마시기 🔵)
+                        <br>&nbsp;&nbsp;- 덧줄 2개 걸침 = <b>저음 라(6.)</b> (5번 홀 마시기 🔵)
+                        <br>&nbsp;&nbsp;- 덧줄 2개 아래 칸 = <b>저음 솔(5.)</b> (6번 홀 불기 🔴 ★)
                     </div>
-                    <div style="margin-top: 6px; padding: 8px 12px; background: #1e1e2f; border-radius: 8px; border-left: 3px solid #f1c40f; color: #fef08a;">
+                    <div style="margin-top: 6px; padding: 8px 12px; background: #151522; border-radius: 8px; border-left: 3px solid #f59e0b; color: #fef08a;">
                         <b>[섬집 아기 첫 소절 완벽 매칭]</b><br>
                         <span style="color: #ffffff;">"엄마가 섬그늘에..."</span><br>
                         • <b>엄</b> : 덧줄 2개 아래 칸 → <b>저음 솔 (5.)</b> → <b>6번 홀 불기 🔴</b><br>
