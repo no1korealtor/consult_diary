@@ -1630,118 +1630,118 @@
         // 4. Harmonica Scale Reference & Grid Logic
         // ==========================================
         const HARMONICA_NOTES = [
-            // 저음역 (1~7홀, pitch order)
+            // 저음역 (1~7홀, pitch order: C4~B4, 실음 기준)
             {
-                id: 'low-do', octave: 'low', name: '저음 도', pitch: 'C3', num: '1', dot: 'sub',
+                id: 'low-do', octave: 'low', name: '저음 도', pitch: 'C4', num: '1', dot: 'sub',
                 hole: 2, breath: '불어', breathType: 'blow',
                 y: 115, ledgers: [80, 90, 100, 110], guide: '덧줄 4개 밑', isSpecial: false
             },
             {
-                id: 'low-re', octave: 'low', name: '저음 레', pitch: 'D3', num: '2', dot: 'sub',
+                id: 'low-re', octave: 'low', name: '저음 레', pitch: 'D4', num: '2', dot: 'sub',
                 hole: 1, breath: '마셔', breathType: 'draw',
                 y: 110, ledgers: [80, 90, 100, 110], guide: '덧줄 4번째 줄', isSpecial: false
             },
             {
-                id: 'low-mi', octave: 'low', name: '저음 미', pitch: 'E3', num: '3', dot: 'sub',
+                id: 'low-mi', octave: 'low', name: '저음 미', pitch: 'E4', num: '3', dot: 'sub',
                 hole: 4, breath: '불어', breathType: 'blow',
                 y: 105, ledgers: [80, 90, 100], guide: '덧줄 3개 밑', isSpecial: false
             },
             {
-                id: 'low-fa', octave: 'low', name: '저음 파', pitch: 'F3', num: '4', dot: 'sub',
+                id: 'low-fa', octave: 'low', name: '저음 파', pitch: 'F4', num: '4', dot: 'sub',
                 hole: 3, breath: '마셔', breathType: 'draw',
                 y: 100, ledgers: [80, 90, 100], guide: '덧줄 3번째 줄', isSpecial: false
             },
             {
-                id: 'low-sol', octave: 'low', name: '저음 솔', pitch: 'G3', num: '5', dot: 'sub',
+                id: 'low-sol', octave: 'low', name: '저음 솔', pitch: 'G4', num: '5', dot: 'sub',
                 hole: 6, breath: '불어', breathType: 'blow',
                 y: 95, ledgers: [80, 90], guide: '덧줄 2개 밑 ★', isSpecial: true, specialText: '★ 섬집아기 첫음'
             },
             {
-                id: 'low-la', octave: 'low', name: '저음 라', pitch: 'A3', num: '6', dot: 'sub',
+                id: 'low-la', octave: 'low', name: '저음 라', pitch: 'A4', num: '6', dot: 'sub',
                 hole: 5, breath: '마셔', breathType: 'draw',
                 y: 90, ledgers: [80, 90], guide: '덧줄 2번째 줄', isSpecial: false
             },
             {
-                id: 'low-si', octave: 'low', name: '저음 시', pitch: 'B3', num: '7', dot: 'sub',
+                id: 'low-si', octave: 'low', name: '저음 시', pitch: 'B4', num: '7', dot: 'sub',
                 hole: 7, breath: '마셔', breathType: 'draw',
                 y: 85, ledgers: [80], guide: '덧줄 1개 밑', isSpecial: false
             },
 
-            // 중음역 (8~15홀, pitch order)
+            // 중음역 (8~15홀, pitch order: C5~B5, 실음 기준)
             {
-                id: 'mid-do', octave: 'mid', name: '가온 도', pitch: 'C4', num: '1', dot: 'none',
+                id: 'mid-do', octave: 'mid', name: '가온 도', pitch: 'C5', num: '1', dot: 'none',
                 hole: 8, breath: '불어', breathType: 'blow',
                 y: 80, ledgers: [80], guide: '덧줄 1번째 줄', isSpecial: true, specialText: '★ 가온 도 (기준)'
             },
             {
-                id: 'mid-re', octave: 'mid', name: '중음 레', pitch: 'D4', num: '2', dot: 'none',
+                id: 'mid-re', octave: 'mid', name: '중음 레', pitch: 'D5', num: '2', dot: 'none',
                 hole: 9, breath: '마셔', breathType: 'draw',
                 y: 75, ledgers: [], guide: '1줄 아래 칸', isSpecial: false
             },
             {
-                id: 'mid-mi', octave: 'mid', name: '중음 미', pitch: 'E4', num: '3', dot: 'none',
+                id: 'mid-mi', octave: 'mid', name: '중음 미', pitch: 'E5', num: '3', dot: 'none',
                 hole: 10, breath: '불어', breathType: 'blow',
                 y: 70, ledgers: [], guide: '오선 1번째 줄', isSpecial: false
             },
             {
-                id: 'mid-fa', octave: 'mid', name: '중음 파', pitch: 'F4', num: '4', dot: 'none',
+                id: 'mid-fa', octave: 'mid', name: '중음 파', pitch: 'F5', num: '4', dot: 'none',
                 hole: 11, breath: '마셔', breathType: 'draw',
                 y: 65, ledgers: [], guide: '오선 1번째 칸', isSpecial: false
             },
             {
-                id: 'mid-sol', octave: 'mid', name: '중음 솔', pitch: 'G4', num: '5', dot: 'none',
+                id: 'mid-sol', octave: 'mid', name: '중음 솔', pitch: 'G5', num: '5', dot: 'none',
                 hole: 12, breath: '불어', breathType: 'blow',
                 y: 60, ledgers: [], guide: '오선 2번째 줄', isSpecial: false
             },
             {
-                id: 'mid-la', octave: 'mid', name: '중음 라', pitch: 'A4', num: '6', dot: 'none',
+                id: 'mid-la', octave: 'mid', name: '중음 라', pitch: 'A5', num: '6', dot: 'none',
                 hole: 13, breath: '마셔', breathType: 'draw',
                 y: 55, ledgers: [], guide: '오선 2번째 칸', isSpecial: false
             },
             {
-                id: 'mid-si', octave: 'mid', name: '중음 시', pitch: 'B4', num: '7', dot: 'none',
+                id: 'mid-si', octave: 'mid', name: '중음 시', pitch: 'B5', num: '7', dot: 'none',
                 hole: 15, breath: '마셔', breathType: 'draw',
                 y: 50, ledgers: [], guide: '오선 3번째 줄', isSpecial: false
             },
 
-            // 고음역 (14, 16~22홀, pitch order)
+            // 고음역 (14, 16~22홀, pitch order: C6~C7, 실음 기준)
             {
-                id: 'high-do', octave: 'high', name: '높은 도', pitch: 'C5', num: '1', dot: 'super',
+                id: 'high-do', octave: 'high', name: '높은 도', pitch: 'C6', num: '1', dot: 'super',
                 hole: 14, breath: '불어', breathType: 'blow',
                 y: 45, ledgers: [], guide: '오선 3번째 칸', isSpecial: true, specialText: '★ 높은 도 시작'
             },
             {
-                id: 'high-re', octave: 'high', name: '높은 레', pitch: 'D5', num: '2', dot: 'super',
+                id: 'high-re', octave: 'high', name: '높은 레', pitch: 'D6', num: '2', dot: 'super',
                 hole: 17, breath: '마셔', breathType: 'draw',
                 y: 40, ledgers: [], guide: '오선 4번째 줄', isSpecial: false
             },
             {
-                id: 'high-mi', octave: 'high', name: '높은 미', pitch: 'E5', num: '3', dot: 'super',
+                id: 'high-mi', octave: 'high', name: '높은 미', pitch: 'E6', num: '3', dot: 'super',
                 hole: 16, breath: '불어', breathType: 'blow',
                 y: 35, ledgers: [], guide: '오선 4번째 칸', isSpecial: false
             },
             {
-                id: 'high-fa', octave: 'high', name: '높은 파', pitch: 'F5', num: '4', dot: 'super',
+                id: 'high-fa', octave: 'high', name: '높은 파', pitch: 'F6', num: '4', dot: 'super',
                 hole: 19, breath: '마셔', breathType: 'draw',
                 y: 30, ledgers: [], guide: '오선 5번째 줄', isSpecial: false
             },
             {
-                id: 'high-sol', octave: 'high', name: '높은 솔', pitch: 'G5', num: '5', dot: 'super',
+                id: 'high-sol', octave: 'high', name: '높은 솔', pitch: 'G6', num: '5', dot: 'super',
                 hole: 18, breath: '불어', breathType: 'blow',
                 y: 25, ledgers: [], guide: '5줄 위 칸', isSpecial: false
             },
             {
-                id: 'high-la', octave: 'high', name: '높은 라', pitch: 'A5', num: '6', dot: 'super',
+                id: 'high-la', octave: 'high', name: '높은 라', pitch: 'A6', num: '6', dot: 'super',
                 hole: 21, breath: '마셔', breathType: 'draw',
                 y: 20, ledgers: [20], guide: '위 덧줄 1줄', isSpecial: false
             },
             {
-                id: 'high-si', octave: 'high', name: '높은 시', pitch: 'B5', num: '7', dot: 'super',
+                id: 'high-si', octave: 'high', name: '높은 시', pitch: 'B6', num: '7', dot: 'super',
                 hole: 22, breath: '마셔', breathType: 'draw',
                 y: 15, ledgers: [20], guide: '위 덧줄 1개 위', isSpecial: false
             },
             {
-                id: 'top-do', octave: 'high', name: '최고 도', pitch: 'C6', num: '1', dot: 'super-double',
+                id: 'top-do', octave: 'high', name: '최고 도', pitch: 'C7', num: '1', dot: 'super-double',
                 hole: 20, breath: '불어', breathType: 'blow',
                 y: 10, ledgers: [20, 10], guide: '위 덧줄 2줄', isSpecial: false
             }
