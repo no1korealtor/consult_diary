@@ -427,7 +427,7 @@
         }
         .scale-cards-wrapper {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             overflow-x: auto;
             overflow-y: hidden;
             padding: 6px 4px 8px 4px;
@@ -435,10 +435,40 @@
             scroll-behavior: smooth;
             scrollbar-width: thin;
         }
+        /* --- Clef Lead Card (Single Clef on the Left) --- */
+        .clef-lead-card {
+            width: 36px;
+            min-width: 36px;
+            flex-shrink: 0;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 4px 2px 6px 2px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.22);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid #cbd5e1;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        .clef-svg-box {
+            width: 100%;
+            height: 84px;
+            display: block;
+        }
+        .clef-label {
+            font-family: 'Jua', sans-serif;
+            font-size: 11px;
+            color: #64748b;
+            text-align: center;
+            line-height: 1.15;
+            margin-top: 4px;
+        }
+
         .scale-note-card {
             flex: 1;
             flex-shrink: 0;
-            min-width: 86px;
+            min-width: 80px;
             max-width: 140px;
             background: #ffffff;
             border-radius: 12px;
@@ -522,6 +552,77 @@
             color: #0f172a;
             margin-top: 1px;
             line-height: 1.2;
+        }
+
+        /* --- Mode All (22 Holes No-Scroll Compact Styles) --- */
+        .scale-cards-wrapper.mode-all {
+            gap: 3px;
+            padding: 6px 2px 8px 2px;
+        }
+        .mode-all .clef-lead-card {
+            width: 32px;
+            min-width: 30px;
+            padding: 3px 1px 5px 1px;
+            border-radius: 8px;
+        }
+        .mode-all .clef-label {
+            font-size: 9px;
+            letter-spacing: -0.5px;
+            margin-top: 2px;
+        }
+        .mode-all .clef-svg-box,
+        .mode-all .note-svg-box {
+            height: 74px;
+        }
+        .mode-all .scale-note-card {
+            min-width: 0;
+            max-width: none;
+            flex: 1 1 0px;
+            padding: 3px 1px 5px 1px;
+            border-radius: 8px;
+            border-width: 1.5px;
+        }
+        .mode-all .note-name-kr {
+            font-size: 12px;
+            letter-spacing: -0.7px;
+            margin-top: 1px;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+        .mode-all .note-solfege-num {
+            font-size: 10px;
+            margin-bottom: 2px;
+            gap: 2px;
+        }
+        .mode-all .pitch-label {
+            font-size: 9.5px !important;
+        }
+        .mode-all .solfege-num {
+            font-size: 13.5px !important;
+        }
+        .mode-all .hole-breath-badge {
+            padding: 2px 1px;
+            border-radius: 6px;
+            font-size: 10px;
+            letter-spacing: -0.7px;
+        }
+        .mode-all .hole-breath-badge .badge-icon {
+            font-size: 8px;
+        }
+        .mode-all .note-highlight-tag {
+            font-size: 8px;
+            padding: 0 3px;
+            top: -7px;
+            border-radius: 5px;
+            letter-spacing: -0.4px;
+        }
+        @media(max-width: 1200px) {
+            .mode-all .pitch-label {
+                display: none !important;
+            }
+            .mode-all .note-name-kr {
+                font-size: 11px;
+                letter-spacing: -0.9px;
         }
         .note-solfege-num {
             font-family: 'Nunito', sans-serif;
@@ -1676,37 +1777,48 @@
             }
         }
 
+        function createClefLeadHTML() {
+            return `
+            <div class="clef-lead-card" title="높은음자리표">
+                <svg viewBox="0 0 36 125" class="clef-svg-box" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="0" y1="30" x2="36" y2="30" stroke="#64748b" stroke-width="1.2" />
+                    <line x1="0" y1="40" x2="36" y2="40" stroke="#64748b" stroke-width="1.2" />
+                    <line x1="0" y1="50" x2="36" y2="50" stroke="#64748b" stroke-width="1.2" />
+                    <line x1="0" y1="60" x2="36" y2="60" stroke="#64748b" stroke-width="1.2" />
+                    <line x1="0" y1="70" x2="36" y2="70" stroke="#64748b" stroke-width="1.2" />
+                    <text x="18" y="65" font-family="'Segoe UI Symbol', 'Noto Music', 'Apple Symbols', sans-serif" font-size="44" fill="#64748b" text-anchor="middle" style="user-select:none;">𝄞</text>
+                </svg>
+                <div class="clef-label">높은음<br>자리표</div>
+            </div>`;
+        }
+
         function createNoteSVG(note) {
-            // Staff lines: y = 30, 40, 50, 60, 70
+            // Staff lines: y = 30, 40, 50, 60, 70 (edge-to-edge from 0 to 54)
             const staffLines = [30, 40, 50, 60, 70].map(y => 
-                `<line x1="6" y1="${y}" x2="86" y2="${y}" stroke="#64748b" stroke-width="1.2" />`
+                `<line x1="0" y1="${y}" x2="54" y2="${y}" stroke="#64748b" stroke-width="1.2" />`
             ).join('');
             
-            // Ledger lines (centered at x=58)
+            // Ledger lines (centered at x=27)
             let ledgerLines = '';
             if (note.ledgers && note.ledgers.length > 0) {
                 ledgerLines = note.ledgers.map(ly => 
-                    `<line x1="44" y1="${ly}" x2="72" y2="${ly}" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round" />`
+                    `<line x1="12" y1="${ly}" x2="42" y2="${ly}" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round" />`
                 ).join('');
             }
             
-            // Treble clef glyph
-            const clef = `<text x="17" y="65" font-family="'Segoe UI Symbol', 'Noto Music', 'Apple Symbols', sans-serif" font-size="44" fill="#94a3b8" text-anchor="middle" style="user-select:none;">𝄞</text>`;
-            
             // Notehead: Red for blow, Blue for draw
             const noteColor = note.breathType === 'blow' ? '#ef4444' : '#0284c7';
-            const noteHead = `<ellipse cx="58" cy="${note.y}" rx="6.2" ry="4.6" transform="rotate(-20 58 ${note.y})" fill="${noteColor}" stroke="#0f172a" stroke-width="1.6" />`;
+            const noteHead = `<ellipse cx="27" cy="${note.y}" rx="6.2" ry="4.6" transform="rotate(-20 27 ${note.y})" fill="${noteColor}" stroke="#0f172a" stroke-width="1.6" />`;
             
             // Stem
             let stem = '';
             if (note.y <= 50) {
-                stem = `<line x1="52.4" y1="${note.y}" x2="52.4" y2="${note.y + 26}" stroke="#0f172a" stroke-width="2" stroke-linecap="round" />`;
+                stem = `<line x1="21.4" y1="${note.y}" x2="21.4" y2="${note.y + 26}" stroke="#0f172a" stroke-width="2" stroke-linecap="round" />`;
             } else {
-                stem = `<line x1="63.6" y1="${note.y}" x2="63.6" y2="${note.y - 26}" stroke="#0f172a" stroke-width="2" stroke-linecap="round" />`;
+                stem = `<line x1="32.6" y1="${note.y}" x2="32.6" y2="${note.y - 26}" stroke="#0f172a" stroke-width="2" stroke-linecap="round" />`;
             }
             
-            return `<svg viewBox="0 0 92 125" class="note-svg-box" xmlns="http://www.w3.org/2000/svg">
-                ${clef}
+            return `<svg viewBox="0 0 54 125" class="note-svg-box" xmlns="http://www.w3.org/2000/svg">
                 ${staffLines}
                 ${ledgerLines}
                 ${stem}
@@ -1718,13 +1830,13 @@
             // Solfege dot notation
             let solfegeHTML = '';
             if (note.dot === 'sub') {
-                solfegeHTML = `<span style="font-size:19px; font-weight:900;">${note.num}</span><span style="font-size:10px; line-height:0.3; color:#ef4444; margin-top:2px;">●</span>`;
+                solfegeHTML = `<span class="solfege-num" style="font-size:19px; font-weight:900;">${note.num}</span><span style="font-size:10px; line-height:0.3; color:#ef4444; margin-top:2px;">●</span>`;
             } else if (note.dot === 'super') {
-                solfegeHTML = `<span style="font-size:10px; line-height:0.3; color:#0284c7; margin-bottom:2px;">●</span><span style="font-size:19px; font-weight:900;">${note.num}</span>`;
+                solfegeHTML = `<span style="font-size:10px; line-height:0.3; color:#0284c7; margin-bottom:2px;">●</span><span class="solfege-num" style="font-size:19px; font-weight:900;">${note.num}</span>`;
             } else if (note.dot === 'super-double') {
-                solfegeHTML = `<span style="font-size:8px; line-height:0.3; color:#0284c7; margin-bottom:2px; letter-spacing:1px;">●●</span><span style="font-size:19px; font-weight:900;">${note.num}</span>`;
+                solfegeHTML = `<span style="font-size:8px; line-height:0.3; color:#0284c7; margin-bottom:2px; letter-spacing:1px;">●●</span><span class="solfege-num" style="font-size:19px; font-weight:900;">${note.num}</span>`;
             } else {
-                solfegeHTML = `<span style="font-size:19px; font-weight:900;">${note.num}</span>`;
+                solfegeHTML = `<span class="solfege-num" style="font-size:19px; font-weight:900;">${note.num}</span>`;
             }
 
             const breathIcon = note.breathType === 'blow' ? '🔴' : '🔵';
@@ -1735,8 +1847,8 @@
             // 홀 번호 배지는 사용자가 원할 때만 표시
             const holeBadgeHTML = showHoleInfo ? `
                 <div class="hole-breath-badge ${breathClass}" style="margin-top: 4px;">
-                    <span>${note.hole}번 ${note.breath}</span>
-                    <span style="font-size: 11px;">${breathIcon}</span>
+                    <span class="badge-text">${note.hole}번 ${note.breath}</span>
+                    <span class="badge-icon" style="font-size: 11px;">${breathIcon}</span>
                 </div>` : '';
 
             return `
@@ -1745,7 +1857,7 @@
                 ${createNoteSVG(note)}
                 <div class="note-name-kr">${note.name}</div>
                 <div class="note-solfege-num">
-                    <span style="font-size: 11px; color: #64748b;">(${note.pitch})</span>
+                    <span class="pitch-label" style="font-size: 11px; color: #64748b;">(${note.pitch})</span>
                     <div style="display:inline-flex; flex-direction:column; align-items:center; line-height:1;">${solfegeHTML}</div>
                 </div>
                 ${holeBadgeHTML}
@@ -1831,11 +1943,14 @@
             let filteredNotes = [];
             if (octave === 'all') {
                 filteredNotes = HARMONICA_NOTES;
+                container.classList.add('mode-all');
             } else {
                 filteredNotes = HARMONICA_NOTES.filter(n => n.octave === octave);
+                container.classList.remove('mode-all');
             }
             
-            container.innerHTML = filteredNotes.map(n => createNoteCardHTML(n)).join('');
+            const clefHTML = createClefLeadHTML();
+            container.innerHTML = clefHTML + filteredNotes.map(n => createNoteCardHTML(n)).join('');
             
             // Tip banner update
             const tipBanner = document.getElementById('scale-tip-banner');
@@ -1850,8 +1965,8 @@
                     tipBanner.innerHTML = `<span>★ <b>고음역 팁:</b> 14번 홀부터 고음 도(불기 🔴)가 시작되며, <b>14·16·18·20번 홀</b>이 불기(도·미·솔·최고 도)입니다.</span>
                     <span style="color:#00f2fe; font-weight:bold; font-size:11px;">(16~22번 홀)</span>`;
                 } else {
-                    tipBanner.innerHTML = `<span>★ <b>전체 팁:</b> 하모니카는 오직 <b>높은음자리표</b>만 사용하며, 8번 가온 도보다 낮은 음은 아래 덧줄로 표기합니다. 카드를 좌우로 넘겨보세요.</span>
-                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">(1~22번 홀 전체)</span>`;
+                    tipBanner.innerHTML = `<span>★ <b>전체 팁:</b> 하모니카 전 음역(1~22홀)이 한눈에 펼쳐져 있습니다. 튜너를 켜고 불면 실시간으로 내 소리의 위치가 표시됩니다.</span>
+                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">(1~22번 홀 전체 한눈에 보기)</span>`;
                 }
             }
 
@@ -2014,7 +2129,8 @@
                 notes = HARMONICA_NOTES.filter(n => n.octave === octave);
             }
 
-            modalContainer.innerHTML = notes.map(n => createNoteCardHTML(n)).join('');
+            const clefHTML = createClefLeadHTML();
+            modalContainer.innerHTML = clefHTML + notes.map(n => createNoteCardHTML(n)).join('');
         }
 
         function setModalDisplayMode(mode) {
