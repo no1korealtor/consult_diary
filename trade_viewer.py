@@ -1643,7 +1643,7 @@ def generate_comparison_insights(trades, jeonses, wolses):
         est_up_val = b_val / 0.65
         insights.append(f"• [전세-지상층 추정] 인근 지하층 평균 전세가({local_format(b_val)}) 기준, 지상층(2층이상)의 적정 전세가는 약 {local_format(est_up_val)} 원으로 추정됩니다 (65% 보정 역산).")
     return insights
-def save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, filename_pdf, apt_groups, period_label, is_expanded, target_build_year, target_area, target_floor, desired_info, expansion_mode, target_bld_nm=None, target_bun=None, target_ji=None, sigunguCd=None, bjdongCd=None):
+def save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, filename_pdf, apt_groups, period_label, is_expanded, target_build_year, target_area, target_floor, desired_info, expansion_mode, target_bld_nm=None, target_bun=None, target_ji=None, sigunguCd=None, bjdongCd=None, is_complex_analysis=False):
     update_global_wolse_multiplier(jeonses, wolses)
     if expansion_mode == "auto":
         expansion_mode = CURRENT_EXPANSION_MODE
@@ -2318,6 +2318,77 @@ colors.HexColor("#E2E8F0")), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDIN
             story.append(qr_row)
             story.append(Spacer(1, 12))
         
+        # [단지 분석 시 홍보 목적의 사무소 약도(찾아오시는 길) 삽입]
+        is_complex = is_complex_analysis or (prop_type_name == "아파트" and target_floor is None and (not desired_info or not desired_info.get("ho_name")))
+        if is_complex:
+            try:
+                from market_analyser import find_office_map_file
+                map_path = find_office_map_file(address)
+            except Exception:
+                map_path = None
+                
+            if map_path and os.path.exists(map_path):
+                story.append(Spacer(1, 6))
+                map_title_style = ParagraphStyle(
+                    "BriefingMapTitle",
+                    parent=styles["Normal"],
+                    fontName="KoreanFont",
+                    fontSize=10,
+                    leading=14,
+                    textColor=colors.HexColor("#1A365D"),
+                    alignment=1, # Center
+                    bold=True,
+                    spaceBefore=6,
+                    spaceAfter=3,
+                    keepWithNext=True
+                )
+                map_sub_style = ParagraphStyle(
+                    "BriefingMapSub",
+                    parent=styles["Normal"],
+                    fontName="KoreanFont",
+                    fontSize=7.5,
+                    leading=10,
+                    textColor=colors.HexColor("#4A5568"),
+                    alignment=1, # Center
+                    spaceAfter=6,
+                    keepWithNext=True
+                )
+                office_nm = member.get("office_name") or member.get("office") or "신대림공인중개사사무소"
+                m_addr_val = member.get("office_address") or "서울 마포구 모래내로 7길 52"
+                
+                story.append(Paragraph(f"<b>■ 찾아오시는 길 ({office_nm} 약도)</b>", map_title_style))
+                story.append(Paragraph(f"📍 {m_addr_val} (중동초등학교 인근 / 성산2동주민센터 도보 3분)", map_sub_style))
+                
+                try:
+                    from PIL import Image as PILImage
+                    with PILImage.open(map_path) as im:
+                        orig_w, orig_h = im.size
+                    aspect = orig_w / float(orig_h) if orig_h > 0 else 1.5538
+                except Exception:
+                    aspect = 1.5538
+                    
+                target_w = 440
+                target_h = int(target_w / aspect)
+                if target_h > 240:
+                    target_h = 240
+                    target_w = int(target_h * aspect)
+                    
+                from reportlab.platypus import Image as RLImage
+                map_img_obj = RLImage(map_path, width=target_w, height=target_h)
+                map_card = Table([[map_img_obj]], colWidths=[500])
+                map_card.setStyle(TableStyle([
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFFFF")),
+                    ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#CBD5E0")),
+                    ("TOPPADDING", (0, 0), (-1, -1), 3),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 3),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 3),
+                ]))
+                story.append(map_card)
+                story.append(Spacer(1, 10))
+
         story.append(get_divider())
         story.append(Spacer(1, 10))
         story.append(Paragraph('"이제 중개도<br/>과학입니다."', italic_quote_style))
@@ -2371,7 +2442,7 @@ colors.HexColor("#E2E8F0")), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDIN
         pass
     except Exception as e:
         print(f"\n [오류] PDF 브리핑 파일 생성 중 오류 발생: {e}")
-def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, period_label="1년", is_expanded=False, target_build_year=None, target_area=None, target_floor=None, desired_info=None, expansion_mode="none", target_bld_nm=None, target_bun=None, target_ji=None, sigunguCd=None, bjdongCd=None):
+def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, period_label="1년", is_expanded=False, target_build_year=None, target_area=None, target_floor=None, desired_info=None, expansion_mode="none", target_bld_nm=None, target_bun=None, target_ji=None, sigunguCd=None, bjdongCd=None, is_complex_analysis=False):
     update_global_wolse_multiplier(jeonses, wolses)
     try:
         if expansion_mode == "auto":
@@ -2753,7 +2824,7 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         print("\n [알림] 시세 브리핑 자료가 성공적으로 저장되었습니다!")
         print(f"       -> 텍스트 파일 위치: {os.path.abspath(filename)}")
         pdf_filename = filename.replace(".txt", ".pdf")
-        save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, pdf_filename, apt_groups, period_label, is_expanded, target_build_year, target_area, target_floor=target_floor, desired_info=desired_info, expansion_mode=expansion_mode, target_bld_nm=target_bld_nm, target_bun=target_bun, target_ji=target_ji, sigunguCd=sigunguCd, bjdongCd=bjdongCd)
+        save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, pdf_filename, apt_groups, period_label, is_expanded, target_build_year, target_area, target_floor=target_floor, desired_info=desired_info, expansion_mode=expansion_mode, target_bld_nm=target_bld_nm, target_bun=target_bun, target_ji=target_ji, sigunguCd=sigunguCd, bjdongCd=bjdongCd, is_complex_analysis=is_complex_analysis)
         import shutil
         unified_dir = "종합분석보고서"
         os.makedirs(unified_dir, exist_ok=True)
