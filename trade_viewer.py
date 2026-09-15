@@ -2241,7 +2241,7 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
 colors.HexColor("#E2E8F0")), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8), ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10)]))
         story.append(notice_box)
         def find_img_file(name):
-            for d in (".", "scratch", ".."):
+            for d in (".", "scratch", "..", "assets", "../assets"):
                 for ext in (".png", ".jpg", ".jpeg"):
                     p_path = os.path.join(d, name + ext)
                     if os.path.exists(p_path):

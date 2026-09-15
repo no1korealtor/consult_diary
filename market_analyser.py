@@ -9,7 +9,7 @@ from datetime import datetime
 
 # ReportLab imports for PDF generation
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, KeepTogether, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -240,6 +240,79 @@ def load_member_info():
             pass
     return None
 
+def find_office_map_file(dong_name=""):
+    """
+    사무소 약도(지도) 이미지 파일을 다양한 경로에서 탐색하여 절대 경로를 반환합니다.
+    - 동별 맞춤 약도(seongsan_map 등) 또는 대표 사무소 약도(office_map, map, 약도 등) 지원
+    """
+    candidates = []
+    
+    # 1. 동 이름 기반 (성산동, 중동 등)
+    if dong_name:
+        clean_d = re.sub(r'[^가-힣a-zA-Z0-9]', '', str(dong_name))
+        if any(x in clean_d for x in ["성산", "중동"]):
+            candidates.extend(["seongsan_map", "seongsan_map_final_A", "seongsan_map_cleaned_A"])
+        candidates.append(f"{clean_d}_map")
+        
+    # 2. 범용 사무소 약도 파일명
+    candidates.extend([
+        "office_map",
+        "seongsan_map",
+        "map",
+        "약도",
+        "사무실약도",
+        "사무소약도"
+    ])
+    
+    # 탐색할 디렉터리 목록
+    base_dirs = []
+    
+    if getattr(sys, 'frozen', False):
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        
+    base_dirs.extend([
+        os.path.join(base_dir, "assets"),
+        os.path.join(base_dir, "..", "assets"),
+        os.path.join(base_dir, "scratch"),
+        base_dir
+    ])
+    
+    if hasattr(sys, '_MEIPASS'):
+        base_dirs.extend([
+            os.path.join(sys._MEIPASS, "assets"),
+            sys._MEIPASS
+        ])
+        
+    base_dirs.extend([
+        os.path.abspath("assets"),
+        os.path.abspath("../assets"),
+        os.path.abspath("."),
+        os.path.abspath(".."),
+        r"d:\부동산업무\antigravity\assets",
+        r"d:\부동산업무\antigravity\AutoBot_Clean\assets",
+        r"d:\부동산업무\antigravity\consult_diary\assets"
+    ])
+    
+    extensions = [".png", ".jpg", ".jpeg", ".webp"]
+    
+    seen = set()
+    for d in base_dirs:
+        if not d:
+            continue
+        norm_d = os.path.normcase(os.path.abspath(d))
+        if norm_d in seen or not os.path.exists(norm_d):
+            continue
+        seen.add(norm_d)
+        for c in candidates:
+            for ext in extensions:
+                p = os.path.join(norm_d, c + ext)
+                if os.path.isfile(p):
+                    return os.path.abspath(p)
+                    
+    return None
+
 def load_serve_listings_cache():
     """부동산써브 캐시 파일(serve_listings_cache.json)에서 매물 목록을 불러옵니다."""
     if getattr(sys, 'frozen', False):
@@ -256,6 +329,203 @@ def load_serve_listings_cache():
         except Exception as e:
             pass
     return []
+
+def check_and_refresh_serve_listings():
+    """
+    공인중개사법 준수: 보고서 생성 시 허위매물/거래완료 매물이 추천되지 않도록
+    부동산써브 현재 등록 매물 관리 화면을 점검(스캔)하여 로컬 캐시를 최신화합니다.
+    """
+    if getattr(sys, 'frozen', False):
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+    cache_path = os.path.join(base_dir, "serve_listings_cache.json")
+    
+    last_modified_str = "없음"
+    if os.path.exists(cache_path):
+        mtime = os.path.getmtime(cache_path)
+        last_modified_str = datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M')
+        
+    print("\n" + "=" * 60)
+    print(" 🛡️  [공인중개사법 준수] 추천 매물 실시간 유효성 점검 (방법 B)")
+    print("  ※ 거래완료/종료/비공개 매물의 추천 노출(표시·광고 위반)을 방지하기 위해")
+    print("     현재 등록 중인 부동산써브 매물 목록을 점검합니다.")
+    print(f"  - 마지막 매물 캐시 갱신일시: {last_modified_str}")
+    print("=" * 60)
+    print(" [1] 엔터(Enter)      : 크롬 브라우저에서 최신 매물 목록 스캔 & 갱신 (권장)")
+    print(" [2] 's' 입력 후 엔터 : 기존 저장된 매물 캐시 파일 그대로 사용")
+    print(" [3] 'n' 입력 후 엔터 : 이번 보고서에서 추천 매물 섹션 제외")
+    
+    choice = input(" 선택해 주세요 [기본값: 엔터(1번)]: ").strip().lower()
+    
+    if choice == 'n':
+        print(" -> 추천 매물 섹션을 제외하고 보고서를 생성합니다.")
+        return "skip"
+    elif choice == 's':
+        print(f" -> 기존 캐시({last_modified_str})를 사용합니다. (거래완료 매물 포함 가능성에 유의하세요)")
+        return "cache"
+        
+    # [1] 스캔 진행
+    print("\n -> 부동산써브 매물 관리 페이지를 확인합니다...")
+    try:
+        from selenium import webdriver
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.chrome.options import Options
+        import serve_auto_upload
+    except Exception as e:
+        print(f" [!] Selenium 또는 관련 모듈 로드 실패: {e}. 기존 캐시를 사용합니다.")
+        return "cache"
+        
+    driver = None
+    if getattr(serve_auto_upload, '_kept_alive_driver', None) is not None:
+        try:
+            _ = serve_auto_upload._kept_alive_driver.current_url
+            driver = serve_auto_upload._kept_alive_driver
+            print(" -> 기존에 열려 있는 부동산써브 크롬 브라우저를 재사용합니다.")
+        except Exception:
+            serve_auto_upload._kept_alive_driver = None
+            
+    if driver is None:
+        try:
+            options = Options()
+            options.add_experimental_option("detach", True)
+            options.add_argument("--disable-blink-features=AutomationControlled")
+            options.add_experimental_option("useAutomationExtension", False)
+            options.add_experimental_option("excludeSwitches", ["enable-automation"])
+            driver = webdriver.Chrome(options=options)
+            serve_auto_upload._kept_alive_driver = driver
+        except Exception as e:
+            print(f" [!] 크롬 브라우저 실행 실패: {e}. 기존 캐시를 사용합니다.")
+            return "cache"
+            
+    target_url = "https://ma.serve.co.kr/good/articleRegistList"
+    try:
+        if target_url not in driver.current_url:
+            driver.get(target_url)
+    except Exception:
+        try:
+            driver.get(target_url)
+        except Exception as e:
+            print(f" [!] 페이지 이동 실패: {e}. 기존 캐시를 사용합니다.")
+            return "cache"
+            
+    print("\n[안내] 크롬 브라우저에서 부동산써브 로그인 후")
+    print("       '통합매물관리' 목록 화면이 보이도록 준비해 주세요.")
+    print("       (팁: 하단의 '페이지당 보기'를 50개/100개로 넓히시면 더 많은 매물이 스캔됩니다.)")
+    user_confirm = input(" 매물 목록 화면이 열렸으면 엔터(Enter)를 치세요 (취소: 'c'): ").strip().lower()
+    if user_confirm == 'c':
+        print(" -> 스캔을 취소하고 기존 캐시를 사용합니다.")
+        return "cache"
+        
+    print(" -> 현재 화면의 등록 매물을 정밀 스캔 중입니다...")
+    try:
+        rows = driver.find_elements(By.CSS_SELECTOR, "tr")
+        listings = []
+        for row in rows:
+            try:
+                text = row.text.strip()
+                if not text:
+                    continue
+                serve_match = re.search(r'\b(33\d{7,8})\b', text)
+                if not serve_match:
+                    continue
+                serve_id = serve_match.group(1)
+                
+                trade_type = "월세"
+                price_str = ""
+                price_wolse_match = re.search(r'월세\s*([0-9,]+)\s*/\s*([0-9,]+)', text)
+                price_jeonse_match = re.search(r'전세\s*([0-9,]+)', text)
+                price_trade_match = re.search(r'매매\s*([0-9,]+)', text)
+                
+                if price_wolse_match:
+                    trade_type = "월세"
+                    price_str = f"{price_wolse_match.group(1)} / {price_wolse_match.group(2)}"
+                elif price_jeonse_match:
+                    trade_type = "전세"
+                    price_str = price_jeonse_match.group(1)
+                elif price_trade_match:
+                    trade_type = "매매"
+                    price_str = price_trade_match.group(1)
+                
+                prop_type = "주택"
+                type_match = re.search(r'(주택|아파트|오피스텔|상가|원룸|상가점포|빌라|연립|다세대)', text)
+                if type_match:
+                    prop_type = type_match.group(1)
+                
+                addr_match = re.search(r'([가-힣]+(?:시|도)\s+[가-힣]+(?:시|군|구)\s+[가-힣]+동)', text)
+                if not addr_match:
+                    addr_match = re.search(r'(서울특별시\s+[가-힣]+구\s+[가-힣]+동)', text)
+                address = ""
+                if addr_match:
+                    address = addr_match.group(1).strip()
+                    lot_match = re.search(r'\(([0-9]+-[0-9]+)\)', text)
+                    if lot_match:
+                        address += " " + lot_match.group(1)
+                    else:
+                        lot_match2 = re.search(r'동\s+([0-9]+(?:-[0-9]+)?)', text)
+                        if lot_match2:
+                            address += " " + lot_match2.group(1)
+                
+                detailed_address = ""
+                detailed_match = re.search(r'(\d+동\s+\d+호|\d+호)', text)
+                if detailed_match:
+                    detailed_address = detailed_match.group(1)
+                
+                floor_info = ""
+                floor_match = re.search(r'(-?\d+층\s*/\s*\d+층)', text)
+                if floor_match:
+                    floor_info = floor_match.group(1)
+                    
+                area_info = ""
+                area_match = re.search(r'([\d.]+(?:\s*/\s*[\d.]+)?\(㎡\))', text)
+                if area_match:
+                    area_info = area_match.group(1)
+                else:
+                    area_match2 = re.search(r'([\d.]+\s*/\s*[\d.]+\s*㎡)', text)
+                    if area_match2:
+                        area_info = area_match2.group(1)
+                
+                feature = ""
+                feature_match = re.search(r'매물특징\s*:\s*(.*)', text)
+                if feature_match:
+                    feature = feature_match.group(1).split('·')[0].split('\n')[0].strip()
+                    
+                move_in = ""
+                move_in_match = re.search(r'입주정보\s*:\s*(.*)', text)
+                if move_in_match:
+                    move_in = move_in_match.group(1).split('·')[0].split('\n')[0].strip()
+                    move_in = re.sub(r'(계약서\s*작성|공동중개|등록|매물정보|복사).*$', '', move_in).strip()
+                
+                listings.append({
+                    "serve_id": serve_id,
+                    "prop_type": prop_type,
+                    "address": address,
+                    "detailed_address": detailed_address,
+                    "floor_info": floor_info,
+                    "area_info": area_info,
+                    "trade_type": trade_type,
+                    "price_str": price_str,
+                    "feature": feature,
+                    "move_in": move_in
+                })
+            except Exception:
+                pass
+                
+        if listings:
+            with open(cache_path, "w", encoding="utf-8") as f:
+                json.dump(listings, f, ensure_ascii=False, indent=2)
+            print(f" -> ✅ 성공! 최신 등록 매물 {len(listings)}건 스캔 및 캐시 갱신 완료.")
+            print("     (이미 거래 완료되거나 종료/내려진 매물은 자동 제외되었습니다.)")
+            return "refreshed"
+        else:
+            print(" [!] 화면에서 등록된 매물을 찾지 못했습니다. 매물 관리 목록 화면인지 확인해주세요.")
+            fallback_choice = input(" 기존 캐시 파일을 사용하시겠습니까? (Y/n): ").strip().lower()
+            if fallback_choice == 'n':
+                return "skip"
+            return "cache"
+    except Exception as e:
+        print(f" [!] 스캔 중 오류 발생: {e}. 기존 캐시를 사용합니다.")
+        return "cache"
 
 def extract_target_dongs(target_dong_name):
     """'성산2동 (성산동, 중동)' 등의 다양한 형태의 동네 명칭에서 실제 법정동/행정동 목록을 추출합니다."""
@@ -1578,7 +1848,7 @@ def build_villa_land_stat_table(villa_txs, cell_style, header_style):
         
     return stat_table
 
-def generate_market_report_pdf(pdf_filename, bjdong_nm, villa_txs, member_info=None, region_prefix="서울특별시 마포구"):
+def generate_market_report_pdf(pdf_filename, bjdong_nm, villa_txs, member_info=None, region_prefix="서울특별시 마포구", cma_picks=None):
     font_name = register_korean_font()
         
     # Calculate 24-month period range dynamically
@@ -2103,7 +2373,8 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, villa_txs, member_info=N
     story.extend(build_prop_section("🏡 연립/다세대/빌라 (지상층·최근 6개월 기준)", filtered_villa_txs, '2', full_txs=villa_txs))
     
     # [CMA 정밀 시세 분석 기반] 이달의 추천 매물 (Best Value Pick)
-    cma_picks = select_cma_recommended_listings(bjdong_nm, filtered_villa_txs, max_picks=2)
+    if cma_picks is None:
+        cma_picks = select_cma_recommended_listings(bjdong_nm, filtered_villa_txs, max_picks=2)
     if cma_picks:
         rec_title_style = ParagraphStyle(
             'RecTitle',
@@ -2316,8 +2587,77 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, villa_txs, member_info=N
         ]))
         story.append(sig_table)
         
+    # Office Map Section (찾아오시는 길 / 사무소 약도)
+    map_img_path = find_office_map_file(bjdong_nm)
+    if map_img_path and os.path.exists(map_img_path):
+        map_title_style = ParagraphStyle(
+            'MapTitle',
+            parent=styles['Normal'],
+            fontName=font_name,
+            fontSize=9.5,
+            leading=13,
+            textColor=colors.HexColor('#1E293B'),
+            bold=True,
+            spaceBefore=6,
+            spaceAfter=2,
+            keepWithNext=True
+        )
+        map_sub_style = ParagraphStyle(
+            'MapSub',
+            parent=styles['Normal'],
+            fontName=font_name,
+            fontSize=7.5,
+            leading=10,
+            textColor=colors.HexColor('#64748B'),
+            spaceAfter=4,
+            keepWithNext=True
+        )
+        
+        office_nm = ""
+        addr_str = ""
+        if member_info:
+            office_nm = member_info.get("office_name") or member_info.get("office") or ""
+            addr_str = member_info.get("office_address", "")
+        if not office_nm:
+            office_nm = "신대림공인중개사사무소"
+        if not addr_str:
+            addr_str = "서울 마포구 모래내로 7길 52"
+            
+        story.append(Spacer(1, 6))
+        story.append(Paragraph(f"■ 찾아오시는 길 ({office_nm} 약도)", map_title_style))
+        story.append(Paragraph(f"📍 {addr_str} (중동초등학교 인근 / 성산2동주민센터 도보 3분)", map_sub_style))
+        
+        try:
+            from PIL import Image as PILImage
+            with PILImage.open(map_img_path) as im:
+                orig_w, orig_h = im.size
+            aspect = orig_w / float(orig_h) if orig_h > 0 else 1.5538
+        except Exception:
+            aspect = 1.5538
+            
+        # Target sizing that fits gracefully within Page 3
+        map_w = 460
+        map_h = int(map_w / aspect)
+        if map_h > 240:
+            map_h = 240
+            map_w = int(map_h * aspect)
+            
+        map_img = Image(map_img_path, width=map_w, height=map_h)
+        map_card = Table([[map_img]], colWidths=[515])
+        map_card.setStyle(TableStyle([
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#FFFFFF')),
+            ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#CBD5E1')),
+            ('TOPPADDING', (0,0), (-1,-1), 3),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+            ('LEFTPADDING', (0,0), (-1,-1), 3),
+            ('RIGHTPADDING', (0,0), (-1,-1), 3),
+        ]))
+        story.append(map_card)
+
     # Disclaimer Box
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 8))
     disclaimer_style = ParagraphStyle(
         'Disclaimer',
         parent=styles['Normal'],
@@ -2680,8 +3020,12 @@ def run_market_analysis():
             add_line(f"  {b['label']:<13} | {cnt_str:<6} | {old_str:<14} | {new_str:<14} | {diff_str:<10}")
         add_line(" " + "-" * 68)
 
-    # CMA 추천 매물 (Best Value Pick)
-    cma_picks = select_cma_recommended_listings(display_dong_name, filtered_villa_txs, max_picks=2)
+    # CMA 추천 매물 (Best Value Pick) - 공인중개사법 준수 매물 실시간 점검 (방법 B)
+    refresh_mode = check_and_refresh_serve_listings()
+    cma_picks = []
+    if refresh_mode != "skip":
+        cma_picks = select_cma_recommended_listings(display_dong_name, filtered_villa_txs, max_picks=2)
+
     if cma_picks:
         add_line("\n[📌 CMA 시세 분석 기반 이달의 추천 매물 (Best Value Pick)]")
         add_line(" ※ 최근 6개월 국토교통부 실거래 데이터 대비 가격 경쟁력이 검증된 엄선 매물입니다.")
@@ -2715,7 +3059,7 @@ def run_market_analysis():
     # Generate & Save PDF
     try:
         member_info = load_member_info()
-        generate_market_report_pdf(pdf_filename, display_dong_name, villa_txs, member_info, region_prefix=full_region_name)
+        generate_market_report_pdf(pdf_filename, display_dong_name, villa_txs, member_info, region_prefix=full_region_name, cma_picks=cma_picks)
         print(f"[발행 완료] PDF 보고서 발행 완료 (중개사 서명 포함): {os.path.abspath(pdf_filename)}")
     except Exception as e:
         print(f" [!] PDF 보고서 생성 실패: {e}")
