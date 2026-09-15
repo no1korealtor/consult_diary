@@ -1780,20 +1780,29 @@ def run_building_viewer():
         }
         save_building_report(addr_info.get("road_address") or clean_address, bld_data)
         from trade_viewer import save_briefing_report
-        display_addr = addr_info.get("road_address") or clean_address or "조회 대상 주소"
-        save_briefing_report(display_addr, trades, jeonses, wolses, prop_type_name, period_label=selected_label, is_expanded=is_expanded, target_build_year=target_build_year, target_area=target_area, target_floor=target_floor, desired_info=desired_info, target_bld_nm=bld_data.get("bld_nm"), target_bun=addr_info.get("bun"), target_ji=addr_info.get("ji"), is_complex_analysis=is_complex_analysis)
+        save_res = save_briefing_report(display_addr, trades, jeonses, wolses, prop_type_name, period_label=selected_label, is_expanded=is_expanded, target_build_year=target_build_year, target_area=target_area, target_floor=target_floor, desired_info=desired_info, target_bld_nm=bld_data.get("bld_nm"), target_bun=addr_info.get("bun"), target_ji=addr_info.get("ji"), is_complex_analysis=is_complex_analysis)
         target_addr_str = addr_info.get("road_address") or clean_address
         safe_addr_for_open = "".join([c for c in target_addr_str if c not in (" ", "-", "_")]).strip()
         bld_pdf_path = os.path.abspath(f"종합분석보고서/건축물대장_{safe_addr_for_open.replace(' ', '_')}.pdf")
-        brief_pdf_path = os.path.abspath(f"종합분석보고서/시세브리핑_{safe_addr_for_open.replace(' ', '_')}.pdf")
+        brief_pdf_path = None
+        if isinstance(save_res, tuple) and len(save_res) > 1 and save_res[1]:
+            brief_pdf_path = save_res[1]
+        if not brief_pdf_path or not os.path.exists(brief_pdf_path):
+            brief_pdf_path = os.path.abspath(f"종합분석보고서/시세브리핑_{safe_addr_for_open.replace(' ', '_')}.pdf")
         opened_any = False
         if sys.platform == "win32":
             if os.path.exists(bld_pdf_path):
-                os.startfile(bld_pdf_path)
-                opened_any = True
+                try:
+                    os.startfile(bld_pdf_path)
+                    opened_any = True
+                except Exception:
+                    pass
             if os.path.exists(brief_pdf_path):
-                os.startfile(brief_pdf_path)
-                opened_any = True
+                try:
+                    os.startfile(brief_pdf_path)
+                    opened_any = True
+                except Exception:
+                    pass
         if opened_any:
             print("\n [안내] 생성된 PDF 보고서(건축물대장 및 시세브리핑)를 자동으로 실행하였습니다.")
             print("        (종합분석보고서 폴더 내에 함께 저장되어 있습니다.)")

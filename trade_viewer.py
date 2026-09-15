@@ -1670,7 +1670,7 @@ def save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, f
         doc = SimpleDocTemplate(filename_pdf, pagesize=A4, rightMargin=47, leftMargin=47, topMargin=40, bottomMargin=60)
         styles = getSampleStyleSheet()
         title_style = ParagraphStyle("MainTitle", parent=styles["Normal"], fontName="KoreanFont", fontSize=20, leading=24, textColor=colors.HexColor("#1A365D"), alignment=1, spaceAfter=15, bold=True)
-        h2_style = ParagraphStyle("SectionHeading", parent=styles["Normal"], fontName="KoreanFont", fontSize=11, leading=15, textColor=colors.HexColor("#2C5282"), spaceBefore=14, spaceAfter=6, bold=True)
+        h2_style = ParagraphStyle("SectionHeading", parent=styles["Normal"], fontName="KoreanFont", fontSize=11, leading=15, textColor=colors.HexColor("#2C5282"), spaceBefore=14, spaceAfter=6, bold=True, keepWithNext=True)
         label_style = ParagraphStyle("MetaLabel", parent=styles["Normal"], fontName="KoreanFont", fontSize=9, leading=13, textColor=colors.HexColor("#4A5568"), bold=True)
         value_style = ParagraphStyle("MetaValue", parent=styles["Normal"], fontName="KoreanFont", fontSize=9, leading=13, textColor=colors.HexColor("#2D3748"))
         table_hdr_style = ParagraphStyle("TableHdr", parent=styles["Normal"], fontName="KoreanFont", fontSize=9, leading=12, textColor=colors.white, alignment=1, bold=True)
@@ -2040,12 +2040,12 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                     all_txs = f_trades + f_jeonses + f_wolses
                     size_label = g["label"]
                     title_prefix = "주력 평형" if idx == 0 else "관심 평형"
-                    scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name)
+                    scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name, dw=500, dh=145)
                     if scatter_drawing:
                         story.append(Paragraph(f"■ [{title_prefix} 실거래가 산포도 - {size_label} (최근 24개월)]", h2_style))
                         story.append(Spacer(1, 4))
                         story.append(scatter_drawing)
-                        story.append(Spacer(1, 10))
+                        story.append(Spacer(1, 8))
             else:
                 filt_trades = filter_by_size_category(trades, target_area, prop_type_name, apt_groups)
                 filt_jeonses = filter_by_size_category(jeonses, target_area, prop_type_name, apt_groups)
@@ -2053,12 +2053,12 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                 all_txs = filt_trades + filt_jeonses + filt_wolses
                 
                 size_label = get_size_category_label(target_area, prop_type_name, apt_groups)
-                scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name)
+                scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name, dw=500, dh=145)
                 if scatter_drawing:
                     story.append(Paragraph(f"■ [실거래가 산포도 - {size_label} (최근 24개월)]", h2_style))
                     story.append(Spacer(1, 4))
                     story.append(scatter_drawing)
-                    story.append(Spacer(1, 10))
+                    story.append(Spacer(1, 8))
         except Exception as e:
             print(f"산포도 생성 중 오류: {e}")
         if prop_type_name in ["연립/다세대/빌라", "다세대", "빌라"]:
@@ -2250,96 +2250,67 @@ colors.HexColor("#E2E8F0")), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDIN
         center_bold_style = ParagraphStyle("FooterCenterBold", parent=styles["Normal"], fontName="KoreanFont", fontSize=11, leading=15, textColor=colors.HexColor("#1A365D"), alignment=1, bold=True)
         center_normal_style = ParagraphStyle("FooterCenterNormal", parent=styles["Normal"], fontName="KoreanFont", fontSize=9.5, leading=14, textColor=colors.HexColor("#4A5568"), alignment=1)
         italic_quote_style = ParagraphStyle("FooterItalicQuote", parent=styles["Normal"], fontName="KoreanFont", fontSize=11, leading=16, textColor=colors.HexColor("#2D3748"), alignment=1)
+        from reportlab.platypus import KeepTogether
         def get_divider():
-            t_div = Table([[""]], colWidths=[500], rowHeights=[1]); t_div.setStyle(TableStyle([("LINEABOVE", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")), ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0)]))
+            t_div = Table([[""]], colWidths=[500], rowHeights=[1])
+            t_div.setStyle(TableStyle([("LINEABOVE", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")), ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0)]))
             return t_div
-        story.append(Spacer(1, 15))
-        story.append(get_divider())
-        story.append(Spacer(1, 10))
-        story.append(Paragraph("감사합니다.", center_bold_style))
-        story.append(Spacer(1, 5))
-        story.append(Paragraph("이번 분석이 도움이 되셨기를 바랍니다.", center_normal_style))
-        story.append(Spacer(1, 10))
-        story.append(get_divider())
-        story.append(Spacer(1, 12))
+
         member = load_member_info() or {}
         m_name = format_member_name(member.get("name", "관리자"))
         m_phone = member.get("phone", "")
         m_addr = member.get("office_address", "")
         m_reg = member.get("registration_number", "")
-        story.append(Paragraph(f"<b>{m_name}</b>", center_bold_style))
-        story.append(Spacer(1, 8))
-        profile_path = find_img_file("profile")
-        profile_img = None
-        if profile_path:
-            from reportlab.platypus import Image
-            profile_img = Image(profile_path, width=70, height=90)
-        if profile_img:
-            profile_row = Table([[profile_img]], colWidths=[500])
-            profile_row.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
-            story.append(profile_row)
-            story.append(Spacer(1, 10))
-        story.append(Paragraph("데이터 기반 부동산 분석<br/>매매 · 임대차 · 투자 상담", center_normal_style))
-        story.append(Spacer(1, 10))
-        story.append(Paragraph(f"📞 {m_phone}", center_bold_style))
-        story.append(Spacer(1, 10))
-        addr_text = f"📍 {m_addr}"
-        if m_reg:
-            addr_text += f"<br/>등록번호: {m_reg}"
-        story.append(Paragraph(addr_text, center_normal_style))
-        story.append(Spacer(1, 10))
-        kakao_path = find_img_file("kakao_qr")
-        naver_path = find_img_file("naver_qr")
-        kakao_img = None
-        if kakao_path:
-            from reportlab.platypus import Image
-            kakao_img = Image(kakao_path, width=70, height=70)
-        naver_img = None
-        if naver_path:
-            from reportlab.platypus import Image
-            naver_img = Image(naver_path, width=70, height=70)
-            
-        if kakao_img or naver_img:
-            cols = []
-            widths = []
-            if kakao_img:
-                cols.append(kakao_img)
-                widths.append(70)
-            if kakao_img and naver_img:
-                cols.append("")
-                widths.append(20)
-            if naver_img:
-                cols.append(naver_img)
-                widths.append(70)
-            qr_table = Table([cols], colWidths=widths)
-            qr_table.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
-            qr_row = Table([[qr_table]], colWidths=[500])
-            qr_row.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
-            story.append(qr_row)
-            story.append(Spacer(1, 12))
-        
-        # [단지 분석 시 홍보 목적의 사무소 약도(찾아오시는 길) 삽입]
+        office_nm = member.get("office_name") or member.get("office") or "신대림공인중개사사무소"
+
         is_complex = is_complex_analysis or (prop_type_name == "아파트" and target_floor is None and (not desired_info or not desired_info.get("ho_name")))
+        
+        closing_elements = []
         if is_complex:
+            closing_elements.append(Spacer(1, 4))
+            closing_elements.append(get_divider())
+            closing_elements.append(Spacer(1, 4))
+            closing_elements.append(Paragraph("감사합니다.", center_bold_style))
+            closing_elements.append(Spacer(1, 2))
+            closing_elements.append(Paragraph("이번 분석이 도움이 되셨기를 바랍니다.", center_normal_style))
+            closing_elements.append(Spacer(1, 4))
+            closing_elements.append(get_divider())
+            closing_elements.append(Spacer(1, 6))
+
+            reg_str = f" (등록번호: {m_reg})" if m_reg else ""
+            b_info_p = f"<b>{m_name}</b> | 데이터 기반 부동산 분석 · 매매 · 임대차 · 투자 상담<br/>📞 {m_phone}  |  📍 {m_addr}{reg_str}"
+            b_card = Table([[Paragraph(b_info_p, center_normal_style)]], colWidths=[500])
+            b_card.setStyle(TableStyle([
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),
+                ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ]))
+            closing_elements.append(b_card)
+            closing_elements.append(Spacer(1, 6))
+
             try:
                 from market_analyser import find_office_map_file
                 map_path = find_office_map_file(address)
             except Exception:
                 map_path = None
-                
+
             if map_path and os.path.exists(map_path):
-                story.append(Spacer(1, 6))
                 map_title_style = ParagraphStyle(
                     "BriefingMapTitle",
                     parent=styles["Normal"],
                     fontName="KoreanFont",
-                    fontSize=10,
-                    leading=14,
+                    fontSize=9.5,
+                    leading=13,
                     textColor=colors.HexColor("#1A365D"),
-                    alignment=1, # Center
+                    alignment=1,
                     bold=True,
-                    spaceBefore=6,
-                    spaceAfter=3,
+                    spaceBefore=2,
+                    spaceAfter=2,
                     keepWithNext=True
                 )
                 map_sub_style = ParagraphStyle(
@@ -2349,16 +2320,14 @@ colors.HexColor("#E2E8F0")), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDIN
                     fontSize=7.5,
                     leading=10,
                     textColor=colors.HexColor("#4A5568"),
-                    alignment=1, # Center
-                    spaceAfter=6,
+                    alignment=1,
+                    spaceAfter=4,
                     keepWithNext=True
                 )
-                office_nm = member.get("office_name") or member.get("office") or "신대림공인중개사사무소"
-                m_addr_val = member.get("office_address") or "서울 마포구 모래내로 7길 52"
-                
-                story.append(Paragraph(f"<b>■ 찾아오시는 길 ({office_nm} 약도)</b>", map_title_style))
-                story.append(Paragraph(f"📍 {m_addr_val} (중동초등학교 인근 / 성산2동주민센터 도보 3분)", map_sub_style))
-                
+                m_addr_val = m_addr or "서울 마포구 모래내로 7길 52"
+                closing_elements.append(Paragraph(f"<b>■ 찾아오시는 길 ({office_nm} 약도)</b>", map_title_style))
+                closing_elements.append(Paragraph(f"📍 {m_addr_val} (중동초등학교 인근 / 성산2동주민센터 도보 3분)", map_sub_style))
+
                 try:
                     from PIL import Image as PILImage
                     with PILImage.open(map_path) as im:
@@ -2366,13 +2335,13 @@ colors.HexColor("#E2E8F0")), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDIN
                     aspect = orig_w / float(orig_h) if orig_h > 0 else 1.5538
                 except Exception:
                     aspect = 1.5538
-                    
-                target_w = 440
+
+                target_w = 420
                 target_h = int(target_w / aspect)
-                if target_h > 240:
-                    target_h = 240
+                if target_h > 175:
+                    target_h = 175
                     target_w = int(target_h * aspect)
-                    
+
                 from reportlab.platypus import Image as RLImage
                 map_img_obj = RLImage(map_path, width=target_w, height=target_h)
                 map_card = Table([[map_img_obj]], colWidths=[500])
@@ -2380,20 +2349,86 @@ colors.HexColor("#E2E8F0")), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDIN
                     ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                     ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
                     ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFFFF")),
-                    ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#CBD5E0")),
-                    ("TOPPADDING", (0, 0), (-1, -1), 3),
-                    ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-                    ("LEFTPADDING", (0, 0), (-1, -1), 3),
-                    ("RIGHTPADDING", (0, 0), (-1, -1), 3),
+                    ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")),
+                    ("TOPPADDING", (0, 0), (-1, -1), 2),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 2),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 2),
                 ]))
-                story.append(map_card)
-                story.append(Spacer(1, 10))
+                closing_elements.append(map_card)
+                closing_elements.append(Spacer(1, 6))
 
-        story.append(get_divider())
-        story.append(Spacer(1, 10))
-        story.append(Paragraph('"이제 중개도<br/>과학입니다."', italic_quote_style))
-        story.append(Spacer(1, 8))
-        story.append(Paragraph("<b>SHINDAERIM PROPERTY INTELLIGENCE</b>", center_bold_style))
+            closing_elements.append(get_divider())
+            closing_elements.append(Spacer(1, 4))
+            closing_elements.append(Paragraph('"이제 중개도<br/>과학입니다."', italic_quote_style))
+            closing_elements.append(Spacer(1, 4))
+            closing_elements.append(Paragraph("<b>SHINDAERIM PROPERTY INTELLIGENCE</b>", center_bold_style))
+        else:
+            closing_elements.append(Spacer(1, 10))
+            closing_elements.append(get_divider())
+            closing_elements.append(Spacer(1, 8))
+            closing_elements.append(Paragraph("감사합니다.", center_bold_style))
+            closing_elements.append(Spacer(1, 4))
+            closing_elements.append(Paragraph("이번 분석이 도움이 되셨기를 바랍니다.", center_normal_style))
+            closing_elements.append(Spacer(1, 8))
+            closing_elements.append(get_divider())
+            closing_elements.append(Spacer(1, 10))
+            closing_elements.append(Paragraph(f"<b>{m_name}</b>", center_bold_style))
+            closing_elements.append(Spacer(1, 6))
+            profile_path = find_img_file("profile")
+            profile_img = None
+            if profile_path:
+                from reportlab.platypus import Image
+                profile_img = Image(profile_path, width=70, height=90)
+            if profile_img:
+                profile_row = Table([[profile_img]], colWidths=[500])
+                profile_row.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+                closing_elements.append(profile_row)
+                closing_elements.append(Spacer(1, 8))
+            closing_elements.append(Paragraph("데이터 기반 부동산 분석<br/>매매 · 임대차 · 투자 상담", center_normal_style))
+            closing_elements.append(Spacer(1, 8))
+            closing_elements.append(Paragraph(f"📞 {m_phone}", center_bold_style))
+            closing_elements.append(Spacer(1, 8))
+            addr_text = f"📍 {m_addr}"
+            if m_reg:
+                addr_text += f"<br/>등록번호: {m_reg}"
+            closing_elements.append(Paragraph(addr_text, center_normal_style))
+            closing_elements.append(Spacer(1, 8))
+            kakao_path = find_img_file("kakao_qr")
+            naver_path = find_img_file("naver_qr")
+            kakao_img = None
+            if kakao_path:
+                from reportlab.platypus import Image
+                kakao_img = Image(kakao_path, width=70, height=70)
+            naver_img = None
+            if naver_path:
+                from reportlab.platypus import Image
+                naver_img = Image(naver_path, width=70, height=70)
+            if kakao_img or naver_img:
+                cols = []
+                widths = []
+                if kakao_img:
+                    cols.append(kakao_img)
+                    widths.append(70)
+                if kakao_img and naver_img:
+                    cols.append("")
+                    widths.append(20)
+                if naver_img:
+                    cols.append(naver_img)
+                    widths.append(70)
+                qr_table = Table([cols], colWidths=widths)
+                qr_table.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+                qr_row = Table([[qr_table]], colWidths=[500])
+                qr_row.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+                closing_elements.append(qr_row)
+                closing_elements.append(Spacer(1, 10))
+            closing_elements.append(get_divider())
+            closing_elements.append(Spacer(1, 8))
+            closing_elements.append(Paragraph('"이제 중개도<br/>과학입니다."', italic_quote_style))
+            closing_elements.append(Spacer(1, 6))
+            closing_elements.append(Paragraph("<b>SHINDAERIM PROPERTY INTELLIGENCE</b>", center_bold_style))
+
+        story.append(KeepTogether(closing_elements))
         def draw_page_decorations(canvas, doc_obj):
             try:
                 canvas.saveState()
@@ -2836,18 +2871,30 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         latest_txt = os.path.join(unified_dir, f"시세브리핑_{safe_addr_for_open}.txt")
         latest_pdf = os.path.join(unified_dir, f"시세브리핑_{safe_addr_for_open}.pdf")
         
+        final_pdf_for_open = os.path.abspath(unified_pdf)
         try:
             shutil.copy2(filename, unified_txt)
-            shutil.copy2(filename, latest_txt)
+            try:
+                shutil.copy2(filename, latest_txt)
+            except Exception:
+                pass
             if os.path.exists(pdf_filename):
                 shutil.copy2(pdf_filename, unified_pdf)
-                shutil.copy2(pdf_filename, latest_pdf)
+                try:
+                    shutil.copy2(pdf_filename, latest_pdf)
+                    final_pdf_for_open = os.path.abspath(latest_pdf)
+                except PermissionError:
+                    print(f"\n [알림] 기존 열려있는 PDF 파일({os.path.basename(latest_pdf)})이 있어, 방금 생성된 최신 보고서({os.path.basename(unified_pdf)})로 안전하게 연결합니다.")
+                    final_pdf_for_open = os.path.abspath(unified_pdf)
             print("       -> 종합분석보고서 통합 폴더에도 복사본이 저장되었습니다.")
-        except PermissionError:
-            print("\n [경고] 열려있는 PDF 파일이 있어 '최신' 복사본을 덮어쓸 수 없습니다. (원본 파일은 저장되었습니다)")
+        except Exception as e:
+            print(f"       -> 파일 복사 중 예외 발생: {e}")
+            
+        return (unified_txt, final_pdf_for_open)
     except Exception as e:
         import traceback; traceback.print_exc()
         print(f"\n [오류] 브리핑 파일 저장 중 오류 발생: {e}")
+        return (None, None)
 
 def filter_expanded_apartments(expanded_txs, bun, ji):
     target_txs = []

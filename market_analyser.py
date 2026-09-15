@@ -1023,7 +1023,7 @@ def create_group_scatter_plot_drawing(transactions, title="평형별 단지 비�
         
     return d
 
-def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_dots=True, target_bld_nm=None):
+def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_dots=True, target_bld_nm=None, dw=500, dh=155):
     trades = []
     jeonses = []
     min_date = None
@@ -1089,8 +1089,8 @@ def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_
     min_p = max(0, min_p - diff * 0.1)
     max_p = max_p + diff * 0.1
     
-    dw = 515
-    dh = 200
+    dw = dw
+    dh = dh
     d = Drawing(dw, dh)
     
     d.add(Rect(0, 0, dw, dh, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=1, rx=5, ry=5))
@@ -3061,6 +3061,11 @@ def run_market_analysis():
         member_info = load_member_info()
         generate_market_report_pdf(pdf_filename, display_dong_name, villa_txs, member_info, region_prefix=full_region_name, cma_picks=cma_picks)
         print(f"[발행 완료] PDF 보고서 발행 완료 (중개사 서명 포함): {os.path.abspath(pdf_filename)}")
+        if sys.platform == "win32" and os.path.exists(pdf_filename):
+            try:
+                os.startfile(os.path.abspath(pdf_filename))
+            except Exception:
+                pass
     except Exception as e:
         print(f" [!] PDF 보고서 생성 실패: {e}")
         
