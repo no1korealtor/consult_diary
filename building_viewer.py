@@ -1780,6 +1780,7 @@ def run_building_viewer():
         }
         save_building_report(addr_info.get("road_address") or clean_address, bld_data)
         from trade_viewer import save_briefing_report
+        display_addr = addr_info.get("road_address") or clean_address or "조회 대상 주소"
         save_res = save_briefing_report(display_addr, trades, jeonses, wolses, prop_type_name, period_label=selected_label, is_expanded=is_expanded, target_build_year=target_build_year, target_area=target_area, target_floor=target_floor, desired_info=desired_info, target_bld_nm=bld_data.get("bld_nm"), target_bun=addr_info.get("bun"), target_ji=addr_info.get("ji"), is_complex_analysis=is_complex_analysis)
         target_addr_str = addr_info.get("road_address") or clean_address
         safe_addr_for_open = "".join([c for c in target_addr_str if c not in (" ", "-", "_")]).strip()
