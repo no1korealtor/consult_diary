@@ -373,29 +373,6 @@
             letter-spacing: 1px;
         }
 
-        /* --- Harmonica Grid --- */
-        .harmonica-grid {
-            display: grid;
-            grid-template-columns: repeat(22, 1fr);
-            gap: 1px;
-            background: #4facfe;
-            border: 2px solid #4facfe;
-            border-radius: 8px;
-            min-width: 800px;
-            overflow: hidden;
-        }
-        .harmonica-cell {
-            text-align: center;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Jua', sans-serif;
-        }
-        .harmonica-cell.top { height: 40px; border-bottom: 1px solid #2a2a40; }
-        .harmonica-cell.middle { background: #ffffff; height: 26px; font-size: 16px; border-bottom: 1px solid #dfe6e9; }
-        .harmonica-cell.bottom { background: #dfe6e9; height: 26px; font-size: 16px; }
-
         /* --- Top Scale Reference Vector UI --- */
         .scale-header-panel {
             background: #1e1e32 !important;
@@ -437,8 +414,8 @@
         }
         /* --- Clef Lead Card (Single Clef on the Left) --- */
         .clef-lead-card {
-            width: 36px;
-            min-width: 36px;
+            width: 38px;
+            min-width: 38px;
             flex-shrink: 0;
             background: #ffffff;
             border-radius: 12px;
@@ -468,11 +445,11 @@
         .scale-note-card {
             flex: 1;
             flex-shrink: 0;
-            min-width: 80px;
+            min-width: 82px;
             max-width: 140px;
             background: #ffffff;
             border-radius: 12px;
-            padding: 4px 5px 6px 5px;
+            padding: 4px 4px 6px 4px;
             box-shadow: 0 3px 10px rgba(0,0,0,0.22);
             display: flex;
             flex-direction: column;
@@ -480,17 +457,23 @@
             text-align: center;
             position: relative;
             transition: transform 0.15s ease, box-shadow 0.15s ease;
-            border: 2px solid #e2e8f0;
             box-sizing: border-box;
+        }
+        .scale-note-card.card-blow {
+            border: 2px solid #fecdd3;
+            background: #fffcfc;
+        }
+        .scale-note-card.card-draw {
+            border: 2px solid #bae6fd;
+            background: #f8fafc;
         }
         .scale-note-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(79, 172, 254, 0.35);
-            border-color: #93c5fd;
         }
         .scale-note-card.highlight {
-            border-color: #f59e0b;
-            background: #fffdf5;
+            border-color: #f59e0b !important;
+            background: #fffdf5 !important;
             box-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
         }
         /* --- Tuner Reactive Highlight Styles (Zero layout reflow) --- */
@@ -540,6 +523,42 @@
             letter-spacing: -0.2px;
             z-index: 5;
         }
+        /* --- Card Hole Header Badge (Top on Card) --- */
+        .card-hole-badge {
+            width: 100%;
+            padding: 3px 2px;
+            border-radius: 8px;
+            font-family: 'Jua', 'Nunito', sans-serif;
+            font-size: 12.5px;
+            font-weight: 900;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            letter-spacing: -0.2px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            margin-bottom: 2px;
+        }
+        .card-hole-badge.blow {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+        }
+        .card-hole-badge.draw {
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+        }
+        .badge-hole-num {
+            font-size: 14px;
+            font-weight: 900;
+            font-family: 'Nunito', sans-serif;
+        }
+        .badge-breath-txt {
+            font-size: 11.5px;
+        }
+        .badge-breath-icon {
+            font-size: 10px;
+        }
+
         .note-svg-box {
             width: 100%;
             height: 84px;
@@ -547,11 +566,22 @@
         }
         .note-name-kr {
             font-family: 'Jua', sans-serif;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 900;
             color: #0f172a;
             margin-top: 1px;
             line-height: 1.2;
+        }
+        .note-solfege-num {
+            font-family: 'Nunito', sans-serif;
+            font-weight: 900;
+            color: #334155;
+            line-height: 1;
+            margin-bottom: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
         /* --- Mode All (22 Holes No-Scroll Compact Styles) --- */
@@ -560,8 +590,8 @@
             padding: 6px 2px 8px 2px;
         }
         .mode-all .clef-lead-card {
-            width: 32px;
-            min-width: 30px;
+            width: 30px;
+            min-width: 28px;
             padding: 3px 1px 5px 1px;
             border-radius: 8px;
         }
@@ -578,36 +608,43 @@
             min-width: 0;
             max-width: none;
             flex: 1 1 0px;
-            padding: 3px 1px 5px 1px;
+            padding: 2px 1px 4px 1px;
             border-radius: 8px;
             border-width: 1.5px;
         }
+        .mode-all .card-hole-badge {
+            padding: 2px 1px;
+            border-radius: 6px;
+            font-size: 10px;
+            margin-bottom: 1px;
+            gap: 1px;
+        }
+        .mode-all .badge-hole-num {
+            font-size: 11px;
+        }
+        .mode-all .badge-breath-txt {
+            display: none; /* 22홀 모드에서는 공간 확보를 위해 아이콘과 번호만 표시 */
+        }
+        .mode-all .badge-breath-icon {
+            font-size: 8px;
+        }
         .mode-all .note-name-kr {
-            font-size: 12px;
+            font-size: 11.5px;
             letter-spacing: -0.7px;
             margin-top: 1px;
             line-height: 1.1;
             white-space: nowrap;
         }
         .mode-all .note-solfege-num {
-            font-size: 10px;
+            font-size: 9.5px;
             margin-bottom: 2px;
             gap: 2px;
         }
         .mode-all .pitch-label {
-            font-size: 9.5px !important;
+            font-size: 9px !important;
         }
         .mode-all .solfege-num {
-            font-size: 13.5px !important;
-        }
-        .mode-all .hole-breath-badge {
-            padding: 2px 1px;
-            border-radius: 6px;
-            font-size: 10px;
-            letter-spacing: -0.7px;
-        }
-        .mode-all .hole-breath-badge .badge-icon {
-            font-size: 8px;
+            font-size: 13px !important;
         }
         .mode-all .note-highlight-tag {
             font-size: 8px;
@@ -621,41 +658,9 @@
                 display: none !important;
             }
             .mode-all .note-name-kr {
-                font-size: 11px;
+                font-size: 10.5px;
                 letter-spacing: -0.9px;
-        }
-        .note-solfege-num {
-            font-family: 'Nunito', sans-serif;
-            font-weight: 900;
-            color: #334155;
-            line-height: 1;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-        }
-        .hole-breath-badge {
-            width: 100%;
-            padding: 4px 2px;
-            border-radius: 8px;
-            font-family: 'Jua', 'Nunito', sans-serif;
-            font-size: 13px;
-            font-weight: 900;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            letter-spacing: -0.2px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.18);
-            box-sizing: border-box;
-        }
-        .hole-breath-badge.blow {
-            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
-        }
-        .hole-breath-badge.draw {
-            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+            }
         }
         .scale-tip-banner {
             margin-top: 6px;
@@ -682,7 +687,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 5px;">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <h2 style="font-family: 'Jua', sans-serif; font-size: 19px; color: #4facfe; margin: 0; display: flex; align-items: center; gap: 6px;">
-                    <span>🎼 오선보 계이름표</span>
+                    <span>🎼 하모니카 오선보 계이름표</span>
                 </h2>
                 <!-- 음역대 선택 탭 -->
                 <div class="scale-tabs" style="display: flex; gap: 4px; background: #161626; padding: 3px; border-radius: 18px; border: 1px solid #3a3a52;">
@@ -694,12 +699,6 @@
             </div>
 
             <div style="display: flex; align-items: center; gap: 6px;">
-                <button type="button" id="btn-toggle-hole-info" onclick="toggleHoleInfo()" class="btn-toolbar" style="background: #252538; color: #cbd5e1; border: 1px solid #3a3a52; padding: 5px 11px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="홀 번호 및 불기/마시기 배지 표시 토글">
-                    <span id="hole-info-btn-text">🏷️ 홀번호 보기</span>
-                </button>
-                <button type="button" id="btn-toggle-grid-view" onclick="toggleHarmonicaGridView()" class="btn-toolbar" style="background: #252538; color: #cbd5e1; border: 1px solid #3a3a52; padding: 5px 11px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="22홀 키보드 배열도 보기/숨기기">
-                    <span>🎹</span> <span id="grid-view-btn-text">22홀 배열도</span>
-                </button>
                 <button type="button" onclick="openScaleModal()" class="btn-toolbar" style="background: #252538; color: #00f2fe; border: 1px solid #4facfe; padding: 5px 11px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;" title="오선보 대조표 크게보기">
                     🔍 크게보기
                 </button>
@@ -717,9 +716,6 @@
             
             <!-- Dynamic Tip Banner -->
             <div id="scale-tip-banner" class="scale-tip-banner"></div>
-
-            <!-- Optional 22-Hole Keyboard Layout View (hidden by default) -->
-            <div id="harmonica-layout-container" style="display: none; margin-top: 10px; overflow-x: auto; padding-top: 6px; border-top: 1px dashed #3a3a5a;"></div>
         </div>
     </div>
 
@@ -1627,166 +1623,140 @@
         }
 
         // ==========================================
-        // 4. Harmonica Scale Reference & Grid Logic
+        // 4. Harmonica Scale Reference (1~22 Hole Order)
         // ==========================================
+        // 실제 복음 하모니카 1번 홀부터 22번 홀까지의 물리적 홀 순서 (1:1 완전 매칭)
         const HARMONICA_NOTES = [
-            // 저음역 (1~7홀, pitch order: C4~B4, 실음 기준)
+            // --- 저음역 (1~7번 홀) ---
             {
-                id: 'low-do', octave: 'low', name: '저음 도', pitch: 'C4', num: '1', dot: 'sub',
-                hole: 2, breath: '불어', breathType: 'blow',
-                y: 115, ledgers: [80, 90, 100, 110], guide: '덧줄 4개 밑', isSpecial: false
-            },
-            {
-                id: 'low-re', octave: 'low', name: '저음 레', pitch: 'D4', num: '2', dot: 'sub',
-                hole: 1, breath: '마셔', breathType: 'draw',
+                id: 'hole-1', hole: 1, octave: 'low', name: '저음 레', pitch: 'D4', num: '2', dot: 'sub',
+                breath: '마셔', breathType: 'draw',
                 y: 110, ledgers: [80, 90, 100, 110], guide: '덧줄 4번째 줄', isSpecial: false
             },
             {
-                id: 'low-mi', octave: 'low', name: '저음 미', pitch: 'E4', num: '3', dot: 'sub',
-                hole: 4, breath: '불어', breathType: 'blow',
-                y: 105, ledgers: [80, 90, 100], guide: '덧줄 3개 밑', isSpecial: false
+                id: 'hole-2', hole: 2, octave: 'low', name: '저음 도', pitch: 'C4', num: '1', dot: 'sub',
+                breath: '불어', breathType: 'blow',
+                y: 115, ledgers: [80, 90, 100, 110], guide: '덧줄 4개 밑', isSpecial: false
             },
             {
-                id: 'low-fa', octave: 'low', name: '저음 파', pitch: 'F4', num: '4', dot: 'sub',
-                hole: 3, breath: '마셔', breathType: 'draw',
+                id: 'hole-3', hole: 3, octave: 'low', name: '저음 파', pitch: 'F4', num: '4', dot: 'sub',
+                breath: '마셔', breathType: 'draw',
                 y: 100, ledgers: [80, 90, 100], guide: '덧줄 3번째 줄', isSpecial: false
             },
             {
-                id: 'low-sol', octave: 'low', name: '저음 솔', pitch: 'G4', num: '5', dot: 'sub',
-                hole: 6, breath: '불어', breathType: 'blow',
-                y: 95, ledgers: [80, 90], guide: '덧줄 2개 밑 ★', isSpecial: true, specialText: '★ 섬집아기 첫음'
+                id: 'hole-4', hole: 4, octave: 'low', name: '저음 미', pitch: 'E4', num: '3', dot: 'sub',
+                breath: '불어', breathType: 'blow',
+                y: 105, ledgers: [80, 90, 100], guide: '덧줄 3개 밑', isSpecial: false
             },
             {
-                id: 'low-la', octave: 'low', name: '저음 라', pitch: 'A4', num: '6', dot: 'sub',
-                hole: 5, breath: '마셔', breathType: 'draw',
+                id: 'hole-5', hole: 5, octave: 'low', name: '저음 라', pitch: 'A4', num: '6', dot: 'sub',
+                breath: '마셔', breathType: 'draw',
                 y: 90, ledgers: [80, 90], guide: '덧줄 2번째 줄', isSpecial: false
             },
             {
-                id: 'low-si', octave: 'low', name: '저음 시', pitch: 'B4', num: '7', dot: 'sub',
-                hole: 7, breath: '마셔', breathType: 'draw',
+                id: 'hole-6', hole: 6, octave: 'low', name: '저음 솔', pitch: 'G4', num: '5', dot: 'sub',
+                breath: '불어', breathType: 'blow',
+                y: 95, ledgers: [80, 90], guide: '덧줄 2개 밑 ★', isSpecial: true, specialText: '★ 섬집아기 첫음'
+            },
+            {
+                id: 'hole-7', hole: 7, octave: 'low', name: '저음 시', pitch: 'B4', num: '7', dot: 'sub',
+                breath: '마셔', breathType: 'draw',
                 y: 85, ledgers: [80], guide: '덧줄 1개 밑', isSpecial: false
             },
 
-            // 중음역 (8~15홀, pitch order: C5~B5, 실음 기준)
+            // --- 중음역 (8~15번 홀) ---
             {
-                id: 'mid-do', octave: 'mid', name: '가온 도', pitch: 'C5', num: '1', dot: 'none',
-                hole: 8, breath: '불어', breathType: 'blow',
-                y: 80, ledgers: [80], guide: '덧줄 1번째 줄', isSpecial: true, specialText: '★ 가온 도 (기준)'
+                id: 'hole-8', hole: 8, octave: 'mid', name: '가온 도', pitch: 'C5', num: '1', dot: 'none',
+                breath: '불어', breathType: 'blow',
+                y: 80, ledgers: [80], guide: '덧줄 1번째 줄 ★', isSpecial: true, specialText: '★ 가온 도 (기준)'
             },
             {
-                id: 'mid-re', octave: 'mid', name: '중음 레', pitch: 'D5', num: '2', dot: 'none',
-                hole: 9, breath: '마셔', breathType: 'draw',
+                id: 'hole-9', hole: 9, octave: 'mid', name: '중음 레', pitch: 'D5', num: '2', dot: 'none',
+                breath: '마셔', breathType: 'draw',
                 y: 75, ledgers: [], guide: '1줄 아래 칸', isSpecial: false
             },
             {
-                id: 'mid-mi', octave: 'mid', name: '중음 미', pitch: 'E5', num: '3', dot: 'none',
-                hole: 10, breath: '불어', breathType: 'blow',
+                id: 'hole-10', hole: 10, octave: 'mid', name: '중음 미', pitch: 'E5', num: '3', dot: 'none',
+                breath: '불어', breathType: 'blow',
                 y: 70, ledgers: [], guide: '오선 1번째 줄', isSpecial: false
             },
             {
-                id: 'mid-fa', octave: 'mid', name: '중음 파', pitch: 'F5', num: '4', dot: 'none',
-                hole: 11, breath: '마셔', breathType: 'draw',
+                id: 'hole-11', hole: 11, octave: 'mid', name: '중음 파', pitch: 'F5', num: '4', dot: 'none',
+                breath: '마셔', breathType: 'draw',
                 y: 65, ledgers: [], guide: '오선 1번째 칸', isSpecial: false
             },
             {
-                id: 'mid-sol', octave: 'mid', name: '중음 솔', pitch: 'G5', num: '5', dot: 'none',
-                hole: 12, breath: '불어', breathType: 'blow',
+                id: 'hole-12', hole: 12, octave: 'mid', name: '중음 솔', pitch: 'G5', num: '5', dot: 'none',
+                breath: '불어', breathType: 'blow',
                 y: 60, ledgers: [], guide: '오선 2번째 줄', isSpecial: false
             },
             {
-                id: 'mid-la', octave: 'mid', name: '중음 라', pitch: 'A5', num: '6', dot: 'none',
-                hole: 13, breath: '마셔', breathType: 'draw',
+                id: 'hole-13', hole: 13, octave: 'mid', name: '중음 라', pitch: 'A5', num: '6', dot: 'none',
+                breath: '마셔', breathType: 'draw',
                 y: 55, ledgers: [], guide: '오선 2번째 칸', isSpecial: false
             },
             {
-                id: 'mid-si', octave: 'mid', name: '중음 시', pitch: 'B5', num: '7', dot: 'none',
-                hole: 15, breath: '마셔', breathType: 'draw',
+                id: 'hole-14', hole: 14, octave: 'mid', name: '높은 도', pitch: 'C6', num: '1', dot: 'super',
+                breath: '불어', breathType: 'blow',
+                y: 45, ledgers: [], guide: '오선 3번째 칸 ★', isSpecial: true, specialText: '★ 높은 도'
+            },
+            {
+                id: 'hole-15', hole: 15, octave: 'mid', name: '중음 시', pitch: 'B5', num: '7', dot: 'none',
+                breath: '마셔', breathType: 'draw',
                 y: 50, ledgers: [], guide: '오선 3번째 줄', isSpecial: false
             },
 
-            // 고음역 (14, 16~22홀, pitch order: C6~C7, 실음 기준)
+            // --- 고음역 (16~22번 홀) ---
             {
-                id: 'high-do', octave: 'high', name: '높은 도', pitch: 'C6', num: '1', dot: 'super',
-                hole: 14, breath: '불어', breathType: 'blow',
-                y: 45, ledgers: [], guide: '오선 3번째 칸', isSpecial: true, specialText: '★ 높은 도 시작'
-            },
-            {
-                id: 'high-re', octave: 'high', name: '높은 레', pitch: 'D6', num: '2', dot: 'super',
-                hole: 17, breath: '마셔', breathType: 'draw',
-                y: 40, ledgers: [], guide: '오선 4번째 줄', isSpecial: false
-            },
-            {
-                id: 'high-mi', octave: 'high', name: '높은 미', pitch: 'E6', num: '3', dot: 'super',
-                hole: 16, breath: '불어', breathType: 'blow',
+                id: 'hole-16', hole: 16, octave: 'high', name: '높은 미', pitch: 'E6', num: '3', dot: 'super',
+                breath: '불어', breathType: 'blow',
                 y: 35, ledgers: [], guide: '오선 4번째 칸', isSpecial: false
             },
             {
-                id: 'high-fa', octave: 'high', name: '높은 파', pitch: 'F6', num: '4', dot: 'super',
-                hole: 19, breath: '마셔', breathType: 'draw',
-                y: 30, ledgers: [], guide: '오선 5번째 줄', isSpecial: false
+                id: 'hole-17', hole: 17, octave: 'high', name: '높은 레', pitch: 'D6', num: '2', dot: 'super',
+                breath: '마셔', breathType: 'draw',
+                y: 40, ledgers: [], guide: '오선 4번째 줄', isSpecial: false
             },
             {
-                id: 'high-sol', octave: 'high', name: '높은 솔', pitch: 'G6', num: '5', dot: 'super',
-                hole: 18, breath: '불어', breathType: 'blow',
+                id: 'hole-18', hole: 18, octave: 'high', name: '높은 솔', pitch: 'G6', num: '5', dot: 'super',
+                breath: '불어', breathType: 'blow',
                 y: 25, ledgers: [], guide: '5줄 위 칸', isSpecial: false
             },
             {
-                id: 'high-la', octave: 'high', name: '높은 라', pitch: 'A6', num: '6', dot: 'super',
-                hole: 21, breath: '마셔', breathType: 'draw',
+                id: 'hole-19', hole: 19, octave: 'high', name: '높은 파', pitch: 'F6', num: '4', dot: 'super',
+                breath: '마셔', breathType: 'draw',
+                y: 30, ledgers: [], guide: '오선 5번째 줄', isSpecial: false
+            },
+            {
+                id: 'hole-20', hole: 20, octave: 'high', name: '최고 도', pitch: 'C7', num: '1', dot: 'super-double',
+                breath: '불어', breathType: 'blow',
+                y: 10, ledgers: [20, 10], guide: '위 덧줄 2줄 ★', isSpecial: true, specialText: '★ 최고 도'
+            },
+            {
+                id: 'hole-21', hole: 21, octave: 'high', name: '높은 라', pitch: 'A6', num: '6', dot: 'super',
+                breath: '마셔', breathType: 'draw',
                 y: 20, ledgers: [20], guide: '위 덧줄 1줄', isSpecial: false
             },
             {
-                id: 'high-si', octave: 'high', name: '높은 시', pitch: 'B6', num: '7', dot: 'super',
-                hole: 22, breath: '마셔', breathType: 'draw',
+                id: 'hole-22', hole: 22, octave: 'high', name: '높은 시', pitch: 'B6', num: '7', dot: 'super',
+                breath: '마셔', breathType: 'draw',
                 y: 15, ledgers: [20], guide: '위 덧줄 1개 위', isSpecial: false
-            },
-            {
-                id: 'top-do', octave: 'high', name: '최고 도', pitch: 'C7', num: '1', dot: 'super-double',
-                hole: 20, breath: '불어', breathType: 'blow',
-                y: 10, ledgers: [20, 10], guide: '위 덧줄 2줄', isSpecial: false
             }
         ];
 
         let currentOctaveTab = localStorage.getItem('harmonica_octave_tab') || 'low';
         let isScaleCollapsed = localStorage.getItem('harmonica_scale_collapsed') === 'true';
-        let isHarmonicaGridVisible = false;
-        let showHoleInfo = localStorage.getItem('harmonica_show_hole_info') === 'true'; // 기본값: 숨김 (false)
-
-        function toggleHoleInfo() {
-            showHoleInfo = !showHoleInfo;
-            localStorage.setItem('harmonica_show_hole_info', showHoleInfo);
-            updateHoleInfoBtnUI();
-            renderOctaveCards(currentOctaveTab);
-        }
-
-        function updateHoleInfoBtnUI() {
-            const btnText = document.getElementById('hole-info-btn-text');
-            const btn = document.getElementById('btn-toggle-hole-info');
-            if (showHoleInfo) {
-                if (btnText) btnText.innerText = '🏷️ 홀번호 숨김';
-                if (btn) {
-                    btn.style.background = '#3a3a5a';
-                    btn.style.color = '#00f2fe';
-                }
-            } else {
-                if (btnText) btnText.innerText = '🏷️ 홀번호 보기';
-                if (btn) {
-                    btn.style.background = '#252538';
-                    btn.style.color = '#cbd5e1';
-                }
-            }
-        }
 
         function createClefLeadHTML() {
             return `
             <div class="clef-lead-card" title="높은음자리표">
-                <svg viewBox="0 0 36 125" class="clef-svg-box" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="0" y1="30" x2="36" y2="30" stroke="#64748b" stroke-width="1.2" />
-                    <line x1="0" y1="40" x2="36" y2="40" stroke="#64748b" stroke-width="1.2" />
-                    <line x1="0" y1="50" x2="36" y2="50" stroke="#64748b" stroke-width="1.2" />
-                    <line x1="0" y1="60" x2="36" y2="60" stroke="#64748b" stroke-width="1.2" />
-                    <line x1="0" y1="70" x2="36" y2="70" stroke="#64748b" stroke-width="1.2" />
-                    <text x="18" y="65" font-family="'Segoe UI Symbol', 'Noto Music', 'Apple Symbols', sans-serif" font-size="44" fill="#64748b" text-anchor="middle" style="user-select:none;">𝄞</text>
+                <svg viewBox="0 0 38 125" class="clef-svg-box" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="0" y1="30" x2="38" y2="30" stroke="#64748b" stroke-width="1.2" />
+                    <line x1="0" y1="40" x2="38" y2="40" stroke="#64748b" stroke-width="1.2" />
+                    <line x1="0" y1="50" x2="38" y2="50" stroke="#64748b" stroke-width="1.2" />
+                    <line x1="0" y1="60" x2="38" y2="60" stroke="#64748b" stroke-width="1.2" />
+                    <line x1="0" y1="70" x2="38" y2="70" stroke="#64748b" stroke-width="1.2" />
+                    <text x="19" y="65" font-family="'Segoe UI Symbol', 'Noto Music', 'Apple Symbols', sans-serif" font-size="44" fill="#64748b" text-anchor="middle" style="user-select:none;">𝄞</text>
                 </svg>
                 <div class="clef-label">높은음<br>자리표</div>
             </div>`;
@@ -1830,37 +1800,39 @@
             // Solfege dot notation
             let solfegeHTML = '';
             if (note.dot === 'sub') {
-                solfegeHTML = `<span class="solfege-num" style="font-size:19px; font-weight:900;">${note.num}</span><span style="font-size:10px; line-height:0.3; color:#ef4444; margin-top:2px;">●</span>`;
+                solfegeHTML = `<span class="solfege-num" style="font-size:18px; font-weight:900;">${note.num}</span><span style="font-size:10px; line-height:0.3; color:#ef4444; margin-top:2px;">●</span>`;
             } else if (note.dot === 'super') {
-                solfegeHTML = `<span style="font-size:10px; line-height:0.3; color:#0284c7; margin-bottom:2px;">●</span><span class="solfege-num" style="font-size:19px; font-weight:900;">${note.num}</span>`;
+                solfegeHTML = `<span style="font-size:10px; line-height:0.3; color:#0284c7; margin-bottom:2px;">●</span><span class="solfege-num" style="font-size:18px; font-weight:900;">${note.num}</span>`;
             } else if (note.dot === 'super-double') {
-                solfegeHTML = `<span style="font-size:8px; line-height:0.3; color:#0284c7; margin-bottom:2px; letter-spacing:1px;">●●</span><span class="solfege-num" style="font-size:19px; font-weight:900;">${note.num}</span>`;
+                solfegeHTML = `<span style="font-size:8px; line-height:0.3; color:#0284c7; margin-bottom:2px; letter-spacing:1px;">●●</span><span class="solfege-num" style="font-size:18px; font-weight:900;">${note.num}</span>`;
             } else {
-                solfegeHTML = `<span class="solfege-num" style="font-size:19px; font-weight:900;">${note.num}</span>`;
+                solfegeHTML = `<span class="solfege-num" style="font-size:18px; font-weight:900;">${note.num}</span>`;
             }
 
             const breathIcon = note.breathType === 'blow' ? '🔴' : '🔵';
             const breathClass = note.breathType === 'blow' ? 'blow' : 'draw';
+            const cardThemeClass = note.breathType === 'blow' ? 'card-blow' : 'card-draw';
             const highlightClass = note.isSpecial ? 'highlight' : '';
             const highlightTag = note.isSpecial ? `<div class="note-highlight-tag">${note.specialText}</div>` : '';
 
-            // 홀 번호 배지는 사용자가 원할 때만 표시
-            const holeBadgeHTML = showHoleInfo ? `
-                <div class="hole-breath-badge ${breathClass}" style="margin-top: 4px;">
-                    <span class="badge-text">${note.hole}번 ${note.breath}</span>
-                    <span class="badge-icon" style="font-size: 11px;">${breathIcon}</span>
-                </div>` : '';
+            // 홀 번호 + 호흡 일체형 상단 헤더 배지 (카드 상단에 항상 선명하게 표시)
+            const holeHeaderBadgeHTML = `
+                <div class="card-hole-badge ${breathClass}" title="${note.hole}번 홀 ${note.breath}">
+                    <span class="badge-hole-num">${note.hole}</span>
+                    <span class="badge-breath-txt">${note.breath}</span>
+                    <span class="badge-breath-icon">${breathIcon}</span>
+                </div>`;
 
             return `
-            <div class="scale-note-card ${highlightClass}" data-pitch="${note.pitch}" id="note-card-${note.pitch}">
+            <div class="scale-note-card ${cardThemeClass} ${highlightClass}" data-pitch="${note.pitch}" data-hole="${note.hole}" id="note-card-${note.pitch}">
                 ${highlightTag}
+                ${holeHeaderBadgeHTML}
                 ${createNoteSVG(note)}
                 <div class="note-name-kr">${note.name}</div>
                 <div class="note-solfege-num">
-                    <span class="pitch-label" style="font-size: 11px; color: #64748b;">(${note.pitch})</span>
+                    <span class="pitch-label" style="font-size: 10.5px; color: #64748b;">(${note.pitch})</span>
                     <div style="display:inline-flex; flex-direction:column; align-items:center; line-height:1;">${solfegeHTML}</div>
                 </div>
-                ${holeBadgeHTML}
             </div>`;
         }
 
@@ -1900,8 +1872,7 @@
                     }
                 });
                 
-                // 전체보기 탭일 경우에만 해당 카드가 보이도록 스크롤하되,
-                // window/body 등 상위 부모가 흔들리지 않도록 오직 scale-cards-container 내부만 스크롤하고 음이 바뀔 때만 1회 부드럽게 이동
+                // 전체보기 탭일 경우에만 해당 카드가 보이도록 스크롤
                 if (isNewPitch && currentOctaveTab === 'all' && cards[0]) {
                     const container = document.getElementById('scale-cards-container');
                     if (container) {
@@ -1944,29 +1915,35 @@
             if (octave === 'all') {
                 filteredNotes = HARMONICA_NOTES;
                 container.classList.add('mode-all');
-            } else {
-                filteredNotes = HARMONICA_NOTES.filter(n => n.octave === octave);
+            } else if (octave === 'low') {
+                filteredNotes = HARMONICA_NOTES.filter(n => n.hole >= 1 && n.hole <= 7);
+                container.classList.remove('mode-all');
+            } else if (octave === 'mid') {
+                filteredNotes = HARMONICA_NOTES.filter(n => n.hole >= 8 && n.hole <= 15);
+                container.classList.remove('mode-all');
+            } else if (octave === 'high') {
+                filteredNotes = HARMONICA_NOTES.filter(n => n.hole >= 16 && n.hole <= 22);
                 container.classList.remove('mode-all');
             }
             
             const clefHTML = createClefLeadHTML();
             container.innerHTML = clefHTML + filteredNotes.map(n => createNoteCardHTML(n)).join('');
             
-            // Tip banner update
+            // Dynamic tip banner update
             const tipBanner = document.getElementById('scale-tip-banner');
             if (tipBanner) {
                 if (octave === 'low') {
-                    tipBanner.innerHTML = `<span>★ <b>저음역 팁:</b> '섬집 아기' 첫음(엄)은 오선 아래 <b>덧줄 2개 밑(저음 솔 5.) → 6번 홀 불기 🔴</b> 입니다. [엄(6 불) → 마(8 불) → 가(9 마) → 섬(10 불)]</span>
-                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">(1~7번 홀)</span>`;
+                    tipBanner.innerHTML = `<span>★ <b>저음역 팁 (1~7번 홀):</b> 1번 마시기(레)부터 시작하여 들숨/날숨이 교대로 배치됩니다. '섬집 아기' 첫음(엄)은 <b>6번 홀 불기 🔴 (저음 솔 5.)</b> 입니다.</span>
+                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">[1~7번 홀]</span>`;
                 } else if (octave === 'mid') {
-                    tipBanner.innerHTML = `<span>★ <b>중음역 팁:</b> <b>가온 도(8번 홀 불기 🔴)</b>가 악보의 중심 기준음입니다. 대부분의 동요와 대중가요 멜로디가 이 구간에 집중되어 있습니다.</span>
-                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">(8~15번 홀)</span>`;
+                    tipBanner.innerHTML = `<span>★ <b>중음역 팁 (8~15번 홀):</b> <b>가온 도(8번 홀 불기 🔴)</b>가 중심 기준음입니다. 14번(높은 도 불기 🔴)과 15번(중음 시 마시기 🔵)의 호흡 전환에 주목하세요.</span>
+                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">[8~15번 홀]</span>`;
                 } else if (octave === 'high') {
-                    tipBanner.innerHTML = `<span>★ <b>고음역 팁:</b> 14번 홀부터 고음 도(불기 🔴)가 시작되며, <b>14·16·18·20번 홀</b>이 불기(도·미·솔·최고 도)입니다.</span>
-                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">(16~22번 홀)</span>`;
+                    tipBanner.innerHTML = `<span>★ <b>고음역 팁 (16~22번 홀):</b> 16번(높은 미 불기 🔴)부터 최고 도(20번 불기 🔴)를 거쳐 22번(높은 시 마시기 🔵)까지 이어지는 고음역 구간입니다.</span>
+                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">[16~22번 홀]</span>`;
                 } else {
-                    tipBanner.innerHTML = `<span>★ <b>전체 팁:</b> 하모니카 전 음역(1~22홀)이 한눈에 펼쳐져 있습니다. 튜너를 켜고 불면 실시간으로 내 소리의 위치가 표시됩니다.</span>
-                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">(1~22번 홀 전체 한눈에 보기)</span>`;
+                    tipBanner.innerHTML = `<span>★ <b>전체 팁 (1~22번 홀):</b> 실제 하모니카의 홀 번호(1~22)와 오선보, 불기(🔴)/마시기(🔵)가 1:1로 완전 일치되어 있습니다. 튜너를 켜면 실시간으로 내 소리 위치가 표시됩니다.</span>
+                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">[1~22번 홀 전체 한눈에 보기]</span>`;
                 }
             }
 
@@ -2015,104 +1992,6 @@
             }
         }
 
-        function toggleHarmonicaGridView() {
-            isHarmonicaGridVisible = !isHarmonicaGridVisible;
-            const container = document.getElementById('harmonica-layout-container');
-            const btnText = document.getElementById('grid-view-btn-text');
-            const btn = document.getElementById('btn-toggle-grid-view');
-
-            if (isHarmonicaGridVisible) {
-                if (container) container.style.display = 'block';
-                if (btnText) btnText.innerText = '배열도 닫기';
-                if (btn) {
-                    btn.style.background = '#3a3a5a';
-                    btn.style.color = '#00f2fe';
-                }
-                renderHarmonicaGrid();
-            } else {
-                if (container) container.style.display = 'none';
-                if (btnText) btnText.innerText = '22홀 배열도';
-                if (btn) {
-                    btn.style.background = '#252538';
-                    btn.style.color = '#cbd5e1';
-                }
-            }
-        }
-
-        function renderHarmonicaGrid() {
-            const middleRow = ['','도','','미','','솔','','도','','미','','솔','','도','','미','','솔','','도','',''];
-            const bottomRow = ['레','','파','','라','','시','','레','','파','','라','','시','','레','','파','','라','시'];
-            
-            // 숫자 악보 표기법 (1~22홀)
-            const topRowNumbers = [
-                { num: 2, dot: 'bottom' }, // 1: 레 (저음)
-                { num: 1, dot: 'bottom' }, // 2: 도 (저음)
-                { num: 4, dot: 'bottom' }, // 3: 파 (저음)
-                { num: 3, dot: 'bottom' }, // 4: 미 (저음)
-                { num: 6, dot: 'bottom' }, // 5: 라 (저음)
-                { num: 5, dot: 'bottom' }, // 6: 솔 (저음)
-                { num: 7, dot: 'bottom' }, // 7: 시 (저음)
-                { num: 1, dot: 'none' },   // 8: 도 (중음)
-                { num: 2, dot: 'none' },   // 9: 레 (중음)
-                { num: 3, dot: 'none' },   // 10: 미 (중음)
-                { num: 4, dot: 'none' },   // 11: 파 (중음)
-                { num: 5, dot: 'none' },   // 12: 솔 (중음)
-                { num: 6, dot: 'none' },   // 13: 라 (중음)
-                { num: 1, dot: 'top' },    // 14: 도 (고음)
-                { num: 7, dot: 'none' },   // 15: 시 (중음)
-                { num: 3, dot: 'top' },    // 16: 미 (고음)
-                { num: 2, dot: 'top' },    // 17: 레 (고음)
-                { num: 5, dot: 'top' },    // 18: 솔 (고음)
-                { num: 4, dot: 'top' },    // 19: 파 (고음)
-                { num: 1, dot: 'top-double' }, // 20: 도 (최고음)
-                { num: 6, dot: 'top' },    // 21: 라 (고음)
-                { num: 7, dot: 'top' }     // 22: 시 (고음)
-            ];
-
-            function getColor(num) {
-                if(num <= 7) return '#0984e3'; // 저음 (파랑)
-                if(num <= 13) return '#d63031'; // 중음 (빨강)
-                if(num <= 19) return '#00b894'; // 고음 (초록)
-                return '#e17055'; // 최고음 (주황)
-            }
-
-            let html = '<div class="harmonica-grid">';
-            
-            // 1. Top Row (Numbers + Hole numbers)
-            for(let i=1; i<=22; i++) {
-                const isHighlight = [2,8,14,20].includes(i);
-                const bg = isHighlight ? '#fbc2eb' : '#faedcd';
-                const note = topRowNumbers[i-1];
-                let numberHTML = '';
-                
-                if (note.dot === 'bottom') {
-                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:1px;"><span style="font-size:10px; color:#475569; font-weight:800; line-height:1;">${i}</span><span style="font-size:15px; font-weight:900; line-height:1;">${note.num}</span><span style="font-size:9px; line-height:0.3; color:rgba(0,0,0,0.6);">●</span></div>`;
-                } else if (note.dot === 'top') {
-                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:1px;"><span style="font-size:10px; color:#475569; font-weight:800; line-height:1;">${i}</span><span style="font-size:9px; line-height:0.3; color:rgba(0,0,0,0.6);">●</span><span style="font-size:15px; font-weight:900; line-height:1;">${note.num}</span></div>`;
-                } else if (note.dot === 'top-double') {
-                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:1px;"><span style="font-size:10px; color:#475569; font-weight:800; line-height:1;">${i}</span><span style="font-size:7px; line-height:0.3; color:rgba(0,0,0,0.6); letter-spacing:1px;">●●</span><span style="font-size:15px; font-weight:900; line-height:1;">${note.num}</span></div>`;
-                } else {
-                    numberHTML = `<div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:1px;"><span style="font-size:10px; color:#475569; font-weight:800; line-height:1;">${i}</span><span style="font-size:15px; font-weight:900; line-height:1;">${note.num}</span></div>`;
-                }
-
-                html += `<div class="harmonica-cell top" style="background:${bg}; color:${getColor(i)};">${numberHTML}</div>`;
-            }
-            
-            // 2. Middle Row (Blow/내쉬기)
-            for(let i=1; i<=22; i++) {
-                html += `<div class="harmonica-cell middle" style="color:${getColor(i)}; font-weight:900;">${middleRow[i-1]}</div>`;
-            }
-            
-            // 3. Bottom Row (Draw/마시기)
-            for(let i=1; i<=22; i++) {
-                html += `<div class="harmonica-cell bottom" style="color:${getColor(i)}; font-weight:900;">${bottomRow[i-1]}</div>`;
-            }
-            
-            html += '</div>';
-            const gridContainer = document.getElementById('harmonica-layout-container');
-            if (gridContainer) gridContainer.innerHTML = html;
-        }
-
         // ==========================================
         // 5. Scale Reference Modal Logic
         // ==========================================
@@ -2125,8 +2004,12 @@
             let notes = [];
             if (octave === 'all') {
                 notes = HARMONICA_NOTES;
-            } else {
-                notes = HARMONICA_NOTES.filter(n => n.octave === octave);
+            } else if (octave === 'low') {
+                notes = HARMONICA_NOTES.filter(n => n.hole >= 1 && n.hole <= 7);
+            } else if (octave === 'mid') {
+                notes = HARMONICA_NOTES.filter(n => n.hole >= 8 && n.hole <= 15);
+            } else if (octave === 'high') {
+                notes = HARMONICA_NOTES.filter(n => n.hole >= 16 && n.hole <= 22);
             }
 
             const clefHTML = createClefLeadHTML();
@@ -2197,12 +2080,10 @@
         });
 
         // 초기화
-        updateHoleInfoBtnUI();
         switchOctaveTab(currentOctaveTab);
         if (isScaleCollapsed) {
             toggleScaleCollapse(true);
         }
-        renderHarmonicaGrid();
         renderBeatIndicators();
         if (isSidebarCollapsed) {
             toggleSidebar(true);
