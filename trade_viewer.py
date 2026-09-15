@@ -1677,7 +1677,7 @@ def save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, f
         table_cell_style = ParagraphStyle("TableCell", parent=styles["Normal"], fontName="KoreanFont", fontSize=9, leading=13, textColor=colors.HexColor("#2D3748"))
         table_cell_style_center = ParagraphStyle("TableCellCenter", parent=table_cell_style, alignment=1)
         table_cell_style_right = ParagraphStyle("TableCellRight", parent=table_cell_style, alignment=2)
-        notice_title_style = ParagraphStyle("NoticeTitle", parent=styles["Normal"], fontName="KoreanFont", fontSize=9, leading=12, textColor=colors.HexColor("#718096"), bold=True, spaceBefore=15, spaceAfter=4)
+        notice_title_style = ParagraphStyle("NoticeTitle", parent=styles["Normal"], fontName="KoreanFont", fontSize=8.5, leading=11.5, textColor=colors.HexColor("#718096"), bold=True, spaceBefore=6, spaceAfter=2, keepWithNext=True)
         notice_body_style = ParagraphStyle("NoticeBody", parent=styles["Normal"], fontName="KoreanFont", fontSize=8, leading=12, textColor=colors.HexColor("#718096"))
         story = []
         accent_bar = Table([[""]], colWidths=[500], rowHeights=[4])
@@ -2040,12 +2040,15 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                     all_txs = f_trades + f_jeonses + f_wolses
                     size_label = g["label"]
                     title_prefix = "주력 평형" if idx == 0 else "관심 평형"
-                    scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name, dw=500, dh=145)
+                    scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name, dw=500, dh=120)
                     if scatter_drawing:
-                        story.append(Paragraph(f"■ [{title_prefix} 실거래가 산포도 - {size_label} (최근 24개월)]", h2_style))
-                        story.append(Spacer(1, 4))
-                        story.append(scatter_drawing)
-                        story.append(Spacer(1, 8))
+                        from reportlab.platypus import KeepTogether
+                        story.append(KeepTogether([
+                            Paragraph(f"■ [{title_prefix} 실거래가 산포도 - {size_label} (최근 24개월)]", h2_style),
+                            Spacer(1, 2),
+                            scatter_drawing,
+                            Spacer(1, 4)
+                        ]))
             else:
                 filt_trades = filter_by_size_category(trades, target_area, prop_type_name, apt_groups)
                 filt_jeonses = filter_by_size_category(jeonses, target_area, prop_type_name, apt_groups)
@@ -2053,12 +2056,15 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                 all_txs = filt_trades + filt_jeonses + filt_wolses
                 
                 size_label = get_size_category_label(target_area, prop_type_name, apt_groups)
-                scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name, dw=500, dh=145)
+                scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name, dw=500, dh=120)
                 if scatter_drawing:
-                    story.append(Paragraph(f"■ [실거래가 산포도 - {size_label} (최근 24개월)]", h2_style))
-                    story.append(Spacer(1, 4))
-                    story.append(scatter_drawing)
-                    story.append(Spacer(1, 8))
+                    from reportlab.platypus import KeepTogether
+                    story.append(KeepTogether([
+                        Paragraph(f"■ [실거래가 산포도 - {size_label} (최근 24개월)]", h2_style),
+                        Spacer(1, 2),
+                        scatter_drawing,
+                        Spacer(1, 4)
+                    ]))
         except Exception as e:
             print(f"산포도 생성 중 오류: {e}")
         if prop_type_name in ["연립/다세대/빌라", "다세대", "빌라"]:
@@ -2336,10 +2342,10 @@ colors.HexColor("#E2E8F0")), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDIN
                 except Exception:
                     aspect = 1.5538
 
-                target_w = 420
+                target_w = 400
                 target_h = int(target_w / aspect)
-                if target_h > 175:
-                    target_h = 175
+                if target_h > 150:
+                    target_h = 150
                     target_w = int(target_h * aspect)
 
                 from reportlab.platypus import Image as RLImage
