@@ -677,48 +677,315 @@
             gap: 8px;
             flex-wrap: wrap;
         }
+
+        /* ==========================================
+           Master Dynamic Staff & Harmonica Display
+           ========================================== */
+        .master-staff-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            padding: 8px 10px;
+            background: linear-gradient(135deg, #181829 0%, #1f1f35 100%);
+            border-radius: 14px;
+            border: 1px solid #3a3a56;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        .master-staff-svg-wrap {
+            flex: 1 1 135px;
+            min-width: 130px;
+            max-width: 100%;
+            height: 92px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #121220;
+            border-radius: 10px;
+            border: 1px solid #2e2e44;
+            overflow: hidden;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.4);
+        }
+        .master-staff-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .master-note-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1 1 150px;
+            min-width: 140px;
+        }
+        .master-note-header-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 2px;
+            flex-wrap: wrap;
+        }
+        .master-hole-badge {
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-family: 'Jua', 'Nunito', sans-serif;
+            font-size: 14px;
+            font-weight: 900;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+            transition: all 0.15s ease;
+        }
+        .master-hole-badge.blow {
+            background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+        }
+        .master-hole-badge.draw {
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+            box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
+        }
+        .master-hole-badge.idle {
+            background: #33334d;
+            color: #94a3b8;
+            box-shadow: none;
+        }
+        .master-cents-badge {
+            padding: 2px 9px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            background: #252538;
+            color: #94a3b8;
+            border: 1px solid #3a3a52;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .master-cents-badge.in-tune {
+            color: #10b981;
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.15);
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+        }
+        .master-cents-badge.off-tune {
+            color: #f59e0b;
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.15);
+        }
+        .master-name-row {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin: 2px 0;
+            flex-wrap: wrap;
+        }
+        .master-name-kr {
+            font-family: 'Jua', sans-serif;
+            font-size: 26px;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            line-height: 1.15;
+            transition: color 0.15s ease;
+        }
+        .master-pitch-label {
+            font-size: 15px;
+            font-weight: 800;
+            color: #00f2fe;
+            font-family: 'Nunito', sans-serif;
+        }
+        .master-solfege-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #25253a;
+            padding: 1px 8px;
+            border-radius: 8px;
+            font-size: 11.5px;
+            color: #cbd5e1;
+            border: 1px solid #3e3e5c;
+        }
+        .m-solfege-num {
+            font-weight: 900;
+            font-size: 16px;
+            color: #fff;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1;
+        }
+        .master-guide-tip {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* 1~22 Hole Slim Harmonica Ruler */
+        .harmonica-ruler-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            width: 100%;
+            margin-top: 5px;
+            padding: 3px 8px;
+            background: #141424;
+            border-radius: 8px;
+            border: 1px solid #2d2d44;
+            box-sizing: border-box;
+            overflow-x: auto;
+        }
+        .harmonica-ruler-label {
+            font-size: 10.5px;
+            font-weight: bold;
+            color: #64748b;
+            white-space: nowrap;
+            font-family: 'Jua', sans-serif;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        .harmonica-ruler-grid {
+            display: flex;
+            flex: 1;
+            gap: 3px;
+            justify-content: space-between;
+            min-width: 480px;
+        }
+        .ruler-hole-slot {
+            flex: 1;
+            min-width: 17px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 800;
+            font-family: 'Nunito', sans-serif;
+            cursor: pointer;
+            transition: all 0.12s ease;
+            border: 1px solid transparent;
+            user-select: none;
+        }
+        .ruler-hole-slot.blow {
+            background: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+        }
+        .ruler-hole-slot.draw {
+            background: rgba(2, 132, 199, 0.15);
+            color: #7dd3fc;
+        }
+        .ruler-hole-slot:hover {
+            filter: brightness(1.3);
+            transform: translateY(-1px);
+        }
+        .ruler-hole-slot.active {
+            transform: scale(1.15);
+            z-index: 5;
+            box-shadow: 0 0 10px #00f2fe;
+            border-color: #00f2fe !important;
+            font-weight: 900;
+        }
+        .ruler-hole-slot.active.blow {
+            background: #ef4444 !important;
+            color: #ffffff !important;
+        }
+        .ruler-hole-slot.active.draw {
+            background: #0284c7 !important;
+            color: #ffffff !important;
+        }
+
+        @media(max-width: 768px) {
+            .master-staff-container {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .master-staff-svg-wrap {
+                width: 100%;
+                height: 85px;
+            }
+            .master-note-info {
+                align-items: center;
+                text-align: center;
+            }
+            .master-name-row {
+                justify-content: center;
+            }
+            .master-note-header-row {
+                justify-content: center;
+            }
+        }
+
+        /* ==========================================
+           Solo Staff Mode (오선보 단독 연습 모드)
+           ========================================== */
+        body.solo-staff-mode {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: flex-start !important;
+            padding: 12px 10px !important;
+            min-height: 100vh !important;
+            gap: 10px !important;
+            max-width: 100vw !important;
+        }
+        body.solo-staff-mode .score-panel,
+        body.solo-staff-mode .right-panels > .panel:not(#master-scale-panel),
+        body.solo-staff-mode .site-footer {
+            display: none !important;
+        }
+        body.solo-staff-mode .right-panels {
+            display: flex !important;
+            width: 100% !important;
+            max-width: 620px !important;
+            margin: 0 auto !important;
+            position: static !important;
+            padding: 0 !important;
+        }
+        body.solo-staff-mode #master-scale-panel {
+            width: 100% !important;
+            max-width: 620px !important;
+            padding: 16px 14px !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55) !important;
+            border: 1.5px solid #4f46e5 !important;
+            border-radius: 20px !important;
+        }
+        body.solo-staff-mode .master-staff-svg-wrap {
+            height: 120px !important; /* 스마트폰 전용 대형 오선 */
+        }
+        body.solo-staff-mode .master-name-kr {
+            font-size: 32px !important;
+        }
+        body.solo-staff-mode .master-pitch-label {
+            font-size: 18px !important;
+        }
+        body.solo-staff-mode .m-solfege-num {
+            font-size: 18px !important;
+        }
+        body.solo-staff-mode .ruler-hole-slot {
+            height: 28px !important;
+            font-size: 12px !important;
+        }
+        body.solo-staff-mode #btn-solo-toggle {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+            color: #ffffff !important;
+            border-color: #a5b4fc !important;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.4) !important;
+        }
     </style>
 </head>
 <body>
     
-    <!-- Top Scale Reference & Harmonica Header Panel -->
-    <div class="panel scale-header-panel" id="scale-header-panel" style="position: sticky; top: 0; z-index: 1000; grid-column: 1 / -1; padding: 6px 12px; margin-bottom: 6px; border-radius: 0 0 16px 16px; border-top: none;">
-        <!-- Header Controls Row -->
-        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 5px;">
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                <h2 style="font-family: 'Jua', sans-serif; font-size: 19px; color: #4facfe; margin: 0; display: flex; align-items: center; gap: 6px;">
-                    <span>🎼 하모니카 오선보 계이름표</span>
-                </h2>
-                <!-- 음역대 선택 탭 -->
-                <div class="scale-tabs" style="display: flex; gap: 4px; background: #161626; padding: 3px; border-radius: 18px; border: 1px solid #3a3a52;">
-                    <button type="button" class="scale-tab-btn active" id="tab-low" onclick="switchOctaveTab('low')">저음역 (1~7홀, 덧줄)</button>
-                    <button type="button" class="scale-tab-btn" id="tab-mid" onclick="switchOctaveTab('mid')">중음역 (8~15홀, 기본)</button>
-                    <button type="button" class="scale-tab-btn" id="tab-high" onclick="switchOctaveTab('high')">고음역 (16~22홀, 높은음)</button>
-                    <button type="button" class="scale-tab-btn" id="tab-all" onclick="switchOctaveTab('all')">전체 (1~22홀)</button>
-                </div>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 6px;">
-                <button type="button" onclick="openScaleModal()" class="btn-toolbar" style="background: #252538; color: #00f2fe; border: 1px solid #4facfe; padding: 5px 11px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer;" title="오선보 대조표 크게보기">
-                    🔍 크게보기
-                </button>
-                <button type="button" id="btn-scale-collapse" onclick="toggleScaleCollapse()" class="btn-toolbar" style="background: #3a3a5a; color: #fff; border: 1px solid #4facfe; padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                    <span id="scale-collapse-icon">⮝</span>
-                    <span id="scale-collapse-text">접기</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Scale Cards Area (Collapsible) -->
-        <div id="scale-cards-collapsible" style="transition: all 0.25s ease; overflow: hidden;">
-            <!-- Vector Cards Container -->
-            <div id="scale-cards-container" class="scale-cards-wrapper"></div>
-            
-            <!-- Dynamic Tip Banner -->
-            <div id="scale-tip-banner" class="scale-tip-banner"></div>
-        </div>
-    </div>
-
     <!-- Score Viewer Panel -->
     <div class="panel score-panel" id="score-panel" style="display: flex; flex-direction: column; padding: 12px; position: relative;">
         <!-- Score Toolbar -->
@@ -728,6 +995,9 @@
                 <label for="pdf-upload" class="btn-toolbar" style="cursor: pointer; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 6px 14px; border-radius: 18px; font-size: 13px; font-weight: bold; box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);">
                     📁 악보 열기
                 </label>
+                <button type="button" onclick="toggleSoloStaffMode(true)" class="btn-toolbar" style="background: #232338; color: #a5b4fc; border: 1px solid #6366f1; padding: 6px 13px; border-radius: 18px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="스마트폰/단독 연습: 오선보만 크게 보기">
+                    <span>📱 오선보만 보기</span>
+                </button>
             </div>
             
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
@@ -762,6 +1032,84 @@
     </div>
 
     <div class="right-panels">
+        <!-- Master Dynamic Staff & Harmonica Display Panel (Top of Sidebar) -->
+        <div class="panel" id="master-scale-panel" style="padding: 12px 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                <h2 class="panel-title" style="margin: 0; font-size: 17px; display: flex; align-items: center; gap: 6px;">
+                    <span>🎼 실시간 오선보</span>
+                </h2>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <button type="button" id="btn-top-mic" onclick="toggleTunerFromTop()" class="btn-top-mic" style="display: flex; align-items: center; gap: 4px; background: #252538; color: #ff6b81; border: 1px solid #ff4757; padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer; transition: all 0.2s;">
+                        <span id="top-mic-icon">🎙️</span>
+                        <span id="top-mic-txt">튜너 켜기</span>
+                    </button>
+                    <button type="button" onclick="openScaleModal()" class="btn-toolbar" style="background: #252538; color: #00f2fe; border: 1px solid #4facfe; padding: 4px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer;" title="오선보 전체 1~22홀 대조표 보기">
+                        🔍 전체 대조표
+                    </button>
+                    <button type="button" id="btn-solo-toggle" onclick="toggleSoloStaffMode()" class="btn-toolbar" style="background: #252538; color: #a5b4fc; border: 1px solid #6366f1; padding: 4px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="오선보만 단독 연습 모드로 보기">
+                        <span id="solo-toggle-icon">📱</span>
+                        <span id="solo-toggle-txt">단독 모드</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Master Staff Stage (Side-by-side or wrapped) -->
+            <div class="master-staff-container" id="master-staff-container">
+                <!-- 1. Large Dynamic Staff SVG -->
+                <div class="master-staff-svg-wrap">
+                    <svg id="master-staff-svg" viewBox="0 0 280 135" class="master-staff-svg" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="0" y="0" width="280" height="135" rx="10" fill="#121220" />
+                        <line x1="12" y1="30" x2="268" y2="30" stroke="#475569" stroke-width="1.4" />
+                        <line x1="12" y1="40" x2="268" y2="40" stroke="#475569" stroke-width="1.4" />
+                        <line x1="12" y1="50" x2="268" y2="50" stroke="#475569" stroke-width="1.4" />
+                        <line x1="12" y1="60" x2="268" y2="60" stroke="#475569" stroke-width="1.4" />
+                        <line x1="12" y1="70" x2="268" y2="70" stroke="#475569" stroke-width="1.4" />
+                        <text x="32" y="66" font-family="'Segoe UI Symbol', 'Noto Music', 'Apple Symbols', sans-serif" font-size="48" fill="#94a3b8" text-anchor="middle" style="user-select:none;">𝄞</text>
+                        <g id="master-ledgers"></g>
+                        <g id="master-note-group" style="transition: transform 0.08s ease-out;">
+                            <line id="master-stem" x1="168" y1="80" x2="168" y2="52" stroke="#fca5a5" stroke-width="2.2" stroke-linecap="round" />
+                            <ellipse id="master-notehead" cx="160" cy="80" rx="9.5" ry="7" transform="rotate(-20 160 80)" fill="#ef4444" stroke="#ffffff" stroke-width="1.8" />
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- 2. Dynamic Note Info Display Badge -->
+                <div class="master-note-info" id="master-note-info">
+                    <div class="master-note-header-row">
+                        <div id="master-hole-badge" class="master-hole-badge blow">
+                            <span class="m-hole-num">8</span>번 홀 <span class="m-breath-txt">불어</span> <span class="m-breath-icon">🔴</span>
+                        </div>
+                        <div id="master-cents-badge" class="master-cents-badge in-tune">
+                            <span id="m-cents-txt">0 cents (완벽)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="master-name-row">
+                        <span id="master-name-kr" class="master-name-kr">가온 도</span>
+                        <span id="master-pitch-label" class="master-pitch-label">C5</span>
+                        <span id="master-solfege-box" class="master-solfege-box">
+                            <span class="m-solfege-txt">숫자보</span>
+                            <span id="master-solfege-num" class="m-solfege-num">1</span>
+                        </span>
+                    </div>
+                    
+                    <div id="master-guide-tip" class="master-guide-tip">
+                        덧줄 1번째 줄 ★ · 복음 하모니카 기준음
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Slim Interactive Harmonica Ruler (1~22 홀 가이드 바) -->
+            <div class="harmonica-ruler-container" id="harmonica-ruler-container">
+                <div class="harmonica-ruler-label">
+                    <span>🎹 1~22홀:</span>
+                </div>
+                <div class="harmonica-ruler-grid" id="harmonica-ruler-grid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </div>
+
         <!-- File Open Panel -->
         <div class="panel" style="padding: 15px;">
             <div class="panel-title" style="margin-bottom: 0;">
@@ -1450,8 +1798,18 @@
             return sampleRate / T0;
         }
 
+        function toggleTunerFromTop() {
+            if (stream) {
+                stopTuner();
+            } else {
+                startTuner();
+            }
+        }
+
         async function startTuner() {
             const btn = document.getElementById('mic-btn');
+            const topBtn = document.getElementById('btn-top-mic');
+            const topTxt = document.getElementById('top-mic-txt');
             
             try {
                 if(!tunerCtx) tunerCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1461,9 +1819,17 @@
                 analyser.fftSize = 2048;
                 source.connect(analyser);
                 
-                btn.innerText = '🔴 튜닝 중... (끄기)';
-                btn.style.background = 'linear-gradient(135deg, #1dd1a1 0%, #10ac84 100%)';
-                btn.onclick = stopTuner;
+                if (btn) {
+                    btn.innerText = '🔴 튜닝 중... (끄기)';
+                    btn.style.background = 'linear-gradient(135deg, #1dd1a1 0%, #10ac84 100%)';
+                    btn.onclick = stopTuner;
+                }
+                if (topBtn && topTxt) {
+                    topTxt.innerText = '튜너 끄기';
+                    topBtn.style.color = '#10b981';
+                    topBtn.style.borderColor = '#10b981';
+                    topBtn.style.background = 'rgba(16, 185, 129, 0.2)';
+                }
                 
                 updatePitch();
             } catch (err) {
@@ -1479,9 +1845,19 @@
             if (reqAnimFrame) cancelAnimationFrame(reqAnimFrame);
             
             const btn = document.getElementById('mic-btn');
-            btn.innerText = '🎙️ 튜너 켜기';
-            btn.style.background = 'linear-gradient(135deg, #ff4757 0%, #ff6b81 100%)';
-            btn.onclick = startTuner;
+            if (btn) {
+                btn.innerText = '🎙️ 튜너 켜기';
+                btn.style.background = 'linear-gradient(135deg, #ff4757 0%, #ff6b81 100%)';
+                btn.onclick = startTuner;
+            }
+            const topBtn = document.getElementById('btn-top-mic');
+            const topTxt = document.getElementById('top-mic-txt');
+            if (topBtn && topTxt) {
+                topTxt.innerText = '튜너 켜기';
+                topBtn.style.color = '#ff6b81';
+                topBtn.style.borderColor = '#ff4757';
+                topBtn.style.background = '#252538';
+            }
             document.getElementById('note-display').innerText = '-';
             document.getElementById('meter-indicator').style.left = '50%';
             
@@ -1807,66 +2183,206 @@
         let currentHighlightedPitch = null;
         let highlightClearTimer = null;
 
+        // 1~22 홀 인터랙티브 가이드 바 초기화
+        function initHarmonicaRuler() {
+            const grid = document.getElementById('harmonica-ruler-grid');
+            if (!grid) return;
+            grid.innerHTML = HARMONICA_NOTES.map(n => {
+                const breathClass = n.breathType === 'blow' ? 'blow' : 'draw';
+                return `<div class="ruler-hole-slot ${breathClass}" id="ruler-slot-${n.hole}" onclick="previewHarmonicaNote(${n.hole})" title="${n.hole}번 홀: ${n.name} (${n.pitch}) ${n.breath}">
+                    <span>${n.hole}</span>
+                </div>`;
+            }).join('');
+        }
+
+        // 특정 홀 번호 클릭 시 대형 오선보 프리뷰
+        function previewHarmonicaNote(holeNum) {
+            const note = HARMONICA_NOTES.find(n => n.hole === holeNum);
+            if (note) {
+                updateMasterStaffNote(note, null);
+                document.querySelectorAll('.ruler-hole-slot.active').forEach(el => el.classList.remove('active'));
+                const slot = document.getElementById(`ruler-slot-${note.hole}`);
+                if (slot) slot.classList.add('active');
+            }
+        }
+
+        // 단일 대형 동적 오선보 및 정보 배지 실시간 갱신
+        function updateMasterStaffNote(note, cents) {
+            // 1. 덧줄(Ledger lines) 갱신
+            const ledgersG = document.getElementById('master-ledgers');
+            if (ledgersG) {
+                if (note.ledgers && note.ledgers.length > 0) {
+                    ledgersG.innerHTML = note.ledgers.map(ly => 
+                        `<line x1="125" y1="${ly}" x2="195" y2="${ly}" stroke="#cbd5e1" stroke-width="2.2" stroke-linecap="round" />`
+                    ).join('');
+                } else {
+                    ledgersG.innerHTML = '';
+                }
+            }
+
+            // 2. 음표 머리 & 기둥 갱신
+            const head = document.getElementById('master-notehead');
+            const stem = document.getElementById('master-stem');
+            const noteColor = note.breathType === 'blow' ? '#ef4444' : '#0284c7';
+            const stemColor = note.breathType === 'blow' ? '#fca5a5' : '#7dd3fc';
+
+            if (head) {
+                head.setAttribute('cy', note.y);
+                head.setAttribute('transform', `rotate(-20 160 ${note.y})`);
+                head.setAttribute('fill', noteColor);
+                head.style.opacity = '1';
+            }
+
+            if (stem) {
+                stem.style.opacity = '1';
+                stem.setAttribute('stroke', stemColor);
+                if (note.y <= 50) {
+                    // 고음: 기둥 아래로
+                    stem.setAttribute('x1', '152');
+                    stem.setAttribute('y1', note.y);
+                    stem.setAttribute('x2', '152');
+                    stem.setAttribute('y2', note.y + 28);
+                } else {
+                    // 저음/중음: 기둥 위로
+                    stem.setAttribute('x1', '168');
+                    stem.setAttribute('y1', note.y);
+                    stem.setAttribute('x2', '168');
+                    stem.setAttribute('y2', note.y - 28);
+                }
+            }
+
+            // 3. 홀 번호 & 호흡 배지 갱신
+            const holeBadge = document.getElementById('master-hole-badge');
+            if (holeBadge) {
+                const breathIcon = note.breathType === 'blow' ? '🔴' : '🔵';
+                holeBadge.className = `master-hole-badge ${note.breathType}`;
+                holeBadge.innerHTML = `<span class="m-hole-num">${note.hole}</span>번 홀 <span class="m-breath-txt">${note.breath}</span> <span class="m-breath-icon">${breathIcon}</span>`;
+            }
+
+            // 4. 튜너 센트 정확도 배지 갱신
+            const centsBadge = document.getElementById('master-cents-badge');
+            const centsTxt = document.getElementById('m-cents-txt');
+            if (centsBadge && centsTxt) {
+                if (typeof cents === 'number' && !isNaN(cents)) {
+                    const isAccurate = Math.abs(cents) < 8;
+                    centsBadge.className = `master-cents-badge ${isAccurate ? 'in-tune' : 'off-tune'}`;
+                    const sign = cents > 0 ? '+' : '';
+                    centsTxt.innerText = `${sign}${Math.round(cents)} cents ${isAccurate ? '(정확)' : ''}`;
+                    centsBadge.style.display = 'inline-flex';
+                } else {
+                    centsBadge.className = 'master-cents-badge in-tune';
+                    centsTxt.innerText = '선택 확인';
+                    centsBadge.style.display = 'inline-flex';
+                }
+            }
+
+            // 5. 한글 계이름 (저음 레, 저음 도, 가온 도 등), 음이름, 숫자보 갱신
+            const nameKr = document.getElementById('master-name-kr');
+            if (nameKr) {
+                nameKr.innerText = note.name;
+                nameKr.style.color = note.breathType === 'blow' ? '#ff6b81' : '#38bdf8';
+            }
+
+            const pitchLabel = document.getElementById('master-pitch-label');
+            if (pitchLabel) {
+                pitchLabel.innerText = note.pitch;
+            }
+
+            const solfegeNum = document.getElementById('master-solfege-num');
+            if (solfegeNum) {
+                let solfegeInner = '';
+                if (note.dot === 'sub') {
+                    solfegeInner = `<span style="font-size:16px; font-weight:900;">${note.num}</span><span style="font-size:9px; line-height:0.3; color:#ef4444; margin-top:2px;">●</span>`;
+                } else if (note.dot === 'super') {
+                    solfegeInner = `<span style="font-size:9px; line-height:0.3; color:#0284c7; margin-bottom:2px;">●</span><span style="font-size:16px; font-weight:900;">${note.num}</span>`;
+                } else if (note.dot === 'super-double') {
+                    solfegeInner = `<span style="font-size:8px; line-height:0.3; color:#0284c7; margin-bottom:2px; letter-spacing:1px;">●●</span><span style="font-size:16px; font-weight:900;">${note.num}</span>`;
+                } else {
+                    solfegeInner = `<span style="font-size:16px; font-weight:900;">${note.num}</span>`;
+                }
+                solfegeNum.innerHTML = solfegeInner;
+            }
+
+            // 6. 위치 가이드 팁 갱신
+            const guideTip = document.getElementById('master-guide-tip');
+            if (guideTip) {
+                guideTip.innerText = `${note.guide}${note.specialText ? ' · ' + note.specialText : ''}`;
+            }
+
+            // 7. 슬림 하모니카 눈금자(1~22) 활성화
+            document.querySelectorAll('.ruler-hole-slot.active').forEach(slot => slot.classList.remove('active'));
+            const activeSlot = document.getElementById(`ruler-slot-${note.hole}`);
+            if (activeSlot) {
+                activeSlot.classList.add('active');
+            }
+        }
+
+        // 초기 오선보 기본 가이드 상태 표시 (가온 도 8번 홀 기준)
+        function initMasterStaff() {
+            const defaultNote = HARMONICA_NOTES.find(n => n.hole === 8) || HARMONICA_NOTES[0];
+            if (defaultNote) {
+                updateMasterStaffNote(defaultNote, null);
+                const centsBadge = document.getElementById('master-cents-badge');
+                if (centsBadge) {
+                    centsBadge.className = 'master-cents-badge';
+                    centsBadge.innerHTML = `<span id="m-cents-txt">🎙️ 튜너 대기 중</span>`;
+                }
+                const guideTip = document.getElementById('master-guide-tip');
+                if (guideTip) {
+                    guideTip.innerText = '하모니카를 불거나 마시면 실시간 계이름과 오선보가 표시됩니다. (기본: 8번홀 가온 도)';
+                }
+                const head = document.getElementById('master-notehead');
+                if (head) head.style.opacity = '0.75';
+                const stem = document.getElementById('master-stem');
+                if (stem) stem.style.opacity = '0.75';
+            }
+        }
+
+        // 실시간 튜너 소리 반응
         function highlightTunerNote(pitchString, cents) {
             if (highlightClearTimer) {
                 clearTimeout(highlightClearTimer);
                 highlightClearTimer = null;
             }
 
+            const matchedNote = HARMONICA_NOTES.find(n => n.pitch === pitchString);
+            if (matchedNote) {
+                updateMasterStaffNote(matchedNote, cents);
+            }
+
+            // 모달 창이 열려있는 경우 모달 카드 하이라이트 연동
             const cards = document.querySelectorAll(`.scale-note-card[data-pitch="${pitchString}"]`);
-            const isNewPitch = (currentHighlightedPitch !== pitchString);
-            
-            // 다른 음으로 변경된 경우 기존 하이라이트 즉시 제거
-            if (isNewPitch) {
+            if (cards.length > 0) {
                 document.querySelectorAll(`.scale-note-card.tuner-active`).forEach(el => {
                     el.classList.remove('tuner-active', 'in-tune', 'off-tune');
                 });
-                document.querySelectorAll('.scale-tab-btn.tab-hint').forEach(btn => {
-                    btn.classList.remove('tab-hint');
+                cards.forEach(card => {
+                    card.classList.add('tuner-active');
+                    if (Math.abs(cents) < 8) {
+                        card.classList.add('in-tune');
+                    } else {
+                        card.classList.add('off-tune');
+                    }
                 });
             }
 
             currentHighlightedPitch = pitchString;
 
-            if (cards.length > 0) {
-                cards.forEach(card => {
-                    card.classList.add('tuner-active');
-                    if (Math.abs(cents) < 8) {
-                        card.classList.add('in-tune');
-                        card.classList.remove('off-tune');
-                    } else {
-                        card.classList.add('off-tune');
-                        card.classList.remove('in-tune');
-                    }
-                });
-                
-                // 전체보기 탭일 경우에만 해당 카드가 보이도록 스크롤
-                if (isNewPitch && currentOctaveTab === 'all' && cards[0]) {
-                    const container = document.getElementById('scale-cards-container');
-                    if (container) {
-                        const targetLeft = cards[0].offsetLeft - (container.clientWidth / 2) + (cards[0].offsetWidth / 2);
-                        container.scrollTo({ left: Math.max(0, targetLeft), behavior: 'smooth' });
-                    }
-                }
-            } else {
-                // 현재 선택된 탭 외의 다른 음역대 음이 불렸을 경우 해당 탭 버튼에 펄스 힌트 표시
-                const targetNote = HARMONICA_NOTES.find(n => n.pitch === pitchString);
-                if (targetNote) {
-                    const tabBtn = document.getElementById(`tab-${targetNote.octave}`);
-                    if (tabBtn && !tabBtn.classList.contains('active')) {
-                        tabBtn.classList.add('tab-hint');
-                    }
-                }
-            }
-
-            // 소리가 멈춘 후 280ms 동안 부드럽게 유지 후 페이드아웃
+            // 소리가 멈춘 후 550ms 동안 부드럽게 유지 후 안정화
             highlightClearTimer = setTimeout(() => {
                 clearTunerHighlight();
-            }, 280);
+            }, 550);
         }
 
         function clearTunerHighlight() {
             currentHighlightedPitch = null;
+            const centsBadge = document.getElementById('master-cents-badge');
+            if (centsBadge) {
+                centsBadge.className = 'master-cents-badge';
+            }
+            document.querySelectorAll('.ruler-hole-slot.active').forEach(el => {
+                el.classList.remove('active');
+            });
             document.querySelectorAll('.scale-note-card.tuner-active').forEach(el => {
                 el.classList.remove('tuner-active', 'in-tune', 'off-tune');
             });
@@ -1876,65 +2392,13 @@
         }
 
         function renderOctaveCards(octave) {
-            const container = document.getElementById('scale-cards-container');
-            if (!container) return;
-            
-            let filteredNotes = [];
-            if (octave === 'all') {
-                filteredNotes = HARMONICA_NOTES;
-                container.classList.add('mode-all');
-            } else if (octave === 'low') {
-                filteredNotes = HARMONICA_NOTES.filter(n => n.hole >= 1 && n.hole <= 7);
-                container.classList.remove('mode-all');
-            } else if (octave === 'mid') {
-                filteredNotes = HARMONICA_NOTES.filter(n => n.hole >= 8 && n.hole <= 15);
-                container.classList.remove('mode-all');
-            } else if (octave === 'high') {
-                filteredNotes = HARMONICA_NOTES.filter(n => n.hole >= 16 && n.hole <= 22);
-                container.classList.remove('mode-all');
-            }
-            
-            const clefHTML = createClefLeadHTML();
-            container.innerHTML = clefHTML + filteredNotes.map(n => createNoteCardHTML(n)).join('');
-            
-            // Dynamic tip banner update
-            const tipBanner = document.getElementById('scale-tip-banner');
-            if (tipBanner) {
-                if (octave === 'low') {
-                    tipBanner.innerHTML = `<span>★ <b>저음역 팁 (1~7번 홀):</b> 1번 마시기(레)부터 시작하여 들숨/날숨이 교대로 배치되는 저음역 구간입니다. (가온 도 8번홀 기준 아래 덧줄)</span>
-                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">[1~7번 홀]</span>`;
-                } else if (octave === 'mid') {
-                    tipBanner.innerHTML = `<span>★ <b>중음역 팁 (8~15번 홀):</b> <b>가온 도(8번 홀 불기 🔴)</b>가 중심 기준음입니다. 14번(높은 도 불기 🔴)과 15번(중음 시 마시기 🔵)의 호흡 전환에 주목하세요.</span>
-                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">[8~15번 홀]</span>`;
-                } else if (octave === 'high') {
-                    tipBanner.innerHTML = `<span>★ <b>고음역 팁 (16~22번 홀):</b> 16번(높은 미 불기 🔴)부터 최고 도(20번 불기 🔴)를 거쳐 22번(높은 시 마시기 🔵)까지 이어지는 고음역 구간입니다.</span>
-                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">[16~22번 홀]</span>`;
-                } else {
-                    tipBanner.innerHTML = `<span>★ <b>전체 팁 (1~22번 홀):</b> 실제 하모니카의 홀 번호(1~22)와 오선보, 불기(🔴)/마시기(🔵)가 1:1로 완전 일치되어 있습니다. 튜너를 켜면 실시간으로 내 소리 위치가 표시됩니다.</span>
-                    <span style="color:#00f2fe; font-weight:bold; font-size:11px;">[1~22번 홀 전체 한눈에 보기]</span>`;
-                }
-            }
-
             renderModalVectorCards(octave);
         }
 
         function switchOctaveTab(octave) {
             currentOctaveTab = octave;
             localStorage.setItem('harmonica_octave_tab', octave);
-            
-            // Tab button styles
-            document.querySelectorAll('.scale-tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            const activeBtn = document.getElementById(`tab-${octave}`);
-            if (activeBtn) activeBtn.classList.add('active');
-
-            // If collapsed, expand when user clicks a tab
-            if (isScaleCollapsed) {
-                toggleScaleCollapse(false);
-            }
-            
-            renderOctaveCards(octave);
+            renderModalVectorCards(octave);
         }
 
         function toggleScaleCollapse(forceState) {
@@ -2047,7 +2511,37 @@
             }
         });
 
+        // ==========================================
+        // 6. Solo Staff Mode (오선보 단독 연습 모드)
+        // ==========================================
+        let isSoloStaffMode = localStorage.getItem('harmonica_solo_mode') === 'true';
+
+        function toggleSoloStaffMode(forceState) {
+            if (typeof forceState === 'boolean') {
+                isSoloStaffMode = forceState;
+            } else {
+                isSoloStaffMode = !isSoloStaffMode;
+            }
+            localStorage.setItem('harmonica_solo_mode', isSoloStaffMode);
+
+            document.body.classList.toggle('solo-staff-mode', isSoloStaffMode);
+
+            const toggleTxt = document.getElementById('solo-toggle-txt');
+            const toggleIcon = document.getElementById('solo-toggle-icon');
+            if (toggleTxt && toggleIcon) {
+                if (isSoloStaffMode) {
+                    toggleTxt.innerText = '악보 보기';
+                    toggleIcon.innerText = '📖';
+                } else {
+                    toggleTxt.innerText = '단독 모드';
+                    toggleIcon.innerText = '📱';
+                }
+            }
+        }
+
         // 초기화
+        initHarmonicaRuler();
+        initMasterStaff();
         switchOctaveTab(currentOctaveTab);
         if (isScaleCollapsed) {
             toggleScaleCollapse(true);
@@ -2060,6 +2554,16 @@
             document.getElementById('btn-view-1col')?.classList.remove('active');
             document.getElementById('btn-view-2col')?.classList.add('active');
         }
+
+        // URL 파라미터(?mode=solo) 또는 이전 단독 모드 설정 확인
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('mode') === 'solo') {
+            isSoloStaffMode = true;
+        }
+        if (isSoloStaffMode) {
+            toggleSoloStaffMode(true);
+        }
+
         loadScoreFromDB();
     </script>
 
