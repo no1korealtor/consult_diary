@@ -832,26 +832,42 @@
         .harmonica-ruler-container {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             width: 100%;
-            margin-top: 5px;
-            padding: 3px 8px;
+            margin-top: 6px;
+            padding: 4px 8px;
             background: #141424;
-            border-radius: 8px;
+            border-radius: 10px;
             border: 1px solid #2d2d44;
             box-sizing: border-box;
             overflow-x: auto;
         }
         .harmonica-ruler-label {
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: bold;
-            color: #64748b;
+            color: #94a3b8;
             white-space: nowrap;
             font-family: 'Jua', sans-serif;
             flex-shrink: 0;
             display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .harmonica-ruler-label .ruler-title {
+            display: flex;
             align-items: center;
             gap: 3px;
+            color: #cbd5e1;
+            font-size: 11px;
+        }
+        .harmonica-ruler-label .ruler-legend {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 9px;
+            font-weight: 700;
+            font-family: 'Nunito', sans-serif;
+            color: #64748b;
         }
         .harmonica-ruler-grid {
             display: flex;
@@ -862,31 +878,61 @@
         }
         .ruler-hole-slot {
             flex: 1;
-            min-width: 17px;
-            height: 22px;
+            min-width: 18px;
+            height: 35px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 800;
-            font-family: 'Nunito', sans-serif;
+            gap: 1px;
+            border-radius: 5px;
             cursor: pointer;
             transition: all 0.12s ease;
             border: 1px solid transparent;
             user-select: none;
+            padding: 1px 0;
+            box-sizing: border-box;
         }
         .ruler-hole-slot.blow {
             background: rgba(239, 68, 68, 0.15);
-            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.28);
         }
         .ruler-hole-slot.draw {
             background: rgba(2, 132, 199, 0.15);
-            color: #7dd3fc;
+            border-color: rgba(2, 132, 199, 0.28);
         }
         .ruler-hole-slot:hover {
-            filter: brightness(1.3);
+            filter: brightness(1.35);
             transform: translateY(-1px);
+        }
+        .ruler-hole-num {
+            font-size: 8px;
+            font-weight: 700;
+            font-family: 'Nunito', sans-serif;
+            line-height: 1;
+            color: #94a3b8;
+            opacity: 0.75;
+        }
+        .ruler-scale-syllable {
+            font-size: 12px;
+            font-weight: 900;
+            font-family: 'Jua', 'Noto Sans KR', sans-serif;
+            line-height: 1.05;
+        }
+        /* 높낮이(옥타브) 색상 구분: 저음(따뜻한 골드), 중음(선명한 화이트), 고음(화사한 네온 바이올렛) */
+        .ruler-scale-syllable.octave-low {
+            color: #fbbf24;
+        }
+        .ruler-scale-syllable.octave-mid {
+            color: #ffffff;
+        }
+        .ruler-scale-syllable.octave-high {
+            color: #c084fc;
+        }
+        /* 8번 가온 도 특별 강조 */
+        .ruler-hole-slot.special-root .ruler-scale-syllable {
+            color: #fef08a;
+            text-shadow: 0 0 4px rgba(254, 240, 138, 0.6);
         }
         .ruler-hole-slot.active {
             transform: scale(1.15);
@@ -895,13 +941,19 @@
             border-color: #00f2fe !important;
             font-weight: 900;
         }
+        .ruler-hole-slot.active .ruler-hole-num {
+            color: #ffffff;
+            opacity: 0.95;
+        }
+        .ruler-hole-slot.active .ruler-scale-syllable {
+            color: #ffffff !important;
+            text-shadow: 0 0 6px #ffffff;
+        }
         .ruler-hole-slot.active.blow {
             background: #ef4444 !important;
-            color: #ffffff !important;
         }
         .ruler-hole-slot.active.draw {
             background: #0284c7 !important;
-            color: #ffffff !important;
         }
 
         @media(max-width: 768px) {
@@ -973,8 +1025,13 @@
             font-size: 18px !important;
         }
         body.solo-staff-mode .ruler-hole-slot {
-            height: 28px !important;
-            font-size: 12px !important;
+            height: 40px !important;
+        }
+        body.solo-staff-mode .ruler-hole-num {
+            font-size: 9px !important;
+        }
+        body.solo-staff-mode .ruler-scale-syllable {
+            font-size: 14px !important;
         }
         body.solo-staff-mode #btn-solo-toggle {
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
@@ -1102,7 +1159,10 @@
             <!-- 3. Slim Interactive Harmonica Ruler (1~22 홀 가이드 바) -->
             <div class="harmonica-ruler-container" id="harmonica-ruler-container">
                 <div class="harmonica-ruler-label">
-                    <span>🎹 1~22홀:</span>
+                    <div class="ruler-title">🎹 22홀 음계:</div>
+                    <div class="ruler-legend">
+                        <span style="color:#fbbf24;">●</span>저 <span style="color:#ffffff;">●</span>중 <span style="color:#c084fc;">●</span>고
+                    </div>
                 </div>
                 <div class="harmonica-ruler-grid" id="harmonica-ruler-grid">
                     <!-- Populated dynamically via JS -->
@@ -2183,14 +2243,17 @@
         let currentHighlightedPitch = null;
         let highlightClearTimer = null;
 
-        // 1~22 홀 인터랙티브 가이드 바 초기화
+        // 1~22 홀 인터랙티브 가이드 바 초기화 (계명 및 옥타브 색상 표시)
         function initHarmonicaRuler() {
             const grid = document.getElementById('harmonica-ruler-grid');
             if (!grid) return;
             grid.innerHTML = HARMONICA_NOTES.map(n => {
                 const breathClass = n.breathType === 'blow' ? 'blow' : 'draw';
-                return `<div class="ruler-hole-slot ${breathClass}" id="ruler-slot-${n.hole}" onclick="previewHarmonicaNote(${n.hole})" title="${n.hole}번 홀: ${n.name} (${n.pitch}) ${n.breath}">
-                    <span>${n.hole}</span>
+                const syllable = n.name.split(' ').pop(); // '도', '레', '미', '파', '솔', '라', '시'
+                const rootClass = n.hole === 8 ? 'special-root' : '';
+                return `<div class="ruler-hole-slot ${breathClass} ${rootClass}" id="ruler-slot-${n.hole}" onclick="previewHarmonicaNote(${n.hole})" title="${n.hole}번 홀: ${n.name} (${n.pitch}) ${n.breath}">
+                    <span class="ruler-hole-num">${n.hole}</span>
+                    <span class="ruler-scale-syllable octave-${n.octave}">${syllable}</span>
                 </div>`;
             }).join('');
         }
