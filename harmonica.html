@@ -711,23 +711,24 @@
            ========================================== */
         .master-staff-container {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            gap: 12px;
-            padding: 8px 10px;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px 12px;
             background: linear-gradient(135deg, #181829 0%, #1f1f35 100%);
             border-radius: 14px;
             border: 1px solid #3a3a56;
             box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
             box-sizing: border-box;
             width: 100%;
-            flex-wrap: wrap;
+            max-width: 100%;
+            overflow: hidden;
         }
         .master-staff-svg-wrap {
-            flex: 1 1 135px;
-            min-width: 130px;
-            max-width: 100%;
-            height: 92px;
+            width: 100%;
+            max-width: 380px;
+            height: 98px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -736,6 +737,8 @@
             border: 1px solid #2e2e44;
             overflow: hidden;
             box-shadow: inset 0 2px 10px rgba(0,0,0,0.4);
+            box-sizing: border-box;
+            margin: 0 auto;
         }
         .master-staff-svg {
             width: 100%;
@@ -745,20 +748,28 @@
         .master-note-info {
             display: flex;
             flex-direction: column;
+            align-items: center;
             justify-content: center;
-            flex: 1 1 150px;
-            min-width: 140px;
+            text-align: center;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            gap: 5px;
+            overflow: hidden;
         }
         .master-note-header-row {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
-            margin-bottom: 2px;
+            width: 100%;
             flex-wrap: wrap;
+            margin: 0;
+            box-sizing: border-box;
         }
         .master-hole-badge {
-            padding: 3px 12px;
-            border-radius: 12px;
+            padding: 4px 13px;
+            border-radius: 14px;
             font-family: 'Jua', 'Nunito', sans-serif;
             font-size: 14px;
             font-weight: 900;
@@ -768,6 +779,7 @@
             gap: 5px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.25);
             transition: all 0.15s ease;
+            white-space: nowrap;
         }
         .master-hole-badge.blow {
             background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
@@ -783,9 +795,9 @@
             box-shadow: none;
         }
         .master-cents-badge {
-            padding: 2px 9px;
-            border-radius: 10px;
-            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11.5px;
             font-weight: bold;
             background: #252538;
             color: #94a3b8;
@@ -793,6 +805,8 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            white-space: nowrap;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
         }
         .master-cents-badge.in-tune {
             color: #10b981;
@@ -807,36 +821,42 @@
         }
         .master-name-row {
             display: flex;
-            align-items: baseline;
+            align-items: center;
+            justify-content: center;
             gap: 8px;
-            margin: 2px 0;
+            width: 100%;
             flex-wrap: wrap;
+            margin: 2px 0;
+            box-sizing: border-box;
         }
         .master-name-kr {
             font-family: 'Jua', sans-serif;
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 900;
             color: #ffffff;
             letter-spacing: -0.5px;
             line-height: 1.15;
             transition: color 0.15s ease;
+            white-space: nowrap;
         }
         .master-pitch-label {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 800;
             color: #00f2fe;
             font-family: 'Nunito', sans-serif;
+            white-space: nowrap;
         }
         .master-solfege-box {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
             background: #25253a;
-            padding: 1px 8px;
+            padding: 2px 8px;
             border-radius: 8px;
             font-size: 11.5px;
             color: #cbd5e1;
             border: 1px solid #3e3e5c;
+            white-space: nowrap;
         }
         .m-solfege-num {
             font-weight: 900;
@@ -848,12 +868,16 @@
             line-height: 1;
         }
         .master-guide-tip {
-            font-size: 12px;
+            font-size: 11.5px;
             color: #94a3b8;
-            margin-top: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            margin-top: 3px;
+            text-align: center;
+            word-break: keep-all;
+            line-height: 1.4;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            padding: 0 4px;
         }
         
         /* 1~22 Hole Slim Harmonica Ruler */
@@ -984,25 +1008,64 @@
             background: #0284c7 !important;
         }
 
-        @media(max-width: 768px) {
+        @media(max-width: 899px) {
             .master-staff-container {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 8px;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 8px !important;
+                padding: 10px 10px !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
             .master-staff-svg-wrap {
-                width: 100%;
-                height: 85px;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 92px !important;
+                margin: 0 auto !important;
             }
             .master-note-info {
-                align-items: center;
-                text-align: center;
+                align-items: center !important;
+                justify-content: center !important;
+                text-align: center !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
             .master-name-row {
-                justify-content: center;
+                justify-content: center !important;
+                align-items: center !important;
+                width: 100% !important;
+                gap: 6px !important;
+            }
+            .master-name-kr {
+                font-size: 26px !important;
             }
             .master-note-header-row {
-                justify-content: center;
+                justify-content: center !important;
+                align-items: center !important;
+                width: 100% !important;
+                gap: 6px !important;
+            }
+            .master-hole-badge {
+                font-size: 13px !important;
+                padding: 3px 10px !important;
+            }
+            .master-cents-badge {
+                font-size: 11px !important;
+                padding: 3px 8px !important;
+            }
+            .master-guide-tip {
+                text-align: center !important;
+                width: 100% !important;
+                font-size: 11.5px !important;
+            }
+            .octave-shift-row {
+                padding: 4px 6px !important;
+                gap: 4px !important;
+            }
+            .octave-btn {
+                padding: 3px 6px !important;
+                font-size: 11px !important;
             }
         }
 
@@ -1053,17 +1116,46 @@
             border-radius: 20px !important;
             box-sizing: border-box !important;
         }
+        body.solo-staff-mode .master-staff-container {
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            padding: 12px 12px !important;
+        }
         body.solo-staff-mode .master-staff-svg-wrap {
-            height: 110px !important; /* 스마트폰 전용 대형 오선 */
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 105px !important; /* 스마트폰 전용 대형 오선 */
+            margin: 0 auto !important;
+        }
+        body.solo-staff-mode .master-note-info {
+            width: 100% !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+        }
+        body.solo-staff-mode .master-name-row {
+            justify-content: center !important;
+            align-items: center !important;
+            width: 100% !important;
+            gap: 8px !important;
         }
         body.solo-staff-mode .master-name-kr {
-            font-size: 32px !important;
+            font-size: 30px !important;
         }
         body.solo-staff-mode .master-pitch-label {
-            font-size: 18px !important;
+            font-size: 17px !important;
         }
         body.solo-staff-mode .m-solfege-num {
-            font-size: 18px !important;
+            font-size: 17px !important;
+        }
+        body.solo-staff-mode .master-note-header-row {
+            justify-content: center !important;
+            align-items: center !important;
+            width: 100% !important;
+            gap: 8px !important;
         }
         body.solo-staff-mode .ruler-hole-slot {
             height: 40px !important;
@@ -1093,6 +1185,8 @@
             margin-bottom: 8px;
             gap: 6px;
             flex-wrap: wrap;
+            width: 100%;
+            box-sizing: border-box;
         }
         .octave-btn {
             background: #252538;
@@ -2531,7 +2625,7 @@
                 }
                 const guideTip = document.getElementById('master-guide-tip');
                 if (guideTip) {
-                    guideTip.innerText = '하모니카를 불거나 마시면 실시간 계이름과 오선보가 표시됩니다. (기본: 8번홀 가온 도)';
+                    guideTip.innerText = '하모니카를 불거나 마시면 실시간 계이름과 오선보가 표시됩니다.';
                 }
                 const head = document.getElementById('master-notehead');
                 if (head) head.style.opacity = '0.75';
