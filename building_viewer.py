@@ -275,7 +275,7 @@ def get_building_title_info(sigungu, bjdong, bun, ji):
     ji_str = str(ji).zfill(4) if ji else "0000"
     url = "http://apis.data.go.kr/1613000/BldRgstHubService/getBrTitleInfo"
     query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd=0&bun={bun_str}&ji={ji_str}&numOfRows=10&pageNo=1&_type=json"
-    for attempt in range(2):
+    for attempt in range(4):
         try:
             req = urllib.request.Request(url + query)
             req.add_header("User-Agent", "Mozilla/5.0")
@@ -292,9 +292,9 @@ def get_building_title_info(sigungu, bjdong, bun, ji):
                 return [items]
             return items
         except Exception as e:
-            if attempt == 1:
+            if attempt == 3:
                 print(f"get_building_title_info 에러: {e}")
-            import time; time.sleep(0.3)
+            import time; time.sleep(0.5 * (attempt + 1))
     return None
 
 def get_expos_info_list(sigungu, bjdong, bun, ji):
@@ -302,7 +302,7 @@ def get_expos_info_list(sigungu, bjdong, bun, ji):
     ji_str = str(ji).zfill(4) if ji else "0000"
     url = "http://apis.data.go.kr/1613000/BldRgstHubService/getBrExposInfo"
     query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd=0&bun={bun_str}&ji={ji_str}&numOfRows=100&pageNo=1&_type=json"
-    for attempt in range(2):
+    for attempt in range(4):
         try:
             req = urllib.request.Request(url + query)
             req.add_header("User-Agent", "Mozilla/5.0")
@@ -319,9 +319,9 @@ def get_expos_info_list(sigungu, bjdong, bun, ji):
                 return [items]
             return items
         except Exception as e:
-            if attempt == 1:
+            if attempt == 3:
                 print(f"get_expos_info_list 에러: {e}")
-            import time; time.sleep(0.3)
+            import time; time.sleep(0.5 * (attempt + 1))
     return None
 
 def get_building_floor_info(sigungu, bjdong, bun, ji):
@@ -605,8 +605,10 @@ colors.HexColor("#FFFFFF")), ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8
                 if hd.get("apt_price_year"):
                     apt_price_str = f"{hd['apt_price_year']}년 기준 {apt_price_str}"
             viol_status = "⚠️ 위반건축물" if hd.get("viol_yn") == "Y" else "정상 (위반 없음)"
+            hd_flr = hd.get("flr_no") or hd.get("flrNo") or "정보없음"
+            hd_flr_str = f"{hd_flr}층" if str(hd_flr).isdigit() else str(hd_flr)
             ho_table_data = [
-                [Paragraph("<b>해당 층수</b>", label_style), Paragraph(f"{hd['flr_no']}층", value_style), Paragraph("<b>위반 여부</b>", label_style), Paragraph(viol_status, value_style)],
+                [Paragraph("<b>해당 층수</b>", label_style), Paragraph(hd_flr_str, value_style), Paragraph("<b>위반 여부</b>", label_style), Paragraph(viol_status, value_style)],
                 [Paragraph("<b>전용면적</b>", label_style), Paragraph(pyung_area, value_style), Paragraph("<b>공급면적</b>", label_style), Paragraph(supply_area, value_style)],
                 [Paragraph("<b>대지지분</b>", label_style), Paragraph(land_share_str, value_style), Paragraph("<b>공동주택가격</b>", label_style), Paragraph(apt_price_str, value_style)]
             ]
@@ -663,35 +665,40 @@ Paragraph(area_str, table_cell_style_right), Paragraph(f["structure"], table_cel
             fl_table.setStyle(TableStyle(fl_table_style))
             story.append(fl_table)
             story.append(Spacer(1, 10))
-        if not bld_data["is_jibbap"]:
-            story.append(Paragraph("■ [대지지분 정보]", h2_style))
+        if bld_data.get("land_shares_raw"):
+            story.append(Paragraph("■ [단지/동별 대지지분 현황]", h2_style))
             share_rows = []
-            while bld_data.get("land_shares_raw"):
-                seen = set()
-                for item in bld_data["land_shares_raw"]:
-                    rate = item["rate"]
-                    ho = item["ho"]
-                    if ho and ho != "0000":
-                        pass
-                    ho_str = ""
-                    if not rate:
-                        continue
-                    if not rate not in seen:
-                        continue
-                    seen.add(rate)
-                    share_rows.append([Paragraph("대지지분 비율", label_style), Paragraph(f"{rate}{ho_str}", value_style)])
-                None
-                break
-            share_rows.append([Paragraph("대지지분 형태", label_style),
-
-Paragraph(f"단독 소유 (대지면적 {bld_data["plat_area"]} ㎡ 전체)", value_style)])
+            seen = set()
+            for item in bld_data["land_shares_raw"]:
+                rate = item.get("rate") or item.get("raw")
+                ho = item.get("ho")
+                ho_str = f" ({ho}호)" if ho and ho != "0000" else ""
+                if not rate or rate in seen:
+                    continue
+                seen.add(rate)
+                m2_val = item.get("m2")
+                py_val = item.get("pyung")
+                if m2_val and py_val:
+                    val_text = f"{m2_val:.2f} ㎡ (약 {py_val}평) [비율: {rate}]"
+                else:
+                    val_text = f"{rate}"
+                share_rows.append([Paragraph(f"대지지분{ho_str}", label_style), Paragraph(val_text, value_style)])
+                if len(share_rows) >= 15:
+                    break
+            if not bld_data.get("is_jibbap"):
+                share_rows.append([Paragraph("대지지분 형태", label_style), Paragraph(f"단독 소유 (대지면적 {bld_data.get('plat_area', 0)} ㎡ 전체)", value_style)])
+            if share_rows:
+                share_table = Table(share_rows, colWidths=[120, 380])
+                share_table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFFFF")), ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8F0")), ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5), ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8)]))
+                story.append(share_table)
+                story.append(Spacer(1, 10))
+        elif not bld_data.get("is_jibbap"):
+            story.append(Paragraph("■ [대지지분 정보]", h2_style))
+            share_rows = [[Paragraph("대지지분 형태", label_style), Paragraph(f"단독 소유 (대지면적 {bld_data.get('plat_area', 0)} ㎡ 전체)", value_style)]]
             share_table = Table(share_rows, colWidths=[120, 380])
-            share_table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFFFF")),
-
-("BOX", (0, 0), (-1, -1), 1,
-
-colors.HexColor("#E2E8F0")), ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5), ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8)]))
+            share_table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFFFF")), ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8F0")), ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5), ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8)]))
             story.append(share_table)
+            story.append(Spacer(1, 10))
         def find_img_file(name):
             for d in (".", "scratch", "..", "assets", "../assets"):
                 for ext in (".png", ".jpg", ".jpeg"):
@@ -816,25 +823,96 @@ colors.HexColor("#E2E8F0")), ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColo
         grnd_cnt_int = 0
     except Exception as e:
         print(f" [!] PDF 파일 생성 중 오류 발생: {e}")
+
+def save_consultation_history_log(clean_addr, road_addr, ho_name, phone_no, trade_type, price, monthly, area, land_share, viol_str="정상"):
+    """
+    상담 분석 이력을 종합분석보고서/상담분석_이력대장.csv 에 자동 누적 기록
+    """
+    try:
+        import os
+        import csv
+        from datetime import datetime
+        
+        unified_dir = "종합분석보고서"
+        os.makedirs(unified_dir, exist_ok=True)
+        csv_path = os.path.join(unified_dir, "상담분석_이력대장.csv")
+        
+        file_exists = os.path.exists(csv_path)
+        with open(csv_path, "a", encoding="utf-8-sig", newline="") as f:
+            writer = csv.writer(f)
+            if not file_exists:
+                writer.writerow([
+                    "일시", "지번주소", "도로명주소", "호수", "상담자전화번호", 
+                    "거래유형", "희망가격(만원)", "월세(만원)", 
+                    "전용면적(㎡)", "전용면적(평)", "대지지분(㎡)", "대지지분(평)", "위반여부"
+                ])
+            
+            area_m2 = f"{float(area):.2f}" if area else ""
+            area_py = f"{round(float(area) * 0.3025, 1)}" if area else ""
+            
+            ls_m2 = f"{float(land_share):.2f}" if land_share else ""
+            ls_py = f"{round(float(land_share) * 0.3025, 1)}" if land_share else ""
+            
+            ho_disp = f"{ho_name}호" if ho_name and not str(ho_name).endswith("호") else (ho_name or "")
+            
+            writer.writerow([
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                clean_addr or "",
+                road_addr or "",
+                ho_disp,
+                phone_no or "",
+                trade_type or "종합",
+                price or "",
+                monthly or "",
+                area_m2,
+                area_py,
+                ls_m2,
+                ls_py,
+                viol_str or "정상"
+            ])
+        print(f"       -> [기록 보존] 상담분석 이력대장 자동 저장 완료: {csv_path}")
+    except Exception as e:
+        print(f" [!] 상담분석 이력대장 저장 중 오류: {e}")
+
 def save_building_report(address, bld_data):
     from trade_viewer import mask_address_string, mask_phone_number
     import os; os.makedirs("건축물대장", exist_ok=True)
+    
+    # 1. 파일명 생성 (호수가 있으면 호수 포함)
+    ho_name = bld_data.get("ho_name", "")
+    safe_ho = "".join([c for c in str(ho_name) if c.isalnum()]).strip()
+    ho_suffix = f"_{safe_ho}호" if safe_ho else ""
+    
     safe_addr = "".join([c for c in address if c not in (" ", "-", "_")]).strip()
-    filename_txt = f"건축물대장/건축물대장_{safe_addr}.txt"
+    filename_txt = f"건축물대장/건축물대장_{safe_addr}{ho_suffix}.txt"
     filename_pdf = f"건축물대장/건축물대장_{safe_addr}.pdf"
     
+    # 2. 정확한 원본 주소 조합 (저장용 텍스트 기록에 보존)
+    raw_clean_addr = bld_data.get("clean_address", "")
+    raw_road_addr = bld_data.get("road_address", "")
+    if raw_clean_addr and raw_road_addr and raw_clean_addr != raw_road_addr:
+        full_raw_address = f"{raw_clean_addr} ({raw_road_addr})"
+    else:
+        full_raw_address = raw_clean_addr or raw_road_addr or address
+    if ho_name and not full_raw_address.endswith(f"{ho_name}호") and not full_raw_address.endswith(f"{ho_name}"):
+        full_raw_address += f" {ho_name}호"
+        
     masked_address = mask_address_string(address)
     
     lines = []
     
-    lines.append("================================================================================"); lines.append(f"               [ {masked_address} 건축물대장 및 토지 정보 ]"); lines.append("================================================================================"); lines.append("※ 본 보고서는 대장 조회를 통해 실시간 분석한 결과입니다.")
+    lines.append("================================================================================")
+    lines.append(f"               [ {full_raw_address} 건축물대장 및 토지 정보 ]")
+    lines.append("================================================================================")
+    lines.append("※ 본 보고서는 대장 조회를 통해 실시간 분석한 결과입니다. (내부 보관용 상세 기록)")
     
-    lines.append(f"※ 조회 일시: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
+    lines.append(f"※ 조회 일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     phone_no = bld_data.get("phone_number")
     if phone_no:
-        lines.append(f"※ 의뢰인 연락처: {mask_phone_number(phone_no)}")
-    lines.append("--------------------------------------------------------------------------------"); lines.append("■ [기본 건축물 정보]")
+        lines.append(f"※ 의뢰인 연락처: {phone_no}") # 저장 기록에는 마스킹 없이 원본 전화번호 보존!
+    lines.append("--------------------------------------------------------------------------------")
+    lines.append("■ [기본 건축물 정보]")
     bld_type_str = "집합건물 (공동주택/아파트/오피스텔 등)" if bld_data["is_jibbap"] else "일반건물 (단독/다가구/상가주택 등)"
     lines.append(f"  • 건물 유형: {bld_type_str}")
     
@@ -904,21 +982,24 @@ def save_building_report(address, bld_data):
         lines.append("--------------------------------------------------------------------------------")
         if bld_data.get("ho_details"):
             hd = bld_data["ho_details"]
-            lines.append(f"■ [{mask_ho_name(bld_data["ho_name"])}호 전유부분 상세 정보]")
-            lines.append(f"  • 해당 층수: {hd["flr_no"]}층")
+            ho_title = f"{bld_data['ho_name']}호" if bld_data.get("ho_name") else "전유부분"
+            lines.append(f"■ [{ho_title} 상세 정보]")
+            hd_flr = hd.get("flr_no") or hd.get("flrNo") or "정보없음"
+            hd_flr_str = f"{hd_flr}층" if str(hd_flr).isdigit() else str(hd_flr)
+            lines.append(f"  • 해당 층수: {hd_flr_str}")
             if hd.get("area"):
                 pyung = round(hd["area"] * 0.3025, 1)
-                lines.append(f"  • 전용면적: {hd["area"]:.2f} ㎡ ({pyung}평)")
+                lines.append(f"  • 전용면적: {hd['area']:.2f} ㎡ ({pyung}평)")
             if hd.get("supply_area"):
                 spyung = round(hd["supply_area"] * 0.3025, 1)
-                lines.append(f"  • 공급면적: {hd["supply_area"]:.2f} ㎡ ({spyung}평)")
+                lines.append(f"  • 공급면적: {hd['supply_area']:.2f} ㎡ ({spyung}평)")
             land_share_str = "정보없음"
             if hd.get("land_share"):
                 l_area = float(hd["land_share"])
                 l_pyung = round(l_area * 0.3025, 1)
                 land_share_str = f"{l_area:.2f} ㎡ ({l_pyung}평)"
             lines.append(f"  • 대지지분: {land_share_str}")
-            viol_status = hd.get("viol_yn") == "Y" and "정상 (위반 없음)"
+            viol_status = "⚠️ 위반건축물" if (hd.get("viol_yn") == "Y" or hd.get("violBldYn") == "Y") else "정상 (위반 없음)"
             lines.append(f"  • 위반 여부: {viol_status}")
             if hd.get("apt_price"):
                 price_val = hd["apt_price"]
@@ -968,14 +1049,20 @@ def save_building_report(address, bld_data):
             else:
                 lines.append(f"  • 대지 지분: 단독 소유 (대지면적: {bld_data['plat_area']} ㎡ 전체)")
             lines.append("--------------------------------------------------------------------------------")
+        m_name = "조항준 공인중개사"
+        phone_line = "📞 02-375-4489 / 010-9128-0586"
+        addr_lines = ["📍 서울 마포구 모래내로 7길 52"]
+        m_reg = ""
         member = load_member_info()
         if member:
-            m_name = format_member_name(member.get("name", ""))
+            m_name = format_member_name(member.get("name", "")) or m_name
             m_phone = member.get("phone", "")
+            if m_phone:
+                phone_line = f"📞 {m_phone}"
             m_addr = member.get("office_address", "")
+            if m_addr:
+                addr_lines = [f"📍 {m_addr}"]
             m_reg = member.get("registration_number", "")
-            phone_line = f"📞 {m_phone}"
-            addr_lines = [f"📍 {m_addr}"]
         lines.append("──────────────────────────────")
         lines.append("")
         lines.append("        감사합니다.")
@@ -1010,9 +1097,16 @@ def save_building_report(address, bld_data):
         import shutil
         unified_dir = "종합분석보고서"
         os.makedirs(unified_dir, exist_ok=True)
-        unified_txt = os.path.join(unified_dir, f"건축물대장_{safe_addr.replace(" ", "_")}.txt")
-        unified_pdf = os.path.join(unified_dir, f"건축물대장_{safe_addr.replace(" ", "_")}.pdf")
+        safe_addr_clean = safe_addr.replace(" ", "_")
+        unified_txt = os.path.join(unified_dir, f"건축물대장_{safe_addr_clean}.txt")
+        unified_pdf = os.path.join(unified_dir, f"건축물대장_{safe_addr_clean}.pdf")
         shutil.copy2(filename_txt, unified_txt)
+        if ho_suffix:
+            unified_ho_txt = os.path.join(unified_dir, f"건축물대장_{safe_addr_clean}{ho_suffix}.txt")
+            try:
+                shutil.copy2(filename_txt, unified_ho_txt)
+            except Exception:
+                pass
         if os.path.exists(filename_pdf):
             shutil.copy2(filename_pdf, unified_pdf)
         print("       -> 종합분석보고서 통합 폴더에도 복사본이 저장되었습니다.")
@@ -1199,11 +1293,18 @@ def run_building_viewer():
         ji_val = str(addr_info["ji"]).zfill(4) if addr_info.get("ji") else "0000"
         pnu = f"{addr_info['sigunguCd']}{addr_info['bjdongCd']}1{bun_val}{ji_val}"
         vworld_key = "80194C85-0EE3-3220-A3C1-3268AD8756B9"
+        from serve_auto_upload import get_vworld_land_share, get_vworld_all_land_shares
+        shares_map = {}
+        raw_shares = []
+        try:
+            shares_map, raw_shares = get_vworld_all_land_shares(vworld_key, pnu)
+        except Exception as e:
+            print(f"대지권등록부 조회 에러: {e}")
+
         land_share = ""
         if ho_name:
             try:
-                from serve_auto_upload import get_vworld_land_share
-                land_share = get_vworld_land_share(vworld_key, pnu, "", ho_name)
+                land_share = get_vworld_land_share(vworld_key, pnu, dong_name, ho_name)
             except Exception as e:
                 print(f"대지지분 조회 에러: {e}")
         print("\n═══════════════════════════════════════════════════════")
@@ -1355,6 +1456,68 @@ def run_building_viewer():
             if ho_name:
                 print(f"\n -> 요청하신 [{ho_name}호] 전유부 상세 정보 조회 중...")
                 unit_info = get_expos_unit_details(addr_info["sigunguCd"], addr_info["bjdongCd"], addr_info["bun"], addr_info["ji"], ho_name, dong_name)
+                if unit_info:
+                    # 대지지분 매칭 및 주입
+                    l_share_entry = None
+                    if shares_map:
+                        target_clean = re.sub(r'[^0-9]', '', ho_name)
+                        l_share_entry = shares_map.get(ho_name) or shares_map.get(f"{ho_name}호") or (shares_map.get(target_clean) if target_clean else None)
+                    if l_share_entry and l_share_entry.get("m2") is not None:
+                        l_m2 = l_share_entry["m2"]
+                        l_py = l_share_entry["pyung"]
+                        unit_info["land_share"] = l_m2
+                        unit_info["land_share_pyung"] = l_py
+                        unit_info["land_share_str"] = f"{l_m2:.2f} ㎡ ({l_py}평)"
+                        unit_info["land_share_raw"] = l_share_entry.get("raw", "")
+                    elif land_share:
+                        try:
+                            l_m2 = float(land_share)
+                            l_py = round(l_m2 * 0.3025, 2)
+                            unit_info["land_share"] = l_m2
+                            unit_info["land_share_pyung"] = l_py
+                            unit_info["land_share_str"] = f"{l_m2:.2f} ㎡ ({l_py}평)"
+                        except:
+                            pass
+
+                    # 1차 화면 상단에 호실 핵심 지표 즉시 출력!
+                    disp_ho = unit_info.get('hoNm') or ho_name
+                    if not str(disp_ho).endswith("호"):
+                        disp_ho = f"{disp_ho}호"
+                    flr_val = unit_info.get('flrNo')
+                    if not flr_val and l_share_entry and l_share_entry.get('floor'):
+                        flr_val = l_share_entry['floor']
+                    if not flr_val:
+                        from trade_viewer import extract_floor_from_string
+                        flr_val = extract_floor_from_string(ho_name)
+                    flr_disp = f"{flr_val}층" if flr_val else "정보없음"
+
+                    print("\n───────────────────────────────────────────────────────")
+                    print(f"  🎯 [ {disp_ho} 전유부분 및 대지지분 핵심 정보 ]")
+                    print("───────────────────────────────────────────────────────")
+                    print(f"  • 해당 층수    : {flr_disp}")
+                    if unit_info.get("area"):
+                        pyung = round(unit_info["area"] * 0.3025, 1)
+                        print(f"  • 전용면적    : {unit_info['area']:.2f} ㎡ (약 {pyung}평)")
+                        target_area = unit_info["area"]
+                    if unit_info.get("supply_area"):
+                        spyung = round(unit_info["supply_area"] * 0.3025, 1)
+                        print(f"  • 공급면적    : {unit_info['supply_area']:.2f} ㎡ (약 {spyung}평)")
+                    if unit_info.get("land_share"):
+                        raw_tag = f" [대지권비율: {unit_info.get('land_share_raw')}]" if unit_info.get('land_share_raw') else ""
+                        print(f"  • ★대지지분★ : {unit_info['land_share']:.2f} ㎡ (약 {unit_info['land_share_pyung']}평){raw_tag}")
+                    else:
+                        print(f"  • 대지지분    : 대지권등록부 정보 없음 (단독/다가구 또는 미등기)")
+                    viol_status = "⚠️ 위반건축물" if unit_info.get("viol_yn") == "Y" or unit_info.get("violBldYn") == "Y" else "정상 (위반 없음)"
+                    print(f"  • 위반 여부    : {viol_status}")
+                    apt_house_price = get_vworld_apartment_house_price(vworld_key, pnu, dong_name, ho_name)
+                    if apt_house_price:
+                        price_val = apt_house_price["price"]
+                        formatted_p = format_assessed_price(price_val)
+                        price_126 = int(price_val * 1.26)
+                        formatted_126 = format_assessed_price(price_126)
+                        print(f"  • 공동주택가격: {apt_house_price['year']}년 기준 {formatted_p} (126%: {formatted_126})")
+                    print("───────────────────────────────────────────────────────")
+
             print("\n -> 전유부(가구/호수 리스트) 조회 중...")
             expos_list = get_expos_info_list(addr_info["sigunguCd"], addr_info["bjdongCd"], addr_info["bun"], addr_info["ji"])
             if expos_list:
@@ -1382,12 +1545,22 @@ def run_building_viewer():
                     expos_list_count = filtered_count
                     print("--------------------------------------------------")
                     dong_desc = f" [{dong_name}동]" if dong_name else ""
-                    print(f"  [호수별 구성]{dong_desc} 총 {filtered_count}개 전유부분 등록됨")
+                    print(f"  [호수별 구성 및 대지지분 현황]{dong_desc} 총 {filtered_count}개 전유부분 등록됨")
                     sorted_floors = sorted(floor_map.keys(), key=(lambda x: int(re.sub("[^0-9-]", "", x)) if re.sub("[^0-9-]", "", x) else 0))
                     for flr in sorted_floors:
                         hos = sorted(list(floor_map[flr]))
-                        hos_str = ", ".join(hos)
-                        print(f"   • {flr}층: {hos_str}")
+                        if filtered_count <= 30 and shares_map:
+                            print(f"   • {flr}층:")
+                            for h in hos:
+                                h_clean = re.sub(r'[^0-9]', '', h)
+                                sh = shares_map.get(h) or shares_map.get(f"{h}호") or (shares_map.get(h_clean) if h_clean else None)
+                                if sh and sh.get("m2") is not None:
+                                    print(f"      - {h}호: 대지지분 {sh['m2']:.2f} ㎡ (약 {sh['pyung']}평) [비율 {sh['raw']}]")
+                                else:
+                                    print(f"      - {h}호: (대지지분 정보 없음)")
+                        else:
+                            hos_str = ", ".join(hos)
+                            print(f"   • {flr}층: {hos_str}")
                     print("--------------------------------------------------")
             else:
                 print("  [참고] 등록된 개별 호수 구성(전유부분)이 없습니다.")
@@ -1466,15 +1639,37 @@ def run_building_viewer():
             if unit_info.get("supply_area"):
                 spyung = round(unit_info["supply_area"] * 0.3025, 1)
                 print(f"  • 공급면적  : {unit_info['supply_area']:.2f} ㎡ ({spyung}평)")
-            try:
-                from serve_auto_upload import get_vworld_land_share
-                land_share = get_vworld_land_share(vworld_key, pnu, "", ho_name)
-                if land_share:
-                    l_area = float(land_share)
-                    l_pyung = round(l_area * 0.3025, 1)
-                    print(f"  • 대지지분  : {l_area:.2f} ㎡ ({l_pyung}평)")
-            except Exception as e:
-                print(f"대지지분 조회 중 오류: {e}")
+
+            # 대지지분 확인 및 unit_info 주입
+            if not unit_info.get("land_share"):
+                l_share_entry = None
+                if shares_map:
+                    target_clean = re.sub(r'[^0-9]', '', ho_name)
+                    l_share_entry = shares_map.get(ho_name) or shares_map.get(f"{ho_name}호") or (shares_map.get(target_clean) if target_clean else None)
+                if l_share_entry and l_share_entry.get("m2") is not None:
+                    unit_info["land_share"] = l_share_entry["m2"]
+                    unit_info["land_share_pyung"] = l_share_entry["pyung"]
+                    unit_info["land_share_str"] = f"{l_share_entry['m2']:.2f} ㎡ ({l_share_entry['pyung']}평)"
+                    unit_info["land_share_raw"] = l_share_entry.get("raw", "")
+                else:
+                    try:
+                        from serve_auto_upload import get_vworld_land_share
+                        land_share = get_vworld_land_share(vworld_key, pnu, dong_name, ho_name)
+                        if land_share:
+                            l_area = float(land_share)
+                            l_pyung = round(l_area * 0.3025, 2)
+                            unit_info["land_share"] = l_area
+                            unit_info["land_share_pyung"] = l_pyung
+                            unit_info["land_share_str"] = f"{l_area:.2f} ㎡ ({l_pyung}평)"
+                    except Exception as e:
+                        pass
+
+            if unit_info.get("land_share"):
+                raw_tag = f" [대지권비율: {unit_info.get('land_share_raw')}]" if unit_info.get('land_share_raw') else ""
+                print(f"  • ★대지지분★: {unit_info['land_share']:.2f} ㎡ (약 {unit_info.get('land_share_pyung', round(unit_info['land_share']*0.3025, 2))}평){raw_tag}")
+            else:
+                print(f"  • 대지지분  : 정보없음 (대지권등록부 미등기 또는 조회 불가)")
+
             viol_status = "⚠️ 위반건축물" if unit_info.get("viol_yn") == "Y" or unit_info.get("violBldYn") == "Y" else "정상 (위반 없음)"
             print(f"  • 위반 여부  : {viol_status}")
             apt_house_price = get_vworld_apartment_house_price(vworld_key, pnu, dong_name, ho_name)
@@ -1776,11 +1971,48 @@ def run_building_viewer():
             "expos_list_count": locals().get("expos_list_count", 0),
             "distinct_dongs": locals().get("distinct_dongs", []),
             "floors": locals().get("floors", []),
-            "land_shares_raw": locals().get("items", [])
+            "land_shares_raw": raw_shares if raw_shares else locals().get("items", []),
+            "clean_address": clean_address,
+            "road_address": addr_info.get("road_address", "")
         }
         save_building_report(addr_info.get("road_address") or clean_address, bld_data)
+        
+        # [신설] 상담 분석 이력 CSV 자동 누적 기록
+        eff_area = target_area or (unit_info.get("area") if unit_info else None)
+        eff_land_share = (unit_info.get("land_share") if unit_info else None) or land_share
+        eff_viol = unit_info.get("viol_str") if (unit_info and unit_info.get("viol_str")) else bld_data.get("viol_str", "정상")
+        save_consultation_history_log(
+            clean_addr=clean_address,
+            road_addr=addr_info.get("road_address", ""),
+            ho_name=ho_name,
+            phone_no=client_phone,
+            trade_type=locals().get("trade_type", "종합"),
+            price=locals().get("target_price"),
+            monthly=locals().get("target_monthly"),
+            area=eff_area,
+            land_share=eff_land_share,
+            viol_str=eff_viol
+        )
+
         from trade_viewer import save_briefing_report
         display_addr = addr_info.get("road_address") or clean_address or "조회 대상 주소"
+        
+        # [강화] desired_info에 개별호수, 전용면적, 대지지분, 원본 주소/전화번호 전달
+        if desired_info is None:
+            desired_info = {}
+        desired_info["phone_number"] = client_phone
+        desired_info["ho_name"] = ho_name
+        desired_info["unit_info"] = unit_info
+        desired_info["clean_address"] = clean_address
+        desired_info["road_address"] = addr_info.get("road_address", "")
+        if unit_info:
+            desired_info["exclusive_area"] = unit_info.get("area")
+            desired_info["supply_area"] = unit_info.get("supply_area")
+            desired_info["land_share"] = unit_info.get("land_share")
+            desired_info["land_share_pyung"] = unit_info.get("land_share_pyung")
+        elif eff_land_share:
+            desired_info["land_share"] = eff_land_share
+            
         save_res = save_briefing_report(display_addr, trades, jeonses, wolses, prop_type_name, period_label=selected_label, is_expanded=is_expanded, target_build_year=target_build_year, target_area=target_area, target_floor=target_floor, desired_info=desired_info, target_bld_nm=bld_data.get("bld_nm"), target_bun=addr_info.get("bun"), target_ji=addr_info.get("ji"), is_complex_analysis=is_complex_analysis)
         target_addr_str = addr_info.get("road_address") or clean_address
         safe_addr_for_open = "".join([c for c in target_addr_str if c not in (" ", "-", "_")]).strip()

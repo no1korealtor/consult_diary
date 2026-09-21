@@ -1352,6 +1352,16 @@ def mask_address_string(addr_str):
             continue
         masked_parts.append(part)
     return " ".join(masked_parts)
+
+def mask_ho_name(ho):
+    if not ho:
+        return ""
+    ho_str = str(ho).strip()
+    digits = re.findall(r"\d+", ho_str)
+    if digits:
+        return ho_str.replace(digits[0], "***")
+    return "***"
+
 def mask_phone_number(phone):
     if not phone:
         return ""
@@ -1709,6 +1719,19 @@ def save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, f
             [Paragraph("<b>부동산 유형</b>", label_style), Paragraph(prop_type_name, value_style)], [Paragraph("<b>분석 기준 기간</b>", label_style),
 
 Paragraph(f"{period_label} (국토교통부 실거래가 기준)", value_style)]]
+        ho_label = desired_info.get("ho_name") if desired_info else None
+        target_area_val = target_area or (desired_info.get("exclusive_area") if desired_info else None)
+        land_share_val = desired_info.get("land_share") if desired_info else None
+
+        if ho_label:
+            meta_data.append([Paragraph("<b>분석 대상 호실</b>", label_style), Paragraph(f"{mask_ho_name(ho_label)}호", value_style)])
+        if target_area_val:
+            py = round(float(target_area_val) * 0.3025, 1)
+            meta_data.append([Paragraph("<b>호실 전용면적</b>", label_style), Paragraph(f"<b>{float(target_area_val):.2f} ㎡ (약 {py}평)</b>", value_style)])
+        if land_share_val:
+            lpy = round(float(land_share_val) * 0.3025, 1)
+            meta_data.append([Paragraph("<b>호실 대지지분</b>", label_style), Paragraph(f"<b>{float(land_share_val):.2f} ㎡ (약 {lpy}평)</b>", value_style)])
+
         if desired_info and desired_info.get("room_count_label"):
             meta_data.append([Paragraph("<b>분석 대상 방 개수</b>", label_style), Paragraph(desired_info["room_count_label"], value_style)])
         if desired_info and desired_info.get("phone_number"):
@@ -1801,6 +1824,23 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                 ]
             ]
             
+            # [신설] 개별 호수 분석 시, 전용면적과 대지지분을 첫 행에 강조 배치!
+            if target_area_val or land_share_val:
+                area_py = round(float(target_area_val) * 0.3025, 1) if target_area_val else 0.0
+                area_str = f"<b>{float(target_area_val):.2f} ㎡ (약 {area_py}평)</b>" if target_area_val else "정보없음"
+                if land_share_val:
+                    ls_py = round(float(land_share_val) * 0.3025, 1)
+                    ls_str = f"<b>{float(land_share_val):.2f} ㎡ (약 {ls_py}평)</b>"
+                else:
+                    ls_str = "대지권 정보 없음 (단독/다가구)"
+                
+                bld_table_data.insert(0, [
+                    Paragraph("<b>분석 호실 전용면적</b>", hdr_cell),
+                    Paragraph(area_str, val_cell_high),
+                    Paragraph("<b>분석 호실 대지지분</b>", hdr_cell),
+                    Paragraph(ls_str, val_cell_high)
+                ])
+            
             if bld_overview.get("land_use_zone") != "-" or bld_overview.get("official_land_price_str") != "-":
                 bld_table_data.append([
                     Paragraph("<b>용도지역 / 지목</b>", hdr_cell),
@@ -1809,7 +1849,8 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                     Paragraph(f"{bld_overview['official_land_price_str']}", val_cell)
                 ])
                 
-            if bld_overview.get("reg_zones_str") and bld_overview["reg_zones_str"] != "해당 없음 (일반 지역)":
+            has_reg_zone = bool(bld_overview.get("reg_zones_str") and bld_overview["reg_zones_str"] != "해당 없음 (일반 지역)")
+            if has_reg_zone:
                 bld_table_data.append([
                     Paragraph("<b>정비구역 / 규제</b>", hdr_cell),
                     Paragraph(f"{bld_overview['reg_zones_str']}", val_cell),
@@ -1830,8 +1871,9 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                 ("LEFTPADDING", (0, 0), (-1, -1), 6),
                 ("RIGHTPADDING", (0, 0), (-1, -1), 6)
             ]
-            if len(bld_table_data) == 6:
-                t_style.append(("SPAN", (1, 5), (3, 5)))
+            if has_reg_zone:
+                last_idx = len(bld_table_data) - 1
+                t_style.append(("SPAN", (1, last_idx), (3, last_idx)))
             bld_table.setStyle(TableStyle(t_style))
             
             story.append(Paragraph("■ [분석 대상 물건] 토지 및 건축물 종합 개요", h2_style))
@@ -2493,10 +2535,21 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
             expansion_mode = "strict"
         import os
         from datetime import datetime
-        os.makedirs("시세브리핑", exist_ok=True)
-        masked_address = mask_address_string(address)
+        ho_label = desired_info.get("ho_name") if desired_info else None
+        safe_ho = "".join([c for c in str(ho_label) if c.isalnum()]).strip() if ho_label else ""
+        ho_suffix = f"_{safe_ho}호" if safe_ho else ""
+        
+        raw_clean_addr = desired_info.get("clean_address", "") if desired_info else ""
+        raw_road_addr = desired_info.get("road_address", "") if desired_info else ""
+        if raw_clean_addr and raw_road_addr and raw_clean_addr != raw_road_addr:
+            full_raw_address = f"{raw_clean_addr} ({raw_road_addr})"
+        else:
+            full_raw_address = raw_clean_addr or raw_road_addr or address
+        if ho_label and not full_raw_address.endswith(f"{ho_label}호") and not full_raw_address.endswith(f"{ho_label}"):
+            full_raw_address += f" {ho_label}호"
+
         safe_addr = "".join([c for c in address if c not in (" ", "-", "_")]).strip()
-        filename = f"시세브리핑/시세브리핑_{safe_addr.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        filename = f"시세브리핑/시세브리핑_{safe_addr.replace(' ', '_')}{ho_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         apt_groups = []
         if prop_type_name == "아파트":
             all_items = trades + jeonses + wolses
@@ -2519,13 +2572,14 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                 report_lines.append(f"               [ {apt_name} 거래동향 보고서 ]")
         else:
             if is_expanded:
-                report_lines.append(f"          [ {masked_address} 인근 유사 매물 실거래 시세 브리핑 ]")
+                report_lines.append(f"          [ {full_raw_address} 인근 유사 매물 실거래 시세 브리핑 ]")
             else:
-                report_lines.append(f"               [ {masked_address} 인근 실거래 시세 브리핑 ]")
+                report_lines.append(f"               [ {full_raw_address} 인근 실거래 시세 브리핑 ]")
         report_lines.append("================================================================================")
+        report_lines.append("※ 본 자료는 내부 보관 및 상담용 상세 분석 기록입니다. (정확한 주소 및 연락처 보존)")
         
         if is_expanded:
-            report_lines.append(f"※ 분석 목적 물건: {apt_name or masked_address}")
+            report_lines.append(f"※ 분석 목적 물건: {apt_name or full_raw_address}")
             report_lines.append("※ 분석 기준 사유: 목적 물건의 실거래 데이터가 부족하여, 인근 유사 조건의 매물을 포함해 확장 분석을 진행하였습니다.")
             
             if expansion_mode == "strict":
@@ -2554,11 +2608,24 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
             report_lines.append("--------------------------------------------------------------------------------")
         report_lines.append(f"※ 본 자료는 국토교통부 {period_label} 실거래 내역을 분석한 결과입니다.")
         report_lines.append(f"※ 부동산 유형: {prop_type_name}")
+        
+        # [신설] 분석 대상 호실, 전용면적, 대지지분 표시 (TXT)
+        if ho_label:
+            report_lines.append(f"※ 분석 대상 호실: {ho_label}호")
+        target_area_val = target_area or (desired_info.get("exclusive_area") if desired_info else None)
+        if target_area_val:
+            py = round(float(target_area_val) * 0.3025, 1)
+            report_lines.append(f"※ 호실 전용면적: {float(target_area_val):.2f} ㎡ (약 {py}평)")
+        land_share_val = desired_info.get("land_share") if desired_info else None
+        if land_share_val:
+            lpy = round(float(land_share_val) * 0.3025, 1)
+            report_lines.append(f"※ 호실 대지지분: {float(land_share_val):.2f} ㎡ (약 {lpy}평)")
+            
         if desired_info and desired_info.get("room_count_label"):
             report_lines.append(f"※ 분석 대상 방 개수: {desired_info['room_count_label']}")
         if desired_info and desired_info.get("phone_number"):
-            masked_phone = mask_phone_number(desired_info["phone_number"])
-            report_lines.append(f"※ 의뢰인 연락처: {masked_phone}")
+            raw_phone = desired_info["phone_number"]
+            report_lines.append(f"※ 의뢰인 연락처: {raw_phone}") # 원본 전화번호 기록!
         if target_floor is not None:
             floor_lbl = f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층"
             report_lines.append(f"※ 분석 대상 층수: {floor_lbl}")
@@ -2584,6 +2651,27 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                 report_lines.append("※ [확장 분석] 대상 지번의 거래 사례 부족으로 동일 행정동(생활권) 내 유사 매물 사례를 분석하였습니다.")
                 report_lines.append(f"※ 유사 매물 기준 (행정동 생활권): {cond_str}")
             
+        # [신설] 분석 대상 호실 핵심 면적 및 대지지분 정보 (TXT)
+        if target_area_val or land_share_val or ho_label:
+            ho_disp = f"[{ho_label}호]" if ho_label else ""
+            report_lines.append("--------------------------------------------------------------------------------")
+            report_lines.append(f"■ [분석 대상 {ho_disp} 핵심 면적 및 대지지분]")
+            if ho_label:
+                report_lines.append(f"  • 분석 대상 호실 : {ho_label}호")
+            if target_area_val:
+                py = round(float(target_area_val) * 0.3025, 1)
+                report_lines.append(f"  • 전용면적       : {float(target_area_val):.2f} ㎡ (약 {py}평)")
+            if land_share_val:
+                lpy = round(float(land_share_val) * 0.3025, 1)
+                report_lines.append(f"  • 대지지분       : {float(land_share_val):.2f} ㎡ (약 {lpy}평)")
+            supply_val = desired_info.get("supply_area") if desired_info else None
+            if supply_val:
+                spy = round(float(supply_val) * 0.3025, 1)
+                report_lines.append(f"  • 공급면적       : {float(supply_val):.2f} ㎡ (약 {spy}평)")
+            if target_floor is not None:
+                fl_desc = f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층"
+                report_lines.append(f"  • 해당 층수     : {fl_desc}")
+
         # 분석 대상 물건 토지 및 건축물 종합 개요 (TXT)
         bld_overview = get_property_comprehensive_overview(bun=target_bun, ji=target_ji, address_str=address)
         if bld_overview and bld_overview.get("has_data"):
@@ -2777,8 +2865,7 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
             report_lines.append("■ [희망 거래가 분석 및 적정성 평가]")
             phone_no = desired_info.get("phone_number")
             if phone_no:
-                masked_phone = mask_phone_number(phone_no)
-                report_lines.append(f"  • 의뢰인 연락처  : {masked_phone}")
+                report_lines.append(f"  • 의뢰인 연락처  : {phone_no}")
                 
             if d_converted == 0:
                 report_lines.append("  • 의뢰 고객 희망 조건: 미지정 (시세 정보 브리핑)")
@@ -2788,7 +2875,7 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                 report_lines.append(f"  • 의뢰 고객 희망 조건: {price_label_str}")
                 
                 if not ref_val:
-                    report_lines.append(f"  • 적정 시세 기준선  : 판단 불가 (비교 사례 부족)")
+                    report_lines.append("  • 적정 시세 기준선  : 판단 불가 (비교 사례 부족)")
                 else:
                     report_lines.append(f"  • 적정 시세 기준선  : {local_format_price(ref_val)} ({ref_desc})")
                 
@@ -2798,20 +2885,16 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                     ref_val_str = local_format_price(ref_val)
                     diff_val_str = local_format_price(abs(diff))
                     if abs(pct) <= 5.0:
-                        eval_title = "적절함 (인근 시세 수준)"
-                        detail_desc = f"희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준) 대비 약 {abs(pct):.1f}% 차이로, 현재 시장 가격대 범위 내에서 매우 적정하게 책정된 상태입니다."
-                    elif diff < 0:
-                        eval_title = "저렴함 (시세 대비 가격경쟁력 우수)"
-                        detail_desc = f"희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준) 대비 약 {diff_val_str} ({abs(pct):.1f}%) 저렴하게 책정되어 있습니다. 시장 진입 시 빠른 거래 성사가 예상되어 가격 경쟁력이 높습니다."
+                        report_lines.append("  • 거래희망가 평가 결과: 매우 적정 (시세 수준)")
+                        report_lines.append(f"  • 종합 의견: 희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준)와 거의 일치하여 시장에서 매우 경쟁력이 높고 합리적인 가격대입니다.")
+                    elif pct < -5.0:
+                        report_lines.append("  • 거래희망가 평가 결과: 저렴함 (시세 대비 가격경쟁력 우수)")
+                        report_lines.append(f"  • 종합 의견: 희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준) 대비 약 {diff_val_str} ({abs(pct):.1f}%) 저렴하게 책정되어 있습니다. 시장 진입 시 빠른 거래 성사가 예상되어 가격 경쟁력이 높습니다.")
                     else:
-                        eval_title = "높음 (가격 조정 권장)"
-                        detail_desc = f"희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준) 대비 약 {diff_val_str} ({pct:.1f}%) 높게 책정되어 있습니다. 거래 성사 및 빠른 중개를 위해 의뢰인과의 상의를 통한 가격 조정을 권장합니다."
-                else:
-                    eval_title = "보류 (비교 사례 부족)"
-                    detail_desc = "인근 지역 내 유사한 거래 사례(동일 면적대 및 층수별 사례)가 부족하여 자동 적정성 평가가 제한적입니다. 주변 법정동 및 대체 매물 시세를 추가로 고려하시기 바랍니다."
-                report_lines.append(f"  • 거래희망가 평가 결과: {eval_title}")
-                report_lines.append(f"  • 종합 의견: {detail_desc}")
-            report_lines.append("--------------------------------------------------------------------------------")
+                        report_lines.append("  • 거래희망가 평가 결과: 다소 높음 (시세 대비 상향 조정 검토 필요)")
+                        report_lines.append(f"  • 종합 의견: 희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준) 대비 약 {diff_val_str} ({abs(pct):.1f}%) 높게 책정되어 있습니다. 최근 시장의 매물 적체 상황 및 매수/임차인의 가격 민감도를 고려할 때 거래 성사까지 다소 시일이 소요될 수 있으므로, 적정선으로의 가격 조정을 권장합니다.")
+        
+        report_lines.append("--------------------------------------------------------------------------------")
         report_lines.append("■ [안내] 시세 데이터 수집 및 분석 기준 안내")
         report_lines.append("  • 아파트/다세대빌라/오피스텔: 입력 주소와 100% 동일 지번(단지/건물)의 실거래가 기준입니다.")
         report_lines.append("  • 단독/다가구 주택:")
@@ -2820,22 +2903,18 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         report_lines.append("             인근 유사 주택의 거래 사례를 기준으로 자동 산출한 시세입니다.")
         report_lines.append("================================================================================")
         report_lines.append("※ 본 브리핑 자료는 중개업무 참고용으로 법적 효력을 가지지 않습니다.")
-        report_lines.append("================================================================================")
-        console_content = "\n".join(report_lines)
+        m_name = "조항준 공인중개사"
+        phone_line = "📞 02-375-4489 / 010-9128-0586"
+        addr_lines = ["📍 서울 마포구 모래내로 7길 52"]
         member = load_member_info()
         if member:
-            m_name = format_member_name(member.get("name", ""))
+            m_name = format_member_name(member.get("name", "")) or m_name
             m_phone = member.get("phone", "")
+            if m_phone:
+                phone_line = f"📞 {m_phone}"
             m_addr = member.get("office_address", "")
-            m_reg = member.get("registration_number", "")
-            phone_line = f"📞 {m_phone}"
-            addr_lines = [f"📍 {m_addr}"]
-            if m_reg:
-                addr_lines.append(f"등록번호: {m_reg}")
-        else:
-            m_name = "조항준 공인중개사"
-            phone_line = "📞 010-9128-0586\n☎ 02-375-4489"
-            addr_lines = ["📍 서울 마포구 모래내로 7길 52"]
+            if m_addr:
+                addr_lines = [f"📍 {m_addr}"]
         report_lines.append("──────────────────────────────")
         report_lines.append("")
         report_lines.append("        감사합니다.")
@@ -2885,6 +2964,14 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                 shutil.copy2(filename, latest_txt)
             except Exception:
                 pass
+            if ho_suffix:
+                unified_ho_txt = os.path.join(unified_dir, f"시세브리핑_{safe_addr.replace(' ', '_')}{ho_suffix}_{time_str}.txt")
+                latest_ho_txt = os.path.join(unified_dir, f"시세브리핑_{safe_addr_for_open}{ho_suffix}.txt")
+                try:
+                    shutil.copy2(filename, unified_ho_txt)
+                    shutil.copy2(filename, latest_ho_txt)
+                except Exception:
+                    pass
             if os.path.exists(pdf_filename):
                 shutil.copy2(pdf_filename, unified_pdf)
                 try:
