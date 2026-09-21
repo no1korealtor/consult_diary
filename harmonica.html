@@ -1080,6 +1080,43 @@
             border-color: #a5b4fc !important;
             box-shadow: 0 0 10px rgba(99, 102, 241, 0.4) !important;
         }
+
+        /* --- Octave Shift Controls --- */
+        .octave-shift-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #18182a;
+            border: 1px solid #33334d;
+            padding: 4px 8px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .octave-btn {
+            background: #252538;
+            color: #94a3b8;
+            border: 1px solid #3e3e5c;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 11.5px;
+            font-family: 'Nunito', 'Jua', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .octave-btn:hover {
+            color: #ffffff;
+            border-color: #6366f1;
+        }
+        .octave-btn.active {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: #ffffff !important;
+            border-color: #a5b4fc !important;
+            box-shadow: 0 0 8px rgba(99, 102, 241, 0.45);
+        }
     </style>
 </head>
 <body>
@@ -1148,6 +1185,19 @@
                         <span id="solo-toggle-icon">📱</span>
                         <span id="solo-toggle-txt">단독 모드</span>
                     </button>
+                </div>
+            </div>
+
+            <!-- Octave Shift Controls (리코더 / 하모니카 옥타브 조절 바) -->
+            <div class="octave-shift-row">
+                <div style="display: flex; align-items: center; gap: 6px; color: #cbd5e1; font-weight: bold; font-family: 'Jua', sans-serif;">
+                    <span>🎚️ 옥타브:</span>
+                    <span id="octave-mode-desc" style="font-size: 11.5px; color: #94a3b8; font-weight: normal;">기본 (하모니카)</span>
+                </div>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <button type="button" id="btn-oct-down" onclick="setOctaveShift(-1)" class="octave-btn" title="리코더 등 1옥타브 높은 악기용 (1옥타브 낮춰 인식)">🪈 리코더(-1)</button>
+                    <button type="button" id="btn-oct-zero" onclick="setOctaveShift(0)" class="octave-btn active" title="하모니카 표준 음높이">기본(0)</button>
+                    <button type="button" id="btn-oct-up" onclick="setOctaveShift(1)" class="octave-btn" title="1옥타브 올려서 인식">+1 옥타브</button>
                 </div>
             </div>
 
@@ -2027,6 +2077,35 @@
             ctx.stroke();
         }
 
+        // 옥타브 조절 상태 (-1: 리코더 등 1옥타브 낮춤, 0: 기본, 1: 1옥타브 높임)
+        let tunerOctaveShift = parseInt(localStorage.getItem('harmonica_octave_shift')) || 0;
+
+        function setOctaveShift(shift) {
+            tunerOctaveShift = parseInt(shift) || 0;
+            localStorage.setItem('harmonica_octave_shift', tunerOctaveShift);
+            updateOctaveButtons();
+        }
+
+        function updateOctaveButtons() {
+            document.getElementById('btn-oct-down')?.classList.toggle('active', tunerOctaveShift === -1);
+            document.getElementById('btn-oct-zero')?.classList.toggle('active', tunerOctaveShift === 0);
+            document.getElementById('btn-oct-up')?.classList.toggle('active', tunerOctaveShift === 1);
+            
+            const desc = document.getElementById('octave-mode-desc');
+            if (desc) {
+                if (tunerOctaveShift === -1) {
+                    desc.innerText = '🪈 리코더 모드 (-1 옥타브)';
+                    desc.style.color = '#a5b4fc';
+                } else if (tunerOctaveShift === 1) {
+                    desc.innerText = '고음 모드 (+1 옥타브)';
+                    desc.style.color = '#fde047';
+                } else {
+                    desc.innerText = '기본 (하모니카)';
+                    desc.style.color = '#94a3b8';
+                }
+            }
+        }
+
         function updatePitch() {
             if(!stream) return;
             let buf = new Float32Array(analyser.fftSize);
@@ -2037,9 +2116,15 @@
             let pitch = autoCorrelate(buf, tunerCtx.sampleRate);
             
             if (pitch !== -1) {
-                let note = noteFromPitch(pitch);
-                let cents = centsOffFromPitch(pitch, note);
+                let originalNote = noteFromPitch(pitch);
+                let cents = centsOffFromPitch(pitch, originalNote);
                 
+                // 옥타브 조절 적용 (-1 옥타브: 리코더 음을 악보 기준음으로 1옥타브 낮춰 인식)
+                let note = originalNote;
+                if (tunerOctaveShift !== 0) {
+                    note += (tunerOctaveShift * 12);
+                }
+
                 const noteLetters = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
                 const octaveNum = Math.floor(note / 12) - 1;
                 const pitchString = noteLetters[note % 12] + octaveNum;
@@ -2053,7 +2138,14 @@
                     holeInfoBadge = `<span style="font-size:14px; color:#fff; background:${breathBadgeColor}; padding:2px 8px; border-radius:10px; margin-left:6px; font-family:'Jua',sans-serif; vertical-align:middle; box-shadow:0 2px 6px rgba(0,0,0,0.3); white-space:nowrap;">${matchedNote.hole}번 ${matchedNote.breath} ${breathIcon}</span>`;
                 }
                 
-                document.getElementById('note-display').innerHTML = `<span>${noteStrings[note % 12]}</span> <span style="font-size:22px; color:#a0a0b0;">(${pitchString})</span> ${holeInfoBadge}`;
+                let shiftNotice = '';
+                if (tunerOctaveShift === -1) {
+                    shiftNotice = `<span style="font-size:12px; background:#4f46e5; color:#fff; padding:2px 7px; border-radius:8px; margin-left:6px; font-family:'Jua',sans-serif; vertical-align:middle; box-shadow:0 2px 5px rgba(79,70,229,0.4);">🪈 -1옥타브</span>`;
+                } else if (tunerOctaveShift === 1) {
+                    shiftNotice = `<span style="font-size:12px; background:#d97706; color:#fff; padding:2px 7px; border-radius:8px; margin-left:6px; font-family:'Jua',sans-serif; vertical-align:middle; box-shadow:0 2px 5px rgba(217,119,6,0.4);">+1옥타브</span>`;
+                }
+
+                document.getElementById('note-display').innerHTML = `<span>${noteStrings[note % 12]}</span> <span style="font-size:22px; color:#a0a0b0;">(${pitchString})</span> ${shiftNotice} ${holeInfoBadge}`;
                 
                 let percent = (cents + 50) / 100;
                 percent = Math.max(0, Math.min(1, percent));
@@ -2656,6 +2748,7 @@
         if (isScaleCollapsed) {
             toggleScaleCollapse(true);
         }
+        updateOctaveButtons();
         renderBeatIndicators();
         if (isSidebarCollapsed) {
             toggleSidebar(true);
