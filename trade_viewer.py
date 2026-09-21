@@ -2071,14 +2071,15 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
             try:
                 from market_analyser import create_villa_land_scatter_plot_drawing, build_villa_land_stat_table
                 all_villa_trades = [t for t in (trades + jeonses + wolses) if t.get('_trade_type') == '매매']
-                land_chart = create_villa_land_scatter_plot_drawing(all_villa_trades, title=f"{address_dong} 빌라 대지지분 평당가 산점도")
+                addr_dong_label = target_bld_nm or (address.split()[1] if len(address.split()) > 1 else address)
+                land_chart = create_villa_land_scatter_plot_drawing(all_villa_trades, title=f"{addr_dong_label} 빌라 대지지분 평당가 산점도")
                 if land_chart:
                     story.append(Spacer(1, 10))
                     story.append(Paragraph("■ 🎯 [개발지/모아타운 핵심 지표] 대지지분 평당가 분석 및 5년 신축/구축 듀얼 곡선", h2_style))
                     story.append(Spacer(1, 4))
                     story.append(land_chart)
                     story.append(Spacer(1, 6))
-                    land_table = build_villa_land_stat_table(all_villa_trades, table_cell_center, table_hdr_style)
+                    land_table = build_villa_land_stat_table(all_villa_trades, table_cell_style_center, table_hdr_style)
                     if land_table:
                         story.append(land_table)
                         story.append(Spacer(1, 8))
