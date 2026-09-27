@@ -458,7 +458,7 @@
         }
         .clef-svg-box {
             width: 100%;
-            height: 84px;
+            height: 96px;
             display: block;
         }
         .clef-label {
@@ -589,7 +589,7 @@
 
         .note-svg-box {
             width: 100%;
-            height: 84px;
+            height: 96px;
             display: block;
         }
         .note-name-kr {
@@ -630,7 +630,7 @@
         }
         .mode-all .clef-svg-box,
         .mode-all .note-svg-box {
-            height: 74px;
+            height: 84px;
         }
         .mode-all .scale-note-card {
             min-width: 0;
@@ -728,7 +728,7 @@
         .master-staff-svg-wrap {
             width: 100%;
             max-width: 380px;
-            height: 98px;
+            height: 125px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1021,7 +1021,7 @@
             .master-staff-svg-wrap {
                 width: 100% !important;
                 max-width: 100% !important;
-                height: 92px !important;
+                height: 118px !important;
                 margin: 0 auto !important;
             }
             .master-note-info {
@@ -1127,7 +1127,7 @@
         body.solo-staff-mode .master-staff-svg-wrap {
             width: 100% !important;
             max-width: 100% !important;
-            height: 105px !important; /* 스마트폰 전용 대형 오선 */
+            height: 140px !important; /* 스마트폰 전용 대형 오선 */
             margin: 0 auto !important;
         }
         body.solo-staff-mode .master-note-info {
@@ -1299,18 +1299,20 @@
             <div class="master-staff-container" id="master-staff-container">
                 <!-- 1. Large Dynamic Staff SVG -->
                 <div class="master-staff-svg-wrap">
-                    <svg id="master-staff-svg" viewBox="0 0 280 135" class="master-staff-svg" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="0" y="0" width="280" height="135" rx="10" fill="#121220" />
-                        <line x1="12" y1="30" x2="268" y2="30" stroke="#475569" stroke-width="1.4" />
-                        <line x1="12" y1="40" x2="268" y2="40" stroke="#475569" stroke-width="1.4" />
-                        <line x1="12" y1="50" x2="268" y2="50" stroke="#475569" stroke-width="1.4" />
-                        <line x1="12" y1="60" x2="268" y2="60" stroke="#475569" stroke-width="1.4" />
-                        <line x1="12" y1="70" x2="268" y2="70" stroke="#475569" stroke-width="1.4" />
-                        <text x="32" y="66" font-family="'Segoe UI Symbol', 'Noto Music', 'Apple Symbols', sans-serif" font-size="48" fill="#94a3b8" text-anchor="middle" style="user-select:none;">𝄞</text>
-                        <g id="master-ledgers"></g>
+                    <svg id="master-staff-svg" viewBox="0 0 280 200" class="master-staff-svg" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="0" y="0" width="280" height="200" rx="10" fill="#121220" />
+                        <line x1="12" y1="46" x2="268" y2="46" stroke="#475569" stroke-width="1.4" />
+                        <line x1="12" y1="62" x2="268" y2="62" stroke="#475569" stroke-width="1.4" />
+                        <line x1="12" y1="78" x2="268" y2="78" stroke="#475569" stroke-width="1.4" />
+                        <line x1="12" y1="94" x2="268" y2="94" stroke="#475569" stroke-width="1.4" />
+                        <line x1="12" y1="110" x2="268" y2="110" stroke="#475569" stroke-width="1.4" />
+                        <text x="32" y="103" font-family="'Segoe UI Symbol', 'Noto Music', 'Apple Symbols', sans-serif" font-size="74" fill="#94a3b8" text-anchor="middle" style="user-select:none;">𝄞</text>
+                        <g id="master-ledgers">
+                            <line x1="125" y1="126" x2="195" y2="126" stroke="#cbd5e1" stroke-width="2.2" stroke-linecap="round" />
+                        </g>
                         <g id="master-note-group" style="transition: transform 0.08s ease-out;">
-                            <line id="master-stem" x1="168" y1="80" x2="168" y2="52" stroke="#fca5a5" stroke-width="2.2" stroke-linecap="round" />
-                            <ellipse id="master-notehead" cx="160" cy="80" rx="9.5" ry="7" transform="rotate(-20 160 80)" fill="#ef4444" stroke="#ffffff" stroke-width="1.8" />
+                            <line id="master-stem" x1="168" y1="126" x2="168" y2="82" stroke="#fca5a5" stroke-width="2.2" stroke-linecap="round" />
+                            <ellipse id="master-notehead" cx="160" cy="126" rx="8.5" ry="5.2" transform="rotate(-20 160 126)" fill="#ef4444" stroke="#ffffff" stroke-width="1.6" />
                         </g>
                     </svg>
                 </div>
@@ -2268,116 +2270,116 @@
             {
                 id: 'hole-1', hole: 1, octave: 'low', name: '저음 레', pitch: 'D4', num: '2', dot: 'sub',
                 breath: '마셔', breathType: 'draw',
-                y: 110, ledgers: [80, 90, 100, 110], guide: '덧줄 4번째 줄', isSpecial: false
+                y: 174, ledgers: [126, 142, 158, 174], guide: '덧줄 4번째 줄', isSpecial: false
             },
             {
                 id: 'hole-2', hole: 2, octave: 'low', name: '저음 도', pitch: 'C4', num: '1', dot: 'sub',
                 breath: '불어', breathType: 'blow',
-                y: 115, ledgers: [80, 90, 100, 110], guide: '덧줄 4개 밑', isSpecial: false
+                y: 182, ledgers: [126, 142, 158, 174], guide: '덧줄 4개 밑', isSpecial: false
             },
             {
                 id: 'hole-3', hole: 3, octave: 'low', name: '저음 파', pitch: 'F4', num: '4', dot: 'sub',
                 breath: '마셔', breathType: 'draw',
-                y: 100, ledgers: [80, 90, 100], guide: '덧줄 3번째 줄', isSpecial: false
+                y: 158, ledgers: [126, 142, 158], guide: '덧줄 3번째 줄', isSpecial: false
             },
             {
                 id: 'hole-4', hole: 4, octave: 'low', name: '저음 미', pitch: 'E4', num: '3', dot: 'sub',
                 breath: '불어', breathType: 'blow',
-                y: 105, ledgers: [80, 90, 100], guide: '덧줄 3개 밑', isSpecial: false
+                y: 166, ledgers: [126, 142, 158], guide: '덧줄 3개 밑', isSpecial: false
             },
             {
                 id: 'hole-5', hole: 5, octave: 'low', name: '저음 라', pitch: 'A4', num: '6', dot: 'sub',
                 breath: '마셔', breathType: 'draw',
-                y: 90, ledgers: [80, 90], guide: '덧줄 2번째 줄', isSpecial: false
+                y: 142, ledgers: [126, 142], guide: '덧줄 2번째 줄', isSpecial: false
             },
             {
                 id: 'hole-6', hole: 6, octave: 'low', name: '저음 솔', pitch: 'G4', num: '5', dot: 'sub',
                 breath: '불어', breathType: 'blow',
-                y: 95, ledgers: [80, 90], guide: '덧줄 2개 밑', isSpecial: false
+                y: 150, ledgers: [126, 142], guide: '덧줄 2개 밑', isSpecial: false
             },
             {
                 id: 'hole-7', hole: 7, octave: 'low', name: '저음 시', pitch: 'B4', num: '7', dot: 'sub',
                 breath: '마셔', breathType: 'draw',
-                y: 85, ledgers: [80], guide: '덧줄 1개 밑', isSpecial: false
+                y: 134, ledgers: [126], guide: '덧줄 1개 밑', isSpecial: false
             },
 
             // --- 중음역 (8~15번 홀) ---
             {
                 id: 'hole-8', hole: 8, octave: 'mid', name: '가온 도', pitch: 'C5', num: '1', dot: 'none',
                 breath: '불어', breathType: 'blow',
-                y: 80, ledgers: [80], guide: '덧줄 1번째 줄 ★', isSpecial: true, specialText: '★ 가온 도 (기준)'
+                y: 126, ledgers: [126], guide: '덧줄 1번째 줄 ★', isSpecial: true, specialText: '★ 가온 도 (기준)'
             },
             {
                 id: 'hole-9', hole: 9, octave: 'mid', name: '중음 레', pitch: 'D5', num: '2', dot: 'none',
                 breath: '마셔', breathType: 'draw',
-                y: 75, ledgers: [], guide: '1줄 아래 칸', isSpecial: false
+                y: 118, ledgers: [], guide: '1줄 아래 칸', isSpecial: false
             },
             {
                 id: 'hole-10', hole: 10, octave: 'mid', name: '중음 미', pitch: 'E5', num: '3', dot: 'none',
                 breath: '불어', breathType: 'blow',
-                y: 70, ledgers: [], guide: '오선 1번째 줄', isSpecial: false
+                y: 110, ledgers: [], guide: '오선 1번째 줄', isSpecial: false
             },
             {
                 id: 'hole-11', hole: 11, octave: 'mid', name: '중음 파', pitch: 'F5', num: '4', dot: 'none',
                 breath: '마셔', breathType: 'draw',
-                y: 65, ledgers: [], guide: '오선 1번째 칸', isSpecial: false
+                y: 102, ledgers: [], guide: '오선 1번째 칸', isSpecial: false
             },
             {
                 id: 'hole-12', hole: 12, octave: 'mid', name: '중음 솔', pitch: 'G5', num: '5', dot: 'none',
                 breath: '불어', breathType: 'blow',
-                y: 60, ledgers: [], guide: '오선 2번째 줄', isSpecial: false
+                y: 94, ledgers: [], guide: '오선 2번째 줄', isSpecial: false
             },
             {
                 id: 'hole-13', hole: 13, octave: 'mid', name: '중음 라', pitch: 'A5', num: '6', dot: 'none',
                 breath: '마셔', breathType: 'draw',
-                y: 55, ledgers: [], guide: '오선 2번째 칸', isSpecial: false
+                y: 86, ledgers: [], guide: '오선 2번째 칸', isSpecial: false
             },
             {
                 id: 'hole-14', hole: 14, octave: 'mid', name: '높은 도', pitch: 'C6', num: '1', dot: 'super',
                 breath: '불어', breathType: 'blow',
-                y: 45, ledgers: [], guide: '오선 3번째 칸 ★', isSpecial: true, specialText: '★ 높은 도'
+                y: 70, ledgers: [], guide: '오선 3번째 칸 ★', isSpecial: true, specialText: '★ 높은 도'
             },
             {
                 id: 'hole-15', hole: 15, octave: 'mid', name: '중음 시', pitch: 'B5', num: '7', dot: 'none',
                 breath: '마셔', breathType: 'draw',
-                y: 50, ledgers: [], guide: '오선 3번째 줄', isSpecial: false
+                y: 78, ledgers: [], guide: '오선 3번째 줄', isSpecial: false
             },
 
             // --- 고음역 (16~22번 홀) ---
             {
                 id: 'hole-16', hole: 16, octave: 'high', name: '높은 미', pitch: 'E6', num: '3', dot: 'super',
                 breath: '불어', breathType: 'blow',
-                y: 35, ledgers: [], guide: '오선 4번째 칸', isSpecial: false
+                y: 54, ledgers: [], guide: '오선 4번째 칸', isSpecial: false
             },
             {
                 id: 'hole-17', hole: 17, octave: 'high', name: '높은 레', pitch: 'D6', num: '2', dot: 'super',
                 breath: '마셔', breathType: 'draw',
-                y: 40, ledgers: [], guide: '오선 4번째 줄', isSpecial: false
+                y: 62, ledgers: [], guide: '오선 4번째 줄', isSpecial: false
             },
             {
                 id: 'hole-18', hole: 18, octave: 'high', name: '높은 솔', pitch: 'G6', num: '5', dot: 'super',
                 breath: '불어', breathType: 'blow',
-                y: 25, ledgers: [], guide: '5줄 위 칸', isSpecial: false
+                y: 38, ledgers: [], guide: '5줄 위 칸', isSpecial: false
             },
             {
                 id: 'hole-19', hole: 19, octave: 'high', name: '높은 파', pitch: 'F6', num: '4', dot: 'super',
                 breath: '마셔', breathType: 'draw',
-                y: 30, ledgers: [], guide: '오선 5번째 줄', isSpecial: false
+                y: 46, ledgers: [], guide: '오선 5번째 줄', isSpecial: false
             },
             {
                 id: 'hole-20', hole: 20, octave: 'high', name: '최고 도', pitch: 'C7', num: '1', dot: 'super-double',
                 breath: '불어', breathType: 'blow',
-                y: 10, ledgers: [20, 10], guide: '위 덧줄 2줄 ★', isSpecial: true, specialText: '★ 최고 도'
+                y: 14, ledgers: [30, 14], guide: '위 덧줄 2줄 ★', isSpecial: true, specialText: '★ 최고 도'
             },
             {
                 id: 'hole-21', hole: 21, octave: 'high', name: '높은 라', pitch: 'A6', num: '6', dot: 'super',
                 breath: '마셔', breathType: 'draw',
-                y: 20, ledgers: [20], guide: '위 덧줄 1줄', isSpecial: false
+                y: 30, ledgers: [30], guide: '위 덧줄 1줄', isSpecial: false
             },
             {
                 id: 'hole-22', hole: 22, octave: 'high', name: '높은 시', pitch: 'B6', num: '7', dot: 'super',
                 breath: '마셔', breathType: 'draw',
-                y: 15, ledgers: [20], guide: '위 덧줄 1개 위', isSpecial: false
+                y: 22, ledgers: [30], guide: '위 덧줄 1개 위', isSpecial: false
             }
         ];
 
@@ -2387,45 +2389,45 @@
         function createClefLeadHTML() {
             return `
             <div class="clef-lead-card" title="높은음자리표">
-                <svg viewBox="0 0 38 125" class="clef-svg-box" xmlns="http://www.w3.org/2000/svg">
-                    <line x1="0" y1="30" x2="38" y2="30" stroke="#64748b" stroke-width="1.2" />
-                    <line x1="0" y1="40" x2="38" y2="40" stroke="#64748b" stroke-width="1.2" />
-                    <line x1="0" y1="50" x2="38" y2="50" stroke="#64748b" stroke-width="1.2" />
-                    <line x1="0" y1="60" x2="38" y2="60" stroke="#64748b" stroke-width="1.2" />
-                    <line x1="0" y1="70" x2="38" y2="70" stroke="#64748b" stroke-width="1.2" />
-                    <text x="19" y="65" font-family="'Segoe UI Symbol', 'Noto Music', 'Apple Symbols', sans-serif" font-size="44" fill="#64748b" text-anchor="middle" style="user-select:none;">𝄞</text>
+                <svg viewBox="0 0 38 200" class="clef-svg-box" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="0" y1="46" x2="38" y2="46" stroke="#64748b" stroke-width="1.4" />
+                    <line x1="0" y1="62" x2="38" y2="62" stroke="#64748b" stroke-width="1.4" />
+                    <line x1="0" y1="78" x2="38" y2="78" stroke="#64748b" stroke-width="1.4" />
+                    <line x1="0" y1="94" x2="38" y2="94" stroke="#64748b" stroke-width="1.4" />
+                    <line x1="0" y1="110" x2="38" y2="110" stroke="#64748b" stroke-width="1.4" />
+                    <text x="19" y="103" font-family="'Segoe UI Symbol', 'Noto Music', 'Apple Symbols', sans-serif" font-size="70" fill="#64748b" text-anchor="middle" style="user-select:none;">𝄞</text>
                 </svg>
                 <div class="clef-label">높은음<br>자리표</div>
             </div>`;
         }
 
         function createNoteSVG(note) {
-            // Staff lines: y = 30, 40, 50, 60, 70 (edge-to-edge from 0 to 54)
-            const staffLines = [30, 40, 50, 60, 70].map(y => 
-                `<line x1="0" y1="${y}" x2="54" y2="${y}" stroke="#64748b" stroke-width="1.2" />`
+            // Staff lines: y = 46, 62, 78, 94, 110 (edge-to-edge from 0 to 54)
+            const staffLines = [46, 62, 78, 94, 110].map(y => 
+                `<line x1="0" y1="${y}" x2="54" y2="${y}" stroke="#64748b" stroke-width="1.4" />`
             ).join('');
             
             // Ledger lines (centered at x=27)
             let ledgerLines = '';
             if (note.ledgers && note.ledgers.length > 0) {
                 ledgerLines = note.ledgers.map(ly => 
-                    `<line x1="12" y1="${ly}" x2="42" y2="${ly}" stroke="#1e293b" stroke-width="1.8" stroke-linecap="round" />`
+                    `<line x1="10" y1="${ly}" x2="44" y2="${ly}" stroke="#1e293b" stroke-width="2" stroke-linecap="round" />`
                 ).join('');
             }
             
             // Notehead: Red for blow, Blue for draw
             const noteColor = note.breathType === 'blow' ? '#ef4444' : '#0284c7';
-            const noteHead = `<ellipse cx="27" cy="${note.y}" rx="6.2" ry="4.6" transform="rotate(-20 27 ${note.y})" fill="${noteColor}" stroke="#0f172a" stroke-width="1.6" />`;
+            const noteHead = `<ellipse cx="27" cy="${note.y}" rx="7.4" ry="4.6" transform="rotate(-20 27 ${note.y})" fill="${noteColor}" stroke="#0f172a" stroke-width="1.5" />`;
             
             // Stem
             let stem = '';
-            if (note.y <= 50) {
-                stem = `<line x1="21.4" y1="${note.y}" x2="21.4" y2="${note.y + 26}" stroke="#0f172a" stroke-width="2" stroke-linecap="round" />`;
+            if (note.y <= 78) {
+                stem = `<line x1="21.6" y1="${note.y}" x2="21.6" y2="${note.y + 40}" stroke="#0f172a" stroke-width="2" stroke-linecap="round" />`;
             } else {
-                stem = `<line x1="32.6" y1="${note.y}" x2="32.6" y2="${note.y - 26}" stroke="#0f172a" stroke-width="2" stroke-linecap="round" />`;
+                stem = `<line x1="32.4" y1="${note.y}" x2="32.4" y2="${note.y - 40}" stroke="#0f172a" stroke-width="2" stroke-linecap="round" />`;
             }
             
-            return `<svg viewBox="0 0 54 125" class="note-svg-box" xmlns="http://www.w3.org/2000/svg">
+            return `<svg viewBox="0 0 54 200" class="note-svg-box" xmlns="http://www.w3.org/2000/svg">
                 ${staffLines}
                 ${ledgerLines}
                 ${stem}
@@ -2526,24 +2528,27 @@
                 head.setAttribute('cy', note.y);
                 head.setAttribute('transform', `rotate(-20 160 ${note.y})`);
                 head.setAttribute('fill', noteColor);
+                head.setAttribute('rx', '8.5');
+                head.setAttribute('ry', '5.2');
+                head.setAttribute('stroke-width', '1.6');
                 head.style.opacity = '1';
             }
 
             if (stem) {
                 stem.style.opacity = '1';
                 stem.setAttribute('stroke', stemColor);
-                if (note.y <= 50) {
-                    // 고음: 기둥 아래로
+                if (note.y <= 78) {
+                    // 고음: 기둥 아래로 (3번째 줄 B5 이하 음표)
                     stem.setAttribute('x1', '152');
                     stem.setAttribute('y1', note.y);
                     stem.setAttribute('x2', '152');
-                    stem.setAttribute('y2', note.y + 28);
+                    stem.setAttribute('y2', note.y + 44);
                 } else {
                     // 저음/중음: 기둥 위로
                     stem.setAttribute('x1', '168');
                     stem.setAttribute('y1', note.y);
                     stem.setAttribute('x2', '168');
-                    stem.setAttribute('y2', note.y - 28);
+                    stem.setAttribute('y2', note.y - 44);
                 }
             }
 
