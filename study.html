@@ -573,6 +573,509 @@
             .hanja { font-size: 18px; }
             .irregular { font-size: 16px; }
         }
+
+        /* ===================================================
+           Daily Habit (지각/저녁공부 체크 & 캘린더) Styles
+           =================================================== */
+        .habit-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 28px;
+            padding: 24px;
+            box-shadow: 0 15px 35px rgba(255, 175, 189, 0.35),
+                        inset 0 0 0 2px rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 480px;
+            box-sizing: border-box;
+            margin-top: 25px;
+            margin-bottom: 25px;
+        }
+
+        .habit-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .habit-title {
+            font-size: 24px;
+            font-family: 'Jua', sans-serif;
+            color: #2d3436;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .habit-subtitle {
+            font-size: 14px;
+            color: #636e72;
+            font-family: 'Nunito', 'Jua', sans-serif;
+        }
+
+        .habit-date-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fff0f5;
+            border: 2px solid #ffd1dc;
+            border-radius: 18px;
+            padding: 8px 12px;
+            margin-bottom: 18px;
+        }
+
+        .habit-date-btn {
+            background: white;
+            border: 1px solid #ffb8b8;
+            color: #ff758c;
+            border-radius: 12px;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            font-family: 'Nunito', 'Jua', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .habit-date-btn:hover {
+            background: #ff758c;
+            color: white;
+        }
+
+        .habit-date-picker {
+            border: none;
+            background: transparent;
+            font-family: 'Jua', sans-serif;
+            font-size: 17px;
+            color: #2d3436;
+            text-align: center;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .habit-form-group {
+            margin-bottom: 18px;
+        }
+
+        .habit-form-label {
+            font-size: 15px;
+            font-weight: bold;
+            color: #2d3436;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Jua', sans-serif;
+        }
+
+        .habit-toggle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+        }
+
+        .habit-toggle-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 14px;
+            background: #f8f9fa;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Jua', sans-serif;
+            box-shadow: none;
+        }
+
+        .habit-toggle-btn:hover {
+            border-color: #cbd5e1;
+            background: #f1f5f9;
+            transform: translateY(-2px);
+        }
+
+        .habit-toggle-btn.active-ontime {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #059669;
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+        }
+
+        .habit-toggle-btn.active-late {
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            border-color: #ef4444;
+            color: white;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+        }
+
+        .habit-toggle-btn.active-holiday {
+            background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+            border-color: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+        }
+
+        .habit-toggle-btn.active-study {
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            border-color: #6366f1;
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        .habit-toggle-btn.active-nostudy {
+            background: #64748b;
+            border-color: #475569;
+            color: white;
+            box-shadow: 0 4px 12px rgba(100, 116, 139, 0.35);
+        }
+
+        .habit-memo-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 14px;
+            outline: none;
+            box-sizing: border-box;
+            font-family: 'Nunito', sans-serif;
+            transition: border-color 0.2s;
+            background: #fdfdfd;
+        }
+
+        .habit-memo-input:focus {
+            border-color: #ff758c;
+            background: white;
+        }
+
+        .habit-action-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .habit-save-btn {
+            flex-grow: 1;
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            color: white;
+            border: none;
+            padding: 13px 20px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Jua', sans-serif;
+            box-shadow: 0 4px 15px rgba(255, 117, 140, 0.4);
+            transition: all 0.2s;
+        }
+
+        .habit-save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(255, 117, 140, 0.5);
+        }
+
+        .habit-delete-btn {
+            background: #f8fafc;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+            padding: 13px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Jua', sans-serif;
+            transition: all 0.2s;
+            box-shadow: none;
+        }
+
+        .habit-delete-btn:hover {
+            background: #fee2e2;
+        }
+
+        .habit-stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin: 16px 0;
+        }
+
+        .habit-stat-badge {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 10px 6px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        .habit-stat-badge.highlight {
+            background: #fff0f5;
+            border-color: #ffd1dc;
+        }
+
+        .habit-stat-value {
+            font-size: 19px;
+            font-weight: bold;
+            font-family: 'Jua', sans-serif;
+            color: #ff758c;
+            margin-top: 2px;
+        }
+
+        .habit-stat-label {
+            font-size: 11px;
+            color: #64748b;
+            font-family: 'Nunito', 'Jua', sans-serif;
+        }
+
+        .habit-calendar-wrap {
+            margin-top: 16px;
+            background: #ffffff;
+            border: 2px solid #f1f5f9;
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+
+        .habit-cal-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .habit-cal-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 17px;
+            color: #2d3436;
+        }
+
+        .habit-cal-btn {
+            background: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 4px 10px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Nunito', 'Jua', sans-serif;
+            color: #475569;
+            box-shadow: none;
+        }
+
+        .habit-cal-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .habit-cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+        }
+
+        .habit-cal-weekday {
+            font-size: 12px;
+            font-weight: bold;
+            color: #64748b;
+            padding-bottom: 6px;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .habit-cal-weekday.sun { color: #ef4444; }
+        .habit-cal-weekday.sat { color: #3b82f6; }
+
+        .habit-cal-day {
+            min-height: 50px;
+            background: #fdfdfd;
+            border: 1px solid #f1f5f9;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 4px 2px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .habit-cal-day:hover {
+            background: #fff0f5;
+            border-color: #ffb8b8;
+            transform: scale(1.05);
+            z-index: 2;
+        }
+
+        .habit-cal-day.today {
+            border: 2px solid #ff758c;
+            background: #fff8f9;
+            font-weight: bold;
+        }
+
+        .habit-cal-day.selected {
+            outline: 2.5px solid #6366f1;
+            background: #eef2ff;
+        }
+
+        .habit-cal-day.other-month {
+            opacity: 0.25;
+            cursor: default;
+        }
+
+        .habit-cal-day-num {
+            font-size: 12px;
+            font-family: 'Nunito', sans-serif;
+            color: #334155;
+            line-height: 1;
+            margin-bottom: 3px;
+        }
+
+        .habit-cal-day.today .habit-cal-day-num {
+            color: #ff758c;
+            font-weight: bold;
+        }
+
+        .habit-cal-badges {
+            display: flex;
+            gap: 2px;
+            font-size: 13px;
+            line-height: 1;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Child Highlight Card */
+        .child-today-card {
+            background: linear-gradient(135deg, #ffffff 0%, #fff7f9 100%);
+            border: 2px solid #ffd1dc;
+            border-radius: 22px;
+            padding: 18px;
+            margin-bottom: 18px;
+            box-shadow: 0 8px 20px rgba(255, 117, 140, 0.12);
+        }
+
+        .child-today-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #ffd1dc;
+        }
+
+        .child-today-date {
+            font-family: 'Jua', sans-serif;
+            font-size: 17px;
+            color: #2d3436;
+        }
+
+        .child-item-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .child-item-box.ontime {
+            background: #ecfdf5;
+            border: 1.5px solid #a7f3d0;
+            color: #065f46;
+        }
+
+        .child-item-box.late {
+            background: #fffbeb;
+            border: 1.5px solid #fde68a;
+            color: #92400e;
+        }
+
+        .child-item-box.holiday {
+            background: #f0f9ff;
+            border: 1.5px solid #bae6fd;
+            color: #0369a1;
+        }
+
+        .child-item-box.waiting {
+            background: #f8fafc;
+            border: 1.5px dashed #cbd5e1;
+            color: #64748b;
+        }
+
+        .child-item-box.study-done {
+            background: #f5f3ff;
+            border: 1.5px solid #ddd6fe;
+            color: #5b21b6;
+        }
+
+        .child-item-box.study-rest {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            color: #475569;
+        }
+
+        .child-item-icon {
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+
+        .child-item-content {
+            flex-grow: 1;
+        }
+
+        .child-item-title {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 2px;
+            font-family: 'Nunito', 'Jua', sans-serif;
+        }
+
+        .child-item-text {
+            font-size: 15px;
+            font-weight: bold;
+            font-family: 'Jua', sans-serif;
+        }
+
+        .child-memo-box {
+            margin-top: 14px;
+            padding: 12px 14px;
+            background: #fff0f5;
+            border: 2px dashed #ff758c;
+            border-radius: 16px;
+            font-size: 14px;
+            color: #d63031;
+            font-family: 'Jua', sans-serif;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .child-detail-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            backdrop-filter: blur(4px);
+        }
+
+        .child-modal-body {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            width: 88%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            animation: popIn 0.3s ease;
+        }
     </style>
 </head>
 
@@ -595,6 +1098,9 @@
     <div id="card-wrapper"></div>
     <div id="last-updated" class="last-updated"></div>
     
+    <!-- 매일 출석 & 저녁 공부 체크 / 현황판 -->
+    <div id="habit-container" class="habit-card hidden"></div>
+
     <div id="history-container" class="history-section hidden"></div>
 
     <!-- 유튜브 추천 링크 섹션 -->
@@ -864,6 +1370,7 @@
                 updateHeader(todayStr);
                 updateStatsUI();
                 loadMyHistory();
+                loadHabitRecords();
             }
         }
 
@@ -939,6 +1446,7 @@
             updateStatsUI();
             loadMyHistory();
             loadWords();
+            loadHabitRecords();
         }
 
         function logout() {
@@ -946,8 +1454,19 @@
             location.reload();
         }
 
+        function scrollToHabit() {
+            const el = document.getElementById('habit-container');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
         function updateHeader(dateStr) {
-            document.getElementById('greeting-text').innerHTML = `환영해요, ${userNickname}님! 💖 <button onclick="logout()" style="background:rgba(255,255,255,0.3); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:14px; font-weight:bold; margin-left:8px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); font-family:'Nunito', sans-serif;">로그아웃</button>`;
+            let habitNavBtn = '';
+            if (userNickname === '아빠') {
+                habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">📋 출석·공부 체크</button>`;
+            } else if (userNickname) {
+                habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">🌟 내 출석·공부 달력</button>`;
+            }
+            document.getElementById('greeting-text').innerHTML = `환영해요, ${userNickname}님! 💖 ${habitNavBtn} <button onclick="logout()" style="background:rgba(255,255,255,0.3); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:14px; font-weight:bold; margin-left:8px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); font-family:'Nunito', sans-serif;">로그아웃</button>`;
             document.getElementById('date-stats-text').innerText = `${dateStr} | 오늘 암기: ${dailyProgress}개`;
         }
 
@@ -1011,7 +1530,7 @@
                 return
             }
             const youtubeLinks = data.filter(w => w.subject === 'YOUTUBE_LINK');
-            const studyData = data.filter(w => w.subject !== 'YOUTUBE_LINK');
+            const studyData = data.filter(w => w.subject !== 'YOUTUBE_LINK' && w.subject !== 'DAILY_HABIT');
 
             words = studyData.filter(w => !(w.memorized_users && w.memorized_users.includes(userNickname)))
             memorizedWords = studyData.filter(w => w.memorized_users && w.memorized_users.includes(userNickname))
@@ -1571,7 +2090,9 @@
                 return;
             }
 
-            renderHistory(data);
+            // DAILY_HABIT 기록은 단어 암기 그래프에 포함되지 않도록 필터링
+            const wordLogs = (data || []).filter(log => log.subject !== 'DAILY_HABIT');
+            renderHistory(wordLogs);
         }
 
         function renderHistory(logs) {
@@ -1731,6 +2252,694 @@
                 alert('추천 링크가 추가되었습니다! 💖');
                 loadWords();
             }
+        }
+
+        // ===================================================
+        // Daily Habit State & Logic (지각 / 저녁 공부 관리)
+        // ===================================================
+        let habitRecordsMap = {};
+        let selectedHabitDate = getLocalDateStr(new Date());
+        let habitCalYear = new Date().getFullYear();
+        let habitCalMonth = new Date().getMonth(); // 0-indexed
+        let isHabitSaving = false;
+        let isDadPreviewMode = false;
+
+        let draftAttendance = null; // 'ON_TIME' | 'LATE' | 'HOLIDAY' | null
+        let draftEveningStudy = null; // true | false | null
+        let draftMemo = '';
+
+        function getLocalDateStr(d = new Date()) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatFriendlyDate(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-').map(Number);
+            const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            const dayName = days[dateObj.getDay()];
+            return `${parts[0]}년 ${parts[1]}월 ${parts[2]}일 (${dayName}요일)`;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        async function loadHabitRecords() {
+            const container = document.getElementById('habit-container');
+            if (!container || !userNickname) return;
+            container.classList.remove('hidden');
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('study_words')
+                    .select('*')
+                    .eq('subject', 'DAILY_HABIT')
+                    .order('word', { ascending: false });
+
+                if (error) {
+                    console.error("Habit logs fetch error:", error);
+                } else if (data) {
+                    habitRecordsMap = {};
+                    data.forEach(item => {
+                        try {
+                            const detail = typeof item.meaning === 'string' ? JSON.parse(item.meaning) : (item.meaning || {});
+                            habitRecordsMap[item.word] = {
+                                ...detail,
+                                id: item.id,
+                                rawCreatedAt: item.created_at
+                            };
+                        } catch(e) {
+                            console.error("Habit parse error:", e);
+                        }
+                    });
+                }
+            } catch(err) {
+                console.error("loadHabitRecords error:", err);
+            }
+
+            syncDraftWithSelectedDate();
+            renderHabitSection();
+        }
+
+        function syncDraftWithSelectedDate() {
+            const existing = habitRecordsMap[selectedHabitDate];
+            if (existing) {
+                draftAttendance = existing.attendance || null;
+                draftEveningStudy = (existing.evening_study !== undefined && existing.evening_study !== null) ? existing.evening_study : null;
+                draftMemo = existing.memo || '';
+            } else {
+                draftAttendance = null;
+                draftEveningStudy = null;
+                draftMemo = '';
+            }
+        }
+
+        function renderHabitSection() {
+            const container = document.getElementById('habit-container');
+            if (!container) return;
+
+            if (userNickname === '아빠' && !isDadPreviewMode) {
+                renderDadHabitView(container);
+            } else {
+                renderChildHabitView(container);
+            }
+        }
+
+        function renderDadHabitView(container) {
+            const existing = habitRecordsMap[selectedHabitDate];
+            const hasRecord = !!existing;
+            const stats = getMonthlyHabitStats(habitCalYear, habitCalMonth);
+
+            const isOntimeActive = (draftAttendance === 'ON_TIME') ? 'active-ontime' : '';
+            const isLateActive = (draftAttendance === 'LATE') ? 'active-late' : '';
+            const isHolidayActive = (draftAttendance === 'HOLIDAY') ? 'active-holiday' : '';
+
+            const isStudyActive = (draftEveningStudy === true) ? 'active-study' : '';
+            const isNoStudyActive = (draftEveningStudy === false) ? 'active-nostudy' : '';
+
+            let html = `
+                <div class="habit-header">
+                    <div class="habit-title">👨‍👧 아람이 출석 & 저녁 공부 관리</div>
+                    <div class="habit-subtitle">매일 지각 여부와 저녁 공부를 체크해주세요! 💖</div>
+                    <button onclick="toggleDadPreview(true)" style="margin-top:10px; background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white; border:none; padding:6px 14px; border-radius:14px; font-size:13px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif; box-shadow:0 2px 6px rgba(0,0,0,0.1);">👀 아람이 화면(달력) 미리보기</button>
+                </div>
+
+                <!-- 날짜 선택 바 -->
+                <div class="habit-date-bar">
+                    <button class="habit-date-btn" onclick="stepHabitDate(-1)">◀ 어제</button>
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <input type="date" class="habit-date-picker" id="habit-date-input" value="${selectedHabitDate}" onchange="changeHabitDate(this.value)">
+                        <span style="font-size:12px; color:#ff758c; font-weight:bold; font-family:'Nunito', sans-serif;">${formatFriendlyDate(selectedHabitDate)}</span>
+                    </div>
+                    <div style="display:flex; gap:4px;">
+                        <button class="habit-date-btn" onclick="setHabitDateToToday()">오늘 📅</button>
+                        <button class="habit-date-btn" onclick="stepHabitDate(1)">내일 ▶</button>
+                    </div>
+                </div>
+
+                <!-- 1) 아침 등교 / 지각 체크 -->
+                <div class="habit-form-group">
+                    <div class="habit-form-label">
+                        <span>⏰ 아침 등교 체크</span>
+                        <span style="font-size:12px; color:#94a3b8; font-weight:normal;">(클릭하여 선택/해제)</span>
+                    </div>
+                    <div class="habit-toggle-grid">
+                        <button type="button" class="habit-toggle-btn ${isOntimeActive}" onclick="setHabitAttendance('ON_TIME')">
+                            <span>☀️</span> 정상 등교 (지각 No!)
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isLateActive}" onclick="setHabitAttendance('LATE')">
+                            <span>⏰</span> 지각함
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isHolidayActive}" onclick="setHabitAttendance('HOLIDAY')">
+                            <span>🏖️</span> 주말 / 휴일
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2) 저녁 공부 체크 -->
+                <div class="habit-form-group">
+                    <div class="habit-form-label">
+                        <span>📖 저녁 공부 체크</span>
+                        <span style="font-size:12px; color:#94a3b8; font-weight:normal;">(클릭하여 선택/해제)</span>
+                    </div>
+                    <div class="habit-toggle-grid" style="grid-template-columns: 1fr 1fr;">
+                        <button type="button" class="habit-toggle-btn ${isStudyActive}" onclick="setHabitEveningStudy(true)">
+                            <span>✨</span> 저녁 공부 완료! 👑
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isNoStudyActive}" onclick="setHabitEveningStudy(false)">
+                            <span>💤</span> 공부 쉼 (미완료)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3) 칭찬 메모 / 특이사항 -->
+                <div class="habit-form-group">
+                    <div class="habit-form-label">
+                        <span>💌 아람이에게 전할 응원 한마디 / 메모</span>
+                    </div>
+                    <input type="text" id="habit-memo-input" class="habit-memo-input" placeholder="예: 스스로 영어 단어 10개 완벽 암기! 최고야 💕" value="${escapeHtml(draftMemo)}" oninput="draftMemo = this.value" maxlength="80">
+                </div>
+
+                <!-- 저장 및 삭제 액션 바 -->
+                <div class="habit-action-bar">
+                    <button type="button" id="habit-save-btn" class="habit-save-btn" onclick="saveHabitRecord()">
+                        💾 ${hasRecord ? '기록 수정하기' : '기록 저장하기'} 💖
+                    </button>
+                    ${hasRecord ? `<button type="button" class="habit-delete-btn" onclick="deleteHabitRecord()" title="기록 삭제">🗑️ 삭제</button>` : ''}
+                </div>
+
+                <!-- 월간 통계 뱃지 -->
+                <div style="margin-top:24px; padding-top:16px; border-top: 1px dashed #ffd1dc;">
+                    <div style="font-family:'Jua', sans-serif; font-size:15px; color:#2d3436; text-align:center;">
+                        📊 ${habitCalYear}년 ${habitCalMonth + 1}월 현황 요약
+                    </div>
+                    <div class="habit-stats-row">
+                        <div class="habit-stat-badge">
+                            <div class="habit-stat-label">☀️ 정상 등교</div>
+                            <div class="habit-stat-value" style="color:#059669;">${stats.onTimeCount}일</div>
+                        </div>
+                        <div class="habit-stat-badge">
+                            <div class="habit-stat-label">⏰ 지각</div>
+                            <div class="habit-stat-value" style="color:#ef4444;">${stats.lateCount}일</div>
+                        </div>
+                        <div class="habit-stat-badge highlight">
+                            <div class="habit-stat-label">📖 저녁 공부 완료</div>
+                            <div class="habit-stat-value" style="color:#6366f1;">${stats.studyCount}일</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 월간 캘린더 (날짜 클릭 시 수정 모드로 전환) -->
+                ${generateHabitCalendarHtml(habitCalYear, habitCalMonth, true)}
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function renderChildHabitView(container) {
+            const todayStr = getLocalDateStr(new Date());
+            const todayRecord = habitRecordsMap[todayStr];
+            const stats = getMonthlyHabitStats(habitCalYear, habitCalMonth);
+            const streak = calculateStudyStreak();
+
+            let previewBanner = '';
+            if (userNickname === '아빠' && isDadPreviewMode) {
+                previewBanner = `
+                    <div style="background:#eef2ff; border:2px solid #818cf8; border-radius:16px; padding:10px; margin-bottom:16px; text-align:center;">
+                        <span style="font-size:13px; color:#3730a3; font-weight:bold;">[아이(아람이) 화면 미리보기 모드입니다]</span><br>
+                        <button onclick="toggleDadPreview(false)" style="margin-top:6px; background:#4f46e5; color:white; border:none; padding:5px 14px; border-radius:10px; font-size:13px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif;">✏️ 아빠 체크 화면으로 돌아가기</button>
+                    </div>
+                `;
+            }
+
+            // 아침 등교 상태 박스
+            let attendanceHtml = '';
+            if (todayRecord && todayRecord.attendance === 'ON_TIME') {
+                attendanceHtml = `
+                    <div class="child-item-box ontime">
+                        <div class="child-item-icon">☀️</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">아침 등교</div>
+                            <div class="child-item-text">지각 안 함! 멋지게 정시 등교 완료 ✨ (칭찬해요!)</div>
+                        </div>
+                    </div>
+                `;
+            } else if (todayRecord && todayRecord.attendance === 'LATE') {
+                attendanceHtml = `
+                    <div class="child-item-box late">
+                        <div class="child-item-icon">⏰</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">아침 등교</div>
+                            <div class="child-item-text">오늘은 조금 늦었어요! 내일은 10분 일찍 출발해봐요 💪</div>
+                        </div>
+                    </div>
+                `;
+            } else if (todayRecord && todayRecord.attendance === 'HOLIDAY') {
+                attendanceHtml = `
+                    <div class="child-item-box holiday">
+                        <div class="child-item-icon">🏖️</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">아침 등교</div>
+                            <div class="child-item-text">즐거운 주말 / 휴일이에요! 푹 쉬고 재충전해요 😊</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                attendanceHtml = `
+                    <div class="child-item-box waiting">
+                        <div class="child-item-icon">⏳</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">아침 등교</div>
+                            <div class="child-item-text">오늘 출석 체크 대기 중이에요 😊</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 저녁 공부 상태 박스
+            let studyHtml = '';
+            if (todayRecord && todayRecord.evening_study === true) {
+                studyHtml = `
+                    <div class="child-item-box study-done">
+                        <div class="child-item-icon">📖</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">저녁 공부</div>
+                            <div class="child-item-text">저녁 공부 완료! 오늘도 한 걸음 더 성장했어요! 👑</div>
+                        </div>
+                    </div>
+                `;
+            } else if (todayRecord && todayRecord.evening_study === false) {
+                studyHtml = `
+                    <div class="child-item-box study-rest">
+                        <div class="child-item-icon">💤</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">저녁 공부</div>
+                            <div class="child-item-text">오늘은 쉬어가는 날이에요 ☕</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                studyHtml = `
+                    <div class="child-item-box waiting">
+                        <div class="child-item-icon">⏳</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">저녁 공부</div>
+                            <div class="child-item-text">저녁 공부 체크 대기 중이에요 🌙</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 칭찬 메모
+            let memoHtml = '';
+            if (todayRecord && todayRecord.memo) {
+                memoHtml = `
+                    <div class="child-memo-box">
+                        💌 아빠의 응원: "${escapeHtml(todayRecord.memo)}" 💖
+                    </div>
+                `;
+            }
+
+            let html = `
+                ${previewBanner}
+                <div class="habit-header">
+                    <div class="habit-title">🌟 나의 매일 출석 & 열공 현황판 🌟</div>
+                    <div class="habit-subtitle">아빠가 매일 응원하며 챙겨주시는 나의 출석과 공부 기록이에요! 💖</div>
+                </div>
+
+                <!-- 오늘의 현황 카드 -->
+                <div class="child-today-card">
+                    <div class="child-today-header">
+                        <div class="child-today-date">📅 오늘: ${formatFriendlyDate(todayStr)}</div>
+                        <span style="font-size:12px; background:#ffe4e8; color:#ff758c; padding:3px 8px; border-radius:10px; font-weight:bold;">실시간</span>
+                    </div>
+                    ${attendanceHtml}
+                    ${studyHtml}
+                    ${memoHtml}
+                </div>
+
+                <!-- 성취 요약 뱃지 -->
+                <div class="habit-stats-row">
+                    <div class="habit-stat-badge highlight">
+                        <div class="habit-stat-label">🏆 이번 달 저녁 공부</div>
+                        <div class="habit-stat-value" style="color:#6366f1;">${stats.studyCount}일</div>
+                    </div>
+                    <div class="habit-stat-badge">
+                        <div class="habit-stat-label">☀️ 정시 등교</div>
+                        <div class="habit-stat-value" style="color:#059669;">${stats.onTimeCount}일</div>
+                    </div>
+                    <div class="habit-stat-badge">
+                        <div class="habit-stat-label">🔥 연속 열공</div>
+                        <div class="habit-stat-value" style="color:#f59e0b;">${streak}일째!</div>
+                    </div>
+                </div>
+
+                <!-- 월간 달력 -->
+                ${generateHabitCalendarHtml(habitCalYear, habitCalMonth, false)}
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function generateHabitCalendarHtml(year, month, isDad) {
+            const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const todayStr = getLocalDateStr(new Date());
+
+            let html = `
+                <div class="habit-calendar-wrap">
+                    <div class="habit-cal-nav">
+                        <button type="button" class="habit-cal-btn" onclick="changeHabitCalMonth(-1)">◀ 이전 달</button>
+                        <div class="habit-cal-title">📅 ${year}년 ${monthNames[month]}</div>
+                        <button type="button" class="habit-cal-btn" onclick="changeHabitCalMonth(1)">다음 달 ▶</button>
+                    </div>
+                    <div class="habit-cal-grid">
+                        <div class="habit-cal-weekday sun">일</div>
+                        <div class="habit-cal-weekday">월</div>
+                        <div class="habit-cal-weekday">화</div>
+                        <div class="habit-cal-weekday">수</div>
+                        <div class="habit-cal-weekday">목</div>
+                        <div class="habit-cal-weekday">금</div>
+                        <div class="habit-cal-weekday sat">토</div>
+            `;
+
+            for (let i = 0; i < firstDay; i++) {
+                html += `<div class="habit-cal-day other-month"></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = (dateStr === todayStr);
+                const isSelected = (isDad && dateStr === selectedHabitDate);
+                const rec = habitRecordsMap[dateStr];
+
+                let badgesHtml = '';
+                if (rec) {
+                    if (rec.attendance === 'ON_TIME') badgesHtml += '<span title="정상 등교">☀️</span>';
+                    else if (rec.attendance === 'LATE') badgesHtml += '<span title="지각">⏰</span>';
+                    else if (rec.attendance === 'HOLIDAY') badgesHtml += '<span title="휴일/주말">🏖️</span>';
+
+                    if (rec.evening_study === true) badgesHtml += '<span title="저녁 공부 완료">📖</span>';
+                    else if (rec.evening_study === false) badgesHtml += '<span title="공부 쉼">💤</span>';
+                }
+
+                const clickHandler = isDad 
+                    ? `changeHabitDate('${dateStr}')` 
+                    : `showChildDayDetail('${dateStr}')`;
+
+                html += `
+                    <div class="habit-cal-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" onclick="${clickHandler}" title="${dateStr}">
+                        <div class="habit-cal-day-num">${day}</div>
+                        <div class="habit-cal-badges">${badgesHtml}</div>
+                    </div>
+                `;
+            }
+
+            const totalCells = firstDay + daysInMonth;
+            const remainder = totalCells % 7;
+            if (remainder > 0) {
+                for (let i = 0; i < 7 - remainder; i++) {
+                    html += `<div class="habit-cal-day other-month"></div>`;
+                }
+            }
+
+            html += `
+                    </div>
+                    <div style="font-size:11px; color:#888; text-align:center; margin-top:10px;">
+                        ☀️ 정상등교 · ⏰ 지각 · 🏖️ 주말/휴일 · 📖 저녁공부 · 💤 휴식
+                    </div>
+                </div>
+            `;
+            return html;
+        }
+
+        function getMonthlyHabitStats(year, month) {
+            const prefix = `${year}-${String(month + 1).padStart(2, '0')}`;
+            let onTimeCount = 0;
+            let lateCount = 0;
+            let holidayCount = 0;
+            let studyCount = 0;
+
+            Object.keys(habitRecordsMap).forEach(dateStr => {
+                if (dateStr.startsWith(prefix)) {
+                    const rec = habitRecordsMap[dateStr];
+                    if (rec.attendance === 'ON_TIME') onTimeCount++;
+                    else if (rec.attendance === 'LATE') lateCount++;
+                    else if (rec.attendance === 'HOLIDAY') holidayCount++;
+
+                    if (rec.evening_study === true) studyCount++;
+                }
+            });
+
+            return { onTimeCount, lateCount, holidayCount, studyCount };
+        }
+
+        function calculateStudyStreak() {
+            let streak = 0;
+            let checkDate = new Date();
+            const todayStr = getLocalDateStr(checkDate);
+            const todayRec = habitRecordsMap[todayStr];
+            
+            if (todayRec && todayRec.evening_study === true) {
+                streak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                checkDate.setDate(checkDate.getDate() - 1);
+            }
+
+            for (let i = 0; i < 60; i++) {
+                const dStr = getLocalDateStr(checkDate);
+                const rec = habitRecordsMap[dStr];
+                if (rec && rec.evening_study === true) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+            return streak;
+        }
+
+        function changeHabitDate(val) {
+            if (!val) return;
+            selectedHabitDate = val;
+            const parts = val.split('-').map(Number);
+            habitCalYear = parts[0];
+            habitCalMonth = parts[1] - 1;
+            syncDraftWithSelectedDate();
+            renderHabitSection();
+            const el = document.getElementById('habit-container');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function stepHabitDate(offset) {
+            const parts = selectedHabitDate.split('-').map(Number);
+            const curr = new Date(parts[0], parts[1] - 1, parts[2]);
+            curr.setDate(curr.getDate() + offset);
+            selectedHabitDate = getLocalDateStr(curr);
+            habitCalYear = curr.getFullYear();
+            habitCalMonth = curr.getMonth();
+            syncDraftWithSelectedDate();
+            renderHabitSection();
+        }
+
+        function setHabitDateToToday() {
+            selectedHabitDate = getLocalDateStr(new Date());
+            habitCalYear = new Date().getFullYear();
+            habitCalMonth = new Date().getMonth();
+            syncDraftWithSelectedDate();
+            renderHabitSection();
+        }
+
+        function setHabitAttendance(val) {
+            draftAttendance = (draftAttendance === val) ? null : val;
+            renderHabitSection();
+        }
+
+        function setHabitEveningStudy(val) {
+            draftEveningStudy = (draftEveningStudy === val) ? null : val;
+            renderHabitSection();
+        }
+
+        function changeHabitCalMonth(delta) {
+            habitCalMonth += delta;
+            if (habitCalMonth < 0) {
+                habitCalMonth = 11;
+                habitCalYear--;
+            } else if (habitCalMonth > 11) {
+                habitCalMonth = 0;
+                habitCalYear++;
+            }
+            renderHabitSection();
+        }
+
+        function toggleDadPreview(val) {
+            isDadPreviewMode = val;
+            renderHabitSection();
+        }
+
+        async function saveHabitRecord() {
+            if (isHabitSaving) return;
+
+            if (!draftAttendance && draftEveningStudy === null && !draftMemo.trim()) {
+                alert("등교 여부나 저녁 공부 여부를 최소 하나 선택해주세요! 😊");
+                return;
+            }
+
+            isHabitSaving = true;
+            const saveBtn = document.getElementById('habit-save-btn');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerText = "저장 중... ⏳";
+            }
+
+            const memoVal = (document.getElementById('habit-memo-input')?.value || draftMemo || '').trim();
+
+            const detailObj = {
+                attendance: draftAttendance,
+                evening_study: draftEveningStudy,
+                memo: memoVal,
+                student: '아람',
+                recorded_by: userNickname || '아빠',
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                const { data: existing, error: fetchErr } = await supabaseClient
+                    .from('study_words')
+                    .select('id')
+                    .eq('subject', 'DAILY_HABIT')
+                    .eq('word', selectedHabitDate);
+
+                let saveError = null;
+                if (existing && existing.length > 0) {
+                    const { error } = await supabaseClient
+                        .from('study_words')
+                        .update({
+                            meaning: JSON.stringify(detailObj),
+                            category: '아람',
+                            example: userNickname || '아빠'
+                        })
+                        .eq('id', existing[0].id);
+                    saveError = error;
+
+                    if (existing.length > 1) {
+                        for (let i = 1; i < existing.length; i++) {
+                            await supabaseClient.from('study_words').delete().eq('id', existing[i].id);
+                        }
+                    }
+                } else {
+                    const { error } = await supabaseClient
+                        .from('study_words')
+                        .insert([{
+                            word: selectedHabitDate,
+                            meaning: JSON.stringify(detailObj),
+                            subject: 'DAILY_HABIT',
+                            category: '아람',
+                            example: userNickname || '아빠'
+                        }]);
+                    saveError = error;
+                }
+
+                if (saveError) throw saveError;
+
+                habitRecordsMap[selectedHabitDate] = {
+                    ...detailObj,
+                    rawCreatedAt: new Date().toISOString()
+                };
+
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#ffc3a0', '#ffafbd', '#84fab0', '#8fd3f4', '#a18cd1']
+                });
+
+                alert(`💖 ${selectedHabitDate} 아람이의 출석·공부 기록이 저장되었습니다!`);
+                renderHabitSection();
+
+            } catch (err) {
+                console.error("Save habit record error:", err);
+                alert("저장 중 오류가 발생했습니다: " + (err.message || err));
+            } finally {
+                isHabitSaving = false;
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                }
+            }
+        }
+
+        async function deleteHabitRecord() {
+            if (!confirm(`${selectedHabitDate}의 기록을 삭제하시겠습니까?`)) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('study_words')
+                    .delete()
+                    .eq('subject', 'DAILY_HABIT')
+                    .eq('word', selectedHabitDate);
+
+                if (error) throw error;
+
+                delete habitRecordsMap[selectedHabitDate];
+                syncDraftWithSelectedDate();
+                renderHabitSection();
+                alert(`${selectedHabitDate} 기록이 삭제되었습니다.`);
+            } catch(err) {
+                console.error("Delete habit record error:", err);
+                alert("삭제 실패: " + err.message);
+            }
+        }
+
+        function showChildDayDetail(dateStr) {
+            const rec = habitRecordsMap[dateStr];
+            const friendlyDate = formatFriendlyDate(dateStr);
+            
+            let attendanceText = '기록 없음 (미체크)';
+            if (rec && rec.attendance === 'ON_TIME') attendanceText = '☀️ 정상 등교 (지각 안 함 ✨)';
+            else if (rec && rec.attendance === 'LATE') attendanceText = '⏰ 지각함';
+            else if (rec && rec.attendance === 'HOLIDAY') attendanceText = '🏖️ 주말 / 휴일';
+
+            let studyText = '기록 없음 (미체크)';
+            if (rec && rec.evening_study === true) studyText = '📖 저녁 공부 완료! 👑';
+            else if (rec && rec.evening_study === false) studyText = '💤 공부 쉼 / 휴식';
+
+            let memoHtml = '';
+            if (rec && rec.memo) {
+                memoHtml = `<div class="child-memo-box" style="margin-top:12px;">💌 아빠의 응원: "${escapeHtml(rec.memo)}" 💖</div>`;
+            }
+
+            const modalHtml = `
+                <div class="child-detail-modal" id="child-day-modal" onclick="if(event.target === this) closeChildDayDetail()">
+                    <div class="child-modal-body">
+                        <div style="font-size: 32px; margin-bottom: 8px;">📅</div>
+                        <div style="font-family:'Jua', sans-serif; font-size:20px; color:#2d3436; margin-bottom:14px;">${friendlyDate}</div>
+                        <div style="background:#f8fafc; border-radius:16px; padding:14px; text-align:left; font-size:14px; display:flex; flex-direction:column; gap:8px;">
+                            <div><strong>등교 상태:</strong> ${attendanceText}</div>
+                            <div><strong>저녁 공부:</strong> ${studyText}</div>
+                        </div>
+                        ${memoHtml}
+                        <button onclick="closeChildDayDetail()" style="margin-top:16px; width:100%; background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color:white; border:none; padding:10px 18px; border-radius:14px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer;">확인 💖</button>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function closeChildDayDetail() {
+            const modal = document.getElementById('child-day-modal');
+            if (modal) modal.remove();
         }
 
         initStats()
