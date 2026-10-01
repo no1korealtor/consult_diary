@@ -1148,6 +1148,231 @@
             transform: translateY(-1px);
         }
 
+        /* ===================================================
+           Family Schedule & D-Day Card Styles
+           =================================================== */
+        .schedule-section-card {
+            background: linear-gradient(135deg, #ffffff 0%, #fbfbfe 100%);
+            border: 2px solid #e0e7ff;
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.08);
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .schedule-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 16px;
+            color: #3730a3;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .schedule-add-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: 'Jua', sans-serif;
+            box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
+            transition: all 0.15s ease;
+        }
+
+        .schedule-add-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.35);
+        }
+
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: #ffffff;
+            border: 1.5px solid #eef2ff;
+            border-radius: 14px;
+            transition: all 0.15s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .schedule-item:hover {
+            border-color: #c7d2fe;
+            background: #fafbff;
+        }
+
+        .schedule-item.active-now {
+            background: #fff8f6;
+            border-color: #fed7aa;
+        }
+
+        .schedule-item-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .schedule-icon-badge {
+            font-size: 20px;
+            width: 38px;
+            height: 38px;
+            background: #f8fafc;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid #f1f5f9;
+        }
+
+        .schedule-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .schedule-name {
+            font-family: 'Jua', sans-serif;
+            font-size: 15px;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .schedule-dates {
+            font-size: 12px;
+            color: #64748b;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .schedule-memo-text {
+            font-size: 11px;
+            color: #6366f1;
+            font-family: 'Nunito', 'Jua', sans-serif;
+        }
+
+        .schedule-item-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+
+        .schedule-dday-badge {
+            font-family: 'Jua', sans-serif;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .schedule-dday-badge.active {
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            color: white;
+            box-shadow: 0 2px 6px rgba(255, 117, 140, 0.3);
+        }
+
+        .schedule-dday-badge.urgent {
+            background: #fee2e2;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+        }
+
+        .schedule-dday-badge.normal {
+            background: #e0e7ff;
+            color: #4338ca;
+            border: 1px solid #c7d2fe;
+        }
+
+        .schedule-dday-badge.passed {
+            background: #f1f5f9;
+            color: #94a3b8;
+        }
+
+        .sched-cat-btn {
+            font-size: 11px;
+            padding: 6px 4px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .sched-cat-btn.active {
+            background: #e0e7ff;
+            border-color: #6366f1;
+            color: #4338ca;
+            font-weight: bold;
+        }
+
+        /* Event Pill inside 1-Week Strip */
+        .habit-week-event-pill {
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 10px;
+            padding: 2px 4px;
+            border-radius: 6px;
+            font-weight: bold;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-top: 3px;
+            font-family: 'Jua', sans-serif;
+            border: 1px solid #c7d2fe;
+            line-height: 1.2;
+            width: 90%;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .habit-week-event-pill.exam {
+            background: #fef3c7;
+            color: #b45309;
+            border-color: #fde68a;
+        }
+
+        .habit-week-event-pill.family {
+            background: #f3e8ff;
+            color: #7e22ce;
+            border-color: #e9d5ff;
+        }
+
+        .habit-week-event-pill.birthday {
+            background: #ffe4e6;
+            color: #e11d48;
+            border-color: #fecdd3;
+        }
+
+        .habit-week-event-pill.vacation {
+            background: #ecfdf5;
+            color: #047857;
+            border-color: #a7f3d0;
+        }
+
         /* Child Highlight Card */
         .child-today-card {
             background: linear-gradient(135deg, #ffffff 0%, #fff7f9 100%);
@@ -2464,10 +2689,323 @@
         let isDadPreviewMode = false;
         let habitWeekOffset = 0; // 0 = 이번 주, -1 = 지난주, +1 = 다음주
         let isHabitMonthExpanded = false; // 월간 달력 전체보기 접기/펼치기 여부
+        let familySchedules = []; // 아빠가 등록한 주요 일정 (중간고사, 제사, 기념일 등)
 
         let draftAttendance = null; // 'ON_TIME' | 'LATE' | 'HOLIDAY' | null
         let draftEveningStudy = null; // true | false | null
         let draftMemo = '';
+
+        function getSchedulesForDate(dateStr) {
+            if (!familySchedules || !familySchedules.length) return [];
+            return familySchedules.filter(s => {
+                const start = s.startDate;
+                const end = s.endDate || s.startDate;
+                return start <= dateStr && dateStr <= end;
+            });
+        }
+
+        function formatScheduleRange(startDate, endDate) {
+            if (!startDate) return '';
+            if (!endDate || startDate === endDate) {
+                const parts = startDate.split('-').map(Number);
+                const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+                return `${parts[1]}월 ${parts[2]}일(${dayNames[d.getDay()]})`;
+            }
+            const p1 = startDate.split('-').map(Number);
+            const d1 = new Date(p1[0], p1[1] - 1, p1[2]);
+            const p2 = endDate.split('-').map(Number);
+            const d2 = new Date(p2[0], p2[1] - 1, p2[2]);
+            const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+            return `${p1[1]}월 ${p1[2]}일(${dayNames[d1.getDay()]}) ~ ${p2[1]}월 ${p2[2]}일(${dayNames[d2.getDay()]})`;
+        }
+
+        function getScheduleDDayInfo(startDate, endDate) {
+            const todayStr = getLocalDateStr(new Date());
+
+            if (todayStr >= startDate && todayStr <= (endDate || startDate)) {
+                return {
+                    label: (startDate === endDate) ? '오늘 D-Day! 🌟' : '진행 중! 🔥',
+                    className: 'active',
+                    isOngoing: true,
+                    isUpcoming: false,
+                    isPassed: false,
+                    diff: 0
+                };
+            }
+
+            const todayParts = todayStr.split('-').map(Number);
+            const todayDate = new Date(todayParts[0], todayParts[1] - 1, todayParts[2]);
+
+            const startParts = startDate.split('-').map(Number);
+            const startDateObj = new Date(startParts[0], startParts[1] - 1, startParts[2]);
+
+            const diffDays = Math.round((startDateObj - todayDate) / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 0) {
+                return {
+                    label: `D-${diffDays}`,
+                    className: (diffDays <= 7) ? 'urgent' : 'normal',
+                    isOngoing: false,
+                    isUpcoming: true,
+                    isPassed: false,
+                    diff: diffDays
+                };
+            } else {
+                const endParts = (endDate || startDate).split('-').map(Number);
+                const endDateObj = new Date(endParts[0], endParts[1] - 1, endParts[2]);
+                const pastDays = Math.round((todayDate - endDateObj) / (1000 * 60 * 60 * 24));
+                return {
+                    label: '종료',
+                    className: 'passed',
+                    isOngoing: false,
+                    isUpcoming: false,
+                    isPassed: true,
+                    diff: -pastDays
+                };
+            }
+        }
+
+        function generateScheduleCardHtml(isDad) {
+            const activeList = [];
+            const upcomingList = [];
+            const passedList = [];
+
+            familySchedules.forEach(ev => {
+                const info = getScheduleDDayInfo(ev.startDate, ev.endDate);
+                if (info.isOngoing) activeList.push({ ...ev, info });
+                else if (info.isUpcoming) upcomingList.push({ ...ev, info });
+                else passedList.push({ ...ev, info });
+            });
+
+            let displayList = [...activeList, ...upcomingList];
+            if (displayList.length === 0 && passedList.length > 0) {
+                displayList.push(passedList[passedList.length - 1]);
+            }
+
+            let itemsHtml = '';
+            if (displayList.length === 0) {
+                itemsHtml = `
+                    <div style="text-align:center; padding:12px; color:#94a3b8; font-size:13px; font-family:'Jua', sans-serif;">
+                        ${isDad ? '등록된 시험이나 가족 일정이 없습니다. 우측 버튼을 눌러 일정을 등록해보세요! 😊' : '등록된 주요 일정이 없습니다 💖'}
+                    </div>
+                `;
+            } else {
+                itemsHtml = displayList.slice(0, 4).map(ev => {
+                    const rangeStr = formatScheduleRange(ev.startDate, ev.endDate);
+                    const deleteBtn = isDad 
+                        ? `<button type="button" onclick="deleteSchedule(${ev.id}, '${escapeHtml(ev.title)}')" style="background:none; border:none; color:#cbd5e1; cursor:pointer; font-size:14px; padding:2px 4px;" title="일정 삭제" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">🗑️</button>` 
+                        : '';
+                    const activeClass = ev.info.isOngoing ? 'active-now' : '';
+                    return `
+                        <div class="schedule-item ${activeClass}">
+                            <div class="schedule-item-left">
+                                <div class="schedule-icon-badge">${ev.icon}</div>
+                                <div class="schedule-info">
+                                    <div class="schedule-name">${escapeHtml(ev.title)}</div>
+                                    <div class="schedule-dates">📅 ${rangeStr}</div>
+                                    ${ev.memo ? `<div class="schedule-memo-text">💬 ${escapeHtml(ev.memo)}</div>` : ''}
+                                </div>
+                            </div>
+                            <div class="schedule-item-right">
+                                <span class="schedule-dday-badge ${ev.info.className}">${ev.info.label}</span>
+                                ${deleteBtn}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const manageBtn = isDad
+                ? `<button type="button" class="schedule-add-btn" onclick="openScheduleModal()">➕ 일정 등록 / 관리</button>`
+                : (familySchedules.length > 0 ? `<button type="button" class="habit-cal-btn" onclick="openScheduleModal()" style="font-size:11px; padding:3px 8px;">전체 (${familySchedules.length})</button>` : '');
+
+            return `
+                <div class="schedule-section-card">
+                    <div class="schedule-header">
+                        <div class="schedule-title">
+                            <span>🗓️ 우리 집 주요 일정 & D-Day</span>
+                        </div>
+                        ${manageBtn}
+                    </div>
+                    <div class="schedule-list">
+                        ${itemsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function openScheduleModal() {
+            const overlay = document.getElementById('schedule-modal-overlay');
+            if (!overlay) return;
+            overlay.classList.remove('hidden');
+
+            const startInput = document.getElementById('sched-input-start');
+            const endInput = document.getElementById('sched-input-end');
+            if (startInput && !startInput.value) {
+                startInput.value = selectedHabitDate || getLocalDateStr(new Date());
+            }
+            if (endInput && !endInput.value) {
+                endInput.value = startInput ? startInput.value : getLocalDateStr(new Date());
+            }
+
+            renderScheduleModalList();
+        }
+
+        function closeScheduleModal() {
+            const overlay = document.getElementById('schedule-modal-overlay');
+            if (overlay) overlay.classList.add('hidden');
+        }
+
+        function selectSchedCat(btn) {
+            document.querySelectorAll('.sched-cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function syncSchedEndDate(val) {
+            const endInput = document.getElementById('sched-input-end');
+            if (endInput && (!endInput.value || endInput.value < val)) {
+                endInput.value = val;
+            }
+        }
+
+        async function saveNewSchedule() {
+            const titleInput = document.getElementById('sched-input-title');
+            const startInput = document.getElementById('sched-input-start');
+            const endInput = document.getElementById('sched-input-end');
+            const memoInput = document.getElementById('sched-input-memo');
+            const saveBtn = document.getElementById('sched-save-btn');
+
+            const title = (titleInput?.value || '').trim();
+            const startDate = startInput?.value;
+            let endDate = endInput?.value || startDate;
+            const memo = (memoInput?.value || '').trim();
+
+            if (!title) {
+                alert("일정 제목을 입력해주세요! (예: 2학기 중간고사, 할아버지 제사 등)");
+                titleInput?.focus();
+                return;
+            }
+            if (!startDate) {
+                alert("시작 날짜를 선택해주세요!");
+                startInput?.focus();
+                return;
+            }
+            if (endDate < startDate) {
+                endDate = startDate;
+            }
+
+            const selectedCatBtn = document.querySelector('.sched-cat-btn.active');
+            const icon = selectedCatBtn ? selectedCatBtn.getAttribute('data-icon') : '📌';
+            const category = selectedCatBtn ? selectedCatBtn.getAttribute('data-cat') : 'OTHER';
+
+            const schedObj = {
+                title,
+                startDate,
+                endDate,
+                icon,
+                category,
+                memo,
+                author: userNickname || '아빠',
+                created_at: new Date().toISOString()
+            };
+
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerText = "저장 중... ⏳";
+            }
+
+            try {
+                const { error } = await supabaseClient
+                    .from('study_words')
+                    .insert([{
+                        word: title,
+                        meaning: JSON.stringify(schedObj),
+                        subject: 'FAMILY_SCHEDULE',
+                        category: '아람',
+                        example: userNickname || '아빠'
+                    }]);
+
+                if (error) throw error;
+
+                confetti({
+                    particleCount: 80,
+                    spread: 60,
+                    origin: { y: 0.5 }
+                });
+
+                alert(`💖 [${icon} ${title}] 일정이 등록되었습니다!`);
+                
+                await loadHabitRecords();
+                
+                if (titleInput) titleInput.value = '';
+                if (memoInput) memoInput.value = '';
+                
+                renderScheduleModalList();
+                
+            } catch(err) {
+                console.error("Save schedule error:", err);
+                alert("일정 저장 중 오류가 발생했습니다: " + (err.message || err));
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerText = "💾 일정 추가하기 💖";
+                }
+            }
+        }
+
+        async function deleteSchedule(id, title) {
+            if (!confirm(`[${title}] 일정을 삭제하시겠습니까?`)) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('study_words')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                alert(`[${title}] 일정이 삭제되었습니다.`);
+                await loadHabitRecords();
+                renderScheduleModalList();
+            } catch(err) {
+                console.error("Delete schedule error:", err);
+                alert("삭제 중 오류가 발생했습니다: " + (err.message || err));
+            }
+        }
+
+        function renderScheduleModalList() {
+            const container = document.getElementById('sched-modal-list');
+            if (!container) return;
+
+            if (!familySchedules || familySchedules.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:12px; padding:16px;">등록된 일정이 없습니다.</div>`;
+                return;
+            }
+
+            const isDad = (userNickname === '아빠');
+            let html = '';
+            familySchedules.forEach(ev => {
+                const dday = getScheduleDDayInfo(ev.startDate, ev.endDate);
+                const delBtn = isDad 
+                    ? `<button type="button" onclick="deleteSchedule(${ev.id}, '${escapeHtml(ev.title)}')" style="background:#fee2e2; color:#ef4444; border:none; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🗑️ 삭제</button>` 
+                    : '';
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:8px 12px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:18px;">${ev.icon}</span>
+                            <div>
+                                <div style="font-size:13px; font-weight:bold; color:#1e293b;">${escapeHtml(ev.title)}</div>
+                                <div style="font-size:11px; color:#64748b;">${formatScheduleRange(ev.startDate, ev.endDate)} <span style="font-weight:bold; color:#6366f1;">(${dday.label})</span></div>
+                                ${ev.memo ? `<div style="font-size:11px; color:#8b5cf6;">💬 ${escapeHtml(ev.memo)}</div>` : ''}
+                            </div>
+                        </div>
+                        ${delBtn}
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
 
         function getWeekDays(offset = 0) {
             const now = new Date();
@@ -2584,6 +3122,19 @@
                     if (rec.memo) badgesHtml += '<span title="아빠 응원">💌</span>';
                 }
 
+                const dayEvents = getSchedulesForDate(dateStr);
+                let eventPillsHtml = '';
+                if (dayEvents && dayEvents.length > 0) {
+                    dayEvents.forEach(ev => {
+                        let catClass = 'other';
+                        if (ev.category === 'EXAM') catClass = 'exam';
+                        else if (ev.category === 'FAMILY') catClass = 'family';
+                        else if (ev.category === 'BIRTHDAY') catClass = 'birthday';
+                        else if (ev.category === 'VACATION') catClass = 'vacation';
+                        eventPillsHtml += `<div class="habit-week-event-pill ${catClass}" title="${escapeHtml(ev.title)}">${ev.icon} ${escapeHtml(ev.title)}</div>`;
+                    });
+                }
+
                 const clickHandler = isDad 
                     ? `changeHabitDate('${dateStr}')` 
                     : `showChildDayDetail('${dateStr}')`;
@@ -2598,6 +3149,7 @@
                         <div class="habit-week-weekday ${weekdayClass}">${dayNames[idx]}</div>
                         <div class="habit-week-date-num">${d.getDate()}</div>
                         <div class="habit-week-badges">${badgesHtml || '<span class="habit-badge-empty">·</span>'}</div>
+                        ${eventPillsHtml}
                     </div>
                 `;
             });
@@ -2667,17 +3219,24 @@
             container.classList.remove('hidden');
 
             try {
-                const { data, error } = await supabaseClient
-                    .from('study_words')
-                    .select('*')
-                    .eq('subject', 'DAILY_HABIT')
-                    .order('word', { ascending: false });
+                const [habitRes, schedRes] = await Promise.all([
+                    supabaseClient
+                        .from('study_words')
+                        .select('*')
+                        .eq('subject', 'DAILY_HABIT')
+                        .order('word', { ascending: false }),
+                    supabaseClient
+                        .from('study_words')
+                        .select('*')
+                        .eq('subject', 'FAMILY_SCHEDULE')
+                        .order('created_at', { ascending: true })
+                ]);
 
-                if (error) {
-                    console.error("Habit logs fetch error:", error);
-                } else if (data) {
+                if (habitRes.error) {
+                    console.error("Habit logs fetch error:", habitRes.error);
+                } else if (habitRes.data) {
                     habitRecordsMap = {};
-                    data.forEach(item => {
+                    habitRes.data.forEach(item => {
                         try {
                             const detail = typeof item.meaning === 'string' ? JSON.parse(item.meaning) : (item.meaning || {});
                             habitRecordsMap[item.word] = {
@@ -2689,6 +3248,32 @@
                             console.error("Habit parse error:", e);
                         }
                     });
+                }
+
+                if (schedRes.error) {
+                    console.error("Schedule fetch error:", schedRes.error);
+                } else if (schedRes.data) {
+                    familySchedules = [];
+                    schedRes.data.forEach(item => {
+                        try {
+                            const detail = typeof item.meaning === 'string' ? JSON.parse(item.meaning) : (item.meaning || {});
+                            familySchedules.push({
+                                id: item.id,
+                                word: item.word,
+                                title: detail.title || item.word,
+                                startDate: detail.startDate,
+                                endDate: detail.endDate || detail.startDate,
+                                icon: detail.icon || '📌',
+                                category: detail.category || 'OTHER',
+                                memo: detail.memo || '',
+                                author: detail.author || item.example || '아빠'
+                            });
+                        } catch(e) {
+                            console.error("Schedule parse error:", e);
+                        }
+                    });
+                    // Sort by startDate
+                    familySchedules.sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''));
                 }
             } catch(err) {
                 console.error("loadHabitRecords error:", err);
@@ -2740,6 +3325,9 @@
                     <div class="habit-subtitle">매일 지각 여부와 저녁 공부를 체크해주세요! 💖</div>
                     <button onclick="toggleDadPreview(true)" style="margin-top:10px; background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white; border:none; padding:6px 14px; border-radius:14px; font-size:13px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif; box-shadow:0 2px 6px rgba(0,0,0,0.1);">👀 아람이 화면(달력) 미리보기</button>
                 </div>
+
+                <!-- 주요 일정 & D-Day 카드 -->
+                ${generateScheduleCardHtml(true)}
 
                 <!-- 날짜 선택 바 -->
                 <div class="habit-date-bar">
@@ -2967,6 +3555,9 @@
                     ${memoHtml}
                 </div>
 
+                <!-- 주요 일정 & D-Day 카드 -->
+                ${generateScheduleCardHtml(false)}
+
                 <!-- 주간 달력 스트립 (생활패턴에 맞춘 1주일 단위 기본 뷰) -->
                 ${generateHabitWeekStripHtml(false)}
 
@@ -3049,6 +3640,13 @@
                     if (rec.memo) badgesHtml += '<span title="아빠 응원">💌</span>';
                 }
 
+                const dayEvents = getSchedulesForDate(dateStr);
+                if (dayEvents && dayEvents.length > 0) {
+                    dayEvents.forEach(ev => {
+                        badgesHtml += `<span title="일정: ${escapeHtml(ev.title)}">${ev.icon}</span>`;
+                    });
+                }
+
                 const clickHandler = isDad 
                     ? `changeHabitDate('${dateStr}')` 
                     : `showChildDayDetail('${dateStr}')`;
@@ -3072,7 +3670,7 @@
             html += `
                     </div>
                     <div style="font-size:11px; color:#888; text-align:center; margin-top:10px;">
-                        ☀️ 정상등교 · ⏰ 지각 · 🏖️ 주말/휴일 · 📖 저녁공부 · 💤 휴식 · 💌 응원
+                        ☀️ 정상등교 · ⏰ 지각 · 🏖️ 주말/휴일 · 📖 저녁공부 · 💤 휴식 · 💌 응원 · 🗓️ 주요일정
                     </div>
                 </div>
             `;
@@ -3318,6 +3916,24 @@
                 memoHtml = `<div class="child-memo-box" style="margin-top:12px;">💌 아빠의 응원: "${escapeHtml(rec.memo)}" 💖</div>`;
             }
 
+            const dayEvents = getSchedulesForDate(dateStr);
+            let eventsModalHtml = '';
+            if (dayEvents && dayEvents.length > 0) {
+                const items = dayEvents.map(ev => `
+                    <div style="background:#ffffff; border:1px solid #c7d2fe; border-radius:10px; padding:8px 10px; margin-top:4px;">
+                        <div style="font-weight:bold; color:#3730a3; font-size:13px;">${ev.icon} ${escapeHtml(ev.title)}</div>
+                        <div style="font-size:12px; color:#64748b;">기간: ${formatScheduleRange(ev.startDate, ev.endDate)}</div>
+                        ${ev.memo ? `<div style="font-size:11px; color:#6366f1; margin-top:2px;">💬 ${escapeHtml(ev.memo)}</div>` : ''}
+                    </div>
+                `).join('');
+                eventsModalHtml = `
+                    <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #cbd5e1; text-align:left;">
+                        <strong style="color:#4338ca; font-size:13px;">🗓️ 이날의 주요 일정:</strong>
+                        ${items}
+                    </div>
+                `;
+            }
+
             const modalHtml = `
                 <div class="child-detail-modal" id="child-day-modal" onclick="if(event.target === this) closeChildDayDetail()">
                     <div class="child-modal-body">
@@ -3327,6 +3943,7 @@
                             <div><strong>등교 상태:</strong> ${attendanceText}</div>
                             <div><strong>저녁 공부:</strong> ${studyText}</div>
                         </div>
+                        ${eventsModalHtml}
                         ${memoHtml}
                         <button onclick="closeChildDayDetail()" style="margin-top:16px; width:100%; background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color:white; border:none; padding:10px 18px; border-radius:14px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer;">확인 💖</button>
                     </div>
@@ -3354,6 +3971,60 @@
             <div style="display:flex; gap:10px; margin-top: 20px;">
                 <button class="name-btn" onclick="submitYoutubeModal()">추가하기 💖</button>
                 <button class="name-btn" style="background: #dfe6e9; color: #636e72; box-shadow:none;" onclick="closeYoutubeModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 주요 일정 추가/관리 모달 -->
+    <div class="modal-overlay hidden" id="schedule-modal-overlay" onclick="if(event.target === this) closeScheduleModal()">
+        <div class="name-modal" style="max-width: 440px; width: 92%; padding: 22px; max-height: 88vh; overflow-y: auto; text-align: left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px dashed #ffd1dc; padding-bottom:8px;">
+                <h2 style="font-size:20px; color:#2d3436; margin:0; font-family:'Jua', sans-serif;">🗓️ 주요 일정 등록 & 관리</h2>
+                <button type="button" onclick="closeScheduleModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#94a3b8;">✕</button>
+            </div>
+
+            <!-- 새 일정 등록 폼 -->
+            <div style="background:#fff8f9; border:1.5px solid #ffe4e8; border-radius:16px; padding:14px; margin-bottom:16px;">
+                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#ff758c; margin-bottom:10px;">➕ 새로운 일정 등록</div>
+                
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">일정 제목</label>
+                <input type="text" id="sched-input-title" class="habit-memo-input" style="padding:8px 12px; margin-bottom:10px;" placeholder="예: 2학기 중간고사, 할아버지 제사, 가족여행 등" maxlength="40">
+
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">분류 / 이모지 선택</label>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:10px;" id="sched-category-selector">
+                    <button type="button" class="habit-cal-btn sched-cat-btn active" data-icon="📝" data-cat="EXAM" onclick="selectSchedCat(this)">📝 중간/기말고사</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🕯️" data-cat="FAMILY" onclick="selectSchedCat(this)">🕯️ 제사/가족행사</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🎂" data-cat="BIRTHDAY" onclick="selectSchedCat(this)">🎂 생일/기념일</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🎒" data-cat="SCHOOL" onclick="selectSchedCat(this)">🎒 학교행사/소풍</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="✈️" data-cat="VACATION" onclick="selectSchedCat(this)">✈️ 방학/여행/휴일</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="📌" data-cat="OTHER" onclick="selectSchedCat(this)">📌 기타 일정</button>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">시작일</label>
+                        <input type="date" id="sched-input-start" class="habit-date-picker" style="width:100%; box-sizing:border-box; padding:6px 10px;" onchange="syncSchedEndDate(this.value)">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">종료일</label>
+                        <input type="date" id="sched-input-end" class="habit-date-picker" style="width:100%; box-sizing:border-box; padding:6px 10px;">
+                    </div>
+                </div>
+
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">메모 / 준비사항 (선택)</label>
+                <input type="text" id="sched-input-memo" class="habit-memo-input" style="padding:8px 12px; margin-bottom:12px;" placeholder="예: 국어/수학 시험, 저녁 6시 큰집 등" maxlength="50">
+
+                <button type="button" id="sched-save-btn" onclick="saveNewSchedule()" style="width:100%; background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color:white; border:none; padding:10px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:14px; box-shadow:0 3px 8px rgba(255, 117, 140, 0.3);">
+                    💾 일정 추가하기 💖
+                </button>
+            </div>
+
+            <!-- 등록된 일정 목록 -->
+            <div>
+                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#475569; margin-bottom:8px;">📋 등록된 전체 일정 목록</div>
+                <div id="sched-modal-list" style="display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;">
+                    <!-- JS renders list here -->
+                </div>
             </div>
         </div>
     </div>
