@@ -1272,7 +1272,8 @@ def run_building_viewer():
         from trade_viewer import (
             parse_address_and_ho, get_expos_unit_details, classify_property_type,
             get_recent_transactions, print_comparison_table, match_dong,
-            print_empty_transactions_explanation, parse_money_input, extract_floor_from_string
+            print_empty_transactions_explanation, parse_money_input, extract_floor_from_string,
+            generate_wolse_schedule
         )
         clean_address, dong_name, ho_name = parse_address_and_ho(address)
         is_complex_analysis = False
@@ -2192,6 +2193,16 @@ def run_building_viewer():
                     print(" [!] 올바른 금액을 입력해 주세요. (예: 50000, 50,000, 5억 등)")
 
         elif trade_type == "월세":
+            p126_val = round(int(official_house_price * 1.26) / 10000) if official_house_price else 0
+            jeonse_txs = [t for t in (transactions or []) if t.get("_trade_type") == "전세" and extract_tx_deposit(t) > 0]
+            if target_area and target_area > 0:
+                sim_txs = [t for t in jeonse_txs if extract_tx_area(t) > 0 and abs(extract_tx_area(t) - target_area) / target_area <= 0.25]
+                if sim_txs:
+                    jeonse_txs = sim_txs
+            dep_list = [extract_tx_deposit(t) for t in jeonse_txs if extract_tx_deposit(t) > 0]
+            avg_jeonse = int(round(sum(dep_list) / len(dep_list))) if dep_list else 0
+            base_jeonse = p126_val if p126_val > 0 else (avg_jeonse if avg_jeonse > 0 else (int(round((target_area * 0.3025) * 1200)) if target_area else 20000))
+
             while True:
                 dep_input = input("[입력] 보증금 입력 (단위: 만원, 예: 10000, 10,000, 1억 / 없을 시 엔터: 보증금별 조견표): ").strip()
                 parsed_d = parse_money_input(dep_input)
@@ -2200,31 +2211,11 @@ def run_building_viewer():
                     break
                 elif not dep_input:
                     # 엔터 입력 시: 보증금대별 월세 조견표 자동 산출!
-                    p126_val = round(int(official_house_price * 1.26) / 10000) if official_house_price else 0
-                    jeonse_txs = [t for t in (transactions or []) if t.get("_trade_type") == "전세" and extract_tx_deposit(t) > 0]
-                    if target_area and target_area > 0:
-                        sim_txs = [t for t in jeonse_txs if extract_tx_area(t) > 0 and abs(extract_tx_area(t) - target_area) / target_area <= 0.25]
-                        if sim_txs:
-                            jeonse_txs = sim_txs
-                    dep_list = [extract_tx_deposit(t) for t in jeonse_txs if extract_tx_deposit(t) > 0]
-                    avg_jeonse = int(round(sum(dep_list) / len(dep_list))) if dep_list else 0
-                    
-                    base_jeonse = p126_val if p126_val > 0 else (avg_jeonse if avg_jeonse > 0 else (int(round((target_area * 0.3025) * 1200)) if target_area else 20000))
+                    table_options = generate_wolse_schedule(base_jeonse, 0, 0, official_house_price)
                     
                     eok_bj = base_jeonse // 10000
                     man_bj = base_jeonse % 10000
                     bj_str = f"{eok_bj}억 {man_bj:,}만" if man_bj > 0 else f"{eok_bj}억"
-
-                    preset_deps = [1000, 2000, 3000, 5000, 10000]
-                    preset_deps = [d for d in preset_deps if d < base_jeonse]
-                    if not preset_deps:
-                        preset_deps = [1000, 2000, 3000]
-
-                    table_options = []
-                    for idx, d in enumerate(preset_deps, 1):
-                        calc_m = max(5, int(round(((base_jeonse - d) * 0.055 / 12) / 5) * 5))
-                        d_str = f"{d//10000}억 {d%10000:,}만" if (d >= 10000 and d%10000 > 0) else (f"{d//10000}억" if d >= 10000 else f"{d:,}만")
-                        table_options.append((d, calc_m, d_str))
 
                     print("\n" + "═"*64)
                     print("  💡 [상담 가이드: '보증금 얼마 받으면 월세 얼마 받나?' 조견표]")
@@ -2233,25 +2224,25 @@ def run_building_viewer():
                     print(f"  • 실무 전월세전환율: 연 5.5% 기준 (1,000만원당 약 4.6만~5만원)")
                     print("  " + "─"*60)
                     print("  📊 보증금대별 실시간 예상 월세 조견표:")
-                    for idx, (d, m, d_s) in enumerate(table_options, 1):
-                        tag = " (★추천 기본)" if (d == 3000 or (idx == 3 and len(table_options)>=3)) else ""
-                        print(f"    {idx}: 보증금 {d_s:>7}원  ➔  월세 약 {m:>3}만 원{tag}")
+                    for idx, item in enumerate(table_options, 1):
+                        tag_str = f" ({item['tag']})" if item.get("tag") else ""
+                        print(f"    {idx}: 보증금 {item['deposit_str']:>7}원  ➔  월세 약 {item['monthly_rent']:>3}만 원{tag_str}")
                     print("═"*64)
 
                     default_idx = 3 if len(table_options) >= 3 else 1
-                    def_d, def_m, def_ds = table_options[default_idx - 1]
+                    def_item = table_options[default_idx - 1]
 
-                    select_in = input(f"[입력] 번호 선택 (1~{len(table_options)}) 또는 엔터(기본: {default_idx}번 [{def_ds}/{def_m}만]) / '보증금 월세' 직접 입력: ").strip()
+                    select_in = input(f"[입력] 번호 선택 (1~{len(table_options)}) 또는 엔터(기본: {default_idx}번 [{def_item['deposit_str']}/{def_item['monthly_rent']}만]) / '보증금 월세' 직접 입력: ").strip()
                     if not select_in:
-                        target_price = def_d
-                        target_monthly = def_m
-                        print(f" -> [확인] 추천 {default_idx}번: 보증금 {def_ds}원 / 월세 {def_m}만 원 적용 완료!")
+                        target_price = def_item["deposit"]
+                        target_monthly = def_item["monthly_rent"]
+                        print(f" -> [확인] 추천 {default_idx}번: 보증금 {def_item['deposit_str']}원 / 월세 {def_item['monthly_rent']}만 원 적용 완료!")
                         break
                     elif select_in.isdigit() and 1 <= int(select_in) <= len(table_options):
-                        sel_d, sel_m, sel_ds = table_options[int(select_in) - 1]
-                        target_price = sel_d
-                        target_monthly = sel_m
-                        print(f" -> [확인] {select_in}번: 보증금 {sel_ds}원 / 월세 {sel_m}만 원 적용 완료!")
+                        sel_item = table_options[int(select_in) - 1]
+                        target_price = sel_item["deposit"]
+                        target_monthly = sel_item["monthly_rent"]
+                        print(f" -> [확인] {select_in}번: 보증금 {sel_item['deposit_str']}원 / 월세 {sel_item['monthly_rent']}만 원 적용 완료!")
                         break
                     else:
                         parts = re.split(r'[\s/,]+', select_in)
@@ -2269,15 +2260,6 @@ def run_building_viewer():
                     print(" [!] 올바른 금액을 입력해 주세요. (예: 10000, 10,000, 1억 등)")
 
             if target_monthly == 0:
-                p126_val = round(int(official_house_price * 1.26) / 10000) if official_house_price else 0
-                jeonse_txs = [t for t in (transactions or []) if t.get("_trade_type") == "전세" and extract_tx_deposit(t) > 0]
-                if target_area and target_area > 0:
-                    sim_txs = [t for t in jeonse_txs if extract_tx_area(t) > 0 and abs(extract_tx_area(t) - target_area) / target_area <= 0.25]
-                    if sim_txs:
-                        jeonse_txs = sim_txs
-                dep_list = [extract_tx_deposit(t) for t in jeonse_txs if extract_tx_deposit(t) > 0]
-                avg_jeonse = int(round(sum(dep_list) / len(dep_list))) if dep_list else 0
-                base_jeonse = p126_val if p126_val > 0 else (avg_jeonse if avg_jeonse > 0 else 20000)
                 rec_m = max(5, int(round(((base_jeonse - target_price) * 0.055 / 12) / 5) * 5)) if base_jeonse > target_price else 50
 
                 while True:
@@ -2339,6 +2321,10 @@ def run_building_viewer():
                 "actual_cash": actual_cash if actual_cash > 0 else None,
                 "annual_yield": annual_yield if annual_yield > 0 else None
             }
+            if trade_type == "월세":
+                bj_val = locals().get("base_jeonse", 0)
+                desired_info["base_jeonse"] = bj_val
+                desired_info["wolse_schedule"] = generate_wolse_schedule(bj_val, target_price, target_monthly, official_house_price)
         if not locals().get("transactions_loaded"):
             print("\n -> 최근 실거래(매매/임대차) 내역 및 자동 비교 조회 중...")
             transactions = get_recent_transactions(addr_info["sigunguCd"], addr_info["bun"], addr_info["ji"], prop_type, addr_info.get("bjdongNm"), target_build_year, target_house_type)

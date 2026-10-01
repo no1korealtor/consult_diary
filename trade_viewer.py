@@ -397,6 +397,96 @@ def extract_floor_from_string(text, unit_info=None):
             
     return None
 
+def generate_wolse_schedule(base_jeonse, target_price=0, target_monthly=0, official_price=0):
+    """
+    월세 보증금대별 실시간 예상 월세 조견표 데이터를 생성합니다.
+    - base_jeonse: 기준 전세 환산가 (만원 단위, 예: 13104)
+    - target_price: 의뢰 고객 희망 보증금 (만원 단위, 예: 3000)
+    - target_monthly: 의뢰 고객 희망 월세 (만원 단위, 예: 45)
+    - official_price: 주택 공시가격 (원 단위, 예: 104000000)
+    """
+    if not base_jeonse or base_jeonse <= 0:
+        base_jeonse = 20000
+        
+    p126_won = int(official_price * 1.26) if official_price else 0
+    
+    # 기본 보증금 구간 설정 (1천만, 2천만, 3천만, 5천만, 1억 등)
+    preset_deps = [1000, 2000, 3000, 5000, 10000]
+    if base_jeonse >= 25000:
+        preset_deps.extend([15000, 20000])
+    if base_jeonse >= 40000:
+        preset_deps.extend([25000, 30000])
+        
+    preset_deps = [d for d in preset_deps if d < base_jeonse]
+    if not preset_deps:
+        preset_deps = [1000, 2000, 3000]
+        
+    # 고객 희망 보증금이 구간에 없으면 삽입하여 정렬
+    if target_price and target_price > 0 and target_price < base_jeonse and target_price not in preset_deps:
+        preset_deps.append(target_price)
+        preset_deps.sort()
+        
+    default_rec_dep = 3000 if 3000 in preset_deps else preset_deps[min(2, len(preset_deps) - 1)]
+    schedule = []
+    
+    for d in preset_deps:
+        is_client = (d == target_price and target_price > 0)
+        if is_client and target_monthly > 0:
+            calc_m = target_monthly
+        else:
+            calc_m = max(5, int(round(((base_jeonse - d) * 0.055 / 12) / 5) * 5))
+            
+        eok_d = d // 10000
+        man_d = d % 10000
+        if eok_d > 0 and man_d > 0:
+            d_str = f"{eok_d}억 {man_d:,}만"
+        elif eok_d > 0:
+            d_str = f"{eok_d}억"
+        else:
+            d_str = f"{man_d:,}만"
+            
+        tag = ""
+        if is_client:
+            tag = "★의뢰 조건"
+        elif d == default_rec_dep:
+            tag = "★추천 기본"
+            
+        # 126% 기준 및 소액 최우선변제 여부
+        if p126_won > 0:
+            is_126_safe = (d * 10000 <= p126_won)
+        else:
+            is_126_safe = True
+            
+        if is_126_safe:
+            if d <= 5500:
+                elig = "✅ 안심 적격 (최우선변제)"
+            else:
+                elig = "✅ 안심 적격 (126% 한도 내)"
+        else:
+            elig = "⚠️ 126% 초과 주의"
+            
+        if is_client:
+            note = "현 의뢰 조건"
+        elif d == default_rec_dep:
+            note = "표준 추천선"
+        elif d <= 3000:
+            note = "소액보증부"
+        elif d >= 10000:
+            note = "반전세 조율선"
+        else:
+            note = "보증부 월세"
+            
+        schedule.append({
+            "deposit": d,
+            "deposit_str": d_str,
+            "monthly_rent": calc_m,
+            "tag": tag,
+            "eligibility": elig,
+            "note": note
+        })
+        
+    return schedule
+
 def parse_address_and_ho(address_str):
     address_str = address_str.strip()
     address_str = re.sub(r"\(.*?\)", "", address_str).strip()
@@ -2479,7 +2569,104 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
             eval_box = Table([[Paragraph(eval_content, eval_p_body)]], colWidths=[500])
             eval_box.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), bg_color), ("BOX", (0, 0), (-1, -1), 1, border_color), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8), ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10)]))
             story.append(eval_box)
-        story.append(Spacer(1, 10))
+
+        # [신설] 월세 분석 시: 보증금대별 실시간 예상 월세 조견표 표 추가
+        wolse_schedule = (desired_info.get("wolse_schedule") if desired_info else None)
+        trade_type_val = (desired_info.get("trade_type") if desired_info else None) or trade_type
+        if not wolse_schedule and trade_type_val == "월세":
+            bj_calc = desired_info.get("base_jeonse", 0) if desired_info else 0
+            if not bj_calc and official_price_val:
+                bj_calc = round(int(official_price_val * 1.26) / 10000)
+            if not bj_calc and ref_val:
+                bj_calc = ref_val
+            dp = (desired_info.get("price") or desired_info.get("target_price") or 0) if desired_info else 0
+            dm = (desired_info.get("monthly_rent") or desired_info.get("target_monthly") or 0) if desired_info else 0
+            wolse_schedule = generate_wolse_schedule(bj_calc, dp, dm, official_price_val)
+            
+        if trade_type_val == "월세" and wolse_schedule:
+            story.append(Spacer(1, 6))
+            story.append(Paragraph("■ [실무 가이드] 보증금대별 실시간 예상 월세 조견표 (전월세전환율 연 5.5% 기준)", h2_style))
+            story.append(Spacer(1, 2))
+            
+            bj_val = desired_info.get("base_jeonse", 0) if desired_info else 0
+            if not bj_val and official_price_val:
+                bj_val = round(int(official_price_val * 1.26) / 10000)
+            bj_s = f"{bj_val//10000}억 {bj_val%10000:,}만" if (bj_val >= 10000 and bj_val%10000 > 0) else (f"{bj_val//10000}억" if bj_val >= 10000 else f"{bj_val:,}만") if bj_val else "시세 기준"
+            
+            sub_note_p = Paragraph(
+                f"• 기준 전세 환산가: <b>약 {bj_s}원</b> (공시가 126% 및 실거래 기준) &nbsp;|&nbsp; "
+                f"• 실무 전월세전환율: <b>연 5.5%</b> (보증금 1,000만원 증감 시 월세 약 ±4.6만~5만원 조율)",
+                ParagraphStyle("WolseSubNote", parent=styles["Normal"], fontName="KoreanFont", fontSize=8, leading=11, textColor=colors.HexColor("#4A5568"))
+            )
+            story.append(sub_note_p)
+            story.append(Spacer(1, 4))
+            
+            tbl_hdr_cell = ParagraphStyle("TblHdrCell", parent=styles["Normal"], fontName="KoreanFont", fontSize=8, leading=11, textColor=colors.white, alignment=1, bold=True)
+            tbl_c_center = ParagraphStyle("TblCCenter", parent=styles["Normal"], fontName="KoreanFont", fontSize=8, leading=11, textColor=colors.HexColor("#2D3748"), alignment=1)
+            tbl_c_right = ParagraphStyle("TblCRight", parent=styles["Normal"], fontName="KoreanFont", fontSize=8, leading=11, textColor=colors.HexColor("#2D3748"), alignment=2)
+            tbl_c_bold = ParagraphStyle("TblCBold", parent=styles["Normal"], fontName="KoreanFont", fontSize=8, leading=11, textColor=colors.HexColor("#1A365D"), alignment=1, bold=True)
+            tbl_c_bold_right = ParagraphStyle("TblCBoldRight", parent=styles["Normal"], fontName="KoreanFont", fontSize=8, leading=11, textColor=colors.HexColor("#1A365D"), alignment=2, bold=True)
+            
+            headers = [
+                Paragraph("<b>구분</b>", tbl_hdr_cell),
+                Paragraph("<b>보증금</b>", tbl_hdr_cell),
+                Paragraph("<b>예상 월세</b>", tbl_hdr_cell),
+                Paragraph("<b>126% 대출·보증 적격 여부</b>", tbl_hdr_cell),
+                Paragraph("<b>실무 가이드</b>", tbl_hdr_cell)
+            ]
+            t_rows = [headers]
+            highlight_row_indices = []
+            
+            for idx, item in enumerate(wolse_schedule, 1):
+                is_selected = "의뢰" in item.get("tag", "")
+                is_recommended = "추천" in item.get("tag", "")
+                
+                tag_label = f"<br/><font color='#2B6CB0'><b>[{item['tag']}]</b></font>" if item.get("tag") else ""
+                idx_str = f"<b>{idx}</b>{tag_label}"
+                
+                style_c = tbl_c_bold if (is_selected or is_recommended) else tbl_c_center
+                style_r = tbl_c_bold_right if (is_selected or is_recommended) else tbl_c_right
+                
+                c_idx = Paragraph(idx_str, style_c)
+                c_dep = Paragraph(f"<b>{item['deposit_str']}원</b>", style_r)
+                c_mon = Paragraph(f"<b>약 {item['monthly_rent']:,}만 원</b>", style_c)
+                c_elig = Paragraph(item.get("eligibility", "-"), style_c)
+                c_note = Paragraph(item.get("note", "보증부 월세"), style_c)
+                
+                t_rows.append([c_idx, c_dep, c_mon, c_elig, c_note])
+                if is_selected:
+                    highlight_row_indices.append((idx, colors.HexColor("#EBF8FF")))
+                elif is_recommended:
+                    highlight_row_indices.append((idx, colors.HexColor("#FEFCBF")))
+                    
+            w_table = Table(t_rows, colWidths=[75, 95, 85, 145, 100])
+            t_style = [
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2C5282")),
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#CBD5E1")),
+                ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E8F0")),
+                ("TOPPADDING", (0, 0), (-1, -1), 3.5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5),
+                ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+            ]
+            for r_idx, bg in highlight_row_indices:
+                t_style.append(("BACKGROUND", (0, r_idx), (-1, r_idx), bg))
+            w_table.setStyle(TableStyle(t_style))
+            
+            story.append(w_table)
+            story.append(Spacer(1, 3))
+            
+            footer_note = Paragraph(
+                "※ 월세 계약은 임차인의 가용 자금과 임대인의 월세 수익 선호도에 따라 보증금과 월세의 상호 유동적 협의가 일반적입니다. "
+                "위 조견표를 상담 가이드로 활용하시면 다양한 자금 조건의 고객 브리핑 및 빠른 계약 조율에 효과적입니다.",
+                ParagraphStyle("WolseFootNote", parent=styles["Normal"], fontName="KoreanFont", fontSize=7.5, leading=10.5, textColor=colors.HexColor("#718096"))
+            )
+            story.append(footer_note)
+            story.append(Spacer(1, 6))
+
+        story.append(Spacer(1, 6))
         story.append(Paragraph("■ [안내] 시세 데이터 수집 및 분석 기준 안내", notice_title_style))
         story.append(Spacer(1, 4))
         notice_text = "• 아파트/다세대빌라/오피스텔: 입력 주소와 100% 동일 지번(단지/건물)의 실거래가 기준입니다.<br/>• 단독/다가구 주택:<br/>  - 매매: 지번 매칭 및 국토교통부 마스킹 범위 내 인접 필지 실거래가 기준입니다.<br/>  - 전월세: 국토교통부 지번 미제공 정책에 따라 동일 법정동 내 건축년도(±1년) 및 유형이 일치하는 인근 유사 주택의 거래 사례를 기준으로 자동 산출한 시세입니다.<br/>• 본 브리핑 자료는 중개업무 참고용으로 법적 효력을 가지지 않습니다."
@@ -3186,6 +3373,40 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                 else:
                     report_lines.append("  • 공시가격 126% 기준선 (대출·보증한도): 미공시 주택 (감정평가 또는 협약 기준 참조)")
                     report_lines.append(f"  • 중개 실무 조율 가이드: 인근 실거래 전세 평균({j_ref_str}) 및 매매 평균({t_ref_str})을 기준으로 가격 협의를 진행하시기 바랍니다.")
+        # [신설] 월세 분석 시: 텍스트 보고서에도 보증금대별 실시간 예상 월세 조견표 추가
+        wolse_schedule = (desired_info.get("wolse_schedule") if desired_info else None)
+        trade_type_val = (desired_info.get("trade_type") if desired_info else None) or trade_type
+        if not wolse_schedule and trade_type_val == "월세":
+            bj_calc = desired_info.get("base_jeonse", 0) if desired_info else 0
+            if not bj_calc and official_price_val:
+                bj_calc = round(int(official_price_val * 1.26) / 10000)
+            if not bj_calc and ref_val:
+                bj_calc = ref_val
+            dp = (desired_info.get("price") or desired_info.get("target_price") or 0) if desired_info else 0
+            dm = (desired_info.get("monthly_rent") or desired_info.get("target_monthly") or 0) if desired_info else 0
+            wolse_schedule = generate_wolse_schedule(bj_calc, dp, dm, official_price_val)
+
+        if trade_type_val == "월세" and wolse_schedule:
+            bj_val = desired_info.get("base_jeonse", 0) if desired_info else 0
+            if not bj_val and official_price_val:
+                bj_val = round(int(official_price_val * 1.26) / 10000)
+            bj_s = f"{bj_val//10000}억 {bj_val%10000:,}만" if (bj_val >= 10000 and bj_val%10000 > 0) else (f"{bj_val//10000}억" if bj_val >= 10000 else f"{bj_val:,}만") if bj_val else "시세 기준"
+            report_lines.append("--------------------------------------------------------------------------------")
+            report_lines.append("■ [실무 가이드] 보증금대별 실시간 예상 월세 조견표 (전월세전환율 연 5.5% 기준)")
+            report_lines.append(f"  • 기준 전세 환산가 : 약 {bj_s}원 (공시가격 126% 및 인근 실거래 시세 기준)")
+            report_lines.append("  • 실무 전월세전환율: 연 5.5% 기준 (보증금 1,000만원 증감당 월세 약 ±4.6만~5만원 조율)")
+            report_lines.append("  ----------------------------------------------------------------------------")
+            report_lines.append("   구분 |       보증금       |    예상 월세    | 126% 대출·보증 적격 여부 및 비고")
+            report_lines.append("  ----------------------------------------------------------------------------")
+            for idx, item in enumerate(wolse_schedule, 1):
+                tag_str = f" [{item['tag']}]" if item.get("tag") else ""
+                dep_col = f"{item['deposit_str']:>10}원"
+                mon_col = f"약 {item['monthly_rent']:>3}만 원"
+                elig_col = f"{item.get('eligibility', '')} ({item.get('note', '')}){tag_str}"
+                report_lines.append(f"    {idx:<2} | {dep_col} | {mon_col:>11} | {elig_col}")
+            report_lines.append("  ----------------------------------------------------------------------------")
+            report_lines.append("  ※ 월세 계약은 임차인 자금 사정과 임대인의 월세 선호도에 맞춰 유동적으로 조율 가능하며,")
+            report_lines.append("     위 조견표를 기준으로 보증금 증감에 따른 월세를 신속하게 브리핑하실 수 있습니다.")
         
         report_lines.append("--------------------------------------------------------------------------------")
         report_lines.append("■ [안내] 시세 데이터 수집 및 분석 기준 안내")
