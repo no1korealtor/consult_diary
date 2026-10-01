@@ -95,6 +95,83 @@
             display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; white-space: nowrap; padding-bottom: 4px; scrollbar-width: none;
         }
         .filter-container::-webkit-scrollbar { display: none; }
+
+        /* 가격 입력 계산기 & 거래기준가 팝오버 스타일 */
+        .price-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .price-input-wrap .form-input {
+            padding-right: 44px;
+        }
+        .price-calc-btn {
+            position: absolute;
+            right: 6px;
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 32px;
+            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.1);
+        }
+        .price-calc-btn:hover {
+            background: #dbeafe;
+            color: #1d4ed8;
+            transform: scale(1.05);
+        }
+        .price-calc-btn:active {
+            transform: scale(0.95);
+        }
+        .rate-chip {
+            border: none;
+            background: transparent;
+            color: #1e40af;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .rate-chip.active {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 1px 3px rgba(37, 99, 235, 0.3);
+        }
+        .helper-card-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            font-size: 12.5px;
+        }
+        .helper-card-table th {
+            text-align: left;
+            padding: 5px 6px;
+            color: #64748b;
+            font-size: 11px;
+            border-bottom: 1.5px solid #cbd5e1;
+        }
+        .helper-card-table td {
+            padding: 7px 6px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .helper-card-table tbody tr {
+            transition: background 0.15s;
+        }
+        .helper-card-table tbody tr:hover {
+            background: #e0f2fe;
+            cursor: pointer;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -224,17 +301,27 @@
             </div>
             
             <div class="form-group" id="wrap_p_sale" style="display: none;">
-                <label class="form-label">매도가 (만원)</label>
-                <input type="number" id="p_sale" class="form-input" placeholder="예: 50000">
+                <label class="form-label">매도가 (만원) <span style="font-size: 11px; color: #3b82f6; font-weight: normal;">(엔터 ⏎ 시 기준가 계산)</span></label>
+                <div class="price-input-wrap">
+                    <input type="number" id="p_sale" class="form-input" placeholder="예: 50000" onkeydown="handlePriceKeydown(event, 'prop')">
+                    <button type="button" class="price-calc-btn" onclick="calculatePriceStandard('prop')" title="거래기준가 및 환산 계산">🧮</button>
+                </div>
             </div>
             <div class="form-group" id="wrap_p_dep" style="display: none;">
-                <label class="form-label">보증금/전세금 (만원)</label>
-                <input type="number" id="p_dep" class="form-input" placeholder="예: 10000">
+                <label class="form-label">보증금/전세금 (만원) <span style="font-size: 11px; color: #3b82f6; font-weight: normal;">(엔터 ⏎ 시 전월세 환산표)</span></label>
+                <div class="price-input-wrap">
+                    <input type="number" id="p_dep" class="form-input" placeholder="예: 10000" onkeydown="handlePriceKeydown(event, 'prop')">
+                    <button type="button" class="price-calc-btn" onclick="calculatePriceStandard('prop')" title="전월세 환산 조견표 계산">🧮</button>
+                </div>
             </div>
             <div class="form-group" id="wrap_p_rent" style="display: none;">
-                <label class="form-label">월세 (만원)</label>
-                <input type="number" id="p_rent" class="form-input" placeholder="예: 50">
+                <label class="form-label">월세 (만원) <span style="font-size: 11px; color: #3b82f6; font-weight: normal;">(엔터 ⏎ 시 거래기준가)</span></label>
+                <div class="price-input-wrap">
+                    <input type="number" id="p_rent" class="form-input" placeholder="예: 50" onkeydown="handlePriceKeydown(event, 'prop')">
+                    <button type="button" class="price-calc-btn" onclick="calculatePriceStandard('prop')" title="거래기준가 및 환산 계산">🧮</button>
+                </div>
             </div>
+            <div id="prop_price_helper" style="display: none; background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 12px; margin-bottom: 16px;"></div>
 
             <div class="form-group">
                 <label class="form-label">방 구조</label>
@@ -320,14 +407,24 @@
             
             <div class="form-group" id="wrap_c_budget" style="display: none;">
                 <label class="form-label">최소 예산 (매매/보증금, 만원)</label>
-                <input type="number" id="c_min_budget" class="form-input" placeholder="선택입력 (예: 20000)" style="margin-bottom: 8px;">
-                <label class="form-label">최대 예산 (매매/보증금, 만원)</label>
-                <input type="number" id="c_budget" class="form-input" placeholder="예: 30000">
+                <div class="price-input-wrap" style="margin-bottom: 8px;">
+                    <input type="number" id="c_min_budget" class="form-input" placeholder="선택입력 (예: 20000)" onkeydown="handlePriceKeydown(event, 'client')">
+                    <button type="button" class="price-calc-btn" onclick="calculatePriceStandard('client')" title="기준가 계산">🧮</button>
+                </div>
+                <label class="form-label">최대 예산 (매매/보증금, 만원) <span style="font-size: 11px; color: #3b82f6; font-weight: normal;">(엔터 ⏎ 시 환산표)</span></label>
+                <div class="price-input-wrap">
+                    <input type="number" id="c_budget" class="form-input" placeholder="예: 30000" onkeydown="handlePriceKeydown(event, 'client')">
+                    <button type="button" class="price-calc-btn" onclick="calculatePriceStandard('client')" title="전월세 환산 조견표 계산">🧮</button>
+                </div>
             </div>
             <div class="form-group" id="wrap_c_rent" style="display: none;">
-                <label class="form-label">최대 허용 월세 (만원)</label>
-                <input type="number" id="c_rent" class="form-input" placeholder="예: 100">
+                <label class="form-label">최대 허용 월세 (만원) <span style="font-size: 11px; color: #3b82f6; font-weight: normal;">(엔터 ⏎ 시 거래기준가)</span></label>
+                <div class="price-input-wrap">
+                    <input type="number" id="c_rent" class="form-input" placeholder="예: 100" onkeydown="handlePriceKeydown(event, 'client')">
+                    <button type="button" class="price-calc-btn" onclick="calculatePriceStandard('client')" title="거래기준가 및 환산 계산">🧮</button>
+                </div>
             </div>
+            <div id="client_price_helper" style="display: none; background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 12px; margin-bottom: 16px;"></div>
 
             <div class="form-group">
                 <label class="form-label">희망 방 구조 (다중 선택 가능)</label>
@@ -470,6 +567,207 @@
     function openModal(id) { document.getElementById(id).style.display = 'flex'; }
     function closeModal(e, id) { if(e.target.id === id) document.getElementById(id).style.display = 'none'; }
 
+    // ==========================================
+    // 스마트 거래기준가 & 전월세 환산 조견표 계산기
+    // ==========================================
+    let currentConversionRate = 0.055; // 실무 표준 연 5.5%
+
+    function handlePriceKeydown(e, scope) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            calculatePriceStandard(scope);
+        }
+    }
+
+    function setConversionRate(rate, scope) {
+        currentConversionRate = rate;
+        calculatePriceStandard(scope);
+    }
+
+    function closePriceHelper(scope) {
+        const el = document.getElementById(scope === 'prop' ? 'prop_price_helper' : 'client_price_helper');
+        if (el) el.style.display = 'none';
+    }
+
+    function formatPriceKo(val) {
+        if (!val || isNaN(val) || val <= 0) return '0원';
+        val = Math.round(val);
+        const uk = Math.floor(val / 10000);
+        const man = val % 10000;
+        if (uk > 0 && man > 0) {
+            return `${uk}억 ${man.toLocaleString()}만원`;
+        } else if (uk > 0) {
+            return `${uk}억원`;
+        } else {
+            return `${man.toLocaleString()}만원`;
+        }
+    }
+
+    function calculatePriceStandard(scope) {
+        const isProp = (scope === 'prop');
+        const helperEl = document.getElementById(isProp ? 'prop_price_helper' : 'client_price_helper');
+        if (!helperEl) return;
+
+        let sale = 0, dep = 0, rent = 0;
+        if (isProp) {
+            sale = parseInt(document.getElementById('p_sale')?.value) || 0;
+            dep = parseInt(document.getElementById('p_dep')?.value) || 0;
+            rent = parseInt(document.getElementById('p_rent')?.value) || 0;
+        } else {
+            dep = parseInt(document.getElementById('c_budget')?.value) || parseInt(document.getElementById('c_min_budget')?.value) || 0;
+            rent = parseInt(document.getElementById('c_rent')?.value) || 0;
+        }
+
+        if (sale <= 0 && dep <= 0 && rent <= 0) {
+            if (window.showToast) {
+                showToast('금액(보증금, 월세 또는 매매가)을 먼저 입력해주세요.', 'warning');
+            } else {
+                alert('금액(보증금, 월세 또는 매매가)을 먼저 입력해주세요.');
+            }
+            return;
+        }
+
+        // 1. 공인중개사법상 거래기준가 (중개보수 요율 기준)
+        let standardPrice = 0;
+        let standardDesc = '';
+
+        if (sale > 0 && dep <= 0 && rent <= 0) {
+            standardPrice = sale;
+            standardDesc = '매매 거래금액 기준';
+        } else if (dep > 0 && rent <= 0) {
+            standardPrice = dep;
+            standardDesc = '순수 전세보증금 기준';
+        } else if (rent > 0) {
+            const rawSum = dep + (rent * 100);
+            if (rawSum < 5000) {
+                standardPrice = dep + (rent * 70);
+                standardDesc = '5,000만원 미만 특례 (보증금 + 월세×70)';
+            } else {
+                standardPrice = rawSum;
+                standardDesc = '법정 환산기준 (보증금 + 월세×100)';
+            }
+        }
+
+        // 2. 실무 전세 환산가 (순수 전세로 전환 시)
+        let jeonseEquiv = 0;
+        if (rent > 0) {
+            jeonseEquiv = Math.round(dep + (rent * 12 / currentConversionRate));
+        } else if (dep > 0) {
+            jeonseEquiv = dep;
+        }
+
+        // 3. 보증금대별 추천 월세 조견표 생성 (손님 상담용 핵심!)
+        let tableRowsHtml = '';
+        if (jeonseEquiv > 0) {
+            let targetDeposits = [1000, 2000, 3000, 5000, 10000];
+            if (dep > 0 && !targetDeposits.includes(dep) && dep < jeonseEquiv) {
+                targetDeposits.push(dep);
+                targetDeposits.sort((a, b) => a - b);
+            }
+            targetDeposits = targetDeposits.filter(d => d < jeonseEquiv);
+
+            tableRowsHtml = targetDeposits.map(d => {
+                const calculatedRent = Math.max(0, Math.round(((jeonseEquiv - d) * currentConversionRate / 12) / 5) * 5);
+                const isCurrent = (d === dep && (rent === 0 || calculatedRent === rent));
+                const badge = isCurrent ? '<span style="background:#2563eb; color:#fff; font-size:10px; padding:1px 5px; border-radius:4px; margin-left:4px;">현재입력</span>' : '';
+                return `
+                    <tr onclick="applyPriceToForm('${scope}', ${d}, ${calculatedRent})" title="클릭 시 입력창에 자동 반영됩니다">
+                        <td style="font-weight:700; color:#1e293b;">보증금 ${formatPriceKo(d)}${badge}</td>
+                        <td style="font-weight:800; color:#2563eb; text-align:right;">월세 약 ${calculatedRent.toLocaleString()}만원</td>
+                        <td style="text-align:right;"><button type="button" style="border:1px solid #bfdbfe; background:#eff6ff; color:#1d4ed8; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer;">적용</button></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // 4. 매매일 경우 추가 정보 (실투자금 갭, 임대수익률)
+        let saleExtraHtml = '';
+        if (sale > 0 && dep > 0) {
+            const gap = sale - dep;
+            const yieldRate = rent > 0 && gap > 0 ? ((rent * 12) / gap * 100).toFixed(2) : null;
+            saleExtraHtml = `
+                <div style="background:#fefce8; border:1px solid #fef08a; padding:8px 10px; border-radius:8px; margin-top:8px; font-size:12px; color:#854d0e; line-height: 1.5;">
+                    • <b>세안고 매매 실투자금 (Gap)</b> : <b style="color:#b45309;">${formatPriceKo(gap)}</b> (매매가 - 보증금)<br>
+                    ${yieldRate ? `• <b>연 임대 수익률</b> : <b style="color:#b45309;">${yieldRate}%</b> (월세 ${rent}만원 기준)` : ''}
+                </div>
+            `;
+        }
+
+        helperEl.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px dashed #bfdbfe; padding-bottom: 6px;">
+                <span style="font-weight: 800; color: #1d4ed8; display: flex; align-items: center; gap: 5px; font-size: 13.5px;">
+                    <span>💡 거래기준가 & 전월세 환산 조견표</span>
+                </span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 11px; color: #64748b;">전환율:</span>
+                    <div style="display: flex; gap: 2px; background: #dbeafe; padding: 2px; border-radius: 6px;">
+                        <button type="button" class="rate-chip ${currentConversionRate === 0.05 ? 'active' : ''}" onclick="setConversionRate(0.05, '${scope}')">5.0%</button>
+                        <button type="button" class="rate-chip ${currentConversionRate === 0.055 ? 'active' : ''}" onclick="setConversionRate(0.055, '${scope}')">5.5%</button>
+                        <button type="button" class="rate-chip ${currentConversionRate === 0.06 ? 'active' : ''}" onclick="setConversionRate(0.06, '${scope}')">6.0%</button>
+                    </div>
+                    <button type="button" onclick="closePriceHelper('${scope}')" style="background: none; border: none; font-size: 16px; color: #64748b; cursor: pointer; padding: 0 4px;" title="닫기">✕</button>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 8px;">
+                <div style="background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px;">
+                    <div style="font-size: 11px; color: #64748b;">⚖️ 법정 거래기준가 (중개보수용)</div>
+                    <div style="font-size: 16px; font-weight: 900; color: #0f172a; margin-top: 2px;">${formatPriceKo(standardPrice)}</div>
+                    <div style="font-size: 10px; color: #94a3b8; margin-top: 1px;">${standardDesc}</div>
+                </div>
+                ${jeonseEquiv > 0 ? `
+                <div style="background: white; border: 1px solid #bfdbfe; border-radius: 8px; padding: 8px 10px;">
+                    <div style="font-size: 11px; color: #2563eb;">🏠 실무 전세 환산가 (순수전세 시)</div>
+                    <div style="font-size: 16px; font-weight: 900; color: #1d4ed8; margin-top: 2px;">약 ${formatPriceKo(jeonseEquiv)}</div>
+                    <div style="font-size: 10px; color: #60a5fa; margin-top: 1px;">전환율 ${(currentConversionRate * 100).toFixed(1)}% 기준</div>
+                </div>
+                ` : ''}
+            </div>
+
+            ${tableRowsHtml ? `
+            <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 8px 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <span style="font-weight: 800; color: #334155; font-size: 12px;">📊 "보증금 얼마 받으면 월세 얼마 받나?"</span>
+                    <span style="font-size: 10px; color: #94a3b8;">* 행 클릭 시 폼에 자동 입력</span>
+                </div>
+                <table class="helper-card-table">
+                    <thead>
+                        <tr>
+                            <th>보증금 희망액</th>
+                            <th style="text-align:right;">예상 월세</th>
+                            <th style="text-align:right; width:45px;">선택</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRowsHtml}
+                    </tbody>
+                </table>
+            </div>
+            ` : ''}
+
+            ${saleExtraHtml}
+        `;
+
+        helperEl.style.display = 'block';
+    }
+
+    function applyPriceToForm(scope, dep, rent) {
+        if (scope === 'prop') {
+            const depInput = document.getElementById('p_dep');
+            const rentInput = document.getElementById('p_rent');
+            if (depInput) depInput.value = dep;
+            if (rentInput) rentInput.value = rent;
+        } else {
+            const depInput = document.getElementById('c_budget');
+            const rentInput = document.getElementById('c_rent');
+            if (depInput) depInput.value = dep;
+            if (rentInput) rentInput.value = rent;
+        }
+        if (window.showToast) {
+            showToast(`보증금 ${formatPriceKo(dep)}, 월세 ${rent}만원이 입력되었습니다.`, 'success');
+        }
+    }
+
     function togglePriceFields() {
         const checked = Array.from(document.querySelectorAll('input[name="p_type"]:checked')).map(el => el.value);
         document.getElementById('wrap_p_sale').style.display = checked.includes('매매') ? 'block' : 'none';
@@ -484,11 +782,11 @@
         const depLabel = document.querySelector('#wrap_p_dep .form-label');
         const rentLabel = document.querySelector('#wrap_p_rent .form-label');
         if (checked.includes('매매') && !checked.includes('전월세')) {
-            depLabel.textContent = '보증금/전세금 (안고 파는 경우, 기존 세입자)';
-            rentLabel.textContent = '월세 (안고 파는 경우, 기존 세입자)';
+            depLabel.innerHTML = '보증금/전세금 (안고 파는 경우, 기존 세입자) <span style="font-size: 11px; color: #3b82f6; font-weight: normal;">(엔터 ⏎ 시 계산)</span>';
+            rentLabel.innerHTML = '월세 (안고 파는 경우, 기존 세입자) <span style="font-size: 11px; color: #3b82f6; font-weight: normal;">(엔터 ⏎ 시 수익률/기준가)</span>';
         } else {
-            depLabel.textContent = '보증금/전세금 (만원)';
-            rentLabel.textContent = '월세 (만원)';
+            depLabel.innerHTML = '보증금/전세금 (만원) <span style="font-size: 11px; color: #3b82f6; font-weight: normal;">(엔터 ⏎ 시 전월세 환산표)</span>';
+            rentLabel.innerHTML = '월세 (만원) <span style="font-size: 11px; color: #3b82f6; font-weight: normal;">(엔터 ⏎ 시 거래기준가)</span>';
         }
     }
 
