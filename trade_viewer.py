@@ -488,7 +488,7 @@ def get_expos_unit_details(sigungu, bjdong, bun, ji, ho_name, dong_name):
             # 1. 전유부 정보 조회 (층수, 호명, 위반건축물 여부)
             page_no = 1
             while True:
-                query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo={page_no}&_type=json"
+                query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=100&pageNo={page_no}&_type=json"
                 req_info = urllib.request.Request(url_info + query, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, text/plain, */*"})
                 success = False
                 for attempt in range(3):
@@ -500,6 +500,7 @@ def get_expos_unit_details(sigungu, bjdong, bun, ji, ho_name, dong_name):
                             body = data.get("response", {}).get("body", {})
                             items = body.get("items", {}).get("item", [])
                             total_count = int(body.get("totalCount", 0))
+                            num_rows = int(body.get("numOfRows", len(items) if items else 100)) or 100
                             if items:
                                 if isinstance(items, dict):
                                     items = [items]
@@ -519,13 +520,13 @@ def get_expos_unit_details(sigungu, bjdong, bun, ji, ho_name, dong_name):
                                         result["etc_purp"] = str(item.get("etcPurps", "")).strip()
                                     break
                             success = True
-                            if result["flrNo"] is not None or (page_no * 1000 >= total_count) or total_count == 0:
+                            if result["flrNo"] is not None or (page_no * num_rows >= total_count) or total_count == 0 or not items:
                                 break
                         break
                     except Exception as e:
                         import time
                         time.sleep(0.4 * (attempt + 1))
-                if not success or result["flrNo"] is not None or (page_no * 1000 >= total_count) or total_count == 0:
+                if not success or result["flrNo"] is not None or (page_no * num_rows >= total_count) or total_count == 0:
                     break
                 page_no += 1
 
@@ -534,8 +535,9 @@ def get_expos_unit_details(sigungu, bjdong, bun, ji, ho_name, dong_name):
             area_exclusive = 0.0
             area_common = 0.0
             found_area = False
+            unit_done = False
             while True:
-                query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo={page_no}&_type=json"
+                query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=100&pageNo={page_no}&_type=json"
                 req_area = urllib.request.Request(url_area + query, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, text/plain, */*"})
                 success = False
                 for attempt in range(3):
@@ -547,16 +549,21 @@ def get_expos_unit_details(sigungu, bjdong, bun, ji, ho_name, dong_name):
                             body = data.get("response", {}).get("body", {})
                             items = body.get("items", {}).get("item", [])
                             total_count = int(body.get("totalCount", 0))
+                            num_rows = int(body.get("numOfRows", len(items) if items else 100)) or 100
                             if items:
                                 if isinstance(items, dict):
                                     items = [items]
+                                seen_this_page = False
                                 for item in items:
                                     item_ho = item.get("hoNm")
                                     item_dong = item.get("dongNm")
                                     if not match_ho(item_ho):
+                                        if seen_this_page:
+                                            unit_done = True
                                         continue
                                     if dong_name and not match_dong(dong_name, item_dong):
                                         continue
+                                    seen_this_page = True
                                     val = item.get("area")
                                     if not val:
                                         continue
@@ -582,13 +589,13 @@ def get_expos_unit_details(sigungu, bjdong, bun, ji, ho_name, dong_name):
                                         if item.get("etcPurps") and not result.get("etc_purp"):
                                             result["etc_purp"] = str(item.get("etcPurps", "")).strip()
                             success = True
-                            if (page_no * 1000 >= total_count) or total_count == 0:
+                            if unit_done or (page_no * num_rows >= total_count) or total_count == 0 or not items:
                                 break
                         break
                     except Exception as e:
                         import time
                         time.sleep(0.4 * (attempt + 1))
-                if not success or (page_no * 1000 >= total_count) or total_count == 0:
+                if not success or unit_done or (page_no * num_rows >= total_count) or total_count == 0:
                     break
                 page_no += 1
 
@@ -607,7 +614,7 @@ def get_expos_unit_details(sigungu, bjdong, bun, ji, ho_name, dong_name):
             comm_keywords = ["근린생활", "근생", "사무소", "소매점", "음식점", "학원", "상가", "점포", "창고", "공장", "의원", "판매시설", "고시원"]
             result["is_commercial"] = any(k in purpose for k in comm_keywords)
 
-            if result.get("flrNo") is not None or result.get("area") is not None:
+            if result.get("area") is not None:
                 return result
         return result
     except Exception as e:

@@ -302,46 +302,80 @@ def get_expos_info_list(sigungu, bjdong, bun, ji):
     ji_str = str(ji).zfill(4) if ji else "0000"
     # 1. getBrExposPubuseAreaInfo 우선 조회 (전유부 면적, 주용도, 기타용도 포함)
     for plat in (0, 1, 2):
+        all_items = []
+        page_no = 1
         url = "http://apis.data.go.kr/1613000/BldRgstHubService/getBrExposPubuseAreaInfo"
-        query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo=1&_type=json"
-        for attempt in range(2):
-            try:
-                req = urllib.request.Request(url + query, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, text/plain, */*"})
-                with urllib.request.urlopen(req, timeout=10) as response:
-                    res_text = response.read().decode("utf-8")
-                if not res_text.strip():
-                    continue
-                json_data = json.loads(res_text)
-                items = json_data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
-                if items:
-                    if isinstance(items, dict):
-                        items = [items]
-                    expos_items = [it for it in items if str(it.get("exposPubuseGbCd", "1")).strip() == "1" or str(it.get("exposPubuseGbCdNm", "")).strip() == "전유"]
-                    if expos_items:
-                        return expos_items
-                    return items
-            except Exception:
-                pass
+        while True:
+            query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=100&pageNo={page_no}&_type=json"
+            success = False
+            for attempt in range(2):
+                try:
+                    req = urllib.request.Request(url + query, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, text/plain, */*"})
+                    with urllib.request.urlopen(req, timeout=10) as response:
+                        res_text = response.read().decode("utf-8")
+                    if not res_text.strip():
+                        continue
+                    json_data = json.loads(res_text)
+                    body = json_data.get("response", {}).get("body", {})
+                    items = body.get("items", {}).get("item", [])
+                    total_count = int(body.get("totalCount", 0))
+                    num_rows = int(body.get("numOfRows", len(items) if items else 100)) or 100
+                    if items:
+                        if isinstance(items, dict):
+                            items = [items]
+                        all_items.extend(items)
+                    success = True
+                    if (page_no * num_rows >= total_count) or total_count == 0 or not items:
+                        break
+                    break
+                except Exception:
+                    pass
+            if not success or (page_no * num_rows >= total_count) or total_count == 0:
+                break
+            page_no += 1
+
+        if all_items:
+            expos_items = [it for it in all_items if str(it.get("exposPubuseGbCd", "1")).strip() == "1" or str(it.get("exposPubuseGbCdNm", "")).strip() == "전유"]
+            if expos_items:
+                return expos_items
+            return all_items
 
     # 2. getBrExposInfo 대체 조회
     for plat in (0, 1, 2):
+        all_items = []
+        page_no = 1
         url = "http://apis.data.go.kr/1613000/BldRgstHubService/getBrExposInfo"
-        query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo=1&_type=json"
-        for attempt in range(2):
-            try:
-                req = urllib.request.Request(url + query, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, text/plain, */*"})
-                with urllib.request.urlopen(req, timeout=10) as response:
-                    res_text = response.read().decode("utf-8")
-                if not res_text.strip():
-                    continue
-                json_data = json.loads(res_text)
-                items = json_data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
-                if items:
-                    if isinstance(items, dict):
-                        items = [items]
-                    return items
-            except Exception:
-                pass
+        while True:
+            query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=100&pageNo={page_no}&_type=json"
+            success = False
+            for attempt in range(2):
+                try:
+                    req = urllib.request.Request(url + query, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, text/plain, */*"})
+                    with urllib.request.urlopen(req, timeout=10) as response:
+                        res_text = response.read().decode("utf-8")
+                    if not res_text.strip():
+                        continue
+                    json_data = json.loads(res_text)
+                    body = json_data.get("response", {}).get("body", {})
+                    items = body.get("items", {}).get("item", [])
+                    total_count = int(body.get("totalCount", 0))
+                    num_rows = int(body.get("numOfRows", len(items) if items else 100)) or 100
+                    if items:
+                        if isinstance(items, dict):
+                            items = [items]
+                        all_items.extend(items)
+                    success = True
+                    if (page_no * num_rows >= total_count) or total_count == 0 or not items:
+                        break
+                    break
+                except Exception:
+                    pass
+            if not success or (page_no * num_rows >= total_count) or total_count == 0:
+                break
+            page_no += 1
+
+        if all_items:
+            return all_items
     return None
 
 def get_building_floor_info(sigungu, bjdong, bun, ji):
@@ -371,6 +405,7 @@ def get_building_floor_info(sigungu, bjdong, bun, ji):
             import time; time.sleep(0.3)
     return None
 
+def mask_address_number(addr_str):
     if not addr_str:
         return ""
     def mask_number_by_len(num_str):
