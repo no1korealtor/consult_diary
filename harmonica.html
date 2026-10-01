@@ -1211,6 +1211,158 @@
             border-color: #a5b4fc !important;
             box-shadow: 0 0 8px rgba(99, 102, 241, 0.45);
         }
+
+        /* ==========================================
+           Rhythm Guide Modal (음표·쉼표 초보자 가이드)
+           ========================================== */
+        .rhythm-tab-btn {
+            background: #252538;
+            color: #94a3b8;
+            border: 1px solid #3a3a52;
+            padding: 4px 12px;
+            border-radius: 14px;
+            font-family: 'Jua', 'Nunito', sans-serif;
+            font-size: 12.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+        .rhythm-tab-btn:hover {
+            background: #33334d;
+            color: #ffffff;
+        }
+        .rhythm-tab-btn.active {
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+            color: #ffffff;
+            border-color: #38bdf8;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.4);
+        }
+        .rhythm-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(136px, 1fr));
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        @media(max-width: 600px) {
+            .rhythm-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+        }
+        .rhythm-card {
+            background: #1a1a2e;
+            border: 1.5px solid #33334d;
+            border-radius: 12px;
+            padding: 10px 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+            box-sizing: border-box;
+        }
+        .rhythm-card:hover {
+            transform: translateY(-2px);
+            border-color: #38bdf8;
+            box-shadow: 0 6px 18px rgba(56, 189, 248, 0.25);
+        }
+        .rhythm-card.rest-card:hover {
+            border-color: #f43f5e;
+            box-shadow: 0 6px 18px rgba(244, 63, 94, 0.25);
+        }
+        .rhythm-svg-wrap {
+            width: 58px;
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #121220;
+            border-radius: 10px;
+            border: 1px solid #2d2d44;
+            margin-bottom: 6px;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
+        }
+        .rhythm-card-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 15px;
+            color: #ffffff;
+            margin-bottom: 3px;
+            letter-spacing: -0.2px;
+        }
+        .rhythm-card-beats {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            font-family: 'Nunito', sans-serif;
+            margin-bottom: 6px;
+        }
+        .rhythm-card-beats.note-beat {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+        }
+        .rhythm-card-beats.rest-beat {
+            background: rgba(244, 63, 94, 0.15);
+            color: #f43f5e;
+            border: 1px solid rgba(244, 63, 94, 0.35);
+        }
+        /* 박자 게이지 바 (4박자 기준 4등분 게이지) */
+        .beat-gauge-bar {
+            display: flex;
+            gap: 2.5px;
+            width: 100%;
+            height: 7px;
+            background: #10101c;
+            border-radius: 4px;
+            padding: 1.5px;
+            box-sizing: border-box;
+            margin-bottom: 6px;
+            border: 1px solid #252538;
+        }
+        .beat-gauge-seg {
+            flex: 1;
+            height: 100%;
+            background: #25253a;
+            border-radius: 2px;
+        }
+        .beat-gauge-seg.filled-note {
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            box-shadow: 0 0 4px rgba(56, 189, 248, 0.6);
+        }
+        .beat-gauge-seg.filled-rest {
+            background: linear-gradient(135deg, #e11d48, #fb7185);
+            box-shadow: 0 0 4px rgba(251, 113, 133, 0.6);
+        }
+        .beat-gauge-seg.half-filled-note {
+            background: linear-gradient(90deg, #38bdf8 50%, #25253a 50%);
+        }
+        .beat-gauge-seg.half-filled-rest {
+            background: linear-gradient(90deg, #fb7185 50%, #25253a 50%);
+        }
+        .beat-gauge-seg.quarter-filled-note {
+            background: linear-gradient(90deg, #38bdf8 25%, #25253a 25%);
+        }
+        .beat-gauge-seg.quarter-filled-rest {
+            background: linear-gradient(90deg, #fb7185 25%, #25253a 25%);
+        }
+        .rhythm-card-desc {
+            font-size: 11px;
+            line-height: 1.4;
+            color: #94a3b8;
+            word-break: keep-all;
+        }
+        .rhythm-card-desc b {
+            color: #fef08a;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -1219,13 +1371,16 @@
     <div class="panel score-panel" id="score-panel" style="display: flex; flex-direction: column; padding: 12px; position: relative;">
         <!-- Score Toolbar -->
         <div class="score-toolbar">
-            <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <span style="font-family: 'Jua', sans-serif; font-size: 20px; color: #4facfe;">🎼 악보 뷰어</span>
                 <label for="pdf-upload" class="btn-toolbar" style="cursor: pointer; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 6px 14px; border-radius: 18px; font-size: 13px; font-weight: bold; box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);">
                     📁 악보 열기
                 </label>
                 <button type="button" onclick="toggleSoloStaffMode(true)" class="btn-toolbar" style="background: #232338; color: #a5b4fc; border: 1px solid #6366f1; padding: 6px 13px; border-radius: 18px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="스마트폰/단독 연습: 오선보만 크게 보기">
                     <span>📱 오선보만 보기</span>
+                </button>
+                <button type="button" onclick="openRhythmModal()" class="btn-toolbar" style="background: #232338; color: #38bdf8; border: 1px solid #0284c7; padding: 6px 13px; border-radius: 18px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="초보자를 위한 음표와 쉼표 박자 가이드">
+                    <span>🎵 음표·쉼표</span>
                 </button>
             </div>
             
@@ -1271,6 +1426,9 @@
                     <button type="button" id="btn-top-mic" onclick="toggleTunerFromTop()" class="btn-top-mic" style="display: flex; align-items: center; gap: 4px; background: #252538; color: #ff6b81; border: 1px solid #ff4757; padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer; transition: all 0.2s;">
                         <span id="top-mic-icon">🎙️</span>
                         <span id="top-mic-txt">튜너 켜기</span>
+                    </button>
+                    <button type="button" onclick="openRhythmModal()" class="btn-toolbar" style="background: #252538; color: #38bdf8; border: 1px solid #0284c7; padding: 4px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="초보자용 음표·쉼표 박자 가이드">
+                        <span>🎵 음표·쉼표</span>
                     </button>
                     <button type="button" onclick="openScaleModal()" class="btn-toolbar" style="background: #252538; color: #00f2fe; border: 1px solid #4facfe; padding: 4px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer;" title="오선보 전체 1~22홀 대조표 보기">
                         🔍 전체 대조표
@@ -2802,11 +2960,70 @@
             }
         }
 
+        // ==========================================
+        // 5-1. Rhythm Guide Modal (음표·쉼표 초보자 사전)
+        // ==========================================
+        let currentRhythmFilter = 'all';
+
+        function openRhythmModal() {
+            const modal = document.getElementById('rhythm-modal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                filterRhythmCards('all');
+            }
+        }
+
+        function closeRhythmModal(e) {
+            if (e && e.target && e.target.id !== 'rhythm-modal' && !e.target.classList.contains('rhythm-modal-close-btn')) {
+                return;
+            }
+            const modal = document.getElementById('rhythm-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        }
+
+        function filterRhythmCards(category) {
+            currentRhythmFilter = category;
+            const secNotes = document.getElementById('rhythm-sec-notes');
+            const secRests = document.getElementById('rhythm-sec-rests');
+            const secTips = document.getElementById('rhythm-sec-tips');
+            
+            document.querySelectorAll('.rhythm-tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === category);
+            });
+
+            if (category === 'all') {
+                if (secNotes) secNotes.style.display = 'block';
+                if (secRests) secRests.style.display = 'block';
+                if (secTips) secTips.style.display = 'block';
+            } else if (category === 'notes') {
+                if (secNotes) secNotes.style.display = 'block';
+                if (secRests) secRests.style.display = 'none';
+                if (secTips) secTips.style.display = 'none';
+            } else if (category === 'rests') {
+                if (secNotes) secNotes.style.display = 'none';
+                if (secRests) secRests.style.display = 'block';
+                if (secTips) secTips.style.display = 'none';
+            } else if (category === 'tips') {
+                if (secNotes) secNotes.style.display = 'none';
+                if (secRests) secRests.style.display = 'none';
+                if (secTips) secTips.style.display = 'block';
+            }
+        }
+
         window.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 const modal = document.getElementById('scale-modal');
                 if (modal && modal.style.display === 'flex') {
                     modal.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+                const rModal = document.getElementById('rhythm-modal');
+                if (rModal && rModal.style.display === 'flex') {
+                    rModal.style.display = 'none';
                     document.body.style.overflow = '';
                 }
             }
@@ -2874,6 +3091,322 @@
 
         loadScoreFromDB();
     </script>
+
+    <!-- Rhythm Guide Modal (음표·쉼표 초보자 사전) -->
+    <div id="rhythm-modal" onclick="closeRhythmModal(event)" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10, 10, 20, 0.88); z-index: 99999; backdrop-filter: blur(6px); justify-content: center; align-items: center; padding: 12px; box-sizing: border-box;">
+        <div style="background: #232338; border-radius: 18px; max-width: 920px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6); border: 1px solid #3a3a5a;" onclick="event.stopPropagation()">
+            <!-- Modal Header -->
+            <div style="padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #3a3a5a; flex-wrap: wrap; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <span style="font-family: 'Jua', sans-serif; font-size: 19px; color: #38bdf8; display: flex; align-items: center; gap: 6px;">
+                        <span>🎵 음표 & 쉼표 초보자 사전</span>
+                    </span>
+                    <div style="display: flex; gap: 4px; background: #161626; padding: 2px 4px; border-radius: 14px; border: 1px solid #3a3a52;">
+                        <button type="button" class="rhythm-tab-btn active" data-tab="all" onclick="filterRhythmCards('all')">🌟 전체보기</button>
+                        <button type="button" class="rhythm-tab-btn" data-tab="notes" onclick="filterRhythmCards('notes')">🎵 음표 (소리)</button>
+                        <button type="button" class="rhythm-tab-btn" data-tab="rests" onclick="filterRhythmCards('rests')">🤫 쉼표 (쉬기)</button>
+                        <button type="button" class="rhythm-tab-btn" data-tab="tips" onclick="filterRhythmCards('tips')">💡 핵심 꿀팁</button>
+                    </div>
+                </div>
+                <button type="button" class="rhythm-modal-close-btn" onclick="closeRhythmModal()" style="background: #3a3a5a; color: #fff; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">✕</button>
+            </div>
+
+            <!-- Modal Body -->
+            <div style="padding: 16px; overflow-y: auto; background: #151522; display: flex; flex-direction: column; gap: 16px; max-height: 80vh;">
+                
+                <!-- Section 1: 음표 (Notes) -->
+                <div id="rhythm-sec-notes" style="width: 100%;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 4px;">
+                        <span style="font-family: 'Jua', sans-serif; font-size: 16px; color: #38bdf8; display: flex; align-items: center; gap: 5px;">
+                            <span>🎵 소리 내는 음표</span>
+                            <span style="font-size: 12px; color: #94a3b8; font-weight: normal;">(소리를 얼마나 길게 끌고 갈까요?)</span>
+                        </span>
+                        <span style="font-size: 11px; color: #64748b;">* 4칸 바 = 4박자 기준 길이</span>
+                    </div>
+
+                    <div class="rhythm-grid">
+                        <!-- 1. 온음표 -->
+                        <div class="rhythm-card">
+                            <div class="rhythm-svg-wrap">
+                                <svg viewBox="0 0 60 60" width="46" height="46">
+                                    <ellipse cx="30" cy="30" rx="14" ry="9" transform="rotate(-26 30 30)" fill="none" stroke="#38bdf8" stroke-width="4.2"/>
+                                    <ellipse cx="30" cy="30" rx="6" ry="6.5" transform="rotate(-26 30 30)" fill="#121220"/>
+                                </svg>
+                            </div>
+                            <div class="rhythm-card-title">온음표</div>
+                            <div class="rhythm-card-beats note-beat">4박자</div>
+                            <div class="beat-gauge-bar" title="4박자 전체 채움">
+                                <div class="beat-gauge-seg filled-note"></div>
+                                <div class="beat-gauge-seg filled-note"></div>
+                                <div class="beat-gauge-seg filled-note"></div>
+                                <div class="beat-gauge-seg filled-note"></div>
+                            </div>
+                            <div class="rhythm-card-desc">메트로놈 <b>4번 칠 동안</b> 숨을 길~게 끊지 않고 유지 (하나-둘-셋-넷)</div>
+                        </div>
+
+                        <!-- 2. 2분음표 -->
+                        <div class="rhythm-card">
+                            <div class="rhythm-svg-wrap">
+                                <svg viewBox="0 0 60 60" width="46" height="46">
+                                    <ellipse cx="23" cy="37" rx="10" ry="6.5" transform="rotate(-26 23 37)" fill="none" stroke="#38bdf8" stroke-width="3.5"/>
+                                    <ellipse cx="23" cy="37" rx="4.5" ry="5" transform="rotate(-26 23 37)" fill="#121220"/>
+                                    <line x1="31" y1="35" x2="31" y2="12" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="rhythm-card-title">2분음표</div>
+                            <div class="rhythm-card-beats note-beat">2박자</div>
+                            <div class="beat-gauge-bar" title="2박자 채움">
+                                <div class="beat-gauge-seg filled-note"></div>
+                                <div class="beat-gauge-seg filled-note"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                            </div>
+                            <div class="rhythm-card-desc">메트로놈 <b>2번 칠 동안</b> 유지 (온음표를 딱 반으로 나눈 음)</div>
+                        </div>
+
+                        <!-- 3. 점4분음표 -->
+                        <div class="rhythm-card">
+                            <div class="rhythm-svg-wrap">
+                                <svg viewBox="0 0 60 60" width="46" height="46">
+                                    <ellipse cx="21" cy="38" rx="9" ry="6.5" transform="rotate(-26 21 38)" fill="#38bdf8"/>
+                                    <line x1="28" y1="37" x2="28" y2="13" stroke="#38bdf8" stroke-width="3.2" stroke-linecap="round"/>
+                                    <circle cx="39" cy="37" r="3.6" fill="#f59e0b"/>
+                                </svg>
+                            </div>
+                            <div class="rhythm-card-title">점4분음표</div>
+                            <div class="rhythm-card-beats note-beat">1.5박자</div>
+                            <div class="beat-gauge-bar" title="1.5박자 채움">
+                                <div class="beat-gauge-seg filled-note"></div>
+                                <div class="beat-gauge-seg half-filled-note"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                            </div>
+                            <div class="rhythm-card-desc">4분음표(1박) + 점(반박) = <b>한 박자 반 동안</b> 유지 ("딴~따")</div>
+                        </div>
+
+                        <!-- 4. 4분음표 (기본) -->
+                        <div class="rhythm-card" style="border-color: #0284c7; background: #1a1e35;">
+                            <div class="rhythm-svg-wrap">
+                                <svg viewBox="0 0 60 60" width="46" height="46">
+                                    <ellipse cx="23" cy="38" rx="10" ry="7" transform="rotate(-26 23 38)" fill="#38bdf8"/>
+                                    <line x1="31" y1="38" x2="31" y2="12" stroke="#38bdf8" stroke-width="3.5" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="rhythm-card-title">4분음표 ★기본</div>
+                            <div class="rhythm-card-beats note-beat" style="background: rgba(56, 189, 248, 0.25);">1박자</div>
+                            <div class="beat-gauge-bar" title="1박자 채움">
+                                <div class="beat-gauge-seg filled-note"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                            </div>
+                            <div class="rhythm-card-desc"><b>가장 기본 박자!</b> 발장단이나 메트로놈 '똑' 1번에 딱 1음 ("딴")</div>
+                        </div>
+
+                        <!-- 5. 8분음표 -->
+                        <div class="rhythm-card">
+                            <div class="rhythm-svg-wrap">
+                                <svg viewBox="0 0 60 60" width="46" height="46">
+                                    <ellipse cx="20" cy="40" rx="8.5" ry="6" transform="rotate(-26 20 40)" fill="#38bdf8"/>
+                                    <line x1="27" y1="39" x2="27" y2="14" stroke="#38bdf8" stroke-width="3.2" stroke-linecap="round"/>
+                                    <path d="M27 14 C36 18, 41 25, 41 31 C41 26, 35 21, 27 20" fill="#38bdf8"/>
+                                </svg>
+                            </div>
+                            <div class="rhythm-card-title">8분음표</div>
+                            <div class="rhythm-card-beats note-beat">반(1/2)박자</div>
+                            <div class="beat-gauge-bar" title="0.5박자 채움">
+                                <div class="beat-gauge-seg half-filled-note"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                            </div>
+                            <div class="rhythm-card-desc">꼬리가 1개! 4분음표의 <b>절반 빠르기</b>로 경쾌하게 ("따")</div>
+                        </div>
+
+                        <!-- 6. 16분음표 -->
+                        <div class="rhythm-card">
+                            <div class="rhythm-svg-wrap">
+                                <svg viewBox="0 0 60 60" width="46" height="46">
+                                    <ellipse cx="20" cy="42" rx="8" ry="5.5" transform="rotate(-26 20 42)" fill="#38bdf8"/>
+                                    <line x1="26" y1="41" x2="26" y2="12" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+                                    <path d="M26 12 C34 16, 39 22, 39 27 C39 23, 34 18, 26 17" fill="#38bdf8"/>
+                                    <path d="M26 21 C34 25, 39 31, 39 36 C39 32, 34 27, 26 26" fill="#38bdf8"/>
+                                </svg>
+                            </div>
+                            <div class="rhythm-card-title">16분음표</div>
+                            <div class="rhythm-card-beats note-beat">1/4박자</div>
+                            <div class="beat-gauge-bar" title="0.25박자 채움">
+                                <div class="beat-gauge-seg quarter-filled-note"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                            </div>
+                            <div class="rhythm-card-desc">꼬리가 2개! <b>아주 빠르게</b> 톡 지나가는 짧은 음</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: 쉼표 (Rests) -->
+                <div id="rhythm-sec-rests" style="width: 100%;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 4px;">
+                        <span style="font-family: 'Jua', sans-serif; font-size: 16px; color: #fb7185; display: flex; align-items: center; gap: 5px;">
+                            <span>🤫 숨을 쉬는 쉼표</span>
+                            <span style="font-size: 12px; color: #94a3b8; font-weight: normal;">(소리를 멈추고 다음 음을 준비해요)</span>
+                        </span>
+                        <span style="font-size: 11px; color: #64748b;">* 모자 모양 구별법 주의!</span>
+                    </div>
+
+                    <div class="rhythm-grid">
+                        <!-- 1. 온쉼표 -->
+                        <div class="rhythm-card rest-card">
+                            <div class="rhythm-svg-wrap">
+                                <svg viewBox="0 0 60 60" width="46" height="46">
+                                    <line x1="8" y1="26" x2="52" y2="26" stroke="#64748b" stroke-width="2.5"/>
+                                    <rect x="20" y="26" width="20" height="11" fill="#f43f5e" rx="1.5"/>
+                                    <text x="42" y="46" font-size="12">🥣</text>
+                                </svg>
+                            </div>
+                            <div class="rhythm-card-title">온쉼표</div>
+                            <div class="rhythm-card-beats rest-beat">4박 쉬기</div>
+                            <div class="beat-gauge-bar" title="4박자 쉬기">
+                                <div class="beat-gauge-seg filled-rest"></div>
+                                <div class="beat-gauge-seg filled-rest"></div>
+                                <div class="beat-gauge-seg filled-rest"></div>
+                                <div class="beat-gauge-seg filled-rest"></div>
+                            </div>
+                            <div class="rhythm-card-desc">줄 <b>아래로 매달린 바구니 모양!</b> 물이 가득 차듯 <b>4박자 푹~ 쉬기</b></div>
+                        </div>
+
+                        <!-- 2. 2분쉼표 -->
+                        <div class="rhythm-card rest-card">
+                            <div class="rhythm-svg-wrap">
+                                <svg viewBox="0 0 60 60" width="46" height="46">
+                                    <line x1="8" y1="34" x2="52" y2="34" stroke="#64748b" stroke-width="2.5"/>
+                                    <rect x="20" y="23" width="20" height="11" fill="#f43f5e" rx="1.5"/>
+                                    <text x="42" y="28" font-size="12">🎩</text>
+                                </svg>
+                            </div>
+                            <div class="rhythm-card-title">2분쉼표</div>
+                            <div class="rhythm-card-beats rest-beat">2박 쉬기</div>
+                            <div class="beat-gauge-bar" title="2박자 쉬기">
+                                <div class="beat-gauge-seg filled-rest"></div>
+                                <div class="beat-gauge-seg filled-rest"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                            </div>
+                            <div class="rhythm-card-desc">줄 <b>위에 얹힌 신사 모자 모양!</b> 단정하게 <b>2박자 동안 쉬기</b></div>
+                        </div>
+
+                        <!-- 3. 4분쉼표 -->
+                        <div class="rhythm-card rest-card" style="border-color: #e11d48; background: #221824;">
+                            <div class="rhythm-svg-wrap">
+                                <svg viewBox="0 0 60 60" width="46" height="46">
+                                    <path d="M26 10 L35 21 L24 29 L34 39 C32 44, 27 47, 22 46 C20 43, 23 41, 26 41 L25 38 L20 30 L29 22 L23 14 Z" fill="#f43f5e"/>
+                                </svg>
+                            </div>
+                            <div class="rhythm-card-title">4분쉼표 ★기본</div>
+                            <div class="rhythm-card-beats rest-beat" style="background: rgba(244, 63, 94, 0.25);">1박 쉬기</div>
+                            <div class="beat-gauge-bar" title="1박자 쉬기">
+                                <div class="beat-gauge-seg filled-rest"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                            </div>
+                            <div class="rhythm-card-desc"><b>번개/지렁이 모양!</b> 기본 <b>1박자 동안 딱 멈추고</b> 다음 음 준비</div>
+                        </div>
+
+                        <!-- 4. 8분쉼표 -->
+                        <div class="rhythm-card rest-card">
+                            <div class="rhythm-svg-wrap">
+                                <svg viewBox="0 0 60 60" width="46" height="46">
+                                    <circle cx="23" cy="20" r="4.5" fill="#f43f5e"/>
+                                    <path d="M24 20 C27 20, 36 24, 38 16 L27 46" fill="none" stroke="#f43f5e" stroke-width="3.5" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="rhythm-card-title">8분쉼표</div>
+                            <div class="rhythm-card-beats rest-beat">반(1/2)박 쉬기</div>
+                            <div class="beat-gauge-bar" title="0.5박자 쉬기">
+                                <div class="beat-gauge-seg half-filled-rest"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                            </div>
+                            <div class="rhythm-card-desc">숫자 '7' 모양! <b>반 박자 동안 살짝</b> 숨을 고르는 쉼표</div>
+                        </div>
+
+                        <!-- 5. 16분쉼표 -->
+                        <div class="rhythm-card rest-card">
+                            <div class="rhythm-svg-wrap">
+                                <svg viewBox="0 0 60 60" width="46" height="46">
+                                    <circle cx="23" cy="18" r="3.8" fill="#f43f5e"/>
+                                    <circle cx="19" cy="28" r="3.8" fill="#f43f5e"/>
+                                    <path d="M24 18 C27 18, 35 21, 37 15 M20 28 C24 28, 32 31, 34 25 L25 47" fill="none" stroke="#f43f5e" stroke-width="3" stroke-linecap="round"/>
+                                </svg>
+                            </div>
+                            <div class="rhythm-card-title">16분쉼표</div>
+                            <div class="rhythm-card-beats rest-beat">1/4박 쉬기</div>
+                            <div class="beat-gauge-bar" title="0.25박자 쉬기">
+                                <div class="beat-gauge-seg quarter-filled-rest"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                                <div class="beat-gauge-seg"></div>
+                            </div>
+                            <div class="rhythm-card-desc">꼬리가 2개 달린 7 모양! <b>찰나의 순간</b> 살짝 쉬기</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: 초보자 완벽 탈출 꿀팁 (Tips) -->
+                <div id="rhythm-sec-tips" style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+                    <div style="font-family: 'Jua', sans-serif; font-size: 16px; color: #f59e0b; display: flex; align-items: center; gap: 5px;">
+                        <span>💡 음악 왕초보 탈출 3초 꿀팁</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px;">
+                        <!-- 꿀팁 1 -->
+                        <div style="background: #1e1e32; border: 1px solid #3e3e5c; border-radius: 12px; padding: 12px 14px; box-sizing: border-box;">
+                            <div style="font-weight: 800; color: #fb7185; font-size: 13.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
+                                <span>🎩 vs 🥣 온쉼표(4박)와 2분쉼표(2박) 구별법</span>
+                            </div>
+                            <div style="font-size: 12px; line-height: 1.6; color: #cbd5e1;">
+                                • <b>2분쉼표</b> : 줄 위에 신사 모자가 <b>바르게</b> 놓임! 이름이 두 글자니까 <b>2박자</b>.<br>
+                                • <b>온쉼표</b> : 줄 아래로 <b>뒤집혀</b> 밥그릇/바구니 모양! 물이 온전하게 가득 차듯 <b>4박자(온박자)</b>.
+                            </div>
+                        </div>
+
+                        <!-- 꿀팁 2 -->
+                        <div style="background: #1e1e32; border: 1px solid #3e3e5c; border-radius: 12px; padding: 12px 14px; box-sizing: border-box;">
+                            <div style="font-weight: 800; color: #38bdf8; font-size: 13.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
+                                <span>🔘 점(.)음표의 아주 쉬운 원리</span>
+                            </div>
+                            <div style="font-size: 12px; line-height: 1.6; color: #cbd5e1;">
+                                • 음표 옆의 점은 <b>'원래 박자의 딱 절반'</b>을 보너스로 더해줍니다!<br>
+                                • <b>점4분음표(♩.)</b> = 1박 + 반박(0.5) = <b>1.5박자 (한 박자 반)</b><br>
+                                • <b>점2분음표(𝅗𝅥.)</b> = 2박 + 1박 = <b>3박자</b> (3/4박자 왈츠곡의 주인공!)
+                            </div>
+                        </div>
+
+                        <!-- 꿀팁 3 -->
+                        <div style="background: #1e1e32; border: 1px solid #3e3e5c; border-radius: 12px; padding: 12px 14px; box-sizing: border-box;">
+                            <div style="font-weight: 800; color: #10b981; font-size: 13.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 5px;">
+                                <span>🎼 꼬리가 막대로 묶여있는 이유 (Beam)</span>
+                            </div>
+                            <div style="font-size: 12px; line-height: 1.6; color: #cbd5e1;">
+                                • 8분음표(♪)나 16분음표가 연속으로 나올 때, 눈이 피로하지 않도록 <b>굵은 가로 막대(♫)로 묶어</b> 표기합니다.<br>
+                                • 묶여있어도 개별 음표 박자(반 박자씩)는 똑같으니 안심하고 부세요!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div style="padding: 10px 20px; background: #1e1e2f; display: flex; justify-content: flex-end; border-top: 1px solid #3a3a5a;">
+                <button type="button" class="rhythm-modal-close-btn" onclick="closeRhythmModal()" style="background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: white; border: none; padding: 7px 22px; border-radius: 12px; font-weight: bold; font-size: 13px; cursor: pointer;">닫기</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Scale Image Modal (Lightbox with Vector & Image modes) -->
     <div id="scale-modal" onclick="closeScaleModal(event)" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10, 10, 20, 0.88); z-index: 99999; backdrop-filter: blur(6px); justify-content: center; align-items: center; padding: 12px; box-sizing: border-box;">
