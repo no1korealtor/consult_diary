@@ -1,6 +1,17 @@
 import urllib.request, urllib.parse, urllib.error, json, requests, re, sys, os
 from datetime import datetime
 
+if sys.stdout and hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+if sys.stderr and hasattr(sys.stderr, 'reconfigure'):
+    try:
+        sys.stderr.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
 def load_member_info():
     try:
         import os, json, sys
@@ -1673,14 +1684,16 @@ def run_building_viewer():
                                 h_clean = re.sub(r'[^0-9]', '', h)
                                 sh = shares_map.get(h) or shares_map.get(f"{h}호") or (shares_map.get(h_clean) if h_clean else None) if shares_map else None
                                 sh_str = f" | 대지지분 {sh['m2']:.2f} ㎡ (약 {sh['pyung']}평)" if (sh and sh.get("m2") is not None) else ""
-                                print(f"      - {h}호{tag}{area_str}{purp_str}{sh_str}")
+                                h_disp = f"{h}호" if not str(h).endswith("호") else h
+                                print(f"      - {h_disp}{tag}{area_str}{purp_str}{sh_str}")
                         else:
                             hos_formatted = []
                             for h in hos:
                                 u_item = floor_units_map.get((flr, h), {})
                                 u_comm = u_item.get("is_comm", False)
                                 tag = "[근생]" if u_comm else "[주택]"
-                                hos_formatted.append(f"{h}호{tag}")
+                                h_disp = f"{h}호" if not str(h).endswith("호") else h
+                                hos_formatted.append(f"{h_disp}{tag}")
                             print(f"   • {flr}층: {', '.join(hos_formatted)}")
                     print("--------------------------------------------------")
             else:
@@ -1749,8 +1762,11 @@ def run_building_viewer():
                 print(f" -> 요청하신 [{ho_name}호] 전유부 상세 정보 조회 중...")
                 unit_info = get_expos_unit_details(addr_info["sigunguCd"], addr_info["bjdongCd"], addr_info["bun"], addr_info["ji"], ho_name, dong_name)
         if unit_info:
+            disp_ho = unit_info.get('hoNm', ho_name)
+            if not str(disp_ho).endswith("호"):
+                disp_ho = f"{disp_ho}호"
             print("--------------------------------------------------")
-            print(f"   [ {unit_info.get('hoNm', ho_name)}호 전유부분 상세 정보 ]")
+            print(f"   [ {disp_ho} 전유부분 상세 정보 ]")
             print("--------------------------------------------------")
             print(f"  • 해당 층수  : {unit_info.get('flrNo')}층")
             if unit_info.get("area"):
