@@ -1926,6 +1926,33 @@ def run_building_viewer():
         actual_cash = 0
         annual_yield = 0.0
         
+        def extract_tx_price(t):
+            val = t.get("price") or t.get("dealAmount") or 0
+            if isinstance(val, (int, float)):
+                return int(val)
+            if isinstance(val, str):
+                cleaned = re.sub(r'[^0-9]', '', val)
+                return int(cleaned) if cleaned else 0
+            return 0
+
+        def extract_tx_deposit(t):
+            val = t.get("deposit") or 0
+            if isinstance(val, (int, float)):
+                return int(val)
+            if isinstance(val, str):
+                cleaned = re.sub(r'[^0-9]', '', val)
+                return int(cleaned) if cleaned else 0
+            return 0
+
+        def extract_tx_area(t):
+            val = t.get("area") or t.get("excluUseAr") or t.get("totalFloorAr") or 0
+            if isinstance(val, (int, float)):
+                return float(val)
+            if isinstance(val, str):
+                cleaned = re.sub(r'[^0-9.]', '', val)
+                return float(cleaned) if cleaned else 0.0
+            return 0.0
+
         plat_py = round(plat_area_float * 0.3025, 1) if plat_area_float > 0 else 0.0
         if trade_type == "매매":
             price_mode = "1"
@@ -1950,8 +1977,8 @@ def run_building_viewer():
                         print(f" -> [자동 환산] 대지 {plat_py}평 × 평당 {py_price:,}만 = 총 매매가 {eok_str}원 ({target_price:,}만 원)")
                         break
                     elif not py_input:
-                        sale_txs = [t for t in (transactions or []) if t.get("_trade_type") == "매매" and t.get("price", 0) > 0]
-                        avg_s = int(round(sum(t["price"] for t in sale_txs) / len(sale_txs))) if sale_txs else 0
+                        sale_txs = [t for t in (transactions or []) if t.get("_trade_type") == "매매" and extract_tx_price(t) > 0]
+                        avg_s = int(round(sum(extract_tx_price(t) for t in sale_txs) / len(sale_txs))) if sale_txs else 0
                         rec_py = int(round(avg_s / plat_py)) if (avg_s > 0 and plat_py > 0) else 3000
                         print(f"\n  💡 [시세 평가] 인근 시세 기반 추천 대지 평당가: 약 {rec_py:,}만 원/평")
                         g_in = input(f"[입력] 추천 평당가({rec_py:,}만 원/평)로 진행하시겠습니까? (엔터: 수락 / 다른 금액 직접 입력): ").strip()
@@ -1985,13 +2012,13 @@ def run_building_viewer():
                         break
                     elif not price_input:
                         # 엔터 시: 매매 시세 평가 및 적정 기준가 자동 산출!
-                        sale_txs = [t for t in (transactions or []) if t.get("_trade_type") == "매매" and t.get("price", 0) > 0]
+                        sale_txs = [t for t in (transactions or []) if t.get("_trade_type") == "매매" and extract_tx_price(t) > 0]
                         if target_area and target_area > 0:
-                            sim_sales = [t for t in sale_txs if t.get("area") and abs(t["area"] - target_area) / target_area <= 0.25]
+                            sim_sales = [t for t in sale_txs if extract_tx_area(t) > 0 and abs(extract_tx_area(t) - target_area) / target_area <= 0.25]
                             if sim_sales:
                                 sale_txs = sim_sales
 
-                        avg_sale = int(round(sum(t["price"] for t in sale_txs) / len(sale_txs))) if sale_txs else 0
+                        avg_sale = int(round(sum(extract_tx_price(t) for t in sale_txs) / len(sale_txs))) if sale_txs else 0
                         est_from_off = int(round((official_house_price * 1.45) / 10000 / 100) * 100) if official_house_price else 0
 
                         if avg_sale > 0:
@@ -2091,9 +2118,9 @@ def run_building_viewer():
                         p126_str = format_assessed_price(p126_won)
                         off_str = format_assessed_price(official_house_price)
 
-                    jeonse_txs = [t for t in (transactions or []) if t.get("_trade_type") == "전세" and t.get("deposit", 0) > 0]
+                    jeonse_txs = [t for t in (transactions or []) if t.get("_trade_type") == "전세" and extract_tx_deposit(t) > 0]
                     if target_area and target_area > 0:
-                        sim_txs = [t for t in jeonse_txs if t.get("area") and abs(t["area"] - target_area) / target_area <= 0.25]
+                        sim_txs = [t for t in jeonse_txs if extract_tx_area(t) > 0 and abs(extract_tx_area(t) - target_area) / target_area <= 0.25]
                         if sim_txs:
                             jeonse_txs = sim_txs
                     
@@ -2101,9 +2128,11 @@ def run_building_viewer():
                     min_jeonse = 0
                     max_jeonse = 0
                     if jeonse_txs:
-                        avg_jeonse = int(round(sum(t["deposit"] for t in jeonse_txs) / len(jeonse_txs)))
-                        min_jeonse = min(t["deposit"] for t in jeonse_txs)
-                        max_jeonse = max(t["deposit"] for t in jeonse_txs)
+                        dep_list = [extract_tx_deposit(t) for t in jeonse_txs if extract_tx_deposit(t) > 0]
+                        if dep_list:
+                            avg_jeonse = int(round(sum(dep_list) / len(dep_list)))
+                            min_jeonse = min(dep_list)
+                            max_jeonse = max(dep_list)
 
                     if p126_val > 0 and avg_jeonse > 0:
                         recommended_dep = min(p126_val, avg_jeonse)
@@ -2172,8 +2201,13 @@ def run_building_viewer():
                 elif not dep_input:
                     # 엔터 입력 시: 보증금대별 월세 조견표 자동 산출!
                     p126_val = round(int(official_house_price * 1.26) / 10000) if official_house_price else 0
-                    jeonse_txs = [t for t in (transactions or []) if t.get("_trade_type") == "전세" and t.get("deposit", 0) > 0]
-                    avg_jeonse = int(round(sum(t["deposit"] for t in jeonse_txs) / len(jeonse_txs))) if jeonse_txs else 0
+                    jeonse_txs = [t for t in (transactions or []) if t.get("_trade_type") == "전세" and extract_tx_deposit(t) > 0]
+                    if target_area and target_area > 0:
+                        sim_txs = [t for t in jeonse_txs if extract_tx_area(t) > 0 and abs(extract_tx_area(t) - target_area) / target_area <= 0.25]
+                        if sim_txs:
+                            jeonse_txs = sim_txs
+                    dep_list = [extract_tx_deposit(t) for t in jeonse_txs if extract_tx_deposit(t) > 0]
+                    avg_jeonse = int(round(sum(dep_list) / len(dep_list))) if dep_list else 0
                     
                     base_jeonse = p126_val if p126_val > 0 else (avg_jeonse if avg_jeonse > 0 else (int(round((target_area * 0.3025) * 1200)) if target_area else 20000))
                     
@@ -2236,8 +2270,13 @@ def run_building_viewer():
 
             if target_monthly == 0:
                 p126_val = round(int(official_house_price * 1.26) / 10000) if official_house_price else 0
-                jeonse_txs = [t for t in (transactions or []) if t.get("_trade_type") == "전세" and t.get("deposit", 0) > 0]
-                avg_jeonse = int(round(sum(t["deposit"] for t in jeonse_txs) / len(jeonse_txs))) if jeonse_txs else 0
+                jeonse_txs = [t for t in (transactions or []) if t.get("_trade_type") == "전세" and extract_tx_deposit(t) > 0]
+                if target_area and target_area > 0:
+                    sim_txs = [t for t in jeonse_txs if extract_tx_area(t) > 0 and abs(extract_tx_area(t) - target_area) / target_area <= 0.25]
+                    if sim_txs:
+                        jeonse_txs = sim_txs
+                dep_list = [extract_tx_deposit(t) for t in jeonse_txs if extract_tx_deposit(t) > 0]
+                avg_jeonse = int(round(sum(dep_list) / len(dep_list))) if dep_list else 0
                 base_jeonse = p126_val if p126_val > 0 else (avg_jeonse if avg_jeonse > 0 else 20000)
                 rec_m = max(5, int(round(((base_jeonse - target_price) * 0.055 / 12) / 5) * 5)) if base_jeonse > target_price else 50
 
