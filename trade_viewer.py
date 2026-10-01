@@ -1,4 +1,4 @@
-import urllib.request, urllib.parse, json, re, sys
+import urllib.request, urllib.parse, json, re, sys, time
 from datetime import datetime
 import concurrent.futures as concurrent
 
@@ -918,51 +918,59 @@ def fetch_trade_data_month(api_url, sigungu, deal_ymd):
     if api_url.startswith("http://"):
         api_url = api_url.replace("http://", "https://")
     query = f"?serviceKey={GOV_API_KEY}&LAWD_CD={sigungu}&DEAL_YMD={deal_ymd}&numOfRows=1000&pageNo=1&_type=json"
-    req = urllib.request.Request(api_url + query)
-    req.add_header("User-Agent", "Mozilla/5.0")
-    try:
-        with urllib.request.urlopen(req, timeout=20) as response:
-            res_text = response.read().decode("utf-8")
-        if not res_text.strip():
+    url = api_url + query
+    for attempt in range(2):
+        try:
+            req = urllib.request.Request(url)
+            req.add_header("User-Agent", "Mozilla/5.0")
+            timeout_sec = 15 if attempt == 0 else 25
+            with urllib.request.urlopen(req, timeout=timeout_sec) as response:
+                res_text = response.read().decode("utf-8")
+            if not res_text.strip():
+                return []
+            json_data = json.loads(res_text)
+            if not isinstance(json_data, dict):
+                return []
+                
+            response_data = json_data.get("response", {})
+            if not isinstance(response_data, dict):
+                return []
+                
+            header = response_data.get("header", {})
+            if not isinstance(header, dict):
+                return []
+                
+            result_code = header.get("resultCode")
+            if result_code in ("30", "03") or "SERVICE_KEY_IS_NOT_REGISTERED_ERROR" in header.get("resultMsg", ""):
+                raise PermissionError("API 인증 오류")
+            elif result_code not in ("00", "000"):
+                return []
+            body_data = response_data.get("body", {})
+            if not isinstance(body_data, dict):
+                return []
+                
+            items_data = body_data.get("items", {})
+            if not isinstance(items_data, dict):
+                return []
+                
+            items = items_data.get("item", [])
+            if not items:
+                return []
+            if isinstance(items, dict):
+                return [items]
+            return items
+        except urllib.error.HTTPError as e:
+            if e.code == 403:
+                raise PermissionError("403 Forbidden")
             return []
-        json_data = json.loads(res_text)
-        if not isinstance(json_data, dict):
+        except PermissionError:
+            raise
+        except Exception:
+            if attempt == 0:
+                time.sleep(0.5)
+                continue
             return []
-            
-        response_data = json_data.get("response", {})
-        if not isinstance(response_data, dict):
-            return []
-            
-        header = response_data.get("header", {})
-        if not isinstance(header, dict):
-            return []
-            
-        result_code = header.get("resultCode")
-        if result_code in ("30", "03") or "SERVICE_KEY_IS_NOT_REGISTERED_ERROR" in header.get("resultMsg", ""):
-            raise PermissionError("API 인증 오류")
-        elif result_code not in ("00", "000"):
-            return []
-        body_data = response_data.get("body", {})
-        if not isinstance(body_data, dict):
-            return []
-            
-        items_data = body_data.get("items", {})
-        if not isinstance(items_data, dict):
-            return []
-            
-        items = items_data.get("item", [])
-        if not items:
-            return []
-        if isinstance(items, dict):
-            return [items]
-        return items
-    except urllib.error.HTTPError as e:
-        if e.code == 403:
-            raise PermissionError("403 Forbidden")
-        return []
-    except Exception as e:
-        print(f"fetch_trade_data_month 에러 ({deal_ymd}): {e}")
-        return []
+    return []
 class TransactionList(list):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1044,7 +1052,7 @@ def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_
         months.append(f"{year}{str(month).zfill(2)}")
     
     matches = TransactionList(); trade_permission_error = False; rent_permission_error = False
-    with concurrent.ThreadPoolExecutor(max_workers=16) as executor:
+    with concurrent.ThreadPoolExecutor(max_workers=8) as executor:
         trade_futures = {executor.submit(fetch_trade_data_month, api_trade, sigungu, m): m for m in months}
         rent_futures = {executor.submit(fetch_trade_data_month, api_rent, sigungu, m): m for m in months}
         
