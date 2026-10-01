@@ -125,6 +125,18 @@ def match_dong(target_dong, record_dong):
         return True
     return False
 
+def format_assessed_price(val):
+    if not val:
+        return "정보없음"
+    if val >= 100_000_000:
+        eok = val // 100_000_000
+        man = val % 100_000_000 // 10_000
+        if man > 0:
+            return f"{eok}억 {man:,}만원"
+        return f"{eok}억원"
+    man = val // 10_000
+    return f"{man:,}만원"
+
 def get_property_comprehensive_overview(sigunguCd=None, bjdongCd=None, bun=None, ji=None, address_str=""):
     """
     특정 지번 주소에 대해 정부 공적장부(건축물대장 + VWorld 토지이용/공시지가)를
@@ -180,9 +192,12 @@ def get_property_comprehensive_overview(sigunguCd=None, bjdongCd=None, bun=None,
         "reg_zones_str": "-"
     }
     
-    from get_building_info import get_building_data
     bld_data = None
     try:
+        try:
+            from get_building_info import get_building_data
+        except ImportError:
+            from AutoBot_Clean.get_building_info import get_building_data
         bld_data = get_building_data(sigunguCd, bjdongCd, bun_pad, ji_pad)
     except:
         bld_data = None
@@ -447,120 +462,152 @@ def get_expos_unit_details(sigungu, bjdong, bun, ji, ho_name, dong_name):
     try:
         if not ho_name:
             return None
-        url_info = "https://apis.data.go.kr/1613000/BldRgstHubService/getBrExposInfo"
-        url_area = "https://apis.data.go.kr/1613000/BldRgstHubService/getBrExposPubuseAreaInfo"
+        url_info = "http://apis.data.go.kr/1613000/BldRgstHubService/getBrExposInfo"
+        url_area = "http://apis.data.go.kr/1613000/BldRgstHubService/getBrExposPubuseAreaInfo"
         bun_str = str(bun).zfill(4) if bun else "0000"
         ji_str = str(ji).zfill(4) if ji else "0000"
-        if dong_name:
-            d_nm = dong_name if dong_name.endswith("동") else dong_name + "동"
-            q_dong = "&dongNm=" + urllib.parse.quote(d_nm)
-        else:
-            q_dong = ""
-            
-        if ho_name:
-            h_nm = ho_name.replace("호", "")
-            q_ho = "&hoNm=" + urllib.parse.quote(h_nm)
-        else:
-            q_ho = ""
+        
+        target_ho_clean = re.sub(r'[^0-9]', '', str(ho_name))
+        
+        def match_ho(item_ho):
+            if not item_ho:
+                return False
+            i_str = str(item_ho).strip()
+            h_str = str(ho_name).strip()
+            if i_str == h_str:
+                return True
+            i_clean = re.sub(r'[^0-9]', '', i_str)
+            if target_ho_clean and i_clean == target_ho_clean:
+                return True
+            if h_str.replace("호", "") == i_str.replace("호", ""):
+                return True
+            return False
 
-        result = {"area": None, "supply_area": None, "flrNo": None, "violBldYn": "N", "hoNm": ""}
+        result = {"area": None, "supply_area": None, "flrNo": None, "violBldYn": "N", "hoNm": "", "main_purp": "", "etc_purp": "", "purpose": "", "is_commercial": False}
         for plat in (0, 1, 2):
-            # 1. 전유부 정보 조회
+            # 1. 전유부 정보 조회 (층수, 호명, 위반건축물 여부)
             page_no = 1
             while True:
-                query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo={page_no}{q_dong}{q_ho}&_type=json"
-                req_info = urllib.request.Request(url_info + query)
-                req_info.add_header("User-Agent", "Mozilla/5.0")
-                req_info.add_header("Accept", "application/json, text/plain, */*")
-                try:
-                    with urllib.request.urlopen(req_info, timeout=20) as resp:
-                        res_body = resp.read().decode("utf-8")
-                    if res_body.strip():
-                        data = json.loads(res_body)
-                        body = data.get("response", {}).get("body", {})
-                        items = body.get("items", {}).get("item", [])
-                        total_count = int(body.get("totalCount", 0))
-                        
-                        if items:
-                            if isinstance(items, dict):
-                                items = [items]
-                            for item in items:
-                                item_ho = str(item.get("hoNm") or "")
-                                item_dong = str(item.get("dongNm") or "")
-                                if ho_name not in item_ho and item_ho not in ho_name:
-                                    continue
-                                if dong_name and not match_dong(dong_name, item_dong):
-                                    continue
-                                result["flrNo"] = item.get("flrNo")
-                                result["violBldYn"] = item.get("violBldYn", "N")
-                                result["hoNm"] = item_ho
-                                break  # Found the target, exit loop over items
-                        
-                        if result["flrNo"] is not None or (page_no * 1000 >= total_count) or total_count == 0:
-                            break
-                        page_no += 1
-                    else:
+                query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo={page_no}&_type=json"
+                req_info = urllib.request.Request(url_info + query, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, text/plain, */*"})
+                success = False
+                for attempt in range(3):
+                    try:
+                        with urllib.request.urlopen(req_info, timeout=10) as resp:
+                            res_body = resp.read().decode("utf-8")
+                        if res_body.strip():
+                            data = json.loads(res_body)
+                            body = data.get("response", {}).get("body", {})
+                            items = body.get("items", {}).get("item", [])
+                            total_count = int(body.get("totalCount", 0))
+                            if items:
+                                if isinstance(items, dict):
+                                    items = [items]
+                                for item in items:
+                                    item_ho = item.get("hoNm")
+                                    item_dong = item.get("dongNm")
+                                    if not match_ho(item_ho):
+                                        continue
+                                    if dong_name and not match_dong(dong_name, item_dong):
+                                        continue
+                                    result["flrNo"] = item.get("flrNo")
+                                    result["violBldYn"] = item.get("violBldYn", "N")
+                                    result["hoNm"] = str(item_ho)
+                                    if item.get("mainPurpsCdNm"):
+                                        result["main_purp"] = str(item.get("mainPurpsCdNm", "")).strip()
+                                    if item.get("etcPurps"):
+                                        result["etc_purp"] = str(item.get("etcPurps", "")).strip()
+                                    break
+                            success = True
+                            if result["flrNo"] is not None or (page_no * 1000 >= total_count) or total_count == 0:
+                                break
                         break
-                except Exception as e:
-                    print(f"표제부/전유부 API 조회 중 오류 (page {page_no}): {e}")
+                    except Exception as e:
+                        import time
+                        time.sleep(0.4 * (attempt + 1))
+                if not success or result["flrNo"] is not None or (page_no * 1000 >= total_count) or total_count == 0:
                     break
+                page_no += 1
 
-
-            # 2. 공용면적 정보 조회 (면적 가져오기)
+            # 2. 공용/전유 면적 정보 조회 (면적 가져오기)
             page_no = 1
             area_exclusive = 0.0
-            area_supply = 0.0
+            area_common = 0.0
             found_area = False
             while True:
-                query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo={page_no}{q_dong}{q_ho}&_type=json"
-                req_area = urllib.request.Request(url_area + query)
-                req_area.add_header("User-Agent", "Mozilla/5.0")
-                req_area.add_header("Accept", "application/json, text/plain, */*")
-                try:
-                    with urllib.request.urlopen(req_area, timeout=20) as resp:
-                        res_body = resp.read().decode("utf-8")
-                    if res_body.strip():
-                        data = json.loads(res_body)
-                        body = data.get("response", {}).get("body", {})
-                        items = body.get("items", {}).get("item", [])
-                        total_count = int(body.get("totalCount", 0))
-                        
-                        if items:
-                            if isinstance(items, dict):
-                                items = [items]
-                            for item in items:
-                                item_ho = str(item.get("hoNm") or "")
-                                item_dong = str(item.get("dongNm") or "")
-                                if ho_name not in item_ho and item_ho not in ho_name:
-                                    continue
-                                if dong_name and not match_dong(dong_name, item_dong):
-                                    continue
-                                
-                                val = item.get("area")
-                                if not val:
-                                    continue
-                                
-                                found_area = True
-                                f_val = float(val)
-                                area_supply += f_val
-                                if str(item.get("exposPubuseGbCd", "")) == "1":
-                                    area_exclusive += f_val
-                        
-                        if (page_no * 1000 >= total_count) or total_count == 0:
-                            break
-                        page_no += 1
-                    else:
+                query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo={page_no}&_type=json"
+                req_area = urllib.request.Request(url_area + query, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, text/plain, */*"})
+                success = False
+                for attempt in range(3):
+                    try:
+                        with urllib.request.urlopen(req_area, timeout=10) as resp:
+                            res_body = resp.read().decode("utf-8")
+                        if res_body.strip():
+                            data = json.loads(res_body)
+                            body = data.get("response", {}).get("body", {})
+                            items = body.get("items", {}).get("item", [])
+                            total_count = int(body.get("totalCount", 0))
+                            if items:
+                                if isinstance(items, dict):
+                                    items = [items]
+                                for item in items:
+                                    item_ho = item.get("hoNm")
+                                    item_dong = item.get("dongNm")
+                                    if not match_ho(item_ho):
+                                        continue
+                                    if dong_name and not match_dong(dong_name, item_dong):
+                                        continue
+                                    val = item.get("area")
+                                    if not val:
+                                        continue
+                                    f_val = float(val)
+                                    gb = str(item.get("exposPubuseGbCd", "")).strip()
+                                    if gb == "1":
+                                        area_exclusive += f_val
+                                        found_area = True
+                                        if item.get("mainPurpsCdNm") and not result.get("main_purp"):
+                                            result["main_purp"] = str(item.get("mainPurpsCdNm", "")).strip()
+                                        if item.get("etcPurps") and not result.get("etc_purp"):
+                                            result["etc_purp"] = str(item.get("etcPurps", "")).strip()
+                                        if not result.get("flrNo") and item.get("flrNo"):
+                                            result["flrNo"] = item.get("flrNo")
+                                    elif gb == "2":
+                                        area_common += f_val
+                                        found_area = True
+                                    else:
+                                        area_exclusive += f_val
+                                        found_area = True
+                                        if item.get("mainPurpsCdNm") and not result.get("main_purp"):
+                                            result["main_purp"] = str(item.get("mainPurpsCdNm", "")).strip()
+                                        if item.get("etcPurps") and not result.get("etc_purp"):
+                                            result["etc_purp"] = str(item.get("etcPurps", "")).strip()
+                            success = True
+                            if (page_no * 1000 >= total_count) or total_count == 0:
+                                break
                         break
-                except Exception as e:
-                    print(f"공용면적 API 조회 중 오류 (page {page_no}): {e}")
+                    except Exception as e:
+                        import time
+                        time.sleep(0.4 * (attempt + 1))
+                if not success or (page_no * 1000 >= total_count) or total_count == 0:
                     break
-            
-            if found_area and area_supply > 0:
-                result["area"] = round(area_exclusive, 2) if area_exclusive > 0 else round(area_supply, 2)
-                result["supply_area"] = round(area_supply, 2)
+                page_no += 1
 
+            if found_area:
+                result["area"] = round(area_exclusive, 2)
+                result["supply_area"] = round(area_exclusive + area_common, 2)
 
-            if result["flrNo"] or result["area"]:
+            mp = result.get("main_purp", "").strip()
+            ep = result.get("etc_purp", "").strip()
+            if ep and mp and ep != mp:
+                purpose = ep if (mp in ep or ep in mp) else f"{ep} ({mp})"
+            else:
+                purpose = ep or mp or ""
+            result["purpose"] = purpose
+
+            comm_keywords = ["근린생활", "근생", "사무소", "소매점", "음식점", "학원", "상가", "점포", "창고", "공장", "의원", "판매시설", "고시원"]
+            result["is_commercial"] = any(k in purpose for k in comm_keywords)
+
+            if result.get("flrNo") is not None or result.get("area") is not None:
                 return result
         return result
     except Exception as e:
@@ -1353,14 +1400,21 @@ def mask_address_string(addr_str):
         masked_parts.append(part)
     return " ".join(masked_parts)
 
+def format_ho_label(ho):
+    if not ho:
+        return ""
+    h = str(ho).strip()
+    return h if h.endswith("호") else f"{h}호"
+
 def mask_ho_name(ho):
     if not ho:
         return ""
     ho_str = str(ho).strip()
     digits = re.findall(r"\d+", ho_str)
     if digits:
-        return ho_str.replace(digits[0], "***")
-    return "***"
+        masked = ho_str.replace(digits[0], "***")
+        return masked if masked.endswith("호") else f"{masked}호"
+    return "***호"
 
 def mask_phone_number(phone):
     if not phone:
@@ -1722,15 +1776,22 @@ Paragraph(f"{period_label} (국토교통부 실거래가 기준)", value_style)]
         ho_label = desired_info.get("ho_name") if desired_info else None
         target_area_val = target_area or (desired_info.get("exclusive_area") if desired_info else None)
         land_share_val = desired_info.get("land_share") if desired_info else None
+        official_price_val = (desired_info.get("official_price") or desired_info.get("official_house_price")) if desired_info else None
+        official_price_year = (desired_info.get("official_price_year") or desired_info.get("official_house_year")) if desired_info else ""
 
         if ho_label:
-            meta_data.append([Paragraph("<b>분석 대상 호실</b>", label_style), Paragraph(f"{mask_ho_name(ho_label)}호", value_style)])
+            meta_data.append([Paragraph("<b>분석 대상 호실</b>", label_style), Paragraph(mask_ho_name(ho_label), value_style)])
         if target_area_val:
             py = round(float(target_area_val) * 0.3025, 1)
             meta_data.append([Paragraph("<b>호실 전용면적</b>", label_style), Paragraph(f"<b>{float(target_area_val):.2f} ㎡ (약 {py}평)</b>", value_style)])
         if land_share_val:
             lpy = round(float(land_share_val) * 0.3025, 1)
             meta_data.append([Paragraph("<b>호실 대지지분</b>", label_style), Paragraph(f"<b>{float(land_share_val):.2f} ㎡ (약 {lpy}평)</b>", value_style)])
+        if official_price_val:
+            off_str = format_assessed_price(official_price_val)
+            off_126_str = format_assessed_price(int(official_price_val * 1.26))
+            yr_tag = f"({official_price_year}년) " if official_price_year else ""
+            meta_data.append([Paragraph("<b>주택 공시가격</b>", label_style), Paragraph(f"<b>{yr_tag}{off_str}</b> (126%: <b>{off_126_str}</b>)", value_style)])
 
         if desired_info and desired_info.get("room_count_label"):
             meta_data.append([Paragraph("<b>분석 대상 방 개수</b>", label_style), Paragraph(desired_info["room_count_label"], value_style)])
@@ -1824,7 +1885,20 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                 ]
             ]
             
-            # [신설] 개별 호수 분석 시, 전용면적과 대지지분을 첫 행에 강조 배치!
+            # [신설] 개별 호수 분석 시, 주용도 / 전용면적 / 대지지분을 첫 행에 강조 배치!
+            ho_purpose = desired_info.get("unit_purpose") if desired_info else None
+            ho_is_comm = desired_info.get("is_commercial") if desired_info else False
+            floor_lbl = f"지하 {abs(target_floor)}층" if (target_floor is not None and target_floor < 0) else f"{target_floor}층" if target_floor is not None else "정보없음"
+            if ho_purpose:
+                purp_style = val_cell_warn if ho_is_comm else val_cell_high
+                purp_tag = " ⚠️ (근린생활시설)" if ho_is_comm else " (주거용)"
+                bld_table_data.insert(0, [
+                    Paragraph("<b>분석 호실 주용도</b>", hdr_cell),
+                    Paragraph(f"<b>{ho_purpose}{purp_tag}</b>", purp_style),
+                    Paragraph("<b>분석 대상 층수</b>", hdr_cell),
+                    Paragraph(f"<b>{floor_lbl}</b>", val_cell)
+                ])
+
             if target_area_val or land_share_val:
                 area_py = round(float(target_area_val) * 0.3025, 1) if target_area_val else 0.0
                 area_str = f"<b>{float(target_area_val):.2f} ㎡ (약 {area_py}평)</b>" if target_area_val else "정보없음"
@@ -1834,11 +1908,24 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                 else:
                     ls_str = "대지권 정보 없음 (단독/다가구)"
                 
-                bld_table_data.insert(0, [
+                insert_pos = 1 if ho_purpose else 0
+                bld_table_data.insert(insert_pos, [
                     Paragraph("<b>분석 호실 전용면적</b>", hdr_cell),
                     Paragraph(area_str, val_cell_high),
                     Paragraph("<b>분석 호실 대지지분</b>", hdr_cell),
                     Paragraph(ls_str, val_cell_high)
+                ])
+
+            if official_price_val:
+                off_str = format_assessed_price(official_price_val)
+                off_126_str = format_assessed_price(int(official_price_val * 1.26))
+                yr_tag = f"({official_price_year}년) " if official_price_year else ""
+                insert_idx = 1 if (target_area_val or land_share_val) else 0
+                bld_table_data.insert(insert_idx, [
+                    Paragraph("<b>주택 공시가격</b>", hdr_cell),
+                    Paragraph(f"{yr_tag}<b>{off_str}</b>", val_cell_high),
+                    Paragraph("<b>공시가 126% (대출·보증한도)</b>", hdr_cell),
+                    Paragraph(f"<b>{off_126_str}</b>", val_cell_high)
                 ])
             
             if bld_overview.get("land_use_zone") != "-" or bld_overview.get("official_land_price_str") != "-":
@@ -2073,6 +2160,7 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                     cnt = len(f_trades) + len(f_jeonses) + len(f_wolses)
                     group_counts.append((cnt, g, f_trades, f_jeonses, f_wolses))
                 
+                official_126_만원 = int(round((official_price_val * 1.26) / 10000)) if (official_price_val and not ho_is_comm) else None
                 group_counts.sort(key=lambda x: x[0], reverse=True)
                 top_groups = group_counts[:2]
                 
@@ -2082,7 +2170,7 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                     all_txs = f_trades + f_jeonses + f_wolses
                     size_label = g["label"]
                     title_prefix = "주력 평형" if idx == 0 else "관심 평형"
-                    scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name, dw=500, dh=120)
+                    scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name, dw=500, dh=120, official_126_price=official_126_만원)
                     if scatter_drawing:
                         from reportlab.platypus import KeepTogether
                         story.append(KeepTogether([
@@ -2092,13 +2180,14 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                             Spacer(1, 4)
                         ]))
             else:
+                official_126_만원 = int(round((official_price_val * 1.26) / 10000)) if (official_price_val and not ho_is_comm) else None
                 filt_trades = filter_by_size_category(trades, target_area, prop_type_name, apt_groups)
                 filt_jeonses = filter_by_size_category(jeonses, target_area, prop_type_name, apt_groups)
                 filt_wolses = filter_by_size_category(wolses, target_area, prop_type_name, apt_groups)
                 all_txs = filt_trades + filt_jeonses + filt_wolses
                 
                 size_label = get_size_category_label(target_area, prop_type_name, apt_groups)
-                scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name, dw=500, dh=120)
+                scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name, dw=500, dh=120, official_126_price=official_126_만원)
                 if scatter_drawing:
                     from reportlab.platypus import KeepTogether
                     story.append(KeepTogether([
@@ -2182,6 +2271,14 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
             story.append(floor_table)
             story.append(Spacer(1, 6))
             insights_list = generate_comparison_insights(cma_trades, cma_jeonses, cma_wolses)
+            if official_price_val and not ho_is_comm:
+                p126_won = int(official_price_val * 1.26)
+                p126_str = format_assessed_price(p126_won)
+                off_str = format_assessed_price(official_price_val)
+                yr_desc = f"({official_price_year}년) " if official_price_year else ""
+                insights_list.append(f"• [대출·보증 기준선 (공시가 126%)] 해당 주택 공시가격({yr_desc}{off_str}) 기준 126% 안심 한도는 약 <b>{p126_str}</b>입니다. 시중은행 전세대출, LH 전세대출 및 HUG 전세보증보험 가입 기준선이 되므로 임대차 가격 책정 시 126% 준수 여부를 확인하시기 바랍니다.")
+            elif ho_is_comm:
+                insights_list.append("• [대출·보증 안내 (근린생활시설)] 본 호실은 건축물대장상 <b>근린생활시설(상가)</b>로 분류되어 HUG 전세보증보험 및 주택 전세대출(버팀목/LH) 대상에서 제외되므로 임대차 진행 시 사전 확인이 필요합니다.")
             insight_p_style = ParagraphStyle("InsightP", parent=styles["Normal"], fontName="KoreanFont", fontSize=8.5, leading=12.5, textColor=colors.HexColor("#2D3748"))
             insight_paragraphs = [Paragraph(ins, insight_p_style) for ins in insights_list]
             if not insight_paragraphs:
@@ -2192,10 +2289,10 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
     
     ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#ECC94B")), ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6), ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8)]))
             story.append(insight_box)
-        if desired_info and desired_info.get("trade_type") != "종합":
-            trade_type = desired_info.get("trade_type", "매매")
-            d_price = desired_info.get("price", 0)
-            d_monthly = desired_info.get("monthly_rent", 0)
+        if desired_info:
+            trade_type = desired_info.get("trade_type", "종합")
+            d_price = desired_info.get("price") or desired_info.get("target_price") or 0
+            d_monthly = desired_info.get("monthly_rent") or desired_info.get("target_monthly") or 0
             d_converted = d_price + (d_monthly * GLOBAL_WOLSE_MULTIPLIER)
             
             def local_format_price(val):
@@ -2207,12 +2304,6 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                     return f"{eok}억"
                 return f"{int(val):,}만"
                 
-            if trade_type == "월세":
-                price_label_str = f"월세 {local_format_price(d_price)} / {local_format_price(d_monthly)}"
-            else:
-                price_label_str = f"{trade_type} {local_format_price(d_price)}"
-                if desired_info and desired_info.get("pyeong_price"):
-                    price_label_str += f" (대지 평당 약 {desired_info['pyeong_price']:,}만)"
             cma_trades = filter_by_size_category(trades, target_area, prop_type_name, apt_groups)
             cma_jeonses = filter_by_size_category(jeonses, target_area, prop_type_name, apt_groups)
             cma_wolses = filter_by_size_category(wolses, target_area, prop_type_name, apt_groups)
@@ -2220,61 +2311,164 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                 match_list = cma_trades
             elif trade_type == "전세":
                 match_list = cma_jeonses
-            else:
+            elif trade_type == "월세":
                 match_list = cma_wolses
+            else:
+                match_list = cma_jeonses if cma_jeonses else cma_trades
             floor_cat = "upper"
             if target_floor is not None:
-                fl = int(target_floor)
-                if fl < 0 or "지하" in str(target_floor):
-                    floor_cat = "base"
-                elif fl == 1:
-                    floor_cat = "first"
-                else:
+                try:
+                    fl = int(target_floor)
+                    if fl < 0 or "지하" in str(target_floor):
+                        floor_cat = "base"
+                    elif fl == 1:
+                        floor_cat = "first"
+                    else:
+                        floor_cat = "upper"
+                except:
                     floor_cat = "upper"
-            ref_val, ref_desc = get_cma_ref_price(match_list, floor_cat, is_rent=trade_type != "매매", is_wolse=trade_type == "월세")
+            ref_val, ref_desc = get_cma_ref_price(match_list, floor_cat, is_rent=trade_type not in ("매매", "종합"), is_wolse=trade_type == "월세")
             story.append(Spacer(1, 10))
-            story.append(Paragraph("■ [의뢰 희망가 시세 적정성 평가]", h2_style))
-            story.append(Spacer(1, 4))
-            eval_p_body = ParagraphStyle("EvalBodyStyle", parent=styles["Normal"], fontName="KoreanFont", fontSize=8.5, leading=13, textColor=colors.HexColor("#2D3748"))
+            eval_p_body = ParagraphStyle("EvalBodyStyle", parent=styles["Normal"], fontName="KoreanFont", fontSize=8.5, leading=13.5, textColor=colors.HexColor("#2D3748"))
             phone_no = desired_info.get("phone_number")
             phone_line = ""
             if phone_no:
                 masked_phone = mask_phone_number(phone_no)
                 phone_line = f"<b>• 의뢰인 연락처</b>: {masked_phone}<br/>"
                 
-            if not ref_val:
-                eval_title = "보류 (비교 사례 부족)"
-                detail_desc = "인근 지역 내 유사한 거래 사례가 부족하여 자동 적정성 평가가 제한적입니다."
-                eval_color = "#718096"
-                bg_color = colors.HexColor("#F7FAFC")
-                border_color = colors.HexColor("#CBD5E0")
-                ref_str = "판단 불가 (비교 사례 부족)"
-            else:
-                diff = d_converted - ref_val
-                pct = diff / ref_val * 100
-                ref_val_str = local_format_price(ref_val)
-                diff_val_str = local_format_price(abs(diff))
-                ref_str = f"{ref_val_str} ({ref_desc})"
-                if abs(pct) <= 5.0:
-                    eval_title = "적절함 (인근 시세 수준)"
-                    detail_desc = f"희망 하시는 거래 조건은 인근 적정 시세 대비 약 {abs(pct):.1f}% 차이로 매우 적정합니다."
-                    eval_color = "#38A169"
-                    bg_color = colors.HexColor("#F0FFF4")
-                    border_color = colors.HexColor("#9AE6B4")
-                elif diff < 0:
-                    eval_title = "저렴함 (시세 대비 가격경쟁력 우수)"
-                    detail_desc = f"희망 하시는 거래 조건은 적정 시세 대비 약 {diff_val_str}({abs(pct):.1f}%) 저렴합니다."
-                    eval_color = "#3182CE"
-                    bg_color = colors.HexColor("#EBF8FF")
-                    border_color = colors.HexColor("#90CDF4")
+            if d_converted > 0 and trade_type != "종합":
+                story.append(Paragraph("■ [의뢰 희망가 시세 적정성 및 126% 대출·보증 적격성 평가]", h2_style))
+                story.append(Spacer(1, 4))
+                if trade_type == "월세":
+                    price_label_str = f"월세 {local_format_price(d_price)} / {local_format_price(d_monthly)}"
                 else:
-                    eval_title = "높음 (가격 조정 권장)"
-                    detail_desc = f"희망 하시는 거래 조건은 적정 시세 대비 약 {diff_val_str}({pct:.1f}%) 높습니다. 조정이 필요합니다."
-                    eval_color = "#E53E3E"
+                    price_label_str = f"{trade_type} {local_format_price(d_price)}"
+                    if desired_info and desired_info.get("pyeong_price"):
+                        price_label_str += f" (대지 평당 약 {desired_info['pyeong_price']:,}만)"
+                
+                # 1. 적정 시세 기준선 (실거래가 기반)
+                if not ref_val:
+                    eval_title = "보류 (인근 비교 사례 부족)"
+                    detail_desc = "인근 지역 내 유사한 실거래 사례가 부족하여 자동 적정성 평가가 제한적입니다."
+                    eval_color = "#718096"
+                    bg_color = colors.HexColor("#F7FAFC")
+                    border_color = colors.HexColor("#CBD5E0")
+                    ref_str = "판단 불가 (인근 비교 사례 부족)"
+                else:
+                    diff = d_converted - ref_val
+                    pct = diff / ref_val * 100
+                    ref_val_str = local_format_price(ref_val)
+                    diff_val_str = local_format_price(abs(diff))
+                    ref_str = f"{ref_val_str} ({ref_desc})"
+                    if abs(pct) <= 5.0:
+                        eval_title = "적절함 (인근 실거래 시세 수준 부합)"
+                        detail_desc = f"희망 하시는 조건은 인근 적정 시세({ref_val_str}) 대비 약 {abs(pct):.1f}% 차이로 매우 적정합니다."
+                        eval_color = "#38A169"
+                        bg_color = colors.HexColor("#F0FFF4")
+                        border_color = colors.HexColor("#9AE6B4")
+                    elif diff < 0:
+                        eval_title = "저렴함 (시세 대비 가격경쟁력 우수)"
+                        detail_desc = f"희망 하시는 조건은 인근 적정 시세 대비 약 {diff_val_str}({abs(pct):.1f}%) 저렴하여 시장 경쟁력이 높습니다."
+                        eval_color = "#3182CE"
+                        bg_color = colors.HexColor("#EBF8FF")
+                        border_color = colors.HexColor("#90CDF4")
+                    else:
+                        eval_title = "다소 높음 (가격 조정 검토 권장)"
+                        detail_desc = f"희망 하시는 조건은 인근 적정 시세 대비 약 {diff_val_str}({pct:.1f}%) 높게 형성되어 시세 조정을 권장합니다."
+                        eval_color = "#E53E3E"
+                        bg_color = colors.HexColor("#FFF5F5")
+                        border_color = colors.HexColor("#FEB2B2")
+                
+                # 2. 공시가격 126% 기준선 및 대출·보증 적격성 평가
+                if ho_is_comm:
+                    p126_desc = "해당 없음 (건축물대장상 근린생활시설)"
+                    loan_ins_eval = "<font color='#E53E3E'><b>⚠️ [대출·보증 불가] 건축물대장상 주용도가 근린생활시설(상가)이므로 주택도시보증공사(HUG) 전세보증보험 및 주택 전세대출(버팀목/LH) 대상에서 제외됩니다. (시중은행 일반 신용대출 또는 전세권설정 협의 필요)</b></font>"
+                    comprehensive_desc = f"희망 조건은 인근 실거래 시세 대비 <font color='{eval_color}'><b>{eval_title}</b></font> 수준이나, 본 호실은 건축물대장상 <b>근린생활시설(상가)</b>입니다. HUG 전세보증보험 및 버팀목/LH 전세대출이 불가능하므로, 임차인 계약 시 대출 불가 위험을 사전 고지하고 전세권 설정 또는 보증부 월세 전환 등을 협의하시길 권장합니다."
                     bg_color = colors.HexColor("#FFF5F5")
                     border_color = colors.HexColor("#FEB2B2")
+                elif official_price_val:
+                    p126_won = int(official_price_val * 1.26)
+                    p126_str = format_assessed_price(p126_won)
+                    off_str = format_assessed_price(official_price_val)
+                    yr_desc = f"({official_price_year}년 기준) " if official_price_year else ""
+                    p126_desc = f"<b>{p126_str}</b> (주택공시가: {yr_desc}{off_str}) <font color='#4A5568'>[은행 전세대출 · LH 전세대출 · HUG 보증보험 기준선]</font>"
                     
-            eval_content = f"{phone_line}<b>• 의뢰 고객 희망 조건</b>: {price_label_str}<br/><b>• 적정 시세 기준선</b>: {ref_str}<br/><b>• 거래희망가 평가 결과</b>: <font color='{eval_color}'><b>{eval_title}</b></font><br/><b>• 종합 의견</b>: {detail_desc}"
+                    if trade_type in ("전세", "월세"):
+                        dep_won = d_price * 10_000
+                        dep_ratio = (dep_won / official_price_val) * 100
+                        if dep_won <= p126_won:
+                            diff_won = p126_won - dep_won
+                            diff_str = format_assessed_price(diff_won)
+                            loan_ins_eval = f"<font color='#38A169'><b>✅ [안심 대출·보증 적격] 보증금이 공시가 126% 이하({dep_ratio:.1f}%)로 시중은행 전세대출, LH 대출 및 HUG 전세보증보험 안심 가입 요건을 충족합니다. (여유 한도: 약 {diff_str})</b></font>"
+                            if not ref_val or (ref_val and d_converted <= ref_val * 1.05):
+                                comprehensive_desc = f"희망 조건은 인근 실거래 적정 시세에 부합하며, <b>공시가격 126% 기준선({p126_str})</b> 이내로 시중은행 전세대출, LH 대출 및 HUG 보증보험 가입이 모두 원활합니다. 임차인의 금융 대출 및 보증 리스크가 없어 시장 진입 시 매우 빠른 계약 체결이 기대됩니다."
+                            else:
+                                comprehensive_desc = f"공시가격 126% 대출·보증 한도({p126_str})는 충족하지만, 인근 실거래 시세 대비 다소 높게 형성되어 있습니다. 대출 실행에는 결격사유가 없으나, 임차인의 가격 비교로 인한 공실 장기화를 방지하기 위해 실거래 적정선으로의 조율을 검토하시기 바랍니다."
+                        else:
+                            excess_won = dep_won - p126_won
+                            excess_str = format_assessed_price(excess_won)
+                            loan_ins_eval = f"<font color='#E53E3E'><b>⚠️ [대출·보증 한도 초과 주의] 보증금이 공시가 126% 기준선을 약 {excess_str} 초과({dep_ratio:.1f}%)하여 은행 전세대출, LH 대출 및 HUG 보증보험 가입이 거절·제한될 수 있습니다. (안전 가입을 위해 최대 {p126_str} 이하 권장)</b></font>"
+                            bg_color = colors.HexColor("#FFF5F5")
+                            border_color = colors.HexColor("#FEB2B2")
+                            if not ref_val or (ref_val and d_converted <= ref_val * 1.05):
+                                comprehensive_desc = f"인근 실거래 시세 대비로는 적정(또는 저렴)한 수준이지만, <b>공시가격 126% 기준선({p126_str})을 약 {excess_str} 초과</b>합니다. 최근 임차인 대다수가 시중은행 전세대출(HUG/버팀목), LH 대출 또는 HUG 보증보험 가입을 필수로 요구하므로 초과 매물은 임차인 유치가 매우 어렵습니다. 원활한 계약 성사를 위해 126% 기준선인 <b>{p126_str} 이하</b>로 보증금을 조율하시거나 보증부 월세(반전세) 전환을 적극 권장합니다."
+                            else:
+                                comprehensive_desc = f"인근 실거래 적정 시세 대비 높고, <b>공시가격 126% 대출·보증 한도({p126_str}) 또한 약 {excess_str} 초과</b>합니다. 시세 저항과 금융기관 대출 불가 리스크가 중첩되어 장기 공실 우려가 높으므로, 적정 시세 및 126% 기준선({p126_str}) 이하로 신속한 가격 조정을 권장합니다."
+                    else: # 매매
+                        loan_won = max(0, d_price * 10_000 - p126_won)
+                        loan_str = format_assessed_price(loan_won)
+                        loan_ins_eval = f"<font color='#2B6CB0'><b>ℹ️ [전세 레버리지 가이드] 매수 후 전세 임대 시 대출·보증보험 가입 상한선은 <b>{p126_str}</b>입니다. (126% 전세 세팅 시 실투자금 약 {loan_str})</b></font>"
+                        comprehensive_desc = f"의뢰 조건은 인근 실거래 적정 시세 대비 <font color='{eval_color}'><b>{eval_title}</b></font> 수준입니다. 향후 전세 레버리지(갭투자)를 계획할 경우, 임차인의 은행 전세대출 및 HUG 보증보험 가입 상한선인 <b>공시가 126%({p126_str})</b>를 기준으로 전세를 세팅하면 매수자의 안전 실투자금은 약 {loan_str} 원으로 예상됩니다."
+                else:
+                    p126_desc = "미공시 (공시가격 미확인 주택 - 감정평가 또는 협약 기준 참조)"
+                    loan_ins_eval = "ℹ️ 개별 공시가격 미확인 상태로, 전세대출 및 보증보험 한도는 대출기관 또는 HUG 협약 감정평가 기준을 참조하시기 바랍니다."
+                    comprehensive_desc = detail_desc
+                
+                eval_content = (
+                    f"{phone_line}"
+                    f"<b>• 의뢰 고객 희망 조건</b>: {price_label_str}<br/>"
+                    f"<b>• [기준선 1] 적정 시세 기준선 (실거래가 기반)</b>: {ref_str}<br/>"
+                    f"<b>• [기준선 2] 공시가격 126% 기준선 (대출·보증 한도)</b>: {p126_desc}<br/>"
+                    f"<b>• 거래희망가 평가 결과 (실거래 시세 대비)</b>: <font color='{eval_color}'><b>{eval_title}</b></font><br/>"
+                    f"<b>• 대출·보증보험 적격 평가 (공시가 126% 기준)</b>: {loan_ins_eval}<br/>"
+                    f"<b>• 종합 분석 및 조율 가이드</b>: {comprehensive_desc}"
+                )
+            else:
+                # 종합 분석 또는 희망 조건 미입력 시: CMA 적정시세 및 126% 기준 가이드 제공
+                story.append(Paragraph("■ [적정 시세 및 126% 대출·보증보험 기준선 안내 (CMA)]", h2_style))
+                story.append(Spacer(1, 4))
+                bg_color = colors.HexColor("#F8FAFC")
+                border_color = colors.HexColor("#CBD5E1")
+                
+                avg_u_jeonse = get_numeric_averages(cma_jeonses, is_rent=True)
+                avg_u_trade = get_numeric_averages(cma_trades, is_rent=False)
+                j_ref_str = local_format_price(avg_u_jeonse["avg_price"]) if avg_u_jeonse else "사례 부족"
+                t_ref_str = local_format_price(avg_u_trade["avg_price"]) if avg_u_trade else "사례 부족"
+                
+                if ho_is_comm:
+                    p126_desc = "해당 없음 (건축물대장상 근린생활시설)"
+                    loan_ins_guide = "<font color='#E53E3E'><b>⚠️ [대출·보증 제한] 건축물대장상 주용도가 근린생활시설(상가)로, 주택도시보증공사(HUG) 전세보증보험 및 주택 전세대출(버팀목/LH) 대상에서 제외됩니다. (시중은행 일반 신용대출 또는 전세권설정 협의 필요)</b></font>"
+                    action_advice = "본 호실은 건축물대장상 근린생활시설(상가)로 주택 전세대출 및 HUG 보증보험이 불가하므로, 임차인 유치 시 대출 제한 사항을 필히 사전 고지하시고 보증부 월세 또는 전세권 설정 방식을 검토하시기 바랍니다."
+                elif official_price_val:
+                    p126_won = int(official_price_val * 1.26)
+                    p126_str = format_assessed_price(p126_won)
+                    off_str = format_assessed_price(official_price_val)
+                    yr_desc = f"({official_price_year}년 기준) " if official_price_year else ""
+                    p126_desc = f"<b>{p126_str}</b> (주택공시가: {yr_desc}{off_str}) <font color='#4A5568'>[시중은행 전세대출 · LH 전세대출 · HUG 보증보험 가입 기준선]</font>"
+                    loan_ins_guide = f"ℹ️ 임차인의 시중은행 전세대출(HUG/버팀목), LH 전세대출 및 HUG 보증보험 가입을 원활히 지원하기 위해서는 전세보증금을 공시가격 126% 한도선인 <b>{p126_str}</b> 이하로 책정하는 것이 안전합니다."
+                    action_advice = f"인근 실거래 전세 평균({j_ref_str})과 매매 평균({t_ref_str})이 형성되어 있으나, 최근 전세 시장은 금융기관 대출 승인 요건인 <b>공시가 126% 기준선({p126_str})</b> 이하 여부가 계약 성사의 핵심입니다. 임대차 계획 시 126% 한도를 감안하여 가격을 책정하시길 권장합니다."
+                else:
+                    p126_desc = "미공시 주택 (감정평가 또는 협약 기준 참조)"
+                    loan_ins_guide = "ℹ️ 개별 공시가격 미확인 상태로, 대출 및 보증보험 한도는 대출기관 감정평가를 참조하시기 바랍니다."
+                    action_advice = f"인근 실거래 전세 평균({j_ref_str}) 및 매매 평균({t_ref_str})을 기준으로 가격 협의를 진행하시기 바랍니다."
+                
+                eval_content = (
+                    f"{phone_line}"
+                    f"<b>• 실거래 기반 인근 적정 시세</b>: 전세 평균 약 {j_ref_str} / 매매 평균 약 {t_ref_str}<br/>"
+                    f"<b>• 공시가격 126% 기준선 (대출·보증 안심한도)</b>: {p126_desc}<br/>"
+                    f"<b>• 대출 및 보증보험 가이드</b>: {loan_ins_guide}<br/>"
+                    f"<b>• 중개 실무 조율 가이드</b>: {action_advice}"
+                )
             eval_box = Table([[Paragraph(eval_content, eval_p_body)]], colWidths=[500])
             eval_box.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), bg_color), ("BOX", (0, 0), (-1, -1), 1, border_color), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8), ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10)]))
             story.append(eval_box)
@@ -2536,8 +2730,8 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         import os
         from datetime import datetime
         ho_label = desired_info.get("ho_name") if desired_info else None
-        safe_ho = "".join([c for c in str(ho_label) if c.isalnum()]).strip() if ho_label else ""
-        ho_suffix = f"_{safe_ho}호" if safe_ho else ""
+        clean_ho = re.sub(r'[^0-9A-Za-z가-힣]', '', str(ho_label).strip()) if ho_label else ""
+        ho_suffix = f"_{clean_ho}" if clean_ho.endswith("호") else f"_{clean_ho}호" if clean_ho else ""
         
         raw_clean_addr = desired_info.get("clean_address", "") if desired_info else ""
         raw_road_addr = desired_info.get("road_address", "") if desired_info else ""
@@ -2545,8 +2739,10 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
             full_raw_address = f"{raw_clean_addr} ({raw_road_addr})"
         else:
             full_raw_address = raw_clean_addr or raw_road_addr or address
-        if ho_label and not full_raw_address.endswith(f"{ho_label}호") and not full_raw_address.endswith(f"{ho_label}"):
-            full_raw_address += f" {ho_label}호"
+        if ho_label:
+            ho_fmt = format_ho_label(ho_label)
+            if not full_raw_address.endswith(ho_fmt):
+                full_raw_address += f" {ho_fmt}"
 
         safe_addr = "".join([c for c in address if c not in (" ", "-", "_")]).strip()
         filename = f"시세브리핑/시세브리핑_{safe_addr.replace(' ', '_')}{ho_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
@@ -2609,9 +2805,14 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         report_lines.append(f"※ 본 자료는 국토교통부 {period_label} 실거래 내역을 분석한 결과입니다.")
         report_lines.append(f"※ 부동산 유형: {prop_type_name}")
         
-        # [신설] 분석 대상 호실, 전용면적, 대지지분 표시 (TXT)
+        # [신설] 분석 대상 호실, 주용도, 전용면적, 대지지분, 공시가격 표시 (TXT)
         if ho_label:
-            report_lines.append(f"※ 분석 대상 호실: {ho_label}호")
+            report_lines.append(f"※ 분석 대상 호실: {format_ho_label(ho_label)}")
+        ho_purpose = desired_info.get("unit_purpose") if desired_info else None
+        ho_is_comm = desired_info.get("is_commercial") if desired_info else False
+        if ho_purpose:
+            comm_tag = " ⚠️ [비주거용 근린생활시설 - 전세대출/보증보험 불가 유의]" if ho_is_comm else " [주거용]"
+            report_lines.append(f"※ 호실 주용도: {ho_purpose}{comm_tag}")
         target_area_val = target_area or (desired_info.get("exclusive_area") if desired_info else None)
         if target_area_val:
             py = round(float(target_area_val) * 0.3025, 1)
@@ -2620,6 +2821,13 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         if land_share_val:
             lpy = round(float(land_share_val) * 0.3025, 1)
             report_lines.append(f"※ 호실 대지지분: {float(land_share_val):.2f} ㎡ (약 {lpy}평)")
+        official_price_val = (desired_info.get("official_price") or desired_info.get("official_house_price")) if desired_info else None
+        official_price_year = (desired_info.get("official_price_year") or desired_info.get("official_house_year")) if desired_info else ""
+        if official_price_val:
+            off_str = format_assessed_price(official_price_val)
+            off_126_str = format_assessed_price(int(official_price_val * 1.26))
+            yr_desc = f"({official_price_year}년 기준) " if official_price_year else ""
+            report_lines.append(f"※ 주택 공시가격: {yr_desc}{off_str} (126%: {off_126_str})")
             
         if desired_info and desired_info.get("room_count_label"):
             report_lines.append(f"※ 분석 대상 방 개수: {desired_info['room_count_label']}")
@@ -2651,26 +2859,35 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                 report_lines.append("※ [확장 분석] 대상 지번의 거래 사례 부족으로 동일 행정동(생활권) 내 유사 매물 사례를 분석하였습니다.")
                 report_lines.append(f"※ 유사 매물 기준 (행정동 생활권): {cond_str}")
             
-        # [신설] 분석 대상 호실 핵심 면적 및 대지지분 정보 (TXT)
-        if target_area_val or land_share_val or ho_label:
-            ho_disp = f"[{ho_label}호]" if ho_label else ""
+        # [신설] 분석 대상 호실 핵심 면적, 대지지분 및 공시가격 정보 (TXT)
+        if target_area_val or land_share_val or ho_label or official_price_val or ho_purpose:
+            ho_disp = f"[{format_ho_label(ho_label)}]" if ho_label else ""
             report_lines.append("--------------------------------------------------------------------------------")
-            report_lines.append(f"■ [분석 대상 {ho_disp} 핵심 면적 및 대지지분]")
+            report_lines.append(f"■ [분석 대상 {ho_disp} 핵심 면적 및 공시가격]")
             if ho_label:
-                report_lines.append(f"  • 분석 대상 호실 : {ho_label}호")
+                report_lines.append(f"  • 분석 대상 호실 : {format_ho_label(ho_label)}")
+            if ho_purpose:
+                comm_tag = " ⚠️ [근린생활시설 - 주거용 불법 사용 및 보증보험 불가 주의]" if ho_is_comm else " (주거용)"
+                report_lines.append(f"  • 호실 주용도    : {ho_purpose}{comm_tag}")
             if target_area_val:
                 py = round(float(target_area_val) * 0.3025, 1)
                 report_lines.append(f"  • 전용면적       : {float(target_area_val):.2f} ㎡ (약 {py}평)")
-            if land_share_val:
-                lpy = round(float(land_share_val) * 0.3025, 1)
-                report_lines.append(f"  • 대지지분       : {float(land_share_val):.2f} ㎡ (약 {lpy}평)")
             supply_val = desired_info.get("supply_area") if desired_info else None
             if supply_val:
                 spy = round(float(supply_val) * 0.3025, 1)
                 report_lines.append(f"  • 공급면적       : {float(supply_val):.2f} ㎡ (약 {spy}평)")
+            if land_share_val:
+                lpy = round(float(land_share_val) * 0.3025, 1)
+                report_lines.append(f"  • 대지지분       : {float(land_share_val):.2f} ㎡ (약 {lpy}평)")
             if target_floor is not None:
                 fl_desc = f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층"
                 report_lines.append(f"  • 해당 층수     : {fl_desc}")
+            if official_price_val:
+                off_str = format_assessed_price(official_price_val)
+                off_126_str = format_assessed_price(int(official_price_val * 1.26))
+                yr_desc = f"{official_price_year}년 기준 " if official_price_year else ""
+                report_lines.append(f"  • 주택 공시가격  : {yr_desc}{off_str}")
+                report_lines.append(f"  • 공시가격 126%  : {off_126_str} (시중은행 전세대출 / LH / HUG 보증보험 기준선)")
 
         # 분석 대상 물건 토지 및 건축물 종합 개요 (TXT)
         bld_overview = get_property_comprehensive_overview(bun=target_bun, ji=target_ji, address_str=address)
@@ -2809,18 +3026,25 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         report_lines.append(f"    2층 이상(지상층)| {get_avg_display(upper_trades, False).ljust(22)} | {get_avg_display(upper_jeonses, True).ljust(22)} | {get_avg_display(upper_wolses, True, True)}")
         report_lines.append("    ----------------------------------------------------------------------------")
         insights = generate_comparison_insights(cma_trades, cma_jeonses, cma_wolses)
+        if official_price_val and not ho_is_comm:
+            p126_won = int(official_price_val * 1.26)
+            p126_str = format_assessed_price(p126_won)
+            off_str = format_assessed_price(official_price_val)
+            yr_desc = f"({official_price_year}년 기준) " if official_price_year else ""
+            insights.append(f"• [대출·보증 기준선 (공시가 126%)] 해당 주택 공시가격({yr_desc}{off_str}) 기준 126% 안심 한도는 약 {p126_str}입니다. 시중은행 전세대출, LH 전세대출 및 HUG 전세보증보험 가입 기준선이 되므로 임대차 가격 책정 시 126% 준수 여부를 확인하시기 바랍니다.")
+        elif ho_is_comm:
+            insights.append("• [대출·보증 안내 (근린생활시설)] 본 호실은 건축물대장상 근린생활시설(상가)로 HUG 전세보증보험 및 주택 전세대출(버팀목/LH) 대상에서 제외되므로 임대차 진행 시 사전 확인이 필요합니다.")
         report_lines.append("  • 분석 및 적정 시세 가이드 (CMA Insights):")
-        while insights:
+        if insights:
             for ins in insights:
                 report_lines.append(f"    {ins}")
-            f" ({moa_info["redev_name"]})" + ""
-            break
-        report_lines.append("    - 충분한 비교 대상 거래 사례가 없어 자동 비율 분석을 생략합니다.")
+        else:
+            report_lines.append("    - 충분한 비교 대상 거래 사례가 없어 자동 비율 분석을 생략합니다.")
         report_lines.append("--------------------------------------------------------------------------------")
-        if desired_info and desired_info.get("trade_type") != "종합":
-            trade_type = desired_info.get("trade_type", "매매")
-            d_price = desired_info.get("price", 0)
-            d_monthly = desired_info.get("monthly_rent", 0)
+        if desired_info:
+            trade_type = desired_info.get("trade_type", "종합")
+            d_price = desired_info.get("price") or desired_info.get("target_price") or 0
+            d_monthly = desired_info.get("monthly_rent") or desired_info.get("target_monthly") or 0
             d_converted = d_price + (d_monthly * GLOBAL_WOLSE_MULTIPLIER)
             def local_format_price(val):
                 if val >= 10_000:
@@ -2835,19 +3059,14 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
             cma_jeonses = filter_by_size_category(jeonses, target_area, prop_type_name, apt_groups)
             cma_wolses = filter_by_size_category(wolses, target_area, prop_type_name, apt_groups)
             
-            if trade_type == "월세":
-                price_label_str = f"월세 {local_format_price(d_price)} / {local_format_price(d_monthly)}"
-            else:
-                price_label_str = f"{trade_type} {local_format_price(d_price)}"
-                if desired_info.get("pyeong_price"):
-                    price_label_str += f" (대지 평당 약 {desired_info['pyeong_price']:,}만 원)"
-                
             if trade_type == "매매":
                 match_list = cma_trades
             elif trade_type == "전세":
                 match_list = cma_jeonses
-            else:
+            elif trade_type == "월세":
                 match_list = cma_wolses
+            else:
+                match_list = cma_jeonses if cma_jeonses else cma_trades
             floor_cat = "upper"
             if target_floor is not None:
                 try:
@@ -2860,39 +3079,106 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                         floor_cat = "upper"
                 except: pass
             
-            ref_val, ref_desc = get_cma_ref_price(match_list, floor_cat, is_rent=trade_type != "매매", is_wolse=trade_type == "월세")
-            
-            report_lines.append("■ [희망 거래가 분석 및 적정성 평가]")
+            ref_val, ref_desc = get_cma_ref_price(match_list, floor_cat, is_rent=trade_type not in ("매매", "종합"), is_wolse=trade_type == "월세")
             phone_no = desired_info.get("phone_number")
-            if phone_no:
-                report_lines.append(f"  • 의뢰인 연락처  : {phone_no}")
-                
-            if d_converted == 0:
-                report_lines.append("  • 의뢰 고객 희망 조건: 미지정 (시세 정보 브리핑)")
-                report_lines.append("  • 거래희망가 평가 결과: 생략")
-                report_lines.append("  • 종합 의견: 고객의 희망 거래가 정보가 입력되지 않아 적정성 평가를 생략합니다. 본 자료는 단순 시세 정보 (인근 시세 및 실거래 브리핑) 목적으로 활용하시기 바랍니다.")
-            else:
+            
+            if d_converted > 0 and trade_type != "종합":
+                if trade_type == "월세":
+                    price_label_str = f"월세 {local_format_price(d_price)} / {local_format_price(d_monthly)}"
+                else:
+                    price_label_str = f"{trade_type} {local_format_price(d_price)}"
+                    if desired_info.get("pyeong_price"):
+                        price_label_str += f" (대지 평당 약 {desired_info['pyeong_price']:,}만 원)"
+                        
+                report_lines.append("■ [희망 거래가 분석 및 126% 대출·보증 적정성 평가]")
+                if phone_no:
+                    report_lines.append(f"  • 의뢰인 연락처    : {phone_no}")
                 report_lines.append(f"  • 의뢰 고객 희망 조건: {price_label_str}")
                 
+                # 1. 적정 시세 기준선 (실거래가 기반)
                 if not ref_val:
-                    report_lines.append("  • 적정 시세 기준선  : 판단 불가 (비교 사례 부족)")
+                    report_lines.append("  • [기준선 1] 적정 시세 기준선 (실거래가 기반): 판단 불가 (비교 사례 부족)")
+                    eval_title = "보류 (비교 사례 부족)"
                 else:
-                    report_lines.append(f"  • 적정 시세 기준선  : {local_format_price(ref_val)} ({ref_desc})")
-                
-                if ref_val:
+                    ref_val_str = local_format_price(ref_val)
+                    report_lines.append(f"  • [기준선 1] 적정 시세 기준선 (실거래가 기반): {ref_val_str} ({ref_desc})")
                     diff = d_converted - ref_val
                     pct = diff / ref_val * 100
-                    ref_val_str = local_format_price(ref_val)
                     diff_val_str = local_format_price(abs(diff))
                     if abs(pct) <= 5.0:
-                        report_lines.append("  • 거래희망가 평가 결과: 매우 적정 (시세 수준)")
-                        report_lines.append(f"  • 종합 의견: 희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준)와 거의 일치하여 시장에서 매우 경쟁력이 높고 합리적인 가격대입니다.")
+                        eval_title = "매우 적정 (인근 실거래 시세 수준)"
                     elif pct < -5.0:
-                        report_lines.append("  • 거래희망가 평가 결과: 저렴함 (시세 대비 가격경쟁력 우수)")
-                        report_lines.append(f"  • 종합 의견: 희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준) 대비 약 {diff_val_str} ({abs(pct):.1f}%) 저렴하게 책정되어 있습니다. 시장 진입 시 빠른 거래 성사가 예상되어 가격 경쟁력이 높습니다.")
+                        eval_title = f"저렴함 (시세 대비 약 {diff_val_str} 저렴 - 가격경쟁력 우수)"
                     else:
-                        report_lines.append("  • 거래희망가 평가 결과: 다소 높음 (시세 대비 상향 조정 검토 필요)")
-                        report_lines.append(f"  • 종합 의견: 희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준) 대비 약 {diff_val_str} ({abs(pct):.1f}%) 높게 책정되어 있습니다. 최근 시장의 매물 적체 상황 및 매수/임차인의 가격 민감도를 고려할 때 거래 성사까지 다소 시일이 소요될 수 있으므로, 적정선으로의 가격 조정을 권장합니다.")
+                        eval_title = f"다소 높음 (시세 대비 약 {diff_val_str} 상향 - 가격 조정 검토 필요)"
+                
+                # 2. 공시가격 126% 기준선 및 대출·보증 적격성 평가
+                if ho_is_comm:
+                    report_lines.append("  • [기준선 2] 공시가격 126% 기준선 (대출·보증한도): 해당 없음 (건축물대장상 근린생활시설)")
+                    report_lines.append(f"  • 거래희망가 평가 결과 (실거래 대비)   : {eval_title}")
+                    report_lines.append("  • 대출·보증보험 적격 평가 (126% 기준)  : ⚠️ [대출·보증 불가] 건축물대장상 근린생활시설(상가)로 HUG 전세보증보험 및 주택 전세대출(버팀목/LH) 대상 제외")
+                    report_lines.append(f"  • 종합 분석 및 조율 의견: 의뢰 조건은 인근 실거래 시세 대비 {eval_title} 수준이나, 본 호실은 건축물대장상 근린생활시설(상가)입니다. HUG 전세보증보험 및 버팀목/LH 전세대출이 불가능하므로, 임차인 계약 시 대출 불가 위험을 사전 고지하고 전세권 설정 또는 보증부 월세 전환 등을 협의하시길 권장합니다.")
+                elif official_price_val:
+                    p126_won = int(official_price_val * 1.26)
+                    p126_str = format_assessed_price(p126_won)
+                    off_str = format_assessed_price(official_price_val)
+                    yr_desc = f"({official_price_year}년 기준) " if official_price_year else ""
+                    report_lines.append(f"  • [기준선 2] 공시가격 126% 기준선 (대출·보증한도): {p126_str} (주택공시가: {yr_desc}{off_str} / 시중은행 전세대출 · LH · HUG 보증보험 기준선)")
+                    report_lines.append(f"  • 거래희망가 평가 결과 (실거래 대비)   : {eval_title}")
+                    
+                    if trade_type in ("전세", "월세"):
+                        dep_won = d_price * 10_000
+                        dep_ratio = (dep_won / official_price_val) * 100
+                        if dep_won <= p126_won:
+                            diff_won = p126_won - dep_won
+                            diff_str = format_assessed_price(diff_won)
+                            report_lines.append(f"  • 대출·보증보험 적격 평가 (126% 기준)  : ✅ [안심 대출·보증 적격] 보증금이 공시가 126% 이하({dep_ratio:.1f}%)로 시중은행 전세대출, LH 대출 및 HUG 보증보험 가입 요건 충족 (여유 한도: 약 {diff_str})")
+                            if not ref_val or (ref_val and d_converted <= ref_val * 1.05):
+                                report_lines.append(f"  • 종합 분석 및 조율 의견: 희망 조건은 인근 실거래 적정 시세에 부합하며, 공시가격 126% 기준선({p126_str}) 이내로 시중은행 전세대출, LH 대출 및 HUG 보증보험 가입이 모두 원활합니다. 임차인의 대출 및 보증 리스크가 없어 시장 진입 시 매우 빠른 계약 체결이 기대됩니다.")
+                            else:
+                                report_lines.append(f"  • 종합 분석 및 조율 의견: 공시가격 126% 대출·보증 한도({p126_str})는 충족하지만, 인근 실거래 시세 대비 다소 높게 형성되어 있습니다. 대출 실행에는 결격사유가 없으나, 임차인의 가격 비교로 인한 공실 장기화를 방지하기 위해 실거래 적정선으로의 조율을 검토하시기 바랍니다.")
+                        else:
+                            excess_won = dep_won - p126_won
+                            excess_str = format_assessed_price(excess_won)
+                            report_lines.append(f"  • 대출·보증보험 적격 평가 (126% 기준)  : ⚠️ [대출·보증 한도 초과 주의] 보증금이 공시가 126% 기준선을 약 {excess_str} 초과({dep_ratio:.1f}%)하여 은행 전세대출, LH 대출 및 HUG 보증보험 가입이 거절·제한될 수 있습니다. (안전 가입을 위해 최대 {p126_str} 이하 권장)")
+                            if not ref_val or (ref_val and d_converted <= ref_val * 1.05):
+                                report_lines.append(f"  • 종합 분석 및 조율 의견: 인근 실거래 시세 대비로는 적정(또는 저렴)한 수준이지만, 공시가격 126% 기준선({p126_str})을 약 {excess_str} 초과합니다. 최근 임차인 대다수가 시중은행 전세대출(HUG/버팀목), LH 대출 또는 HUG 보증보험 가입을 필수로 요구하므로 초과 매물은 임차인 유치가 매우 어렵습니다. 원활한 계약 성사를 위해 126% 기준선인 {p126_str} 이하로 보증금을 조율하시거나 보증부 월세(반전세) 전환을 적극 권장합니다.")
+                            else:
+                                report_lines.append(f"  • 종합 분석 및 조율 의견: 인근 실거래 적정 시세 대비 높고, 공시가격 126% 대출·보증 한도({p126_str}) 또한 약 {excess_str} 초과합니다. 시세 저항과 금융기관 대출 불가 리스크가 중첩되어 장기 공실 우려가 높으므로, 적정 시세 및 126% 기준선({p126_str}) 이하로 신속한 가격 조정을 권장합니다.")
+                    else: # 매매
+                        loan_won = max(0, d_price * 10_000 - p126_won)
+                        loan_str = format_assessed_price(loan_won)
+                        report_lines.append(f"  • 전세 레버리지 가이드 (126% 기준)    : ℹ️ 매수 후 전세 임대 시 대출·보증보험 가입 상한선은 {p126_str}입니다. (126% 전세 세팅 시 실투자금 약 {loan_str})")
+                        report_lines.append(f"  • 종합 분석 및 조율 의견: 의뢰 조건은 인근 실거래 적정 시세 대비 {eval_title} 수준입니다. 향후 전세 레버리지(갭투자)를 계획할 경우, 임차인의 은행 전세대출 및 HUG 보증보험 가입 상한선인 공시가 126%({p126_str})를 기준으로 전세를 세팅하면 매수자의 안전 실투자금은 약 {loan_str} 원으로 예상됩니다.")
+                else:
+                    report_lines.append("  • [기준선 2] 공시가격 126% 기준선 (대출·보증한도): 미공시 (공시가격 미확인 주택)")
+                    report_lines.append(f"  • 거래희망가 평가 결과 (실거래 대비)   : {eval_title}")
+                    report_lines.append(f"  • 종합 분석 및 조율 의견: {detail_desc if 'detail_desc' in locals() else '인근 실거래 시세를 참조하여 조율하시기 바랍니다.'}")
+            else:
+                # 종합 브리핑 또는 거래가 미지정 시
+                report_lines.append("■ [적정 시세 및 126% 대출·보증보험 기준선 안내 (CMA)]")
+                if phone_no:
+                    report_lines.append(f"  • 의뢰인 연락처    : {phone_no}")
+                avg_u_jeonse = get_numeric_averages(cma_jeonses, is_rent=True)
+                avg_u_trade = get_numeric_averages(cma_trades, is_rent=False)
+                j_ref_str = local_format_price(avg_u_jeonse["avg_price"]) if avg_u_jeonse else "사례 부족"
+                t_ref_str = local_format_price(avg_u_trade["avg_price"]) if avg_u_trade else "사례 부족"
+                report_lines.append(f"  • 실거래 기반 인근 적정 시세: 전세 평균 약 {j_ref_str} / 매매 평균 약 {t_ref_str}")
+                if ho_is_comm:
+                    report_lines.append("  • 공시가격 126% 기준선 (대출·보증한도): 해당 없음 (건축물대장상 근린생활시설)")
+                    report_lines.append("  • 대출 및 보증보험 가이드: ⚠️ 건축물대장상 근린생활시설(상가)로 HUG 전세보증보험 및 주택 전세대출(버팀목/LH) 대상 제외")
+                    report_lines.append("  • 중개 실무 조율 가이드: 본 호실은 건축물대장상 근린생활시설로 주택 전세대출 및 HUG 보증보험이 불가하므로, 임차인 유치 시 대출 제한 사항을 필히 사전 고지하시고 보증부 월세 또는 전세권 설정 방식을 검토하시기 바랍니다.")
+                elif official_price_val:
+                    p126_won = int(official_price_val * 1.26)
+                    p126_str = format_assessed_price(p126_won)
+                    off_str = format_assessed_price(official_price_val)
+                    yr_desc = f"({official_price_year}년 기준) " if official_price_year else ""
+                    report_lines.append(f"  • 공시가격 126% 기준선 (대출·보증한도): {p126_str} (주택공시가: {yr_desc}{off_str} / 시중은행 전세대출 · LH · HUG 보증보험 기준선)")
+                    report_lines.append(f"  • 대출 및 보증보험 가이드: ℹ️ 임차인의 시중은행 전세대출(HUG/버팀목), LH 전세대출 및 HUG 보증보험 가입을 원활히 지원하기 위해서는 전세보증금을 공시가격 126% 한도선인 {p126_str} 이하로 책정하는 것이 안전합니다.")
+                    report_lines.append(f"  • 중개 실무 조율 가이드: 인근 실거래 전세 평균({j_ref_str})과 매매 평균({t_ref_str})이 형성되어 있으나, 최근 전세 시장은 금융기관 대출 승인 요건인 공시가 126% 기준선({p126_str}) 이하 여부가 계약 성사의 핵심입니다. 임대차 계획 시 126% 한도를 감안하여 가격을 책정하시길 권장합니다.")
+                else:
+                    report_lines.append("  • 공시가격 126% 기준선 (대출·보증한도): 미공시 주택 (감정평가 또는 협약 기준 참조)")
+                    report_lines.append(f"  • 중개 실무 조율 가이드: 인근 실거래 전세 평균({j_ref_str}) 및 매매 평균({t_ref_str})을 기준으로 가격 협의를 진행하시기 바랍니다.")
         
         report_lines.append("--------------------------------------------------------------------------------")
         report_lines.append("■ [안내] 시세 데이터 수집 및 분석 기준 안내")

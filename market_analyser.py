@@ -1023,7 +1023,7 @@ def create_group_scatter_plot_drawing(transactions, title="평형별 단지 비�
         
     return d
 
-def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_dots=True, target_bld_nm=None, dw=500, dh=155):
+def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_dots=True, target_bld_nm=None, dw=500, dh=155, official_126_price=None):
     trades = []
     jeonses = []
     min_date = None
@@ -1084,6 +1084,9 @@ def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_
         
     min_p = min(all_prices)
     max_p = max(all_prices)
+    if official_126_price and official_126_price > 0:
+        min_p = min(min_p, official_126_price)
+        max_p = max(max_p, official_126_price)
     diff = max_p - min_p
     if diff == 0: diff = 10000
     min_p = max(0, min_p - diff * 0.1)
@@ -1125,6 +1128,10 @@ def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_
         draw_cross_marker(d, dw - 50, dh - 17, size=3.5, color='#1D4ED8', stroke_width=1.8)
         d.add(String(dw - 42, dh - 20, "전세(대상)", fontName='KoreanFont', fontSize=7.5, fillColor=colors.HexColor('#1D4ED8')))
     else:
+        if official_126_price and official_126_price > 0:
+            d.add(Line(dw - 180, dh - 17, dw - 165, dh - 17, strokeColor=colors.HexColor('#059669'), strokeWidth=1.2, strokeDashArray=[3, 2]))
+            d.add(String(dw - 161, dh - 20, "공시가126%", fontName='KoreanFont', fontSize=7.5, fillColor=colors.HexColor('#059669')))
+            
         d.add(Circle(dw - 100, dh - 17, 3, fillColor=colors.HexColor('#EF4444'), strokeColor=None))
         d.add(String(dw - 90, dh - 20, "매매", fontName='KoreanFont', fontSize=8, fillColor=colors.HexColor('#475569')))
         
@@ -1145,6 +1152,18 @@ def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_
         else:
             lbl = f"{int(price_val):,}만"
         d.add(String(cx - 5, y_val - 3, lbl, fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='end'))
+        
+    if official_126_price and official_126_price > 0 and (max_p - min_p) > 0:
+        y_126 = cy + ((official_126_price - min_p) / (max_p - min_p)) * ch
+        if cy <= y_126 <= cy + ch:
+            d.add(Line(cx, y_126, cx + cw, y_126, strokeColor=colors.HexColor('#059669'), strokeWidth=1.2, strokeDashArray=[4, 3]))
+            if official_126_price >= 10000:
+                eok = int(official_126_price // 10000)
+                man = int(official_126_price % 10000)
+                lbl_126 = f"공시가 126% 기준선 ({eok}억 {man:,}만)" if man > 0 else f"공시가 126% 기준선 ({eok}억)"
+            else:
+                lbl_126 = f"공시가 126% 기준선 ({official_126_price:,}만)"
+            d.add(String(cx + cw - 4, y_126 + 3, lbl_126, fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#059669'), textAnchor='end'))
         
     if min_date and max_date and min_date != max_date:
         total_days = (max_date - min_date).days
