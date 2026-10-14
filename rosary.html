@@ -2043,6 +2043,58 @@ input:checked + .toggle-slider:before {
   transform: scale(0.98);
 }
 
+/* 하느님 자비의 기도 안내 카드 */
+.intro-section-card.divine-mercy-card {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.16) 0%, rgba(30, 41, 59, 0.9) 100%);
+  border: 1.2px solid rgba(239, 68, 68, 0.35);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+}
+
+.intro-today-badge.dm-badge {
+  background: rgba(220, 38, 38, 0.25);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #FCA5A5;
+}
+
+.dm-prayer-guide-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dm-guide-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+}
+
+.dm-guide-bead {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(243, 198, 105, 0.18);
+  color: var(--gold-primary);
+  font-weight: 700;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+.dm-guide-text {
+  flex: 1;
+  line-height: 1.35;
+}
+
+.dm-guide-text strong {
+  color: #FFFFFF;
+}
+
 /* 4대 신비 선택 2x2 그리드 */
 .intro-mystery-grid {
   display: grid;
@@ -2672,7 +2724,19 @@ input:checked + .toggle-slider:before {
           </div>
         </div>
 
-        <!-- 2. 지난 기도 이어하기 카드 (기록이 있을 때만 노출) -->
+        <!-- 2. 기도 종류 선택 카드 (묵주기도 vs 하느님 자비를 구하는 기도) -->
+        <div id="introPrayerTypeCard" class="intro-section-card prayer-type-card">
+          <div class="intro-card-header">
+            <span class="intro-card-icon">📿</span>
+            <span id="introPrayerTypeTitle" class="intro-card-title">기도 선택 (Devotion)</span>
+          </div>
+          <div class="intro-toggle-group prayer-type-toggle">
+            <button type="button" id="btnPrayerTypeRosary" class="intro-toggle-btn active">🌹 성모 묵주기도 (5단)</button>
+            <button type="button" id="btnPrayerTypeDivineMercy" class="intro-toggle-btn">🕊️ 하느님 자비의 기도 (5단)</button>
+          </div>
+        </div>
+
+        <!-- 3. 지난 기도 이어하기 카드 (기록이 있을 때만 노출) -->
         <div id="introResumeCard" class="intro-section-card resume-card" style="display: none;">
           <div class="intro-card-header">
             <span class="intro-card-icon">🕊️</span>
@@ -2688,8 +2752,8 @@ input:checked + .toggle-slider:before {
           </button>
         </div>
 
-        <!-- 3. 오늘의 신비 선택 카드 -->
-        <div class="intro-section-card">
+        <!-- 4. 묵주기도 신비 선택 카드 (성모 묵주기도 모드) -->
+        <div id="introMysteryCard" class="intro-section-card">
           <div class="intro-card-header">
             <span class="intro-card-icon">✨</span>
             <span id="introMysteryTitle" class="intro-card-title">묵주기도 신비 선택</span>
@@ -2724,8 +2788,34 @@ input:checked + .toggle-slider:before {
           </div>
         </div>
 
-        <!-- 4. 구원을 비는 기도 (구원송) 설정 카드 -->
-        <div class="intro-section-card">
+        <!-- 5. 하느님 자비의 기도 안내 카드 (자비의 기도 모드) -->
+        <div id="introDivineMercyCard" class="intro-section-card divine-mercy-card" style="display: none;">
+          <div class="intro-card-header">
+            <span class="intro-card-icon">🕊️</span>
+            <span id="introDmCardTitle" class="intro-card-title">하느님 자비의 5단 기도</span>
+            <span id="introDmCardBadge" class="intro-today-badge dm-badge">오후 3시 권장</span>
+          </div>
+          <p id="introDmDesc" class="intro-card-desc">
+            성녀 파우스티나 수녀에게 계시된 기도로, 일반 5단 묵주를 사용하여 예수님의 거룩한 수난을 묵상하고 온 세상에 하느님의 자비를 간구합니다.
+          </p>
+          <div class="dm-prayer-guide-box">
+            <div class="dm-guide-item">
+              <span class="dm-guide-bead">각 단 큰 알</span>
+              <span id="introDmGuideLarge" class="dm-guide-text"><strong>영원하신 아버지</strong> (그리스도의 몸과 피 봉헌)</span>
+            </div>
+            <div class="dm-guide-item">
+              <span class="dm-guide-bead">작은 알 (10개)</span>
+              <span id="introDmGuideSmall" class="dm-guide-text"><strong>예수님의 수난을 보시고</strong> 자비를 베푸소서</span>
+            </div>
+            <div class="dm-guide-item">
+              <span class="dm-guide-bead">5단 마침</span>
+              <span id="introDmGuideEnd" class="dm-guide-text"><strong>거룩하신 하느님</strong> (3번 반복) 및 마침 기도</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. 구원을 비는 기도 (구원송) 설정 카드 (성모 묵주기도 모드) -->
+        <div id="introFatimaCard" class="intro-section-card">
           <div class="intro-card-header">
             <span class="intro-card-icon">🙏</span>
             <span id="introFatimaTitle" class="intro-card-title">구원을 비는 기도 (구원송)</span>
@@ -3036,8 +3126,8 @@ input:checked + .toggle-slider:before {
     <!-- 10. 5단 기도 완료 모달 -->
     <div id="completionModal" class="completion-modal">
       <div class="completion-icon">✨🕊️✝️</div>
-      <h2 class="completion-title">기도를 모두 바쳤습니다</h2>
-      <p class="completion-desc">
+      <h2 id="completionTitle" class="completion-title">기도를 모두 바쳤습니다</h2>
+      <p id="completionDesc" class="completion-desc">
         성모님과 함께 바친 묵주기도의 은총이<br>
         언제나 삶 가운데 가득하시기를 기도드립니다.<br>
         "평화를 빕니다."
@@ -3254,6 +3344,36 @@ const PRAYERS = {
     concluding_prayer: {
       name: "마침 기도",
       text: "† 기도합시다.\n하느님, 외아드님의 삶과 죽음과 부활로\n저희에게 영원한 구원의 길을 마련해 주셨으니,\n복되신 동정 마리아와 함께 이 신비를 묵상하며\n묵주기도를 바치는 저희가,\n그 신비가 가르치는 바를 따라 살고\n그 신비가 약속하는 영원한 생명을 얻게 하소서.\n우리 주 그리스도를 통하여 비나이다. 아멘.\n\n† 성부와 성자와 성령의 이름으로. 아멘."
+    },
+    divine_mercy: {
+      opening: {
+        name: "시작 기도 (자비의 시간 기도)",
+        text: "예수님, 당신께서는 숨을 거두셨으나, 영혼들을 위하여 생명의 샘이 솟구쳐 나왔으며, 온 세상을 위하여 자비의 바다가 열렸나이다.\n\n오, 생명의 샘이시며 헤아릴 수 없는 하느님의 자비이시여, 온 세상을 감싸 안으시고, 당신 자신을 저희를 위하여 완전히 비우소서.\n\n(3번 반복)\n오, 저희를 위한 자비의 샘이신 예수 성심에서 흘러나온 피와 물이시여, 저희는 당신께 의탁하나이다."
+      },
+      trust_act: {
+        name: "예수 성심의 피와 물 의탁",
+        text: "오, 저희를 위한 자비의 샘이신\n예수 성심에서 흘러나온 피와 물이시여,\n저희는 당신께 의탁하나이다."
+      },
+      eternal_father: {
+        name: "영원하신 아버지 (각 단 큰 알)",
+        text: "영원하신 아버지,\n저희가 지은 죄와 온 세상의 죄를 보속하는 마음으로,\n사랑하시는 성자 우리 주 예수 그리스도의\n몸과 피, 영혼과 신성을 바치나이다. 아멘."
+      },
+      sorrowful_passion: {
+        name: "예수님의 수난을 보시고 (작은 알 10개)",
+        text: "예수님의 수난을 보시고,\n저희와 온 세상에 자비를 베푸소서."
+      },
+      decade_close: {
+        name: "단 맺음 및 의탁",
+        text: "예수님, 저는 당신께 의탁합니다.\n(Jesus, I trust in You!)"
+      },
+      holy_god: {
+        name: "거룩하신 하느님 (트리사기온 3번)",
+        text: "(3번 반복)\n거룩하신 하느님, 거룩하신 용사님, 거룩하신 불사신,\n저희와 온 세상에 자비를 베푸소서.\n\n(또는 널리 바치는 기도)\n거룩하신 하느님, 전능하시고 영원하신 분이시여,\n저희와 온 세상에 자비를 베푸소서."
+      },
+      closing: {
+        name: "마침 기도 및 성호경",
+        text: "오, 예수 성심,\n저희를 위하여 피와 물을 흘리신 자비의 샘이신 주님,\n저는 주님께 의탁하나이다.\n\n영원하신 하느님,\n당신의 자비는 무한하며 당신의 자애는 마르지 않나이다.\n저희를 자비로이 굽어보시어,\n어려울 때에도 절망하거나 낙담하지 않고,\n큰 신뢰로써 사랑과 자비 자체이신\n당신의 거룩한 뜻에 온전히 순종하게 하소서. 아멘.\n\n(3번 반복)\n예수님, 저는 당신께 의탁합니다.\n\n† 성부와 성자와 성령의 이름으로. 아멘."
+      }
     }
   },
   en: {
@@ -3288,6 +3408,36 @@ const PRAYERS = {
     concluding_prayer: {
       name: "Concluding Prayer",
       text: "† Let us pray.\nO God, whose only begotten Son, by His life, death, and resurrection, has purchased for us the rewards of eternal salvation, grant, we beseech Thee, that meditating upon these mysteries of the Most Holy Rosary of the Blessed Virgin Mary, we may imitate what they contain and obtain what they promise, through the same Christ our Lord. Amen.\n\n† In the name of the Father, and of the Son, and of the Holy Spirit. Amen."
+    },
+    divine_mercy: {
+      opening: {
+        name: "Opening Prayers (Hour of Mercy)",
+        text: "You expired, Jesus, but the source of life gushed forth for souls, and the ocean of mercy opened up for the whole world.\n\nO Fount of Life, unfathomable Divine Mercy, envelop the whole world and empty Yourself out upon us.\n\n(Repeat 3 times)\nO Blood and Water, which gushed forth from the Heart of Jesus as a fount of mercy for us, I trust in You!"
+      },
+      trust_act: {
+        name: "Act of Trust in Blood and Water",
+        text: "O Blood and Water, which gushed forth from the Heart of Jesus as a fount of mercy for us,\nI trust in You!"
+      },
+      eternal_father: {
+        name: "Eternal Father (Large Bead)",
+        text: "Eternal Father,\nI offer You the Body and Blood, Soul and Divinity\nof Your dearly beloved Son, Our Lord Jesus Christ,\nin atonement for our sins and those of the whole world. Amen."
+      },
+      sorrowful_passion: {
+        name: "For the Sake of His Sorrowful Passion (10 Small Beads)",
+        text: "For the sake of His sorrowful Passion,\nhave mercy on us and on the whole world."
+      },
+      decade_close: {
+        name: "Decade Concluding Act of Trust",
+        text: "Jesus, I trust in You!"
+      },
+      holy_god: {
+        name: "Holy God (Trisagion - Repeat 3 Times)",
+        text: "(Repeat 3 times)\nHoly God, Holy Mighty One, Holy Immortal One,\nhave mercy on us and on the whole world."
+      },
+      closing: {
+        name: "Closing Prayer & Sign of the Cross",
+        text: "Eternal God, in whom mercy is endless and the treasury of compassion inexhaustible,\nlook kindly upon us and increase Your mercy in us,\nthat in difficult moments we might not despair nor become despondent,\nbut with great confidence submit ourselves to Your holy will, which is Love and Mercy itself. Amen.\n\n(Repeat 3 times)\nJesus, I trust in You!\n\n† In the name of the Father, and of the Son, and of the Holy Spirit. Amen."
+      }
     }
   }
 };
@@ -3637,6 +3787,188 @@ function buildRosarySteps(mysteryKey, includeFatima = true, lang = "ko") {
   return steps;
 }
 
+/**
+ * 하느님 자비를 구하는 5단 기도 전체 스텝 시퀀스를 생성 (한국어 / English 지원)
+ * 동일한 59개 묵주알(5단 묵주) 구조를 완벽하게 공유
+ * @param {string} lang - 'ko' | 'en'
+ */
+function buildDivineMercySteps(lang = "ko") {
+  const currentLang = (lang === "en") ? "en" : "ko";
+  const prayers = PRAYERS[currentLang];
+  const dm = prayers.divine_mercy;
+  const isEn = currentLang === "en";
+  const steps = [];
+
+  // 1. 시작 - 성호경
+  steps.push({
+    index: 0,
+    section: isEn ? "Introductory Prayers" : "시작 기도",
+    sectionCode: "intro",
+    beadType: "cross",
+    beadLabel: isEn ? "Crucifix" : "십자가",
+    title: prayers.sign_of_cross.name,
+    badge: isEn ? "Beginning" : "시작 성호경",
+    guide: isEn ? "Holding the crucifix, make the Sign of the Cross to begin prayer." : "십자가를 쥐고 성호를 그으며 자비의 기도를 시작합니다.",
+    prayers: [prayers.sign_of_cross]
+  });
+
+  // 2. 시작 - 자비의 기도 시작 (숨을 거두셨으나 & 피와 물)
+  steps.push({
+    index: 1,
+    section: isEn ? "Introductory Prayers" : "시작 기도",
+    sectionCode: "intro",
+    beadType: "cross",
+    beadLabel: isEn ? "Crucifix" : "십자가",
+    title: dm.opening.name,
+    badge: isEn ? "Opening Prayer" : "시작 기도",
+    guide: isEn ? "Holding the crucifix, offer the opening prayer to the Divine Mercy." : "십자가를 잡고 하느님의 거룩한 자비를 청하는 시작 기도를 바칩니다.",
+    prayers: [dm.opening]
+  });
+
+  // 3. 주님의 기도 (첫 번째 큰 알)
+  steps.push({
+    index: 2,
+    section: isEn ? "Introductory Prayers" : "시작 기도",
+    sectionCode: "intro",
+    beadType: "large",
+    beadLabel: isEn ? "1st Large Bead" : "첫 번째 큰 알",
+    title: prayers.our_father.name,
+    badge: isEn ? "Lord's Prayer" : "주님의 기도",
+    guide: isEn ? "Recite the Lord's Prayer on the first large bead." : "첫 번째 큰 알을 잡고 주님의 기도를 바칩니다.",
+    prayers: [prayers.our_father]
+  });
+
+  // 4. 성모송 (시작 첫 번째 작은 알)
+  steps.push({
+    index: 3,
+    section: isEn ? "Introductory Prayers" : "시작 기도",
+    sectionCode: "intro",
+    beadType: "small",
+    beadLabel: isEn ? "Hail Mary" : "성모송",
+    title: prayers.hail_mary.name,
+    badge: isEn ? "Hail Mary" : "성모송",
+    guide: isEn ? "Recite the Hail Mary on the first small bead." : "성모님의 전구를 청하며 성모송을 바칩니다.",
+    prayers: [prayers.hail_mary]
+  });
+
+  // 5. 사도신경 (시작 두 번째 작은 알)
+  steps.push({
+    index: 4,
+    section: isEn ? "Introductory Prayers" : "시작 기도",
+    sectionCode: "intro",
+    beadType: "small",
+    beadLabel: isEn ? "Apostles' Creed" : "사도신경",
+    title: prayers.apostles_creed.name,
+    badge: isEn ? "Profession of Faith" : "사도신경",
+    guide: isEn ? "Profess your faith on the second small bead." : "두 번째 작은 알을 잡고 신앙을 고백하며 사도신경을 바칩니다.",
+    prayers: [prayers.apostles_creed]
+  });
+
+  // 6. 예수 성심의 피와 물 의탁 (시작 세 번째 작은 알 / 연결부)
+  steps.push({
+    index: 5,
+    section: isEn ? "Introductory Prayers" : "시작 기도",
+    sectionCode: "intro",
+    beadType: "connector",
+    beadLabel: isEn ? "Chain / Space" : "줄 / 간격",
+    title: dm.trust_act.name,
+    badge: isEn ? "Fount of Mercy" : "자비의 샘",
+    guide: isEn ? "Entrust yourself to the Blood and Water gushing from Jesus' Heart." : "예수 성심에서 흘러나온 피와 물에 온전히 의탁합니다.",
+    prayers: [dm.trust_act]
+  });
+
+  // 7. 제1단 ~ 제5단 (5 Decades)
+  for (let d = 1; d <= 5; d++) {
+    const secCode = `decade_${d}`;
+    const secTitle = isEn ? `Decade ${d}` : `제${d}단`;
+
+    // (1) 각 단 시작 큰 알 - 영원하신 아버지
+    steps.push({
+      index: steps.length,
+      section: secTitle,
+      sectionCode: secCode,
+      decadeNum: d,
+      beadType: "large",
+      beadLabel: isEn ? `Decade ${d} Large Bead` : `${d}단 큰 알`,
+      title: dm.eternal_father.name,
+      meditation: isEn 
+        ? "I offer You the Body and Blood, Soul and Divinity of Your dearly beloved Son, Our Lord Jesus Christ"
+        : "사랑하시는 성자 우리 주 예수 그리스도의 몸과 피, 영혼과 신성을 바치나이다",
+      fruit: isEn ? "Atonement for our sins and of the whole world" : "온 세상 죄의 보속과 자비의 은총",
+      badge: isEn ? "Eternal Father" : "영원하신 아버지",
+      guide: isEn 
+        ? "On the large bead, offer Christ's Body and Blood to the Father in atonement for sins." 
+        : "큰 알을 잡고, 성자 예수님의 몸과 피를 하느님 아버지께 보속의 마음으로 바칩니다.",
+      prayers: [dm.eternal_father]
+    });
+
+    // (2) 각 단 작은 알 10개 - 예수님의 수난을 보시고
+    for (let b = 1; b <= 10; b++) {
+      steps.push({
+        index: steps.length,
+        section: secTitle,
+        sectionCode: secCode,
+        decadeNum: d,
+        beadType: "small",
+        beadNumber: b,
+        beadLabel: isEn ? `Decade ${d} Mercy ${b}/10` : `${d}단 자비의 간구 ${b}/10`,
+        title: isEn ? `For the Sake of His Sorrowful Passion (${b}/10)` : `예수님의 수난을 보시고 (${b}/10)`,
+        meditation: isEn
+          ? "For the sake of His sorrowful Passion, have mercy on us and on the whole world."
+          : "예수님의 수난을 보시고, 저희와 온 세상에 자비를 베푸소서.",
+        badge: isEn ? `Decade ${d} · Bead ${b}` : `${d}단 ${b}번째 알`,
+        guide: isEn 
+          ? "Meditating on Christ's Passion, implore His mercy upon the whole world." 
+          : "예수님의 거룩한 수난을 묵상하며 온 세상에 자비를 청합니다.",
+        prayers: [dm.sorrowful_passion]
+      });
+    }
+
+    // (3) 각 단 마무리 연결부
+    steps.push({
+      index: steps.length,
+      section: secTitle,
+      sectionCode: secCode,
+      decadeNum: d,
+      beadType: "connector",
+      beadLabel: isEn ? `Decade ${d} Concluded` : `${d}단 맺음`,
+      title: isEn ? `Decade ${d}: Jesus, I Trust in You!` : `제${d}단: 예수님, 저는 당신께 의탁합니다!`,
+      badge: isEn ? `Decade ${d} Close` : `${d}단 마무리`,
+      guide: isEn ? "Conclude the decade renewing your trust in Jesus." : "단을 마치며 예수님께 온전한 신뢰를 고백합니다.",
+      prayers: [dm.decade_close]
+    });
+  }
+
+  // 8. 마침 기도 1 - 거룩하신 하느님 (3번 반복)
+  steps.push({
+    index: steps.length,
+    section: isEn ? "Concluding Prayers" : "마침 기도",
+    sectionCode: "outro",
+    beadType: "connector",
+    beadLabel: isEn ? "Holy God (3x)" : "거룩하신 하느님 (3번)",
+    title: dm.holy_god.name,
+    badge: isEn ? "Trisagion" : "3번 반복",
+    guide: isEn ? "Recite the Trisagion three times in praise of God's holiness." : "삼위일체 하느님의 거룩하심을 찬미하며 3번 반복하여 바칩니다.",
+    prayers: [dm.holy_god]
+  });
+
+  // 9. 마침 기도 2 - 마침 기도 및 성호경
+  steps.push({
+    index: steps.length,
+    section: isEn ? "Concluding Prayers" : "마침 기도",
+    sectionCode: "outro",
+    beadType: "cross",
+    beadLabel: isEn ? "Final Sign of the Cross" : "마침 성호경",
+    title: dm.closing.name,
+    badge: isEn ? "Prayer Completed" : "기도 완료",
+    guide: isEn ? "Recite the closing prayer and conclude with the Sign of the Cross." : "마침 기도를 바치고 십자가에 성호를 그으며 마칩니다.",
+    prayers: [dm.closing]
+  });
+
+  return steps;
+}
+
+
 
 /**
  * 묵주기도 (Holy Rosary) 메인 앱 로직
@@ -3683,8 +4015,11 @@ class RosaryApp {
     this.todayMysteryKey = getTodayMysteryKey();
     this.currentMysteryKey = this.todayMysteryKey;
 
-    // 단계 생성 (구원송 & 언어 설정 반영)
-    this.steps = buildRosarySteps(this.currentMysteryKey, this.settings.includeFatima, this.settings.lang);
+    // 기도 종류 (성모 묵주기도 'rosary' | 하느님 자비의 기도 'divine_mercy')
+    this.currentPrayerType = "rosary";
+
+    // 단계 생성 (기도 종류 & 구원송 & 언어 설정 반영)
+    this.steps = this.buildCurrentSteps();
     this.currentIndex = 0;
 
     // Web Audio 컨텍스트 (필요 시 생성)
@@ -3711,7 +4046,13 @@ class RosaryApp {
       btnIntroLangKo: document.getElementById("btnIntroLangKo"),
       btnIntroLangEn: document.getElementById("btnIntroLangEn"),
 
-      // 인트로 2. 이어하기 카드
+      // 인트로 2. 기도 종류 선택
+      introPrayerTypeCard: document.getElementById("introPrayerTypeCard"),
+      introPrayerTypeTitle: document.getElementById("introPrayerTypeTitle"),
+      btnPrayerTypeRosary: document.getElementById("btnPrayerTypeRosary"),
+      btnPrayerTypeDivineMercy: document.getElementById("btnPrayerTypeDivineMercy"),
+
+      // 인트로 3. 이어하기 카드
       introResumeCard: document.getElementById("introResumeCard"),
       introResumeTitle: document.getElementById("introResumeTitle"),
       introResumeMystery: document.getElementById("introResumeMystery"),
@@ -3719,12 +4060,23 @@ class RosaryApp {
       btnIntroContinue: document.getElementById("btnIntroContinue"),
       introContinueText: document.getElementById("introContinueText"),
 
-      // 인트로 3. 신비 선택
+      // 인트로 4. 신비 선택
+      introMysteryCard: document.getElementById("introMysteryCard"),
       introMysteryTitle: document.getElementById("introMysteryTitle"),
       introTodayBadge: document.getElementById("introTodayBadge"),
       introMysteryDescBox: document.getElementById("introMysteryDescBox"),
 
-      // 인트로 4. 구원을 비는 기도 (구원송)
+      // 인트로 5. 하느님 자비의 기도 안내
+      introDivineMercyCard: document.getElementById("introDivineMercyCard"),
+      introDmCardTitle: document.getElementById("introDmCardTitle"),
+      introDmCardBadge: document.getElementById("introDmCardBadge"),
+      introDmDesc: document.getElementById("introDmDesc"),
+      introDmGuideLarge: document.getElementById("introDmGuideLarge"),
+      introDmGuideSmall: document.getElementById("introDmGuideSmall"),
+      introDmGuideEnd: document.getElementById("introDmGuideEnd"),
+
+      // 인트로 6. 구원을 비는 기도 (구원송)
+      introFatimaCard: document.getElementById("introFatimaCard"),
       introFatimaTitle: document.getElementById("introFatimaTitle"),
       introFatimaSub: document.getElementById("introFatimaSub"),
       btnIntroFatimaYes: document.getElementById("btnIntroFatimaYes"),
@@ -3823,7 +4175,9 @@ class RosaryApp {
       roseOfferingSubtitle: document.getElementById("roseOfferingSubtitle"),
       roseOfferingDecadeBadge: document.getElementById("roseOfferingDecadeBadge"),
       roseBloomContainer: document.getElementById("roseBloomContainer"),
-      roseBloomToggle: document.getElementById("roseBloomToggle")
+      roseBloomToggle: document.getElementById("roseBloomToggle"),
+      completionTitle: document.getElementById("completionTitle"),
+      completionDesc: document.getElementById("completionDesc")
     };
 
     this.deferredInstallPrompt = null;
@@ -3833,10 +4187,19 @@ class RosaryApp {
     this.init();
   }
 
+  buildCurrentSteps() {
+    if (this.currentPrayerType === "divine_mercy") {
+      return buildDivineMercySteps(this.settings.lang);
+    } else {
+      return buildRosarySteps(this.currentMysteryKey, this.settings.includeFatima, this.settings.lang);
+    }
+  }
+
   init() {
     this.setupWakeLock();
     this.applySettings();
     this.syncLanguageUI();
+    this.syncPrayerTypeUI();
     this.syncFatimaUI();
     this.syncSoundUI();
     this.syncBeadStyleUI();
@@ -3849,6 +4212,138 @@ class RosaryApp {
     this.setMystery(this.todayMysteryKey, false);
     this.goToStep(0, false);
     this.switchView("intro");
+  }
+
+  // ==========================================
+  // 기도 종류 (성모 묵주기도 vs 하느님 자비의 기도)
+  // ==========================================
+  setPrayerType(type, saveImmediate = true) {
+    if (type !== "rosary" && type !== "divine_mercy") return;
+    this.currentPrayerType = type;
+    this.syncPrayerTypeUI();
+
+    this.steps = this.buildCurrentSteps();
+    this.renderDecadeProgressPills();
+
+    if (saveImmediate) {
+      this.sessionCompletedDecades = new Set();
+      this.goToStep(0, true);
+    }
+  }
+
+  syncPrayerTypeUI() {
+    const isDm = this.currentPrayerType === "divine_mercy";
+
+    if (this.dom.btnPrayerTypeRosary && this.dom.btnPrayerTypeDivineMercy) {
+      if (isDm) {
+        this.dom.btnPrayerTypeRosary.classList.remove("active");
+        this.dom.btnPrayerTypeDivineMercy.classList.add("active");
+      } else {
+        this.dom.btnPrayerTypeRosary.classList.add("active");
+        this.dom.btnPrayerTypeDivineMercy.classList.remove("active");
+      }
+    }
+
+    if (this.dom.introMysteryCard) {
+      this.dom.introMysteryCard.style.display = isDm ? "none" : "block";
+    }
+    if (this.dom.introFatimaCard) {
+      this.dom.introFatimaCard.style.display = isDm ? "none" : "block";
+    }
+    if (this.dom.introDivineMercyCard) {
+      this.dom.introDivineMercyCard.style.display = isDm ? "block" : "none";
+    }
+
+    this.updateIntroTexts();
+    this.syncHeaderMysteryUI();
+  }
+
+  syncHeaderMysteryUI() {
+    const isEn = this.settings.lang === "en";
+    if (this.currentPrayerType === "divine_mercy") {
+      if (this.dom.headerMysteryName) {
+        this.dom.headerMysteryName.textContent = isEn ? "Chaplet of Divine Mercy" : "하느님 자비를 구하는 기도";
+      }
+      if (this.dom.headerMysteryDay) {
+        this.dom.headerMysteryDay.textContent = isEn ? "5 Decades · Hour of Mercy" : "자비의 5단 기도 · 오후 3시 권장";
+      }
+    } else {
+      const mysteries = MYSTERIES[this.settings.lang] || MYSTERIES.ko;
+      const mystery = mysteries[this.currentMysteryKey] || mysteries.joyful;
+      if (this.dom.headerMysteryName) {
+        this.dom.headerMysteryName.textContent = mystery.name;
+      }
+      const isToday = this.currentMysteryKey === this.todayMysteryKey;
+      if (this.dom.headerMysteryDay) {
+        this.dom.headerMysteryDay.textContent = isToday 
+          ? (isEn ? `Today (${mystery.days})` : `오늘 (${mystery.days})`)
+          : mystery.days;
+      }
+    }
+  }
+
+  updateIntroTexts() {
+    const isEn = this.settings.lang === "en";
+    const isDm = this.currentPrayerType === "divine_mercy";
+
+    if (this.dom.introPrayerTypeTitle) {
+      this.dom.introPrayerTypeTitle.textContent = isEn ? "Prayer Devotion" : "기도 선택 (Devotion)";
+    }
+    if (this.dom.btnPrayerTypeRosary) {
+      this.dom.btnPrayerTypeRosary.textContent = isEn ? "🌹 Holy Rosary (5 Decades)" : "🌹 성모 묵주기도 (5단)";
+    }
+    if (this.dom.btnPrayerTypeDivineMercy) {
+      this.dom.btnPrayerTypeDivineMercy.textContent = isEn ? "🕊️ Divine Mercy Chaplet" : "🕊️ 하느님 자비의 기도 (5단)";
+    }
+
+    if (isDm) {
+      if (this.dom.introHeroTitle) this.dom.introHeroTitle.textContent = isEn ? "The Divine Mercy Chaplet" : "하느님 자비를 구하는 기도";
+      if (this.dom.introHeroQuote) this.dom.introHeroQuote.textContent = isEn ? '"Jesus, I trust in You" (St. Faustina)' : '"예수님, 저는 당신께 의탁합니다" (성녀 파우스티나)';
+      if (this.dom.btnStartPrayerText) this.dom.btnStartPrayerText.textContent = isEn ? "Start Chaplet of Divine Mercy" : "자비의 기도 시작하기";
+
+      if (this.dom.introDmCardTitle) this.dom.introDmCardTitle.textContent = isEn ? "Chaplet of the Divine Mercy" : "하느님 자비의 5단 기도";
+      if (this.dom.introDmCardBadge) this.dom.introDmCardBadge.textContent = isEn ? "3:00 PM Hour of Mercy" : "오후 3시 권장";
+      if (this.dom.introDmDesc) {
+        this.dom.introDmDesc.textContent = isEn
+          ? "Revealed to St. Faustina by Jesus, prayed on ordinary rosary beads to implore God's unfathomable mercy upon the whole world."
+          : "성녀 파우스티나 수녀에게 계시된 기도로, 일반 5단 묵주를 사용하여 예수님의 거룩한 수난을 묵상하고 온 세상에 하느님의 자비를 간구합니다.";
+      }
+      if (this.dom.introDmGuideLarge) {
+        this.dom.introDmGuideLarge.innerHTML = isEn
+          ? "<strong>Eternal Father</strong> (Offering of Christ's Body & Blood)"
+          : "<strong>영원하신 아버지</strong> (그리스도의 몸과 피 봉헌)";
+      }
+      if (this.dom.introDmGuideSmall) {
+        this.dom.introDmGuideSmall.innerHTML = isEn
+          ? "<strong>For the sake of His sorrowful Passion</strong>, have mercy on us"
+          : "<strong>예수님의 수난을 보시고</strong> 자비를 베푸소서";
+      }
+      if (this.dom.introDmGuideEnd) {
+        this.dom.introDmGuideEnd.innerHTML = isEn
+          ? "<strong>Holy God</strong> (Trisagion 3x) & Closing Prayer"
+          : "<strong>거룩하신 하느님</strong> (3번 반복) 및 마침 기도";
+      }
+    } else {
+      if (this.dom.introHeroTitle) this.dom.introHeroTitle.textContent = isEn ? "The Holy Rosary" : "거룩한 묵주기도";
+      if (this.dom.introHeroQuote) this.dom.introHeroQuote.textContent = isEn ? '"A holy crown of roses offered with Our Lady"' : '"성모님과 함께 바치는 거룩한 장미 화관"';
+      if (this.dom.btnStartPrayerText) this.dom.btnStartPrayerText.textContent = isEn ? "Start Holy Rosary" : "묵주기도 시작하기";
+    }
+
+    if (this.dom.introLangLabel) this.dom.introLangLabel.textContent = isEn ? "Language" : "기도 언어 (Language)";
+    if (this.dom.introMysteryTitle) this.dom.introMysteryTitle.textContent = isEn ? "Select Mystery" : "묵주기도 신비 선택";
+    if (this.dom.introTodayBadge) this.dom.introTodayBadge.textContent = isEn ? "Today's Mystery" : "오늘의 신비";
+    if (this.dom.introFatimaTitle) this.dom.introFatimaTitle.textContent = isEn ? "Fatima Prayer (Decade Prayer)" : "구원을 비는 기도 (구원송)";
+    if (this.dom.introFatimaSub) this.dom.introFatimaSub.textContent = isEn ? "Recite the Fatima Prayer after the Glory Be in each decade." : "각 단의 영광송 뒤에 구원을 비는 기도를 함께 바칩니다.";
+    if (this.dom.btnIntroFatimaYes) this.dom.btnIntroFatimaYes.textContent = isEn ? "Include (Recommended)" : "포함하기 (권장)";
+    if (this.dom.btnIntroFatimaNo) this.dom.btnIntroFatimaNo.textContent = isEn ? "Glory Be Only" : "영광송만";
+    if (this.dom.introSoundTitle) this.dom.introSoundTitle.textContent = isEn ? "Prayer Sound (Bell Chime)" : "기도 알림 소리 (종소리)";
+    if (this.dom.introSoundSub) this.dom.introSoundSub.textContent = isEn ? "Peaceful prayer with or without gentle chime sounds." : "성당이나 조용한 곳에서는 무음으로 평화롭게 기도할 수 있습니다.";
+    if (this.dom.btnIntroSoundOff) this.dom.btnIntroSoundOff.textContent = isEn ? "🔇 Mute (Default)" : "🔇 무음 (기본)";
+    if (this.dom.btnIntroSoundOn) this.dom.btnIntroSoundOn.textContent = isEn ? "🔔 Soft Chime" : "🔔 은은한 종소리";
+    if (this.dom.introTrackerMiniTitle) this.dom.introTrackerMiniTitle.textContent = isEn ? "Roses Offered This Week" : "이번 주 봉헌한 장미";
+    if (this.dom.btnIntroOpenTracker) this.dom.btnIntroOpenTracker.textContent = isEn ? "Tracker ❯" : "기록장 ❯";
+    if (this.dom.introResumeTitle) this.dom.introResumeTitle.textContent = isEn ? "Resume Previous Prayer" : "지난 기도 이어하기";
+    if (this.dom.introContinueText) this.dom.introContinueText.textContent = isEn ? "Continue Praying" : "이어서 계속 기도하기";
   }
 
   // ==========================================
@@ -3947,6 +4442,7 @@ class RosaryApp {
     const cur = this.steps[this.currentIndex];
     if (!cur) return;
     const data = {
+      prayerType: this.currentPrayerType,
       mysteryKey: this.currentMysteryKey,
       stepIndex: this.currentIndex,
       section: cur.section,
@@ -4102,12 +4598,13 @@ class RosaryApp {
   }
 
   checkDecadeAutoTrack(index) {
-    // 1단 ~ 5단 각 단의 맺음(영광송/구원송) 단계 도달 시 1단씩 자동 추가
+    // 1단 ~ 5단 각 단의 맺음(영광송/구원송/의탁) 단계 도달 시 1단씩 자동 추가
     const step = this.steps[index];
     if (step && step.decadeNum && step.beadType === "connector") {
       if (!this.sessionCompletedDecades.has(step.decadeNum)) {
         this.sessionCompletedDecades.add(step.decadeNum);
-        this.addDecadesToDate(this.getTodayStr(), 1, this.currentMysteryKey);
+        const mysteryKey = this.currentPrayerType === "divine_mercy" ? "divine_mercy" : this.currentMysteryKey;
+        this.addDecadesToDate(this.getTodayStr(), 1, mysteryKey);
       }
     }
   }
@@ -4155,10 +4652,16 @@ class RosaryApp {
       if (this.dom.introResumeCard) {
         this.dom.introResumeCard.style.display = "flex";
       }
-      const mysteries = MYSTERIES[this.settings.lang] || MYSTERIES.ko;
-      const mInfo = mysteries[saved.mysteryKey] || mysteries.joyful;
-      if (this.dom.introResumeMystery) {
-        this.dom.introResumeMystery.textContent = mInfo.name;
+      if (saved.prayerType === "divine_mercy") {
+        if (this.dom.introResumeMystery) {
+          this.dom.introResumeMystery.textContent = isEn ? "Chaplet of Divine Mercy" : "하느님 자비를 구하는 기도";
+        }
+      } else {
+        const mysteries = MYSTERIES[this.settings.lang] || MYSTERIES.ko;
+        const mInfo = mysteries[saved.mysteryKey] || mysteries.joyful;
+        if (this.dom.introResumeMystery) {
+          this.dom.introResumeMystery.textContent = mInfo.name;
+        }
       }
       if (this.dom.introResumeStep) {
         this.dom.introResumeStep.textContent = `${saved.section} · ${saved.beadLabel}`;
@@ -4236,23 +4739,11 @@ class RosaryApp {
     this.saveSettings();
     this.syncLanguageUI();
 
-    const isEn = this.settings.lang === "en";
-    const mysteries = MYSTERIES[this.settings.lang] || MYSTERIES.ko;
-    const mystery = mysteries[this.currentMysteryKey] || mysteries.joyful;
-    
-    if (this.dom.headerMysteryName) {
-      this.dom.headerMysteryName.textContent = mystery.name;
-    }
-    const isToday = this.currentMysteryKey === this.todayMysteryKey;
-    if (this.dom.headerMysteryDay) {
-      this.dom.headerMysteryDay.textContent = isToday 
-        ? (isEn ? `Today (${mystery.days})` : `오늘 (${mystery.days})`)
-        : mystery.days;
-    }
+    this.syncHeaderMysteryUI();
 
     // 현재 스텝 위치 유지하며 다국어 스텝 재생성
     const curStep = this.steps[this.currentIndex];
-    this.steps = buildRosarySteps(this.currentMysteryKey, this.settings.includeFatima, this.settings.lang);
+    this.steps = this.buildCurrentSteps();
 
     let newIndex = 0;
     if (curStep) {
@@ -4411,7 +4902,7 @@ class RosaryApp {
     this.syncFatimaUI();
 
     const curStep = this.steps[this.currentIndex];
-    this.steps = buildRosarySteps(this.currentMysteryKey, this.settings.includeFatima, this.settings.lang);
+    this.steps = this.buildCurrentSteps();
 
     let newIndex = 0;
     if (curStep) {
@@ -4505,10 +4996,17 @@ class RosaryApp {
   }
 
   promptResume(saved) {
-    const mysteries = MYSTERIES[this.settings.lang] || MYSTERIES.ko;
-    const mysteryInfo = mysteries[saved.mysteryKey] || mysteries.joyful;
+    const isEn = this.settings.lang === "en";
+    const isDm = saved.prayerType === "divine_mercy";
+
     if (this.dom.resumeDetailMystery) {
-      this.dom.resumeDetailMystery.textContent = mysteryInfo.name;
+      if (isDm) {
+        this.dom.resumeDetailMystery.textContent = isEn ? "Chaplet of Divine Mercy" : "하느님 자비를 구하는 기도";
+      } else {
+        const mysteries = MYSTERIES[this.settings.lang] || MYSTERIES.ko;
+        const mysteryInfo = mysteries[saved.mysteryKey] || mysteries.joyful;
+        this.dom.resumeDetailMystery.textContent = mysteryInfo.name;
+      }
     }
     if (this.dom.resumeDetailStep) {
       this.dom.resumeDetailStep.textContent = `${saved.section} · ${saved.beadLabel}`;
@@ -4523,8 +5021,14 @@ class RosaryApp {
       this.syncLanguageUI();
     }
 
-    this.currentMysteryKey = saved.mysteryKey;
-    this.steps = buildRosarySteps(this.currentMysteryKey, this.settings.includeFatima, this.settings.lang);
+    if (isDm) {
+      this.setPrayerType("divine_mercy", false);
+    } else {
+      this.setPrayerType("rosary", false);
+      this.currentMysteryKey = saved.mysteryKey || this.todayMysteryKey;
+      this.syncHeaderMysteryUI();
+    }
+    this.steps = this.buildCurrentSteps();
     
     // 이어서 시작할 때 이미 완료했던 단은 세션에 등록하여 중복 누적 방지
     this.sessionCompletedDecades = new Set();
@@ -4548,21 +5052,12 @@ class RosaryApp {
   setMystery(mysteryKey, saveImmediate = true) {
     const mysteries = MYSTERIES[this.settings.lang] || MYSTERIES.ko;
     if (!mysteries[mysteryKey]) return;
+    this.currentPrayerType = "rosary";
     this.currentMysteryKey = mysteryKey;
-    const mystery = mysteries[mysteryKey];
-    const isEn = this.settings.lang === "en";
+    this.syncPrayerTypeUI();
+    this.syncHeaderMysteryUI();
 
-    if (this.dom.headerMysteryName) {
-      this.dom.headerMysteryName.textContent = mystery.name;
-    }
-    const isToday = mysteryKey === this.todayMysteryKey;
-    if (this.dom.headerMysteryDay) {
-      this.dom.headerMysteryDay.textContent = isToday 
-        ? (isEn ? `Today (${mystery.days})` : `오늘 (${mystery.days})`)
-        : mystery.days;
-    }
-
-    this.steps = buildRosarySteps(mysteryKey, this.settings.includeFatima, this.settings.lang);
+    this.steps = this.buildCurrentSteps();
     this.renderDecadeProgressPills();
     this.renderMysteryOptions();
     this.updateIntroMysteryUI();
@@ -4980,58 +5475,81 @@ class RosaryApp {
         }
 
         const isEn = this.settings.lang === "en";
+        const isDm = this.currentPrayerType === "divine_mercy";
+
         if (step.beadType === "small") {
-          // 성모송 (1~10번째 장미)
+          // 성모송 (묵주기도) vs 자비의 간구 (자비의 기도)
           if (this.dom.roseOfferingTitle) {
-            this.dom.roseOfferingTitle.textContent = isEn 
-              ? "🌹 Rose Offered to Our Lady" 
-              : "🌹 성모님께 봉헌하는 장미";
+            this.dom.roseOfferingTitle.textContent = isDm
+              ? (isEn ? "🕊️ Ray of Divine Mercy" : "🕊️ 자비의 샘에서 솟아나는 은총")
+              : (isEn ? "🌹 Rose Offered to Our Lady" : "🌹 성모님께 봉헌하는 장미");
           }
           if (this.dom.roseOfferingSubtitle) {
-            this.dom.roseOfferingSubtitle.textContent = isEn 
-              ? `Decade ${step.decadeNum} · Rose #${step.beadNumber} for Mary` 
-              : `제${step.decadeNum}단 · 제 ${step.beadNumber} 송이의 백장미`;
+            this.dom.roseOfferingSubtitle.textContent = isDm
+              ? (isEn ? `Decade ${step.decadeNum} · Prayer for Mercy #${step.beadNumber}` : `제${step.decadeNum}단 · 제 ${step.beadNumber} 번째 자비의 간구`)
+              : (isEn ? `Decade ${step.decadeNum} · Rose #${step.beadNumber} for Mary` : `제${step.decadeNum}단 · 제 ${step.beadNumber} 송이의 백장미`);
           }
           if (this.dom.roseOfferingDecadeBadge) {
             this.dom.roseOfferingDecadeBadge.textContent = `${step.beadNumber} / 10`;
           }
         } else if (step.beadType === "large") {
-          // 주님의 기도 & 신비 묵상
+          // 주님의 기도 vs 영원하신 아버지
           if (this.dom.roseOfferingTitle) {
-            this.dom.roseOfferingTitle.textContent = isEn 
-              ? "👑 Royal Golden Rose" 
-              : "👑 주님의 기도 · 황금 장미 봉헌";
+            this.dom.roseOfferingTitle.textContent = isDm
+              ? (isEn ? "❤️ Eternal Father Offering" : "❤️ 영원하신 아버지께 바치는 봉헌")
+              : (isEn ? "👑 Royal Golden Rose" : "👑 주님의 기도 · 황금 장미 봉헌");
           }
           if (this.dom.roseOfferingSubtitle) {
-            this.dom.roseOfferingSubtitle.textContent = isEn 
-              ? `Decade ${step.decadeNum} Opening Rose of Praise` 
-              : `제${step.decadeNum}단을 여는 찬미의 황금 장미`;
+            this.dom.roseOfferingSubtitle.textContent = isDm
+              ? (isEn ? `Decade ${step.decadeNum} Offering of Christ's Body & Blood` : `제${step.decadeNum}단 그리스도의 몸과 피 봉헌`)
+              : (isEn ? `Decade ${step.decadeNum} Opening Rose of Praise` : `제${step.decadeNum}단을 여는 찬미의 황금 장미`);
           }
           if (this.dom.roseOfferingDecadeBadge) {
-            this.dom.roseOfferingDecadeBadge.textContent = isEn ? "Lord's Prayer" : "주님의 기도";
+            this.dom.roseOfferingDecadeBadge.textContent = isDm
+              ? (isEn ? "Eternal Father" : "영원하신 아버지")
+              : (isEn ? "Lord's Prayer" : "주님의 기도");
           }
         } else if (step.beadType === "connector") {
-          // 영광송 & 구원송
           const isDecadeClose = !!step.decadeNum;
           if (this.dom.roseOfferingTitle) {
-            this.dom.roseOfferingTitle.textContent = isEn 
-              ? (isDecadeClose ? `✨ Decade ${step.decadeNum} Consecrated` : "✨ Glory Be to the Trinity") 
-              : (isDecadeClose ? `✨ 제${step.decadeNum}단 완성 · 은총의 장미` : "✨ 영광송 · 삼위일체 찬미");
+            if (isDm) {
+              this.dom.roseOfferingTitle.textContent = isDecadeClose
+                ? (isEn ? `✨ Decade ${step.decadeNum} Concluded` : `✨ 제${step.decadeNum}단 맺음`)
+                : (isEn ? "✨ Trisagion: Holy God" : "✨ 거룩하신 하느님");
+            } else {
+              this.dom.roseOfferingTitle.textContent = isEn 
+                ? (isDecadeClose ? `✨ Decade ${step.decadeNum} Consecrated` : "✨ Glory Be to the Trinity") 
+                : (isDecadeClose ? `✨ 제${step.decadeNum}단 완성 · 은총의 장미` : "✨ 영광송 · 삼위일체 찬미");
+            }
           }
           if (this.dom.roseOfferingSubtitle) {
-            this.dom.roseOfferingSubtitle.textContent = isEn 
-              ? (isDecadeClose ? "10 Roses Woven into Our Lady's Rosary" : "Praising the Father, Son, and Holy Spirit") 
-              : (isDecadeClose ? "10송이의 장미를 엮어 성모님께 드립니다 🌹" : "하느님께 드리는 찬미의 꽃송이");
+            if (isDm) {
+              this.dom.roseOfferingSubtitle.textContent = isDecadeClose
+                ? (isEn ? "Jesus, I trust in You!" : "Holy God, Holy Mighty One, Holy Immortal One")
+                : (isDecadeClose ? "예수님, 저는 당신께 의탁합니다." : "거룩하신 하느님, 저희에게 자비를 베푸소서.");
+            } else {
+              this.dom.roseOfferingSubtitle.textContent = isEn 
+                ? (isDecadeClose ? "10 Roses Woven into Our Lady's Rosary" : "Praising the Father, Son, and Holy Spirit") 
+                : (isDecadeClose ? "10송이의 장미를 엮어 성모님께 드립니다 🌹" : "하느님께 드리는 찬미의 꽃송이");
+            }
           }
           if (this.dom.roseOfferingDecadeBadge) {
-            this.dom.roseOfferingDecadeBadge.textContent = isDecadeClose ? (isEn ? "10 Roses" : "1단 완성 🌹") : (isEn ? "Praise" : "찬미");
+            if (isDm) {
+              this.dom.roseOfferingDecadeBadge.textContent = isDecadeClose ? (isEn ? "Trust" : "의탁 🕊️") : (isEn ? "Holy God" : "하느님");
+            } else {
+              this.dom.roseOfferingDecadeBadge.textContent = isDecadeClose ? (isEn ? "10 Roses" : "1단 완성 🌹") : (isEn ? "Praise" : "찬미");
+            }
           }
         } else if (step.beadType === "cross") {
           if (this.dom.roseOfferingTitle) {
-            this.dom.roseOfferingTitle.textContent = isEn ? "✝️ The Holy Cross & Creed" : "✝️ 성호경과 사도신경";
+            this.dom.roseOfferingTitle.textContent = isDm
+              ? (isEn ? "✝️ The Divine Mercy Chaplet" : "✝️ 하느님 자비의 기도")
+              : (isEn ? "✝️ The Holy Cross & Creed" : "✝️ 성호경과 사도신경");
           }
           if (this.dom.roseOfferingSubtitle) {
-            this.dom.roseOfferingSubtitle.textContent = isEn ? "Beginning of Prayer & Profession of Faith" : "십자가의 신비와 거룩한 믿음의 고백";
+            this.dom.roseOfferingSubtitle.textContent = isDm
+              ? (isEn ? "In the Name of the Father, and of the Son, and of the Holy Spirit" : "예수 성심의 피와 물에 온전히 의탁하며")
+              : (isEn ? "Beginning of Prayer & Profession of Faith" : "십자가의 신비와 거룩한 믿음의 고백");
           }
           if (this.dom.roseOfferingDecadeBadge) {
             this.dom.roseOfferingDecadeBadge.textContent = isEn ? "Start" : "시작";
@@ -5085,6 +5603,14 @@ class RosaryApp {
     const card = this.dom.prayerCard;
 
     // 0) 인트로 화면 인터랙션 이벤트
+    // 0-0) 기도 종류 선택 (성모 묵주기도 / 하느님 자비의 기도)
+    if (this.dom.btnPrayerTypeRosary) {
+      this.dom.btnPrayerTypeRosary.addEventListener("click", () => this.setPrayerType("rosary"));
+    }
+    if (this.dom.btnPrayerTypeDivineMercy) {
+      this.dom.btnPrayerTypeDivineMercy.addEventListener("click", () => this.setPrayerType("divine_mercy"));
+    }
+
     // 0-1) 언어 토글 (한국어 / English)
     if (this.dom.btnIntroLangKo) {
       this.dom.btnIntroLangKo.addEventListener("click", () => this.setLanguage("ko"));
@@ -5124,7 +5650,12 @@ class RosaryApp {
             this.settings.lang = saved.lang;
             this.syncLanguageUI();
           }
-          this.setMystery(saved.mysteryKey || this.todayMysteryKey, false);
+          if (saved.prayerType === "divine_mercy") {
+            this.setPrayerType("divine_mercy", false);
+          } else {
+            this.setPrayerType("rosary", false);
+            this.setMystery(saved.mysteryKey || this.todayMysteryKey, false);
+          }
           this.sessionCompletedDecades = new Set();
           for (let i = 0; i <= saved.stepIndex; i++) {
             const s = this.steps[i];
@@ -5138,12 +5669,12 @@ class RosaryApp {
       });
     }
 
-    // 0-5) 인트로 메인 '묵주기도 시작하기' 버튼 클릭 -> 신비 새로 시작 (0단계 성호경부터)
+    // 0-5) 인트로 메인 '기도 시작하기' 버튼 클릭 -> 신비/자비의 기도 새로 시작 (0단계 성호경부터)
     if (this.dom.btnStartPrayer) {
       this.dom.btnStartPrayer.addEventListener("click", () => {
         this.clearProgress();
         this.sessionCompletedDecades = new Set();
-        this.steps = buildRosarySteps(this.currentMysteryKey, this.settings.includeFatima, this.settings.lang);
+        this.steps = this.buildCurrentSteps();
         this.renderDecadeProgressPills();
         this.goToStep(0, true);
         this.switchView("prayer");
@@ -5688,11 +6219,19 @@ class RosaryApp {
     }
 
     const isEn = this.settings.lang === "en";
+    const isDm = this.currentPrayerType === "divine_mercy";
     const roseNum = step.beadNumber || 1;
     const decadeNum = step.decadeNum || 1;
-    const titleText = isEn
-      ? `🌹 Decade ${decadeNum} · Rose #${roseNum} Offered`
-      : `🌹 제${decadeNum}단 · 제 ${roseNum} 송이 장미 봉헌`;
+    let titleText = "";
+    if (isDm) {
+      titleText = isEn 
+        ? `🕊️ Decade ${decadeNum} · Prayer for Mercy #${roseNum}` 
+        : `🕊️ 제${decadeNum}단 · 제 ${roseNum} 번째 자비의 간구`;
+    } else {
+      titleText = isEn
+        ? `🌹 Decade ${decadeNum} · Rose #${roseNum} Offered`
+        : `🌹 제${decadeNum}단 · 제 ${roseNum} 송이 장미 봉헌`;
+    }
 
     const burstEl = document.createElement("div");
     burstEl.className = "rose-bloom-burst";
@@ -5792,6 +6331,25 @@ class RosaryApp {
   }
 
   showCompletionModal() {
+    const isEn = this.settings.lang === "en";
+    const isDm = this.currentPrayerType === "divine_mercy";
+
+    if (this.dom.completionTitle) {
+      this.dom.completionTitle.textContent = isEn ? "Prayer Completed with Grace" : "기도를 모두 바쳤습니다";
+    }
+
+    if (this.dom.completionDesc) {
+      if (isDm) {
+        this.dom.completionDesc.innerHTML = isEn
+          ? `You have devoutly offered the Chaplet of the Divine Mercy.<br>"Jesus, I trust in You!"<br>May His unfathomable Mercy and Grace be with you always.`
+          : `하느님 자비를 구하는 5단 기도를 정성껏 바치셨습니다.<br>"예수님, 저는 당신께 의탁합니다."<br>주님의 거룩한 자비와 은총이 언제나 함께하시길 기도합니다.`;
+      } else {
+        this.dom.completionDesc.innerHTML = isEn
+          ? `May the graces of the Holy Rosary offered with Our Lady<br>be with you and your loved ones always.<br>"Peace be with you."`
+          : `성모님과 함께 바친 묵주기도의 은총이<br>언제나 삶 가운데 가득하시기를 기도드립니다.<br>"평화를 빕니다."`;
+      }
+    }
+
     if (this.dom.completionModal) {
       this.dom.completionModal.classList.add("show");
     }
