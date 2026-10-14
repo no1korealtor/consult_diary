@@ -2579,6 +2579,300 @@ input:checked + .toggle-slider:before {
   }
 }
 
+/* ===================================================
+   11. 기도의 유래와 약속된 은총 (History & Graces Modal)
+   =================================================== */
+
+/* 인트로 카드 내부의 정갈한 유래 안내 트리거 버튼 */
+.history-guide-trigger-btn {
+  margin-top: 10px;
+  width: 100%;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: rgba(243, 198, 105, 0.08);
+  border: 1px dashed rgba(243, 198, 105, 0.38);
+  color: var(--gold-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.history-guide-trigger-btn:active {
+  transform: scale(0.98);
+  background: rgba(243, 198, 105, 0.16);
+}
+
+.history-guide-trigger-btn.dm-trigger {
+  background: rgba(220, 38, 38, 0.12);
+  border: 1px dashed rgba(248, 113, 113, 0.4);
+  color: #FCA5A5;
+}
+
+.history-guide-trigger-btn.dm-trigger:active {
+  background: rgba(220, 38, 38, 0.22);
+}
+
+.history-btn-icon {
+  font-size: 0.95rem;
+}
+
+/* 바텀시트 모달 스타일링 */
+.history-sheet {
+  max-height: 88vh;
+  height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: #121826;
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+  border-top: 1.5px solid rgba(243, 198, 105, 0.35);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.85);
+  padding: 12px 18px max(16px, var(--safe-bottom)) 18px;
+  box-sizing: border-box;
+}
+
+.history-header-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.history-header-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-header-icon {
+  font-size: 1.3rem;
+}
+
+/* 탭 바 */
+.history-tab-group {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.history-tab-btn {
+  flex: 1;
+  height: 38px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.history-tab-btn.active {
+  background: var(--gold-primary);
+  color: #111827;
+  box-shadow: 0 2px 8px rgba(243, 198, 105, 0.35);
+}
+
+.history-tab-icon {
+  font-size: 0.95rem;
+}
+
+/* 본문 스크롤 영역 */
+.history-body-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+  display: flex;
+  flex-direction: column;
+  -webkit-overflow-scrolling: touch;
+}
+
+.history-body-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.history-body-scroll::-webkit-scrollbar-thumb {
+  background: rgba(243, 198, 105, 0.25);
+  border-radius: 4px;
+}
+
+.history-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+/* 상단 핵심 뱃지 */
+.history-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.history-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  white-space: nowrap;
+}
+
+.history-badge.red {
+  background: rgba(239, 68, 68, 0.18);
+  color: #FCA5A5;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.history-badge.gold {
+  background: rgba(243, 198, 105, 0.18);
+  color: var(--gold-primary);
+  border-color: rgba(243, 198, 105, 0.35);
+}
+
+.history-badge.blue {
+  background: rgba(59, 130, 246, 0.18);
+  color: #93C5FD;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+/* 본문 카드 아이템 */
+.history-card-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid var(--gold-primary);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.history-card-item.accent-red {
+  border-left-color: #EF4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.06) 0%, rgba(30, 41, 59, 0.4) 100%);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.history-card-item.accent-gold {
+  border-left-color: #F3C669;
+  background: linear-gradient(135deg, rgba(243, 198, 105, 0.06) 0%, rgba(30, 41, 59, 0.4) 100%);
+  border-color: rgba(243, 198, 105, 0.2);
+}
+
+.history-item-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: -0.2px;
+}
+
+.history-text {
+  font-size: 0.84rem;
+  line-height: 1.58;
+  color: rgba(241, 245, 249, 0.88);
+  margin: 0;
+  word-break: keep-all;
+}
+
+.history-text strong {
+  color: var(--gold-primary);
+  font-weight: 700;
+}
+
+.history-card-item.accent-red .history-text strong {
+  color: #FCA5A5;
+}
+
+/* 인용구 박스 */
+.history-quote-box {
+  position: relative;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  padding: 10px 12px;
+  border-left: 3px solid #EF4444;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 2px 0;
+}
+
+.history-quote-box.gold-border {
+  border-left-color: var(--gold-primary);
+}
+
+.quote-symbol {
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--gold-primary);
+  opacity: 0.7;
+}
+
+.quote-text {
+  font-size: 0.83rem;
+  line-height: 1.52;
+  color: #FFFFFF;
+  font-style: italic;
+  margin: 0;
+  word-break: keep-all;
+}
+
+.quote-author {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  text-align: right;
+  margin-top: 2px;
+}
+
+/* 불릿 리스트 */
+.history-feature-list {
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  line-height: 1.52;
+  color: rgba(241, 245, 249, 0.9);
+}
+
+.history-feature-list li strong {
+  color: #FFF;
+}
+
+/* 하단 확인 버튼 푸터 */
+.history-footer {
+  padding-top: 10px;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+
 
 
 </style>
@@ -2786,6 +3080,11 @@ input:checked + .toggle-slider:before {
           <div id="introMysteryDescBox" class="intro-mystery-desc-box">
             <!-- 선택된 신비 요약 자동 반영 -->
           </div>
+
+          <button type="button" id="btnOpenRosaryHistory" class="history-guide-trigger-btn">
+            <span class="history-btn-icon">📖</span>
+            <span id="txtOpenRosaryHistory">묵주기도의 유래와 약속된 은총 ❯</span>
+          </button>
         </div>
 
         <!-- 5. 하느님 자비의 기도 안내 카드 (자비의 기도 모드) -->
@@ -2812,6 +3111,11 @@ input:checked + .toggle-slider:before {
               <span id="introDmGuideEnd" class="dm-guide-text"><strong>거룩하신 하느님</strong> (3번 반복) 및 마침 기도</span>
             </div>
           </div>
+
+          <button type="button" id="btnOpenDmHistory" class="history-guide-trigger-btn dm-trigger">
+            <span class="history-btn-icon">📖</span>
+            <span id="txtOpenDmHistory">자비의 기도 유래와 교황청 승인 배경 ❯</span>
+          </button>
         </div>
 
         <!-- 6. 구원을 비는 기도 (구원송) 설정 카드 (성모 묵주기도 모드) -->
@@ -3065,6 +3369,14 @@ input:checked + .toggle-slider:before {
           </label>
         </div>
 
+        <div class="setting-row" style="background: rgba(255, 255, 255, 0.04); padding: 12px; border-radius: var(--radius-sm); border: 1px solid rgba(255, 255, 255, 0.12); margin-top: 8px;">
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <span id="settingHistoryLabel" class="setting-label" style="color:var(--text-primary); font-weight:700;">📖 기도의 유래와 은총</span>
+            <span id="settingHistorySub" style="font-size:0.75rem; color:var(--text-secondary);">묵주기도 및 자비의 기도 역사와 약속된 은총</span>
+          </div>
+          <button type="button" id="btnSettingsOpenHistory" class="action-pill-btn" style="flex:0 0 76px; height:34px; font-size:0.82rem;">읽어보기</button>
+        </div>
+
         <div class="setting-row" style="background: rgba(243, 198, 105, 0.08); padding: 12px; border-radius: var(--radius-sm); border: 1px solid rgba(243, 198, 105, 0.28); margin-top: 8px;">
           <div style="display:flex; flex-direction:column; gap:2px;">
             <span class="setting-label" style="color:var(--gold-primary); font-weight:700;">📲 바탕화면 바로가기</span>
@@ -3118,6 +3430,54 @@ input:checked + .toggle-slider:before {
             <button id="btnTrackerAdd1" class="action-pill-btn">+ 1단</button>
             <button id="btnTrackerMinus1" class="action-pill-btn minus">- 1단</button>
           </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 9.5 기도의 유래와 약속된 은총 모달 바텀시트 -->
+    <div id="historyModal" class="modal-backdrop">
+      <div class="bottom-sheet history-sheet">
+        <div class="sheet-handle"></div>
+
+        <div class="history-header-box">
+          <div class="history-header-title-wrap">
+            <span class="history-header-icon">📖</span>
+            <h3 id="historyModalTitle" class="sheet-title" style="margin: 0; text-align: left;">기도의 유래와 약속된 은총</h3>
+          </div>
+          <button id="closeHistoryBtn" class="tracker-close-btn" aria-label="닫기">✕</button>
+        </div>
+
+        <!-- 탭 전환 버튼 (하느님 자비의 기도 vs 성모 묵주기도) -->
+        <div class="history-tab-group">
+          <button type="button" id="tabHistoryDm" class="history-tab-btn active">
+            <span class="history-tab-icon">🕊️</span>
+            <span id="txtTabDm">하느님 자비의 기도</span>
+          </button>
+          <button type="button" id="tabHistoryRosary" class="history-tab-btn">
+            <span class="history-tab-icon">🌹</span>
+            <span id="txtTabRosary">성모 묵주기도</span>
+          </button>
+        </div>
+
+        <!-- 스크롤 가능한 본문 영역 (언어 변경 시 JS로 100% 한/영 완벽 동기화 렌더링) -->
+        <div class="history-body-scroll">
+          <!-- 1. 하느님 자비의 기도 패널 -->
+          <div id="panelHistoryDm" class="history-panel active">
+            <!-- JS dynamic content populated by renderHistoryContent -->
+          </div>
+
+          <!-- 2. 성모 묵주기도 패널 -->
+          <div id="panelHistoryRosary" class="history-panel" style="display: none;">
+            <!-- JS dynamic content populated by renderHistoryContent -->
+          </div>
+        </div>
+
+        <!-- 하단 닫기/확인 버튼 -->
+        <div class="history-footer">
+          <button type="button" id="btnDismissHistoryModal" class="action-pill-btn gold" style="width: 100%; height: 44px; font-weight: 700; font-size: 0.95rem;">
+            확인하고 기도하기
+          </button>
         </div>
 
       </div>
@@ -4177,12 +4537,32 @@ class RosaryApp {
       roseBloomContainer: document.getElementById("roseBloomContainer"),
       roseBloomToggle: document.getElementById("roseBloomToggle"),
       completionTitle: document.getElementById("completionTitle"),
-      completionDesc: document.getElementById("completionDesc")
+      completionDesc: document.getElementById("completionDesc"),
+
+      // 기도의 유래와 약속된 은총 모달 DOM
+      historyModal: document.getElementById("historyModal"),
+      closeHistoryBtn: document.getElementById("closeHistoryBtn"),
+      btnDismissHistoryModal: document.getElementById("btnDismissHistoryModal"),
+      btnOpenRosaryHistory: document.getElementById("btnOpenRosaryHistory"),
+      btnOpenDmHistory: document.getElementById("btnOpenDmHistory"),
+      txtOpenRosaryHistory: document.getElementById("txtOpenRosaryHistory"),
+      txtOpenDmHistory: document.getElementById("txtOpenDmHistory"),
+      historyModalTitle: document.getElementById("historyModalTitle"),
+      tabHistoryDm: document.getElementById("tabHistoryDm"),
+      tabHistoryRosary: document.getElementById("tabHistoryRosary"),
+      txtTabDm: document.getElementById("txtTabDm"),
+      txtTabRosary: document.getElementById("txtTabRosary"),
+      panelHistoryDm: document.getElementById("panelHistoryDm"),
+      panelHistoryRosary: document.getElementById("panelHistoryRosary"),
+      btnSettingsOpenHistory: document.getElementById("btnSettingsOpenHistory"),
+      settingHistoryLabel: document.getElementById("settingHistoryLabel"),
+      settingHistorySub: document.getElementById("settingHistorySub")
     };
 
     this.deferredInstallPrompt = null;
     this.isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     this.currentView = "intro";
+    this.currentHistoryTab = "dm";
 
     this.init();
   }
@@ -4205,6 +4585,7 @@ class RosaryApp {
     this.syncBeadStyleUI();
     this.renderMysteryOptions();
     this.renderDecadeProgressPills();
+    this.renderHistoryContent();
     this.bindEvents();
     this.initInstallManager();
 
@@ -4755,6 +5136,7 @@ class RosaryApp {
     this.renderMysteryOptions();
     this.renderWeeklyTracker();
     this.updateIntroView();
+    this.renderHistoryContent();
 
     if (this.currentView === "prayer") {
       this.goToStep(newIndex, true);
@@ -4890,7 +5272,286 @@ class RosaryApp {
         : "◂ 화면을 좌우로 드래그하여 한 알씩 넘기세요 ▸";
     }
 
+    this.renderHistoryContent();
     this.updateIntroMysteryUI();
+  }
+
+  // ==========================================
+  // 기도의 유래와 약속된 은총 (History & Graces)
+  // ==========================================
+  openHistoryModal(defaultTab = "dm") {
+    this.currentHistoryTab = defaultTab;
+    this.renderHistoryContent();
+    this.syncHistoryTabUI();
+    this.openModal(this.dom.historyModal);
+  }
+
+  switchHistoryTab(tab) {
+    this.currentHistoryTab = tab;
+    this.syncHistoryTabUI();
+    const scrollEl = document.querySelector(".history-body-scroll");
+    if (scrollEl) scrollEl.scrollTop = 0;
+  }
+
+  syncHistoryTabUI() {
+    const isDm = this.currentHistoryTab === "dm";
+    if (this.dom.tabHistoryDm) this.dom.tabHistoryDm.classList.toggle("active", isDm);
+    if (this.dom.tabHistoryRosary) this.dom.tabHistoryRosary.classList.toggle("active", !isDm);
+
+    if (this.dom.panelHistoryDm) this.dom.panelHistoryDm.style.display = isDm ? "flex" : "none";
+    if (this.dom.panelHistoryRosary) this.dom.panelHistoryRosary.style.display = isDm ? "none" : "flex";
+  }
+
+  renderHistoryContent() {
+    const isEn = this.settings.lang === "en";
+
+    // 1. 헤더 타이틀 및 탭/버튼 텍스트 동기화
+    if (this.dom.historyModalTitle) {
+      this.dom.historyModalTitle.textContent = isEn ? "Origin & Promised Graces of Prayer" : "기도의 유래와 약속된 은총";
+    }
+    if (this.dom.txtTabDm) {
+      this.dom.txtTabDm.textContent = isEn ? "Chaplet of Divine Mercy" : "하느님 자비의 기도";
+    }
+    if (this.dom.txtTabRosary) {
+      this.dom.txtTabRosary.textContent = isEn ? "The Holy Rosary" : "성모 묵주기도";
+    }
+    if (this.dom.txtOpenRosaryHistory) {
+      this.dom.txtOpenRosaryHistory.textContent = isEn ? "Origin & Promises of the Rosary ❯" : "묵주기도의 유래와 약속된 은총 ❯";
+    }
+    if (this.dom.txtOpenDmHistory) {
+      this.dom.txtOpenDmHistory.textContent = isEn ? "Origin & Papal Approval of Divine Mercy ❯" : "자비의 기도 유래와 교황청 승인 배경 ❯";
+    }
+    if (this.dom.btnDismissHistoryModal) {
+      this.dom.btnDismissHistoryModal.textContent = isEn ? "Confirm & Pray" : "확인하고 기도하기";
+    }
+    if (this.dom.settingHistoryLabel) {
+      this.dom.settingHistoryLabel.textContent = isEn ? "📖 Origin & Graces of Prayer" : "📖 기도의 유래와 은총";
+    }
+    if (this.dom.settingHistorySub) {
+      this.dom.settingHistorySub.textContent = isEn ? "History, papal approval, and graces of prayer" : "묵주기도 및 자비의 기도 역사와 약속된 은총";
+    }
+
+    // 2. 하느님 자비의 기도 패널 내용 렌더링
+    if (this.dom.panelHistoryDm) {
+      if (isEn) {
+        this.dom.panelHistoryDm.innerHTML = `
+          <div class="history-badge-row">
+            <span class="history-badge red">Papal Approval (Jubilee 2000)</span>
+            <span class="history-badge">Revealed to St. Faustina</span>
+            <span class="history-badge gold">3:00 PM Hour of Mercy</span>
+          </div>
+
+          <div class="history-card-item accent-red">
+            <h4 class="history-item-title">📜 Origin & Universal Papal Approval</h4>
+            <p class="history-text">
+              The Chaplet of the Divine Mercy was revealed in <strong>September 1935</strong> to <strong>Saint Maria Faustina Kowalska (1905–1938)</strong> in Vilnius by Jesus Christ Himself.
+            </p>
+            <p class="history-text">
+              Jesus revealed this prayer as a vessel of mercy to appease divine justice for the sins of the world and to pour out unimaginable graces upon all souls.
+            </p>
+            <p class="history-text">
+              <strong>[Vatican Approval in the Great Jubilee of 2000]</strong><br>
+              On <strong>April 30, 2000</strong>, <strong>Pope Saint John Paul II</strong> canonized Sister Faustina as the first saint of the third millennium, officially instituted the Second Sunday of Easter as <strong>Divine Mercy Sunday</strong>, and endorsed this chaplet for the universal Church.
+            </p>
+          </div>
+
+          <div class="history-card-item accent-red">
+            <h4 class="history-item-title">🎁 Miraculous Graces Promised by Jesus</h4>
+            <div class="history-quote-box">
+              <span class="quote-symbol">“</span>
+              <p class="quote-text">
+                When they say this chaplet in the presence of the dying, I will stand between My Father and the dying person, not as the just Judge but as the merciful Savior.
+              </p>
+              <span class="quote-author">- Diary 1541, Jesus to Saint Faustina</span>
+            </div>
+            <ul class="history-feature-list">
+              <li>
+                <strong>Mercy at the Hour of Death:</strong> Even if a sinner recites this prayer just once with sincere contrition, he will receive grace from My infinite mercy.
+              </li>
+              <li>
+                <strong>Salvation for the Most Hardened Sinners:</strong> Priests will recommend it to sinners as their last hope of salvation.
+              </li>
+              <li>
+                <strong>3:00 PM (The Hour of Great Mercy):</strong> Recalling Christ’s passion at the moment of His death on the Cross, Jesus promised: <em>"In this hour, I will refuse nothing to the soul that makes a request of Me in virtue of My Passion."</em>
+              </li>
+            </ul>
+          </div>
+
+          <div class="history-card-item">
+            <h4 class="history-item-title">💡 Spiritual Significance</h4>
+            <p class="history-text">
+              Prayed on ordinary 59-bead rosary beads, this prayer offers the Eucharistic sacrifice to the Eternal Father: <strong>"I offer You the Body and Blood, Soul and Divinity of Your dearly beloved Son, Our Lord Jesus Christ, in atonement for our sins and those of the whole world."</strong>
+            </p>
+            <p class="history-text">
+              It is a powerful intercessory prayer uniting our hearts with the Passion of Christ for our families, suffering neighbors, and world peace.
+            </p>
+          </div>
+        `;
+      } else {
+        this.dom.panelHistoryDm.innerHTML = `
+          <div class="history-badge-row">
+            <span class="history-badge red">2000년 교황청 공식 인가</span>
+            <span class="history-badge">성녀 파우스티나 수녀 계시</span>
+            <span class="history-badge gold">오후 3시 자비의 시간</span>
+          </div>
+
+          <div class="history-card-item accent-red">
+            <h4 class="history-item-title">📜 기도의 유래와 교황청 승인 배경</h4>
+            <p class="history-text">
+              하느님 자비의 5단 기도는 <strong>1935년 9월</strong> 폴란드 빌뉴스의 <strong>성녀 마리아 파우스티나 코발스카 수녀(1905~1938)</strong>에게 예수 그리스도께서 직접 발현하시어 전해주신 은혜로운 기도입니다.
+            </p>
+            <p class="history-text">
+              예수님께서는 세상의 죄악으로 인한 하느님의 분노를 누그러뜨리고, 무한한 자비의 샘을 온 인류에게 베풀기 위해 당신의 거룩한 상처와 성체성사의 사랑을 성부께 봉헌하는 특별한 기도를 계시하셨습니다.
+            </p>
+            <p class="history-text">
+              <strong>[2000년 대희년 교황청 공식 승인]</strong><br>
+              <strong>교황 성 요한 바오로 2세</strong>께서는 2000년 4월 30일 파우스티나 수녀를 2000년대 첫 성인으로 선포하시면서, 부활 제2주일을 <strong>'하느님의 자비 주일(Divine Mercy Sunday)'</strong>로 공식 제정하고 이 기도를 전 세계 교회의 보편적 신심 기도로 정식 승인하셨습니다.
+            </p>
+          </div>
+
+          <div class="history-card-item accent-red">
+            <h4 class="history-item-title">🎁 예수님께서 약속하신 놀라운 은총</h4>
+            <div class="history-quote-box">
+              <span class="quote-symbol">“</span>
+              <p class="quote-text">
+                이 기도를 바치는 이가 마지막 숨을 거둘 때, 나는 공의로운 심판관이 아니라 한없는 자비의 구세주로서 그 영혼을 감싸줄 것이다.
+              </p>
+              <span class="quote-author">- 일기 687, 예수님께서 성녀 파우스티나에게 주신 말씀</span>
+            </div>
+            <ul class="history-feature-list">
+              <li>
+                <strong>임종 영혼을 위한 은총:</strong> 임종자가 직접 바치거나 임종자 곁에서 다른 이가 바쳐줄 때, 측량할 수 없는 하느님의 자비가 그 영혼을 감싸 안아 구원으로 인도합니다.
+              </li>
+              <li>
+                <strong>가장 완고한 죄인을 위한 구원:</strong> 단 한 번이라도 통회하는 마음으로 이 자비의 기도를 바친다면, 예수님의 무한한 자비로부터 풍성한 구원의 은총을 입게 됩니다.
+              </li>
+              <li>
+                <strong>오후 3시 '위대한 자비의 시간':</strong> 주님께서 십자가 위에서 숨을 거두신 오후 3시에 당신의 거룩한 수난을 묵상하며 청하는 기도는, 하느님의 뜻에 어긋나지 않는 한 무엇이든 들어주시겠다고 약속하셨습니다.
+              </li>
+            </ul>
+          </div>
+
+          <div class="history-card-item">
+            <h4 class="history-item-title">💡 기도의 영신적 의미와 봉헌</h4>
+            <p class="history-text">
+              일반 5단 묵주를 그대로 사용하여 바치며, <strong>"영원하신 아버지, 저희가 지은 죄와 온 세상의 죄를 보속하는 마음으로..."</strong>라며 미사 성제(성체성사)의 거룩한 제사를 성부께 매 단마다 봉헌합니다.
+            </p>
+            <p class="history-text">
+              나 자신뿐만 아니라 고통받는 이웃과 전 세계의 평화를 위해 예수님의 수난 공로를 힘입어 간구하는 가장 강력한 중재 기도입니다.
+            </p>
+          </div>
+        `;
+      }
+    }
+
+    // 3. 성모 묵주기도 패널 내용 렌더링
+    if (this.dom.panelHistoryRosary) {
+      if (isEn) {
+        this.dom.panelHistoryRosary.innerHTML = `
+          <div class="history-badge-row">
+            <span class="history-badge gold">Crown of Roses (Rosarium)</span>
+            <span class="history-badge">1571 Battle of Lepanto</span>
+            <span class="history-badge blue">St. Dominic & St. John Paul II</span>
+          </div>
+
+          <div class="history-card-item accent-gold">
+            <h4 class="history-item-title">🌹 Origin & History of the Rosary</h4>
+            <p class="history-text">
+              The word <em>Rosary</em> comes from the Latin <strong>Rosarium</strong>, meaning a <strong>"Garden of Roses"</strong> or a <strong>"Spiritual Crown of Roses"</strong> offered to Our Blessed Mother.
+            </p>
+            <p class="history-text">
+              In the early Church, lay faithful who could not read the 150 Psalms substituted them with 150 Hail Marys, offering them bead by bead as fragrant roses to Our Lady.
+            </p>
+            <p class="history-text">
+              <strong>[St. Dominic & Victory at Lepanto]</strong><br>
+              In the 13th century, Our Lady appeared to <strong>Saint Dominic</strong>, giving him the Rosary as a spiritual weapon to combat error and convert hearts. Later, on <strong>October 7, 1571</strong>, Christendom won a miraculous victory at the <strong>Battle of Lepanto</strong> while the faithful prayed the Rosary across Europe. Pope Saint Pius V then established the Feast of Our Lady of the Rosary.
+            </p>
+            <p class="history-text">
+              In 2002, <strong>Pope Saint John Paul II</strong> added the <strong>Luminous Mysteries</strong> (Mysteries of Light), completing the four cycles of Joyful, Luminous, Sorrowful, and Glorious mysteries.
+            </p>
+          </div>
+
+          <div class="history-card-item accent-gold">
+            <h4 class="history-item-title">✨ Graces & Promises of Our Lady</h4>
+            <div class="history-quote-box gold-border">
+              <span class="quote-symbol">“</span>
+              <p class="quote-text">
+                Whoever shall recite the Rosary devoutly shall never be conquered by misfortune. God will not chastise him in His justice; he shall not perish by an unprovided death.
+              </p>
+              <span class="quote-author">- From the 15 Promises of Our Lady</span>
+            </div>
+            <ul class="history-feature-list">
+              <li><strong>Maternal Protection:</strong> Whoever prays the Rosary devoutly will receive special graces and the protective mantle of Our Lady.</li>
+              <li><strong>Mighty Armor Against Sin:</strong> It destroys vice, decreases sin, and defeats heresies while helping virtues flourish.</li>
+              <li><strong>Deliverance of Souls in Purgatory:</strong> Faithful recitation delivers holy souls from purgatory and brings speedy relief.</li>
+              <li><strong>Peace at the Hour of Death:</strong> At death, all heavenly courts assist the soul, and Our Lady personally guides them to paradise.</li>
+            </ul>
+          </div>
+
+          <div class="history-card-item">
+            <h4 class="history-item-title">📖 Summary of the Gospel</h4>
+            <p class="history-text">
+              Pope Saint Paul VI called the Rosary a <strong>"compendium of the entire Gospel."</strong>
+            </p>
+            <p class="history-text">
+              While our lips repeat the vocal prayers, our hearts contemplate the incarnation, ministry, passion, and glory of Jesus Christ through the loving eyes and heart of Mary.
+            </p>
+          </div>
+        `;
+      } else {
+        this.dom.panelHistoryRosary.innerHTML = `
+          <div class="history-badge-row">
+            <span class="history-badge gold">성모님의 장미 화관 (Rosarium)</span>
+            <span class="history-badge">1571년 레판토 해전 승리</span>
+            <span class="history-badge blue">성 도미니코 & 성 비오 5세</span>
+          </div>
+
+          <div class="history-card-item accent-gold">
+            <h4 class="history-item-title">🌹 묵주기도의 유래와 역사</h4>
+            <p class="history-text">
+              묵주(Rosary)의 어원은 라틴어 <strong>'로사리움(Rosarium)'</strong>에서 유래되었으며, <strong>'장미 꽃밭'</strong> 또는 성모님께 봉헌하는 <strong>'영적인 장미 화관'</strong>을 뜻합니다.
+            </p>
+            <p class="history-text">
+              초대 교회 수도자들이 매일 바치던 시편 150편을 대신하여, 글을 읽지 못하던 평신도들이 성모송 150번을 한 송이 한 송이의 신령한 장미로 엮어 바치기 시작한 것에서 출발하였습니다.
+            </p>
+            <p class="history-text">
+              <strong>[성 도미니코와 레판토 해전의 승리]</strong><br>
+              13세기 성 도미니코 성인이 성모님으로부터 묵주를 받아 이단에 맞서 영혼들을 회개시키는 강력한 무기로 전파하였으며, <strong>1571년 10월 7일 레판토 해전</strong> 당시 전 유럽 신자들이 묵주기도를 바쳐 기적적인 대승을 거두었습니다. 이에 교황 성 비오 5세는 10월 7일을 <strong>'묵주기도의 복되신 동정 마리아 기념일'</strong>로 제정하였습니다.
+            </p>
+            <p class="history-text">
+              2002년 <strong>교황 성 요한 바오로 2세</strong>께서는 그리스도의 공생활을 묵상하는 <strong>'빛의 신비'</strong>를 추가하여 환희·빛·고통·영광의 4대 신비가 완성되었습니다.
+            </p>
+          </div>
+
+          <div class="history-card-item accent-gold">
+            <h4 class="history-item-title">✨ 성모님께서 약속하신 특별한 은총</h4>
+            <div class="history-quote-box gold-border">
+              <span class="quote-symbol">“</span>
+              <p class="quote-text">
+                묵주기도를 정성껏 바치는 영혼은 악과 지옥의 권세에 맞서는 강력한 방패를 가질 것이며, 나의 특별한 보호와 지극한 은총을 입을 것이다.
+              </p>
+              <span class="quote-author">- 복자 알라노에게 전하신 성모님의 15가지 약속 중</span>
+            </div>
+            <ul class="history-feature-list">
+              <li><strong>성모님의 특별한 보호:</strong> 묵주기도를 바치는 이는 누구나 성모님의 자애로운 망토 아래 특별한 천상 보호를 받습니다.</li>
+              <li><strong>악과 유혹에 대한 강력한 방패:</strong> 유혹을 이겨내고 영혼의 덕을 꽃피우며 죄악의 굴레에서 벗어나게 합니다.</li>
+              <li><strong>연옥 영혼들의 구원:</strong> 묵주기도를 정성껏 바침으로써 연옥에 있는 영혼들을 신속히 구해낼 수 있습니다.</li>
+              <li><strong>임종 시의 평화와 천국 영광:</strong> 임종의 순간 모든 천사들과 성인들이 도우며 성모님께서 영혼을 천국으로 인도하십니다.</li>
+            </ul>
+          </div>
+
+          <div class="history-card-item">
+            <h4 class="history-item-title">📖 복음의 요약이자 성모님과의 동행</h4>
+            <p class="history-text">
+              교황 성 바오로 6세께서는 묵주기도를 <strong>'복음서 전체의 요약'</strong>이라고 부르셨습니다.
+            </p>
+            <p class="history-text">
+              입으로는 기도를 소리 내어 바치면서, 마음으로는 예수님의 강생·공생활·수난·부활의 신비를 성모님의 눈과 마음으로 함께 묵상하는 것이 묵주기도의 가장 깊은 영적 보화입니다.
+            </p>
+          </div>
+        `;
+      }
+    }
   }
 
   // ==========================================
@@ -5812,6 +6473,44 @@ class RosaryApp {
     if (this.dom.closeInstallBtn) {
       this.dom.closeInstallBtn.addEventListener("click", () => {
         this.closeModals();
+      });
+    }
+
+    // 5-1.5) 기도의 유래와 약속된 은총 모달 열기 및 탭 전환
+    if (this.dom.btnOpenRosaryHistory) {
+      this.dom.btnOpenRosaryHistory.addEventListener("click", () => {
+        this.openHistoryModal("rosary");
+      });
+    }
+    if (this.dom.btnOpenDmHistory) {
+      this.dom.btnOpenDmHistory.addEventListener("click", () => {
+        this.openHistoryModal("dm");
+      });
+    }
+    if (this.dom.btnSettingsOpenHistory) {
+      this.dom.btnSettingsOpenHistory.addEventListener("click", () => {
+        this.closeModals();
+        setTimeout(() => this.openHistoryModal(this.currentPrayerType === "divine_mercy" ? "dm" : "rosary"), 150);
+      });
+    }
+    if (this.dom.closeHistoryBtn) {
+      this.dom.closeHistoryBtn.addEventListener("click", () => {
+        this.closeModals();
+      });
+    }
+    if (this.dom.btnDismissHistoryModal) {
+      this.dom.btnDismissHistoryModal.addEventListener("click", () => {
+        this.closeModals();
+      });
+    }
+    if (this.dom.tabHistoryDm) {
+      this.dom.tabHistoryDm.addEventListener("click", () => {
+        this.switchHistoryTab("dm");
+      });
+    }
+    if (this.dom.tabHistoryRosary) {
+      this.dom.tabHistoryRosary.addEventListener("click", () => {
+        this.switchHistoryTab("rosary");
       });
     }
 
