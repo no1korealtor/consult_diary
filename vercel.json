@@ -10,5 +10,11 @@
       "destination": "/login.html",
       "permanent": false
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/rosary",
+      "destination": "/rosary.html"
+    }
   ]
 }
