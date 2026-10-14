@@ -1,15 +1,20 @@
-const CACHE_NAME = 'rosary-app-v2';
+const CACHE_NAME = 'rosary-app-v3';
 const urlsToCache = [
-  './rosary.html',
-  './rosary_icon_192.png',
-  './rosary_icon_512.png',
-  './rosary_manifest.json'
+  '/rosary',
+  '/rosary.html',
+  '/rosary_icon_192.png',
+  '/rosary_icon_512.png',
+  '/rosary_manifest.json'
 ];
 
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then(cache => {
+      return Promise.allSettled(
+        urlsToCache.map(url => cache.add(url).catch(e => console.warn('Cache skip:', url, e)))
+      );
+    })
   );
 });
 

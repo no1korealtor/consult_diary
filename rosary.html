@@ -1477,6 +1477,65 @@ input:checked + .toggle-slider:before {
   gap: 10px;
 }
 
+.samsung-bar-preview {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px dashed rgba(243, 198, 105, 0.5);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.samsung-bar-preview .bar-title {
+  font-size: 0.76rem;
+  color: var(--gold-primary);
+  font-weight: 700;
+}
+
+.mock-browser-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: #1C2333;
+  border-radius: 6px;
+  padding: 6px 4px;
+}
+
+.mock-btn {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.mock-btn.highlight-menu {
+  color: #1A1A1A;
+  background: #F3C669;
+  font-weight: 800;
+  font-size: 0.8rem;
+  box-shadow: 0 0 10px rgba(243, 198, 105, 0.7);
+  animation: pulseHighlight 1.5s infinite;
+}
+
+@keyframes pulseHighlight {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+.guide-alt-tip {
+  margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(243, 198, 105, 0.1);
+  border: 1px solid rgba(243, 198, 105, 0.25);
+  font-size: 0.75rem;
+  color: #FFF;
+  line-height: 1.45;
+}
+
 .step-num {
   width: 22px;
   height: 22px;
@@ -2512,17 +2571,32 @@ input:checked + .toggle-slider:before {
 
           <!-- 삼성 인터넷 (Galaxy S23 기본) -->
           <div id="guideSamsung" class="guide-content-panel active">
+            <div class="samsung-bar-preview">
+              <span class="bar-title">👇 스마트폰 화면 맨 아래 바(Bar)를 보세요:</span>
+              <div class="mock-browser-bar">
+                <span class="mock-btn">❮</span>
+                <span class="mock-btn">❯</span>
+                <span class="mock-btn">🏠</span>
+                <span class="mock-btn">📑</span>
+                <span class="mock-btn highlight-menu">≡ 👈 여기 터치!</span>
+              </div>
+            </div>
+
             <div class="guide-step-item">
               <span class="step-num">1</span>
-              <span class="step-text">화면 맨 아래 우측의 <strong>≡ (메뉴 3줄)</strong> 버튼을 누릅니다.</span>
+              <span class="step-text">스마트폰 맨 아래 우측의 <strong>≡ (메뉴 3줄)</strong> 버튼을 누릅니다.</span>
             </div>
             <div class="guide-step-item">
               <span class="step-num">2</span>
-              <span class="step-text">메뉴에서 <strong>+ 현재 페이지 추가</strong>를 선택합니다.</span>
+              <span class="step-text">팝업 메뉴에서 <strong>+ 현재 페이지 추가</strong>를 선택합니다.</span>
             </div>
             <div class="guide-step-item">
               <span class="step-num">3</span>
-              <span class="step-text"><strong>홈 화면</strong>을 누른 뒤 <strong>추가</strong>를 누르면 바탕화면에 생성됩니다!</span>
+              <span class="step-text"><strong>[홈 화면]</strong>을 누른 뒤 <strong>[추가]</strong>를 누르면 끝!</span>
+            </div>
+
+            <div class="guide-alt-tip">
+              💡 <strong>더 빠른 방법:</strong> 화면 맨 위 주소창(URL) 오른쪽에 있는 <strong>[ ⬇ 설치 화살표 ]</strong>나 <strong>[ + ]</strong> 아이콘을 누르셔도 바로 추가됩니다!
             </div>
           </div>
 
@@ -3021,6 +3095,19 @@ function buildRosarySteps(mysteryKey, includeFatima = true, lang = "ko") {
  * - 햅틱 피드백 & 은은한 차임벨 사운드
  * - 화면 꺼짐 방지 (Wake Lock)
  */
+
+// 전역 PWA 설치 이벤트 캐처 (브라우저가 DOMContentLoaded 전에 이벤트를 발생시켜도 절대 놓치지 않음)
+let gDeferredInstallPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  gDeferredInstallPrompt = e;
+  if (window.rosaryApp) {
+    window.rosaryApp.deferredInstallPrompt = e;
+    if (window.rosaryApp.dom && window.rosaryApp.dom.nativeInstallBox) {
+      window.rosaryApp.dom.nativeInstallBox.style.display = "flex";
+    }
+  }
+});
 
 class RosaryApp {
   constructor() {
@@ -4914,10 +5001,18 @@ class RosaryApp {
   // 9. 바탕화면 바로가기 (PWA 홈 화면 추가 관리)
   // ==========================================
   initInstallManager() {
+    if (gDeferredInstallPrompt) {
+      this.deferredInstallPrompt = gDeferredInstallPrompt;
+      if (this.dom.nativeInstallBox) {
+        this.dom.nativeInstallBox.style.display = "flex";
+      }
+    }
+
     // 1) 브라우저 설치 이벤트 가로채기 (크롬 / 삼성 인터넷)
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
       this.deferredInstallPrompt = e;
+      gDeferredInstallPrompt = e;
       if (this.dom.nativeInstallBox) {
         this.dom.nativeInstallBox.style.display = "flex";
       }
@@ -4926,6 +5021,7 @@ class RosaryApp {
     // 2) 앱 설치 완료 이벤트
     window.addEventListener("appinstalled", () => {
       this.deferredInstallPrompt = null;
+      gDeferredInstallPrompt = null;
       this.isStandalone = true;
       if (this.dom.btnInstallApp) {
         this.dom.btnInstallApp.style.display = "none";
@@ -4979,16 +5075,18 @@ class RosaryApp {
   }
 
   triggerNativeInstall() {
-    if (this.deferredInstallPrompt) {
-      this.deferredInstallPrompt.prompt();
-      this.deferredInstallPrompt.userChoice.then((choiceResult) => {
+    const promptEvent = this.deferredInstallPrompt || gDeferredInstallPrompt;
+    if (promptEvent) {
+      promptEvent.prompt();
+      promptEvent.userChoice.then((choiceResult) => {
         if (choiceResult.outcome === "accepted") {
           this.deferredInstallPrompt = null;
+          gDeferredInstallPrompt = null;
           this.closeModals();
         }
       });
     } else {
-      // 네이티브 프롬프트가 즉시 지원되지 않는 경우 가이드 탭으로 안내
+      // 네이티브 프롬프트가 지원되지 않거나 브라우저 권한에 의해 메뉴 사용이 필요한 경우 가이드 탭으로 안내
       this.switchGuideTab("samsung");
       const guideBox = document.querySelector(".install-guide-section");
       if (guideBox) {

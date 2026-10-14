@@ -2,23 +2,37 @@
   "name": "거룩한 묵주기도",
   "short_name": "묵주기도",
   "description": "성모님과 함께 바치는 거룩한 장미 화관 (Catholic Holy Rosary)",
-  "start_url": "rosary.html",
+  "id": "/rosary",
+  "start_url": "/rosary",
+  "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0C111D",
   "theme_color": "#0C111D",
   "icons": [
     {
-      "src": "rosary_icon_192.png",
+      "src": "/rosary_icon_192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "rosary_icon_512.png",
+      "src": "/rosary_icon_192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/rosary_icon_512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/rosary_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
