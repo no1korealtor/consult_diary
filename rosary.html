@@ -2665,7 +2665,20 @@ input:checked + .toggle-slider:before {
           </div>
         </div>
 
-        <!-- 5. 주간 기록 미니 현황 카드 -->
+        <!-- 5. 기도 알림 소리 (종소리) 설정 카드 -->
+        <div class="intro-section-card">
+          <div class="intro-card-header">
+            <span class="intro-card-icon">🔔</span>
+            <span id="introSoundTitle" class="intro-card-title">기도 알림 소리 (종소리)</span>
+          </div>
+          <p id="introSoundSub" class="intro-card-desc">성당이나 조용한 곳에서는 무음으로 평화롭게 기도할 수 있습니다.</p>
+          <div class="intro-toggle-group">
+            <button type="button" id="btnIntroSoundOff" class="intro-toggle-btn active">🔇 무음 (기본)</button>
+            <button type="button" id="btnIntroSoundOn" class="intro-toggle-btn">🔔 은은한 종소리</button>
+          </div>
+        </div>
+
+        <!-- 6. 주간 기록 미니 현황 카드 -->
         <div id="introTrackerMiniCard" class="intro-section-card tracker-mini-card">
           <div class="tracker-mini-info">
             <span class="tracker-mini-icon">📅</span>
@@ -2869,9 +2882,12 @@ input:checked + .toggle-slider:before {
         </div>
 
         <div class="setting-row">
-          <span class="setting-label">알 넘김 은은한 종소리</span>
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <span class="setting-label">알 넘김 은은한 종소리</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">묵주알 및 성모송 장미 피어남 시 맑은 차임벨 울림</span>
+          </div>
           <label class="toggle-switch">
-            <input type="checkbox" id="soundToggle" checked>
+            <input type="checkbox" id="soundToggle">
             <span class="toggle-slider"></span>
           </label>
         </div>
@@ -3626,7 +3642,13 @@ class RosaryApp {
       btnIntroFatimaYes: document.getElementById("btnIntroFatimaYes"),
       btnIntroFatimaNo: document.getElementById("btnIntroFatimaNo"),
 
-      // 인트로 5. 주간 기록 미니 현황
+      // 인트로 5. 기도 알림 소리 (종소리)
+      introSoundTitle: document.getElementById("introSoundTitle"),
+      introSoundSub: document.getElementById("introSoundSub"),
+      btnIntroSoundOff: document.getElementById("btnIntroSoundOff"),
+      btnIntroSoundOn: document.getElementById("btnIntroSoundOn"),
+
+      // 인트로 6. 주간 기록 미니 현황
       introTrackerMiniCard: document.getElementById("introTrackerMiniCard"),
       introTrackerMiniTitle: document.getElementById("introTrackerMiniTitle"),
       introTrackerMiniCount: document.getElementById("introTrackerMiniCount"),
@@ -3728,6 +3750,7 @@ class RosaryApp {
     this.applySettings();
     this.syncLanguageUI();
     this.syncFatimaUI();
+    this.syncSoundUI();
     this.syncBeadStyleUI();
     this.renderMysteryOptions();
     this.renderDecadeProgressPills();
@@ -3762,16 +3785,26 @@ class RosaryApp {
     const defaultSettings = {
       fontSize: 18,
       hapticEnabled: true,
-      soundEnabled: true,
+      soundEnabled: false, // 기본값: 무음 (옵션으로 켜지 않는 한 무음 유지)
       keepScreenOn: true,
       includeFatima: true, // 구원송 기본 포함
       beadStyle: "rose",   // 'rose' (장미꽃송이 비드 기본) | 'classic' (원형)
       lang: "ko",          // 'ko' (한국어) | 'en' (English)
-      roseBloomEffect: true // 성모송 장미 꽃피움 & 천상 봉헌 승화 연출
+      roseBloomEffect: true, // 성모송 장미 꽃피움 & 천상 봉헌 승화 연출
+      soundPrefSet: false   // 사용자가 소리 설정을 직접 변경했는지 여부
     };
     try {
       const stored = localStorage.getItem(this.settingsKey);
-      return stored ? { ...defaultSettings, ...JSON.parse(stored) } : defaultSettings;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // 이전 버전에서 기본값이 true로 저장되어 있던 기존 세션을 감지하여,
+        // 사용자가 인트로/설정에서 소리를 직접 켠 것이 아니라면 기본 false(무음)로 보정
+        if (!parsed.soundPrefSet) {
+          parsed.soundEnabled = false;
+        }
+        return { ...defaultSettings, ...parsed };
+      }
+      return defaultSettings;
     } catch (e) {
       return defaultSettings;
     }
@@ -4220,6 +4253,20 @@ class RosaryApp {
     if (this.dom.btnIntroFatimaNo) {
       this.dom.btnIntroFatimaNo.textContent = isEn ? "Glory Be Only" : "영광송만";
     }
+    if (this.dom.introSoundTitle) {
+      this.dom.introSoundTitle.textContent = isEn ? "Prayer Sound (Bell Chime)" : "기도 알림 소리 (종소리)";
+    }
+    if (this.dom.introSoundSub) {
+      this.dom.introSoundSub.textContent = isEn 
+        ? "Pray in peaceful silence or with a gentle bell chime." 
+        : "성당이나 조용한 곳에서는 무음으로 평화롭게 기도할 수 있습니다.";
+    }
+    if (this.dom.btnIntroSoundOff) {
+      this.dom.btnIntroSoundOff.textContent = isEn ? "🔇 Mute (Default)" : "🔇 무음 (기본)";
+    }
+    if (this.dom.btnIntroSoundOn) {
+      this.dom.btnIntroSoundOn.textContent = isEn ? "🔔 Gentle Chime" : "🔔 은은한 종소리";
+    }
     if (this.dom.introTrackerMiniTitle) {
       this.dom.introTrackerMiniTitle.textContent = isEn ? "Roses Offered This Week" : "이번 주 봉헌한 장미";
     }
@@ -4316,6 +4363,33 @@ class RosaryApp {
     }
     if (this.dom.settingsFatimaToggle) {
       this.dom.settingsFatimaToggle.checked = isInc;
+    }
+  }
+
+  // ==========================================
+  // 기도 알림 소리 (종소리) 설정 변경 및 동기화
+  // ==========================================
+  setSoundEnabled(enabled) {
+    this.settings.soundEnabled = !!enabled;
+    this.settings.soundPrefSet = true;
+    this.saveSettings();
+    this.syncSoundUI();
+  }
+
+  syncSoundUI() {
+    const isSound = !!this.settings.soundEnabled;
+    const soundToggle = document.getElementById("soundToggle");
+    if (soundToggle) {
+      soundToggle.checked = isSound;
+    }
+    if (this.dom.btnIntroSoundOff && this.dom.btnIntroSoundOn) {
+      if (isSound) {
+        this.dom.btnIntroSoundOff.classList.remove("active");
+        this.dom.btnIntroSoundOn.classList.add("active");
+      } else {
+        this.dom.btnIntroSoundOff.classList.add("active");
+        this.dom.btnIntroSoundOn.classList.remove("active");
+      }
     }
   }
 
@@ -5274,18 +5348,37 @@ class RosaryApp {
 
     // 13) 진동 / 사운드 스위치
     const hapticToggle = document.getElementById("hapticToggle");
-    hapticToggle.checked = this.settings.hapticEnabled;
-    hapticToggle.addEventListener("change", (e) => {
-      this.settings.hapticEnabled = e.target.checked;
-      this.saveSettings();
-    });
+    if (hapticToggle) {
+      hapticToggle.checked = this.settings.hapticEnabled;
+      hapticToggle.addEventListener("change", (e) => {
+        this.settings.hapticEnabled = e.target.checked;
+        this.saveSettings();
+      });
+    }
 
+    // 인트로 화면 소리 선택 버튼
+    if (this.dom.btnIntroSoundOff) {
+      this.dom.btnIntroSoundOff.addEventListener("click", () => {
+        this.setSoundEnabled(false);
+      });
+    }
+    if (this.dom.btnIntroSoundOn) {
+      this.dom.btnIntroSoundOn.addEventListener("click", () => {
+        this.setSoundEnabled(true);
+        this.playRoseChime();
+      });
+    }
+
+    // 설정 모달 소리 토글
     const soundToggle = document.getElementById("soundToggle");
-    soundToggle.checked = this.settings.soundEnabled;
-    soundToggle.addEventListener("change", (e) => {
-      this.settings.soundEnabled = e.target.checked;
-      this.saveSettings();
-    });
+    if (soundToggle) {
+      soundToggle.addEventListener("change", (e) => {
+        this.setSoundEnabled(e.target.checked);
+        if (e.target.checked) {
+          this.playRoseChime();
+        }
+      });
+    }
 
     const roseBloomToggle = document.getElementById("roseBloomToggle");
     if (roseBloomToggle) {
