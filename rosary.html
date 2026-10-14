@@ -1424,6 +1424,88 @@ input:checked + .toggle-slider:before {
   margin: 0;
 }
 
+/* 카카오톡 인앱 브라우저 안내 박스 */
+.kakao-inapp-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(254, 229, 0, 0.12);
+  border: 1px solid rgba(254, 229, 0, 0.5);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+
+.kakao-box-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kakao-icon {
+  font-size: 1.6rem;
+}
+
+.kakao-box-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kakao-box-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #FEE500;
+}
+
+.kakao-box-sub {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.kakao-external-cta {
+  width: 100%;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: #FEE500;
+  color: #191919;
+  border: none;
+  font-size: 0.92rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(254, 229, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.kakao-external-cta:active {
+  transform: scale(0.98);
+}
+
+/* 이미 설치된 경우 안내 박스 */
+.standalone-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(72, 187, 120, 0.12);
+  border: 1px solid rgba(72, 187, 120, 0.4);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  text-align: center;
+}
+
+.standalone-badge {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #68D391;
+}
+
+.standalone-sub {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
 /* 브라우저별 가이드 탭 */
 .install-guide-section {
   display: flex;
@@ -2552,13 +2634,33 @@ input:checked + .toggle-slider:before {
           <button id="closeInstallBtn" class="tracker-close-btn" aria-label="닫기">✕</button>
         </div>
 
-        <!-- 1) 원터치 즉시 추가 버튼 (브라우저 지원 시 활성화) -->
-        <div id="nativeInstallBox" class="native-install-box">
+        <!-- 1) 원터치 즉시 추가 버튼 (브라우저가 실제로 지원할 때만 노출) -->
+        <div id="nativeInstallBox" class="native-install-box" style="display: none;">
           <button id="btnDoNativeInstall" class="install-main-cta-btn">
             <span class="cta-icon">📲</span>
             <span class="cta-label">홈 화면에 바로가기 만들기</span>
           </button>
           <p class="install-auto-desc">터치 후 나타나는 시스템 팝업에서 <strong>[추가]</strong>를 선택하세요.</p>
+        </div>
+
+        <!-- 1-1) 카카오톡 인앱 브라우저 감지 시 안내 박스 -->
+        <div id="kakaoInstallBox" class="kakao-inapp-box" style="display: none;">
+          <div class="kakao-box-header">
+            <span class="kakao-icon">💬</span>
+            <div class="kakao-box-titles">
+              <span class="kakao-box-title">카카오톡 안에서 보고 계십니다</span>
+              <span class="kakao-box-sub">카톡 안에서는 보안상 바로가기가 생성되지 않습니다.</span>
+            </div>
+          </div>
+          <button type="button" id="btnOpenExternalBrowser" class="kakao-external-cta">
+            🚀 삼성 인터넷 (기본 브라우저)으로 열기
+          </button>
+        </div>
+
+        <!-- 1-2) 이미 설치된 경우 안내 박스 -->
+        <div id="standaloneInstallBox" class="standalone-box" style="display: none;">
+          <div class="standalone-badge">🎉 이미 바탕화면 앱으로 실행 중입니다!</div>
+          <p class="standalone-sub">스마트폰 바탕화면의 묵주기도 아이콘으로 언제든지 바로 기도를 바치실 수 있습니다.</p>
         </div>
 
         <!-- 2) 브라우저별 상세 안내 가이드 (삼성 인터넷 / 크롬 / 카톡) -->
@@ -2639,6 +2741,13 @@ input:checked + .toggle-slider:before {
             <span>📋 접속 주소 링크 복사하기</span>
           </button>
           <span id="copyUrlFeedback" class="copy-feedback-msg"></span>
+        </div>
+
+        <!-- 4) 닫고 묵주기도 바치러 가기 버튼 -->
+        <div style="margin-top: 10px;">
+          <button type="button" id="btnDismissInstallModal" class="action-pill-btn gold" style="width: 100%; height: 46px; font-size: 0.95rem; font-weight: 800;">
+            🌹 닫고 묵주기도 바치러 가기
+          </button>
         </div>
 
       </div>
@@ -3244,6 +3353,10 @@ class RosaryApp {
       closeInstallBtn: document.getElementById("closeInstallBtn"),
       btnDoNativeInstall: document.getElementById("btnDoNativeInstall"),
       nativeInstallBox: document.getElementById("nativeInstallBox"),
+      kakaoInstallBox: document.getElementById("kakaoInstallBox"),
+      btnOpenExternalBrowser: document.getElementById("btnOpenExternalBrowser"),
+      standaloneInstallBox: document.getElementById("standaloneInstallBox"),
+      btnDismissInstallModal: document.getElementById("btnDismissInstallModal"),
       btnCopyAppUrl: document.getElementById("btnCopyAppUrl"),
       copyUrlFeedback: document.getElementById("copyUrlFeedback"),
       installToastPill: document.getElementById("installToastPill"),
@@ -4687,6 +4800,21 @@ class RosaryApp {
       });
     }
 
+    // 5-6) 카카오톡에서 기본 브라우저(삼성 인터넷)로 열기 버튼
+    if (this.dom.btnOpenExternalBrowser) {
+      this.dom.btnOpenExternalBrowser.addEventListener("click", () => {
+        const curUrl = window.location.href;
+        window.location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(curUrl);
+      });
+    }
+
+    // 5-7) 바로가기 모달 닫고 기도하러 가기
+    if (this.dom.btnDismissInstallModal) {
+      this.dom.btnDismissInstallModal.addEventListener("click", () => {
+        this.closeModals();
+      });
+    }
+
     // 6) 모달 닫기
     document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
       backdrop.addEventListener("click", (e) => {
@@ -5062,6 +5190,27 @@ class RosaryApp {
     this.openModal(this.dom.installModal);
     if (this.dom.copyUrlFeedback) {
       this.dom.copyUrlFeedback.textContent = "";
+    }
+
+    const isKakao = /KAKAOTALK/i.test(navigator.userAgent);
+    const hasPrompt = !!(this.deferredInstallPrompt || gDeferredInstallPrompt);
+
+    if (this.isStandalone) {
+      if (this.dom.standaloneInstallBox) this.dom.standaloneInstallBox.style.display = "flex";
+      if (this.dom.nativeInstallBox) this.dom.nativeInstallBox.style.display = "none";
+      if (this.dom.kakaoInstallBox) this.dom.kakaoInstallBox.style.display = "none";
+    } else if (isKakao) {
+      if (this.dom.kakaoInstallBox) this.dom.kakaoInstallBox.style.display = "flex";
+      if (this.dom.nativeInstallBox) this.dom.nativeInstallBox.style.display = "none";
+      if (this.dom.standaloneInstallBox) this.dom.standaloneInstallBox.style.display = "none";
+      this.switchGuideTab("kakao");
+    } else {
+      if (this.dom.standaloneInstallBox) this.dom.standaloneInstallBox.style.display = "none";
+      if (this.dom.kakaoInstallBox) this.dom.kakaoInstallBox.style.display = "none";
+      if (this.dom.nativeInstallBox) {
+        this.dom.nativeInstallBox.style.display = hasPrompt ? "flex" : "none";
+      }
+      this.switchGuideTab("samsung");
     }
   }
 
