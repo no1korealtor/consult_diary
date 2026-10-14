@@ -5900,10 +5900,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </script>
   <script>
-    // 서비스 워커 등록 (오프라인 지원)
+    // 서비스 워커 등록 (오프라인 지원 및 즉시 최신 버전 갱신)
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./rosary-sw.js').catch(() => {});
+        navigator.serviceWorker.register('./rosary-sw.js').then(reg => {
+          reg.update();
+        }).catch(() => {});
+      });
+
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
       });
     }
   </script>
