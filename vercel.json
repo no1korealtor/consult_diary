@@ -15,6 +15,10 @@
     {
       "source": "/rosary",
       "destination": "/rosary.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy.html"
     }
   ],
   "headers": [
