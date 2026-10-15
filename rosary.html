@@ -3957,35 +3957,24 @@ function buildRosarySteps(mysteryKey, includeFatima = true, lang = "ko") {
   const isEn = currentLang === "en";
   const steps = [];
 
-  // 1. 시작 - 성호경
+  // 1. 시작 - 십자가 (성호경 및 사도신경) - 가톨릭 GoodNews 기준 일치
   steps.push({
-    index: 0,
+    index: steps.length,
     section: isEn ? "Introductory Prayers" : "시작 기도",
     sectionCode: "intro",
     beadType: "cross",
     beadLabel: isEn ? "Crucifix" : "십자가",
-    title: prayers.sign_of_cross.name,
-    badge: isEn ? "Beginning" : "시작",
-    guide: isEn ? "Holding the crucifix, make the Sign of the Cross to begin prayer." : "십자가를 쥐고 성호를 그으며 기도를 시작합니다.",
-    prayers: [prayers.sign_of_cross]
+    title: isEn ? "Sign of the Cross & Apostles' Creed" : "성호경 · 사도신경",
+    badge: isEn ? "Crucifix (Beginning)" : "십자가 (시작 기도)",
+    guide: isEn 
+      ? "Holding the crucifix, make the Sign of the Cross, then profess your faith with the Apostles' Creed." 
+      : "묵주기도의 첫 시작입니다. 십자가를 쥐고 성호경을 하고, 사도신경을 바칩니다.",
+    prayers: [prayers.sign_of_cross, prayers.apostles_creed]
   });
 
-  // 2. 사도신경
+  // 2. 주님의 기도 (시작 첫 큰 알)
   steps.push({
-    index: 1,
-    section: isEn ? "Introductory Prayers" : "시작 기도",
-    sectionCode: "intro",
-    beadType: "cross",
-    beadLabel: isEn ? "Crucifix" : "십자가",
-    title: prayers.apostles_creed.name,
-    badge: isEn ? "Profession of Faith" : "믿음의 고백",
-    guide: isEn ? "Holding the crucifix, profess your faith in God." : "십자가를 잡고 신앙을 고백합니다.",
-    prayers: [prayers.apostles_creed]
-  });
-
-  // 3. 주님의 기도 (시작 첫 큰 알)
-  steps.push({
-    index: 2,
+    index: steps.length,
     section: isEn ? "Introductory Prayers" : "시작 기도",
     sectionCode: "intro",
     beadType: "large",
@@ -4159,35 +4148,24 @@ function buildDivineMercySteps(lang = "ko") {
   const isEn = currentLang === "en";
   const steps = [];
 
-  // 1. 시작 - 성호경
+  // 1. 시작 - 십자가 (성호경 및 시작 기도)
   steps.push({
-    index: 0,
+    index: steps.length,
     section: isEn ? "Introductory Prayers" : "시작 기도",
     sectionCode: "intro",
     beadType: "cross",
     beadLabel: isEn ? "Crucifix" : "십자가",
-    title: prayers.sign_of_cross.name,
-    badge: isEn ? "Beginning" : "시작 성호경",
-    guide: isEn ? "Holding the crucifix, make the Sign of the Cross to begin prayer." : "십자가를 쥐고 성호를 그으며 자비의 기도를 시작합니다.",
-    prayers: [prayers.sign_of_cross]
+    title: isEn ? "Sign of the Cross & Opening Prayer" : "성호경 · 시작 기도",
+    badge: isEn ? "Crucifix (Beginning)" : "십자가 (시작 기도)",
+    guide: isEn 
+      ? "Holding the crucifix, make the Sign of the Cross and offer the opening prayer to the Divine Mercy." 
+      : "자비의 5단 기도의 첫 시작입니다. 십자가를 쥐고 성호경을 한 후, 자비의 시작 기도를 바칩니다.",
+    prayers: [prayers.sign_of_cross, dm.opening]
   });
 
-  // 2. 시작 - 자비의 기도 시작 (숨을 거두셨으나 & 피와 물)
+  // 2. 주님의 기도 (첫 번째 큰 알)
   steps.push({
-    index: 1,
-    section: isEn ? "Introductory Prayers" : "시작 기도",
-    sectionCode: "intro",
-    beadType: "cross",
-    beadLabel: isEn ? "Crucifix" : "십자가",
-    title: dm.opening.name,
-    badge: isEn ? "Opening Prayer" : "시작 기도",
-    guide: isEn ? "Holding the crucifix, offer the opening prayer to the Divine Mercy." : "십자가를 잡고 하느님의 거룩한 자비를 청하는 시작 기도를 바칩니다.",
-    prayers: [dm.opening]
-  });
-
-  // 3. 주님의 기도 (첫 번째 큰 알)
-  steps.push({
-    index: 2,
+    index: steps.length,
     section: isEn ? "Introductory Prayers" : "시작 기도",
     sectionCode: "intro",
     beadType: "large",
@@ -6202,18 +6180,27 @@ class RosaryApp {
             }
           }
         } else if (step.beadType === "cross") {
+          const isOutro = step.sectionCode === "outro";
           if (this.dom.roseOfferingTitle) {
-            this.dom.roseOfferingTitle.textContent = isDm
-              ? (isEn ? "✝️ The Divine Mercy Chaplet" : "✝️ 하느님 자비의 기도")
-              : (isEn ? "✝️ The Holy Cross & Creed" : "✝️ 성호경과 사도신경");
+            if (isOutro) {
+              this.dom.roseOfferingTitle.textContent = isEn ? "✝️ Final Sign of the Cross" : "✝️ 마침 성호경";
+            } else {
+              this.dom.roseOfferingTitle.textContent = isDm
+                ? (isEn ? "✝️ The Divine Mercy Chaplet" : "✝️ 하느님 자비의 기도")
+                : (isEn ? "✝️ The Holy Cross & Creed" : "✝️ 성호경과 사도신경");
+            }
           }
           if (this.dom.roseOfferingSubtitle) {
-            this.dom.roseOfferingSubtitle.textContent = isDm
-              ? (isEn ? "In the Name of the Father, and of the Son, and of the Holy Spirit" : "예수 성심의 피와 물에 온전히 의탁하며")
-              : (isEn ? "Beginning of Prayer & Profession of Faith" : "십자가의 신비와 거룩한 믿음의 고백");
+            if (isOutro) {
+              this.dom.roseOfferingSubtitle.textContent = isEn ? "May the Lord bless us and protect us" : "주님의 거룩한 평화와 은총이 함께하시길";
+            } else {
+              this.dom.roseOfferingSubtitle.textContent = isDm
+                ? (isEn ? "In the Name of the Father, and of the Son, and of the Holy Spirit" : "예수 성심의 피와 물에 온전히 의탁하며")
+                : (isEn ? "Beginning of Prayer & Profession of Faith" : "십자가의 신비와 거룩한 믿음의 고백");
+            }
           }
           if (this.dom.roseOfferingDecadeBadge) {
-            this.dom.roseOfferingDecadeBadge.textContent = isEn ? "Start" : "시작";
+            this.dom.roseOfferingDecadeBadge.textContent = isOutro ? (isEn ? "End" : "마침") : (isEn ? "Start" : "시작");
           }
         }
       } else {
