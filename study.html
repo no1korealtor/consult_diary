@@ -2916,10 +2916,11 @@
             }
 
             try {
+                const schedKey = `SCHED_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
                 const { error } = await supabaseClient
                     .from('study_words')
                     .insert([{
-                        word: title,
+                        word: schedKey,
                         meaning: JSON.stringify(schedObj),
                         subject: 'FAMILY_SCHEDULE',
                         category: '아람',
@@ -3812,46 +3813,24 @@
             };
 
             try {
-                const { data: existing, error: fetchErr } = await supabaseClient
+                // Supabase upsert를 사용하여 중복 키 충돌(unique_word violation)을 원천 방지
+                const { data: upsertData, error: upsertErr } = await supabaseClient
                     .from('study_words')
-                    .select('id')
-                    .eq('subject', 'DAILY_HABIT')
-                    .eq('word', selectedHabitDate);
+                    .upsert({
+                        word: selectedHabitDate,
+                        meaning: JSON.stringify(detailObj),
+                        subject: 'DAILY_HABIT',
+                        category: '아람',
+                        example: userNickname || '아빠'
+                    }, { onConflict: 'word' })
+                    .select();
 
-                let saveError = null;
-                if (existing && existing.length > 0) {
-                    const { error } = await supabaseClient
-                        .from('study_words')
-                        .update({
-                            meaning: JSON.stringify(detailObj),
-                            category: '아람',
-                            example: userNickname || '아빠'
-                        })
-                        .eq('id', existing[0].id);
-                    saveError = error;
+                if (upsertErr) throw upsertErr;
 
-                    if (existing.length > 1) {
-                        for (let i = 1; i < existing.length; i++) {
-                            await supabaseClient.from('study_words').delete().eq('id', existing[i].id);
-                        }
-                    }
-                } else {
-                    const { error } = await supabaseClient
-                        .from('study_words')
-                        .insert([{
-                            word: selectedHabitDate,
-                            meaning: JSON.stringify(detailObj),
-                            subject: 'DAILY_HABIT',
-                            category: '아람',
-                            example: userNickname || '아빠'
-                        }]);
-                    saveError = error;
-                }
-
-                if (saveError) throw saveError;
-
+                const savedId = (upsertData && upsertData[0]?.id) || (habitRecordsMap[selectedHabitDate]?.id);
                 habitRecordsMap[selectedHabitDate] = {
                     ...detailObj,
+                    id: savedId,
                     rawCreatedAt: new Date().toISOString()
                 };
 
@@ -3872,6 +3851,8 @@
                 isHabitSaving = false;
                 if (saveBtn) {
                     saveBtn.disabled = false;
+                    const hasRecord = !!habitRecordsMap[selectedHabitDate];
+                    saveBtn.innerHTML = `💾 ${hasRecord ? '기록 수정하기' : '기록 저장하기'} 💖`;
                 }
             }
         }
