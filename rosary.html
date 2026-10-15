@@ -3227,7 +3227,7 @@ input:checked + .toggle-slider:before {
           <!-- 카드 상단 정보 바 -->
           <div class="card-header-bar">
             <span id="cardBadge" class="card-step-badge">제1단 · 묵상 및 주님의 기도</span>
-            <span id="cardCounter" class="card-step-counter">1 / 69</span>
+            <span id="cardCounter" class="card-step-counter">1 / 67</span>
           </div>
 
           <!-- 신비 묵상 영역 (각 단 시작 및 성모송 시 상시 안내) -->
@@ -3998,42 +3998,58 @@ function buildRosarySteps(mysteryKey, includeFatima = true, lang = "ko") {
   ];
   const introIntentions = isEn ? introIntentionsEn : introIntentionsKo;
 
+  // 6. 시작 성모송 3번 (작은 알 3개: 믿음, 희망, 사랑) 및 영광송·구원의 기도
+  // [가톨릭 굿뉴스 공식 표준 준수]
+  // "작은 알 3개에서 성모송 각 1번씩, 그리고 맨 마지막 알에서 영광송을 바칩니다. 이어서 구원을 위한 기도(구원송)를 바칠 수 있습니다."
+  // 실제 묵주에 없는 인공 '줄 / 간격' 알을 제거하고, 세 번째 작은 알(맨 마지막 알)에서 성모송 + 영광송 + 구원송을 바친 후 곧바로 제1단 큰 알로 진행합니다.
   for (let i = 0; i < 3; i++) {
-    steps.push({
-      index: steps.length,
-      section: isEn ? "Introductory Prayers" : "시작 기도",
-      sectionCode: "intro",
-      beadType: "small",
-      beadLabel: isEn ? `Hail Mary ${i + 1}/3` : `시작 성모송 ${i + 1}/3`,
-      title: introIntentions[i].title,
-      badge: introIntentions[i].intent,
-      guide: isEn ? `Praying for the theological virtue: ${introIntentions[i].intent}.` : `향주삼덕(${introIntentions[i].intent})을 청하며 바칩니다.`,
-      prayers: [prayers.hail_mary]
-    });
+    if (i < 2) {
+      steps.push({
+        index: steps.length,
+        section: isEn ? "Introductory Prayers" : "시작 기도",
+        sectionCode: "intro",
+        introIndex: i + 1,
+        beadType: "small",
+        beadLabel: isEn ? `Hail Mary ${i + 1}/3` : `시작 성모송 ${i + 1}/3`,
+        title: introIntentions[i].title,
+        badge: introIntentions[i].intent,
+        guide: isEn ? `Praying for the theological virtue: ${introIntentions[i].intent}.` : `향주삼덕(${introIntentions[i].intent})을 청하며 바칩니다.`,
+        prayers: [prayers.hail_mary]
+      });
+    } else {
+      // 세 번째 작은 알 (맨 마지막 알): 성모송 + 영광송 + 구원의 기도 (굿뉴스 공식 지침)
+      const lastIntroPrayers = includeFatima 
+        ? [prayers.hail_mary, prayers.glory_be, prayers.fatima_prayer] 
+        : [prayers.hail_mary, prayers.glory_be];
+
+      const lastIntroTitle = isEn 
+        ? (includeFatima ? "Hail Mary (3rd) · Glory Be · Fatima Prayer" : "Hail Mary (3rd) · Glory Be")
+        : (includeFatima ? "성모송 (세 번째) · 영광송 · 구원의 기도" : "성모송 (세 번째) · 영광송");
+
+      const lastIntroBadge = isEn ? "Charity & Glory Be" : "사랑을 북돋우며 · 영광송";
+
+      const lastIntroGuide = isEn 
+        ? (includeFatima 
+            ? "Praying for Charity, recite the Hail Mary, then recite the Glory Be and Fatima Prayer on this last small bead." 
+            : "Praying for Charity, recite the Hail Mary, then give glory to the Holy Trinity on this last small bead.")
+        : (includeFatima 
+            ? "향주삼덕(사랑을 북돋우기 위하여)을 청하며 성모송을 바친 후, 맨 마지막 알에서 영광송과 구원의 기도를 바칩니다." 
+            : "향주삼덕(사랑을 북돋우기 위하여)을 청하며 성모송을 바친 후, 맨 마지막 알에서 영광송을 바칩니다.");
+
+      steps.push({
+        index: steps.length,
+        section: isEn ? "Introductory Prayers" : "시작 기도",
+        sectionCode: "intro",
+        introIndex: 3,
+        beadType: "small",
+        beadLabel: isEn ? "3rd Small Bead (Last Bead)" : "세 번째 작은 알 (맨 마지막 알)",
+        title: lastIntroTitle,
+        badge: lastIntroBadge,
+        guide: lastIntroGuide,
+        prayers: lastIntroPrayers
+      });
+    }
   }
-
-  // 7. 시작 영광송 & 구원의 기도 (선택 옵션 반영)
-  const introConnectorPrayers = includeFatima 
-    ? [prayers.glory_be, prayers.fatima_prayer] 
-    : [prayers.glory_be];
-
-  const introTitle = isEn 
-    ? (includeFatima ? "Glory Be & Fatima Prayer" : "Glory Be")
-    : (includeFatima ? "영광송 · 구원의 기도" : "영광송");
-
-  steps.push({
-    index: steps.length,
-    section: isEn ? "Introductory Prayers" : "시작 기도",
-    sectionCode: "intro",
-    beadType: "connector",
-    beadLabel: isEn ? "Chain / Space" : "줄 / 간격",
-    title: introTitle,
-    badge: isEn ? "Praise the Trinity" : "삼위일체 찬미",
-    guide: isEn 
-      ? (includeFatima ? "Praise the Holy Trinity and recite the Fatima Prayer." : "Give glory to the Holy Trinity.")
-      : (includeFatima ? "삼위일체 하느님께 영광을 드리고 구원의 기도를 바칩니다." : "삼위일체 하느님께 영광을 드립니다."),
-    prayers: introConnectorPrayers
-  });
 
   // 1단 ~ 5단 반복
   mystery.decades.forEach((decade, dIdx) => {
@@ -4176,11 +4192,12 @@ function buildDivineMercySteps(lang = "ko") {
     prayers: [prayers.our_father]
   });
 
-  // 4. 성모송 (시작 첫 번째 작은 알)
+  // 3. 성모송 (시작 첫 번째 작은 알)
   steps.push({
-    index: 3,
+    index: steps.length,
     section: isEn ? "Introductory Prayers" : "시작 기도",
     sectionCode: "intro",
+    introIndex: 1,
     beadType: "small",
     beadLabel: isEn ? "Hail Mary" : "성모송",
     title: prayers.hail_mary.name,
@@ -4189,11 +4206,12 @@ function buildDivineMercySteps(lang = "ko") {
     prayers: [prayers.hail_mary]
   });
 
-  // 5. 사도신경 (시작 두 번째 작은 알)
+  // 4. 사도신경 (시작 두 번째 작은 알)
   steps.push({
-    index: 4,
+    index: steps.length,
     section: isEn ? "Introductory Prayers" : "시작 기도",
     sectionCode: "intro",
+    introIndex: 2,
     beadType: "small",
     beadLabel: isEn ? "Apostles' Creed" : "사도신경",
     title: prayers.apostles_creed.name,
@@ -4202,16 +4220,17 @@ function buildDivineMercySteps(lang = "ko") {
     prayers: [prayers.apostles_creed]
   });
 
-  // 6. 예수 성심의 피와 물 의탁 (시작 세 번째 작은 알 / 연결부)
+  // 5. 예수 성심의 피와 물 의탁 (시작 세 번째 작은 알)
   steps.push({
-    index: 5,
+    index: steps.length,
     section: isEn ? "Introductory Prayers" : "시작 기도",
     sectionCode: "intro",
-    beadType: "connector",
-    beadLabel: isEn ? "Chain / Space" : "줄 / 간격",
+    introIndex: 3,
+    beadType: "small",
+    beadLabel: isEn ? "3rd Small Bead (Trust Act)" : "세 번째 작은 알 (의탁 기도)",
     title: dm.trust_act.name,
     badge: isEn ? "Fount of Mercy" : "자비의 샘",
-    guide: isEn ? "Entrust yourself to the Blood and Water gushing from Jesus' Heart." : "예수 성심에서 흘러나온 피와 물에 온전히 의탁합니다.",
+    guide: isEn ? "On the third small bead, entrust yourself to the Blood and Water gushing from Jesus' Heart." : "세 번째 작은 알을 잡고 예수 성심에서 흘러나온 피와 물에 온전히 의탁합니다.",
     prayers: [dm.trust_act]
   });
 
@@ -5007,7 +5026,7 @@ class RosaryApp {
 
     // 1. 지난 기도 이어하기 카드 상태 업데이트
     const saved = this.loadSavedProgress();
-    if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < 68) {
+    if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length - 1 : 66)) {
       if (this.dom.introResumeCard) {
         this.dom.introResumeCard.style.display = "flex";
       }
@@ -5871,7 +5890,7 @@ class RosaryApp {
     }
 
     // 성모송 작은 알 (비활성은 순결한 백장미, 활성은 영광의 황금장미)
-    const num = step.beadNumber || "";
+    const num = step.beadNumber || step.introIndex || "";
     const size = isActive ? 54 : 38;
     const isGold = isActive;
     const petalGrad = isGold ? "url(#sacredGoldRoseGrad)" : "url(#mysticWhiteRoseGrad)";
@@ -5974,8 +5993,8 @@ class RosaryApp {
     let beadContent = "";
     if (step.beadType === "cross") {
       beadContent = "✝";
-    } else if (step.beadNumber) {
-      beadContent = step.beadNumber;
+    } else if (step.beadNumber || step.introIndex) {
+      beadContent = step.beadNumber || step.introIndex;
     } else if (step.beadType === "large") {
       beadContent = "●";
     }
@@ -6117,19 +6136,51 @@ class RosaryApp {
         const isDm = this.currentPrayerType === "divine_mercy";
 
         if (step.beadType === "small") {
-          // 성모송 (묵주기도) vs 자비의 간구 (자비의 기도)
+          const isIntro = step.sectionCode === "intro";
           if (this.dom.roseOfferingTitle) {
-            this.dom.roseOfferingTitle.textContent = isDm
-              ? (isEn ? "🕊️ Ray of Divine Mercy" : "🕊️ 자비의 샘에서 솟아나는 은총")
-              : (isEn ? "🌹 Rose Offered to Our Lady" : "🌹 성모님께 봉헌하는 장미");
+            if (isDm) {
+              this.dom.roseOfferingTitle.textContent = isIntro
+                ? (isEn ? "🕊️ Preparation Prayer" : "🕊️ 시작 준비 기도")
+                : (isEn ? "🕊️ Ray of Divine Mercy" : "🕊️ 자비의 샘에서 솟아나는 은총");
+            } else {
+              if (isIntro) {
+                if (step.introIndex === 1) {
+                  this.dom.roseOfferingTitle.textContent = isEn ? "🌹 Rose of Faith" : "🌹 믿음의 백장미";
+                } else if (step.introIndex === 2) {
+                  this.dom.roseOfferingTitle.textContent = isEn ? "🌹 Rose of Hope" : "🌹 희망의 백장미";
+                } else {
+                  this.dom.roseOfferingTitle.textContent = isEn ? "🌹 Rose of Charity & Glory Be" : "🌹 사랑의 장미 · 영광송";
+                }
+              } else {
+                this.dom.roseOfferingTitle.textContent = isEn ? "🌹 Rose Offered to Our Lady" : "🌹 성모님께 봉헌하는 장미";
+              }
+            }
           }
           if (this.dom.roseOfferingSubtitle) {
-            this.dom.roseOfferingSubtitle.textContent = isDm
-              ? (isEn ? `Decade ${step.decadeNum} · Prayer for Mercy #${step.beadNumber}` : `제${step.decadeNum}단 · 제 ${step.beadNumber} 번째 자비의 간구`)
-              : (isEn ? `Decade ${step.decadeNum} · Rose #${step.beadNumber} for Mary` : `제${step.decadeNum}단 · 제 ${step.beadNumber} 송이의 백장미`);
+            if (isDm) {
+              this.dom.roseOfferingSubtitle.textContent = isIntro
+                ? (isEn ? step.title : "정성된 마음으로 바치는 기도")
+                : (isEn ? `Decade ${step.decadeNum} · Prayer for Mercy #${step.beadNumber}` : `제${step.decadeNum}단 · 제 ${step.beadNumber} 번째 자비의 간구`);
+            } else {
+              if (isIntro) {
+                if (step.introIndex === 1) {
+                  this.dom.roseOfferingSubtitle.textContent = isEn ? "Offered for an increase in Faith" : "믿음을 더하기 위하여 바치는 장미";
+                } else if (step.introIndex === 2) {
+                  this.dom.roseOfferingSubtitle.textContent = isEn ? "Offered for an increase in Hope" : "희망을 굳세게 하기 위하여 바치는 장미";
+                } else {
+                  this.dom.roseOfferingSubtitle.textContent = isEn 
+                    ? (this.settings.includeFatima ? "Charity, Glory to the Trinity & Fatima Prayer" : "Charity & Glory to the Holy Trinity")
+                    : (this.settings.includeFatima ? "사랑을 북돋우며 바치는 영광송과 구원의 기도" : "사랑을 북돋우며 바치는 영광송");
+                }
+              } else {
+                this.dom.roseOfferingSubtitle.textContent = isEn ? `Decade ${step.decadeNum} · Rose #${step.beadNumber} for Mary` : `제${step.decadeNum}단 · 제 ${step.beadNumber} 송이의 백장미`;
+              }
+            }
           }
           if (this.dom.roseOfferingDecadeBadge) {
-            this.dom.roseOfferingDecadeBadge.textContent = `${step.beadNumber} / 10`;
+            this.dom.roseOfferingDecadeBadge.textContent = isIntro
+              ? `${step.introIndex || 1} / 3`
+              : `${step.beadNumber} / 10`;
           }
         } else if (step.beadType === "large") {
           // 주님의 기도 vs 영원하신 아버지
