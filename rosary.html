@@ -3227,7 +3227,7 @@ input:checked + .toggle-slider:before {
           <!-- 카드 상단 정보 바 -->
           <div class="card-header-bar">
             <span id="cardBadge" class="card-step-badge">제1단 · 묵상 및 주님의 기도</span>
-            <span id="cardCounter" class="card-step-counter">1 / 67</span>
+            <span id="cardCounter" class="card-step-counter">1 / 69</span>
           </div>
 
           <!-- 신비 묵상 영역 (각 단 시작 및 성모송 시 상시 안내) -->
@@ -6124,9 +6124,9 @@ class RosaryApp {
       this.dom.startFatimaBox.style.display = this.currentIndex === 0 ? "flex" : "none";
     }
 
-    // 성모님께 봉헌하는 장미 배너 업데이트 (기도에 어울리는 장미 비주얼)
+    // 성모님께 봉헌하는 장미 배너 업데이트 (기도에 어울리는 장미 비주얼 - 십자가에서는 깔끔하게 미표시)
     if (this.dom.roseOfferingBanner) {
-      if (this.settings.beadStyle !== "classic") {
+      if (this.settings.beadStyle !== "classic" && step.beadType !== "cross") {
         this.dom.roseOfferingBanner.style.display = "flex";
         if (this.dom.roseOfferingVisual) {
           this.dom.roseOfferingVisual.innerHTML = this.getRoseOfferingVisualSvg(step);
@@ -6224,34 +6224,9 @@ class RosaryApp {
             }
           }
           if (this.dom.roseOfferingDecadeBadge) {
-            if (isDm) {
-              this.dom.roseOfferingDecadeBadge.textContent = isDecadeClose ? (isEn ? "Trust" : "의탁 🕊️") : (isEn ? "Holy God" : "하느님");
-            } else {
-              this.dom.roseOfferingDecadeBadge.textContent = isDecadeClose ? (isEn ? "10 Roses" : "1단 완성 🌹") : (isEn ? "Praise" : "찬미");
-            }
-          }
-        } else if (step.beadType === "cross") {
-          const isOutro = step.sectionCode === "outro";
-          if (this.dom.roseOfferingTitle) {
-            if (isOutro) {
-              this.dom.roseOfferingTitle.textContent = isEn ? "✝️ Final Sign of the Cross" : "✝️ 마침 성호경";
-            } else {
-              this.dom.roseOfferingTitle.textContent = isDm
-                ? (isEn ? "✝️ The Divine Mercy Chaplet" : "✝️ 하느님 자비의 기도")
-                : (isEn ? "✝️ The Holy Cross & Creed" : "✝️ 성호경과 사도신경");
-            }
-          }
-          if (this.dom.roseOfferingSubtitle) {
-            if (isOutro) {
-              this.dom.roseOfferingSubtitle.textContent = isEn ? "May the Lord bless us and protect us" : "주님의 거룩한 평화와 은총이 함께하시길";
-            } else {
-              this.dom.roseOfferingSubtitle.textContent = isDm
-                ? (isEn ? "In the Name of the Father, and of the Son, and of the Holy Spirit" : "예수 성심의 피와 물에 온전히 의탁하며")
-                : (isEn ? "Beginning of Prayer & Profession of Faith" : "십자가의 신비와 거룩한 믿음의 고백");
-            }
-          }
-          if (this.dom.roseOfferingDecadeBadge) {
-            this.dom.roseOfferingDecadeBadge.textContent = isOutro ? (isEn ? "End" : "마침") : (isEn ? "Start" : "시작");
+            this.dom.roseOfferingDecadeBadge.textContent = isDm
+              ? (isDecadeClose ? (isEn ? "Trust" : "의탁 🕊️") : (isEn ? "Holy God" : "하느님"))
+              : (isDecadeClose ? (isEn ? "10 Roses" : "1단 완성 🌹") : (isEn ? "Praise" : "찬미"));
           }
         }
       } else {
