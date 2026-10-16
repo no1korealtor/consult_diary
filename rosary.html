@@ -506,16 +506,7 @@ html, body {
    성모님께 봉헌하는 장미 배너 (기도에 어울리는 장미 비주얼)
    =================================================== */
 .rose-offering-banner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: linear-gradient(135deg, rgba(243, 198, 105, 0.16) 0%, rgba(20, 32, 54, 0.9) 100%);
-  border: 1px solid rgba(243, 198, 105, 0.38);
-  border-radius: var(--radius-md);
-  padding: 8px 12px;
-  margin-bottom: 12px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
-  animation: roseBannerFade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: none !important;
 }
 
 @keyframes roseBannerFade {
@@ -6124,114 +6115,9 @@ class RosaryApp {
       this.dom.startFatimaBox.style.display = this.currentIndex === 0 ? "flex" : "none";
     }
 
-    // 성모님께 봉헌하는 장미 배너 업데이트 (기도에 어울리는 장미 비주얼 - 십자가에서는 깔끔하게 미표시)
+    // 기도 집중을 위해 배너 비활성화 (기도문 본문 최대 노출 및 시원한 화면 구성)
     if (this.dom.roseOfferingBanner) {
-      if (this.settings.beadStyle !== "classic" && step.beadType !== "cross") {
-        this.dom.roseOfferingBanner.style.display = "flex";
-        if (this.dom.roseOfferingVisual) {
-          this.dom.roseOfferingVisual.innerHTML = this.getRoseOfferingVisualSvg(step);
-        }
-
-        const isEn = this.settings.lang === "en";
-        const isDm = this.currentPrayerType === "divine_mercy";
-
-        if (step.beadType === "small") {
-          const isIntro = step.sectionCode === "intro";
-          if (this.dom.roseOfferingTitle) {
-            if (isDm) {
-              this.dom.roseOfferingTitle.textContent = isIntro
-                ? (isEn ? "🕊️ Preparation Prayer" : "🕊️ 시작 준비 기도")
-                : (isEn ? "🕊️ Ray of Divine Mercy" : "🕊️ 자비의 샘에서 솟아나는 은총");
-            } else {
-              if (isIntro) {
-                if (step.introIndex === 1) {
-                  this.dom.roseOfferingTitle.textContent = isEn ? "🌹 Rose of Faith" : "🌹 믿음의 백장미";
-                } else if (step.introIndex === 2) {
-                  this.dom.roseOfferingTitle.textContent = isEn ? "🌹 Rose of Hope" : "🌹 희망의 백장미";
-                } else {
-                  this.dom.roseOfferingTitle.textContent = isEn ? "🌹 Rose of Charity & Glory Be" : "🌹 사랑의 장미 · 영광송";
-                }
-              } else {
-                this.dom.roseOfferingTitle.textContent = isEn ? "🌹 Rose Offered to Our Lady" : "🌹 성모님께 봉헌하는 장미";
-              }
-            }
-          }
-          if (this.dom.roseOfferingSubtitle) {
-            if (isDm) {
-              this.dom.roseOfferingSubtitle.textContent = isIntro
-                ? (isEn ? step.title : "정성된 마음으로 바치는 기도")
-                : (isEn ? `Decade ${step.decadeNum} · Prayer for Mercy #${step.beadNumber}` : `제${step.decadeNum}단 · 제 ${step.beadNumber} 번째 자비의 간구`);
-            } else {
-              if (isIntro) {
-                if (step.introIndex === 1) {
-                  this.dom.roseOfferingSubtitle.textContent = isEn ? "Offered for an increase in Faith" : "믿음을 더하기 위하여 바치는 장미";
-                } else if (step.introIndex === 2) {
-                  this.dom.roseOfferingSubtitle.textContent = isEn ? "Offered for an increase in Hope" : "희망을 굳세게 하기 위하여 바치는 장미";
-                } else {
-                  this.dom.roseOfferingSubtitle.textContent = isEn 
-                    ? (this.settings.includeFatima ? "Charity, Glory to the Trinity & Fatima Prayer" : "Charity & Glory to the Holy Trinity")
-                    : (this.settings.includeFatima ? "사랑을 북돋우며 바치는 영광송과 구원의 기도" : "사랑을 북돋우며 바치는 영광송");
-                }
-              } else {
-                this.dom.roseOfferingSubtitle.textContent = isEn ? `Decade ${step.decadeNum} · Rose #${step.beadNumber} for Mary` : `제${step.decadeNum}단 · 제 ${step.beadNumber} 송이의 백장미`;
-              }
-            }
-          }
-          if (this.dom.roseOfferingDecadeBadge) {
-            this.dom.roseOfferingDecadeBadge.textContent = isIntro
-              ? `${step.introIndex || 1} / 3`
-              : `${step.beadNumber} / 10`;
-          }
-        } else if (step.beadType === "large") {
-          // 주님의 기도 vs 영원하신 아버지
-          if (this.dom.roseOfferingTitle) {
-            this.dom.roseOfferingTitle.textContent = isDm
-              ? (isEn ? "❤️ Eternal Father Offering" : "❤️ 영원하신 아버지께 바치는 봉헌")
-              : (isEn ? "👑 Royal Golden Rose" : "👑 주님의 기도 · 황금 장미 봉헌");
-          }
-          if (this.dom.roseOfferingSubtitle) {
-            this.dom.roseOfferingSubtitle.textContent = isDm
-              ? (isEn ? `Decade ${step.decadeNum} Offering of Christ's Body & Blood` : `제${step.decadeNum}단 그리스도의 몸과 피 봉헌`)
-              : (isEn ? `Decade ${step.decadeNum} Opening Rose of Praise` : `제${step.decadeNum}단을 여는 찬미의 황금 장미`);
-          }
-          if (this.dom.roseOfferingDecadeBadge) {
-            this.dom.roseOfferingDecadeBadge.textContent = isDm
-              ? (isEn ? "Eternal Father" : "영원하신 아버지")
-              : (isEn ? "Lord's Prayer" : "주님의 기도");
-          }
-        } else if (step.beadType === "connector") {
-          const isDecadeClose = !!step.decadeNum;
-          if (this.dom.roseOfferingTitle) {
-            if (isDm) {
-              this.dom.roseOfferingTitle.textContent = isDecadeClose
-                ? (isEn ? `✨ Decade ${step.decadeNum} Concluded` : `✨ 제${step.decadeNum}단 맺음`)
-                : (isEn ? "✨ Trisagion: Holy God" : "✨ 거룩하신 하느님");
-            } else {
-              this.dom.roseOfferingTitle.textContent = isEn 
-                ? (isDecadeClose ? `✨ Decade ${step.decadeNum} Consecrated` : "✨ Glory Be to the Trinity") 
-                : (isDecadeClose ? `✨ 제${step.decadeNum}단 완성 · 은총의 장미` : "✨ 영광송 · 삼위일체 찬미");
-            }
-          }
-          if (this.dom.roseOfferingSubtitle) {
-            if (isDm) {
-              this.dom.roseOfferingSubtitle.textContent = isDecadeClose
-                ? (isEn ? "Jesus, I trust in You!" : "Holy God, Holy Mighty One, Holy Immortal One")
-                : (isDecadeClose ? "예수님, 저는 당신께 의탁합니다." : "거룩하신 하느님, 저희에게 자비를 베푸소서.");
-            } else {
-              this.dom.roseOfferingSubtitle.textContent = isEn 
-                ? (isDecadeClose ? "10 Roses Woven into Our Lady's Rosary" : "Praising the Father, Son, and Holy Spirit") 
-                : (isDecadeClose ? "10송이의 장미를 엮어 성모님께 드립니다 🌹" : "하느님께 드리는 찬미의 꽃송이");
-            }
-          }
-          if (this.dom.roseOfferingDecadeBadge) {
-            this.dom.roseOfferingDecadeBadge.textContent = isDm
-              ? (isDecadeClose ? (isEn ? "Trust" : "의탁 🕊️") : (isEn ? "Holy God" : "하느님"))
-              : (isDecadeClose ? (isEn ? "10 Roses" : "1단 완성 🌹") : (isEn ? "Praise" : "찬미"));
-          }
-        }
-      } else {
-        this.dom.roseOfferingBanner.style.display = "none";
-      }
+      this.dom.roseOfferingBanner.style.display = "none";
     }
 
     this.dom.prayerContentSection.innerHTML = "";
