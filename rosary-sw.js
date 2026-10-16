@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rosary-app-v10';
+const CACHE_NAME = 'rosary-app-v11';
 const urlsToCache = [
   '/rosary',
   '/rosary.html',

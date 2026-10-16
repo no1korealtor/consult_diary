@@ -3147,6 +3147,18 @@ input:checked + .toggle-slider:before {
           <button type="button" id="btnIntroOpenTracker" class="tracker-mini-btn">기록장 ❯</button>
         </div>
 
+        <!-- 7. 따뜻한 차 한 잔 후원 안내 카드 -->
+        <div id="introDonationCard" class="intro-section-card tracker-mini-card" style="background: rgba(243, 198, 105, 0.05); border: 1px solid rgba(243, 198, 105, 0.22); cursor: pointer;">
+          <div class="tracker-mini-info">
+            <span class="tracker-mini-icon">☕</span>
+            <div class="tracker-mini-texts">
+              <span id="introDonationTitle" class="tracker-mini-title" style="color: var(--gold-primary); font-weight: 700;">따뜻한 차 한 잔 후원하기</span>
+              <span id="introDonationSub" class="tracker-mini-count" style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal;">100% 무료 · 광고 없는 기도 앱 개발자 응원</span>
+            </div>
+          </div>
+          <button type="button" id="btnIntroOpenDonation" class="tracker-mini-btn" style="background: rgba(243,198,105,0.16); border-color: rgba(243,198,105,0.35); color: var(--gold-primary);">응원하기 ❯</button>
+        </div>
+
         <div class="intro-bottom-spacer"></div>
 
       </div>
@@ -3375,6 +3387,14 @@ input:checked + .toggle-slider:before {
           </div>
           <button type="button" id="btnSettingsInstall" class="action-pill-btn gold" style="flex:0 0 88px; height:34px; font-size:0.82rem;">바로가기</button>
         </div>
+
+        <div class="setting-row" style="background: rgba(243, 198, 105, 0.05); padding: 12px; border-radius: var(--radius-sm); border: 1px solid rgba(243, 198, 105, 0.2); margin-top: 8px;">
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <span id="settingDonationLabel" class="setting-label" style="color:var(--text-primary); font-weight:700;">☕ 따뜻한 차 한 잔 후원하기</span>
+            <span id="settingDonationSub" style="font-size:0.75rem; color:var(--text-secondary);">광고 없는 무료 기도 앱 개발자 응원하기</span>
+          </div>
+          <button type="button" id="btnSettingsOpenDonation" class="action-pill-btn gold" style="flex:0 0 76px; height:34px; font-size:0.82rem;">응원하기</button>
+        </div>
       </div>
     </div>
 
@@ -3483,6 +3503,12 @@ input:checked + .toggle-slider:before {
         언제나 삶 가운데 가득하시기를 기도드립니다.<br>
         "평화를 빕니다."
       </p>
+      <!-- 후원 안내 작은 배너 -->
+      <div id="completionDonationBox" class="completion-donation-box" style="margin: 16px 0; padding: 12px 14px; background: rgba(243, 198, 105, 0.08); border: 1px solid rgba(243, 198, 105, 0.28); border-radius: var(--radius-md); text-align: center; cursor: pointer;">
+        <div id="completionDonationTitle" style="font-size: 0.88rem; font-weight: 700; color: var(--gold-primary); margin-bottom: 3px;">☕ 개발자에게 따뜻한 차 한 잔 응원하기</div>
+        <div id="completionDonationSub" style="font-size: 0.76rem; color: var(--text-secondary); line-height: 1.4;">광고 없는 무료 기도 앱 운영에 큰 힘이 됩니다 🙏</div>
+      </div>
+
       <div class="completion-actions">
         <button id="completionRestartBtn" class="nav-bead-btn next-btn" style="width: 100%;">
           처음부터 다시 바치기
@@ -3638,6 +3664,50 @@ input:checked + .toggle-slider:before {
           </button>
         </div>
 
+      </div>
+    </div>
+
+    <!-- 12. 후원 및 응원 모달 바텀시트 -->
+    <div id="donationModal" class="modal-backdrop">
+      <div class="bottom-sheet" style="max-width: 440px;">
+        <div class="sheet-handle"></div>
+        <div id="donationModalTitle" class="sheet-title" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>☕</span> <span>따뜻한 마음에 감사드립니다</span>
+        </div>
+        
+        <div style="padding: 10px 4px 16px; text-align: center;">
+          <p id="donationModalDesc" style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 16px;">
+            『거룩한 묵주기도』는 모든 신자분들이 분심 없이 기도에만 집중하실 수 있도록 <strong>광고 없이 100% 무료</strong>로 봉헌 운영됩니다.<br><br>
+            보내주시는 따뜻한 차 한 잔의 후원은 앱 서버 유지와 더 풍성한 신앙 콘텐츠 개발에 소중한 힘이 됩니다. 진심으로 감사드립니다. 🙏
+          </p>
+
+          <!-- 계좌 정보 카드 -->
+          <div style="background: rgba(243, 198, 105, 0.1); border: 1px solid rgba(243, 198, 105, 0.35); border-radius: var(--radius-md); padding: 16px; margin-bottom: 14px; text-align: left;">
+            <div id="donationBankLabel" style="font-size: 0.76rem; color: var(--gold-primary); font-weight: 700; margin-bottom: 6px;">후원 계좌 (카카오뱅크)</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <div>
+                <div id="donationAccountNum" style="font-size: 1.05rem; font-weight: 800; color: #FFF; letter-spacing: 0.5px;">카카오뱅크 3333-33-8298898</div>
+                <div id="donationAccountHolder" style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">예금주: 조항준</div>
+              </div>
+              <button type="button" id="btnCopyDonationAccount" class="action-pill-btn gold" style="flex-shrink: 0; padding: 6px 14px; height: 36px; font-size: 0.82rem; font-weight: 700;">
+                복사
+              </button>
+            </div>
+            <!-- 복사 완료 피드백 메시지 -->
+            <div id="copyAccountFeedback" style="display: none; font-size: 0.78rem; color: #4ADE80; font-weight: 700; margin-top: 8px; text-align: center;">
+              ✓ 계좌번호가 복사되었습니다. 주님의 은총이 가득하시길 빕니다!
+            </div>
+          </div>
+
+          <!-- 개발자에게 응원 메일 보내기 -->
+          <a id="btnDonationMail" href="mailto:no1korealtor@naver.com?subject=%5B%EB%AC%B5%EC%A3%BC%EA%B8%B0%EB%8F%84%20%EC%95%B1%5D%20%EC%9D%91%EC%9B%90%EA%B3%BC%20%EA%B0%90%EC%82%AC%EC%9D%98%20%EC%9D%B8%EC%82%AC" class="action-pill-btn" style="display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; height: 42px; text-decoration: none; font-size: 0.86rem; color: var(--text-secondary); border-color: rgba(255,255,255,0.15);">
+            <span>✉️ 개발자에게 응원 한마디 보내기</span>
+          </a>
+
+          <button type="button" id="btnDismissDonationModal" class="action-pill-btn" style="width: 100%; margin-top: 10px; height: 40px; font-size: 0.84rem;">
+            닫기
+          </button>
+        </div>
       </div>
     </div>
 
@@ -4544,7 +4614,29 @@ class RosaryApp {
       panelHistoryRosary: document.getElementById("panelHistoryRosary"),
       btnSettingsOpenHistory: document.getElementById("btnSettingsOpenHistory"),
       settingHistoryLabel: document.getElementById("settingHistoryLabel"),
-      settingHistorySub: document.getElementById("settingHistorySub")
+      settingHistorySub: document.getElementById("settingHistorySub"),
+
+      // 후원 및 응원 모달 DOM
+      introDonationCard: document.getElementById("introDonationCard"),
+      btnIntroOpenDonation: document.getElementById("btnIntroOpenDonation"),
+      introDonationTitle: document.getElementById("introDonationTitle"),
+      introDonationSub: document.getElementById("introDonationSub"),
+      btnSettingsOpenDonation: document.getElementById("btnSettingsOpenDonation"),
+      settingDonationLabel: document.getElementById("settingDonationLabel"),
+      settingDonationSub: document.getElementById("settingDonationSub"),
+      completionDonationBox: document.getElementById("completionDonationBox"),
+      completionDonationTitle: document.getElementById("completionDonationTitle"),
+      completionDonationSub: document.getElementById("completionDonationSub"),
+      donationModal: document.getElementById("donationModal"),
+      btnDismissDonationModal: document.getElementById("btnDismissDonationModal"),
+      btnCopyDonationAccount: document.getElementById("btnCopyDonationAccount"),
+      copyAccountFeedback: document.getElementById("copyAccountFeedback"),
+      donationModalTitle: document.getElementById("donationModalTitle"),
+      donationModalDesc: document.getElementById("donationModalDesc"),
+      donationBankLabel: document.getElementById("donationBankLabel"),
+      donationAccountNum: document.getElementById("donationAccountNum"),
+      donationAccountHolder: document.getElementById("donationAccountHolder"),
+      btnDonationMail: document.getElementById("btnDonationMail")
     };
 
     this.deferredInstallPrompt = null;
@@ -5258,6 +5350,62 @@ class RosaryApp {
       dragHint.textContent = isEn 
         ? "◂ Drag left or right to move bead by bead ▸" 
         : "◂ 화면을 좌우로 드래그하여 한 알씩 넘기세요 ▸";
+    }
+
+    // 후원 텍스트 다국어 동기화
+    if (this.dom.introDonationTitle) {
+      this.dom.introDonationTitle.textContent = isEn ? "Support the Developer ☕" : "따뜻한 차 한 잔 후원하기";
+    }
+    if (this.dom.introDonationSub) {
+      this.dom.introDonationSub.textContent = isEn 
+        ? "Support the 100% free, ad-free prayer app" 
+        : "100% 무료 · 광고 없는 기도 앱 개발자 응원";
+    }
+    if (this.dom.btnIntroOpenDonation) {
+      this.dom.btnIntroOpenDonation.textContent = isEn ? "Support ❯" : "응원하기 ❯";
+    }
+    if (this.dom.settingDonationLabel) {
+      this.dom.settingDonationLabel.textContent = isEn ? "☕ Support the Developer" : "☕ 따뜻한 차 한 잔 후원하기";
+    }
+    if (this.dom.settingDonationSub) {
+      this.dom.settingDonationSub.textContent = isEn 
+        ? "Support ad-free, free prayer app development" 
+        : "광고 없는 무료 기도 앱 개발자 응원하기";
+    }
+    if (this.dom.btnSettingsOpenDonation) {
+      this.dom.btnSettingsOpenDonation.textContent = isEn ? "Support" : "응원하기";
+    }
+    if (this.dom.completionDonationTitle) {
+      this.dom.completionDonationTitle.textContent = isEn ? "☕ Support the Developer with a Warm Tea" : "☕ 개발자에게 따뜻한 차 한 잔 응원하기";
+    }
+    if (this.dom.completionDonationSub) {
+      this.dom.completionDonationSub.textContent = isEn 
+        ? "Helps keep this prayer app free and ad-free 🙏" 
+        : "광고 없는 무료 기도 앱 운영에 큰 힘이 됩니다 🙏";
+    }
+    if (this.dom.donationModalTitle) {
+      this.dom.donationModalTitle.innerHTML = isEn 
+        ? "<span>☕</span> <span>Thank You for Your Support</span>" 
+        : "<span>☕</span> <span>따뜻한 마음에 감사드립니다</span>";
+    }
+    if (this.dom.donationModalDesc) {
+      this.dom.donationModalDesc.innerHTML = isEn
+        ? "『The Holy Rosary』 is offered <strong>100% free without ads</strong> so all faithful can focus solely on prayer.<br><br>Your warm support of a cup of tea helps maintain our servers and develop richer Catholic content. Thank you and God bless you! 🙏"
+        : "『거룩한 묵주기도』는 모든 신자분들이 분심 없이 기도에만 집중하실 수 있도록 <strong>광고 없이 100% 무료</strong>로 봉헌 운영됩니다.<br><br>보내주시는 따뜻한 차 한 잔의 후원은 앱 서버 유지와 더 풍성한 신앙 콘텐츠 개발에 소중한 힘이 됩니다. 진심으로 감사드립니다. 🙏";
+    }
+    if (this.dom.donationBankLabel) {
+      this.dom.donationBankLabel.textContent = isEn ? "Donation Account (KakaoBank)" : "후원 계좌 (카카오뱅크)";
+    }
+    if (this.dom.donationAccountHolder) {
+      this.dom.donationAccountHolder.textContent = isEn ? "Holder: Hang-jun Cho" : "예금주: 조항준";
+    }
+    if (this.dom.btnDonationMail) {
+      this.dom.btnDonationMail.innerHTML = isEn 
+        ? "<span>✉️ Send an Encouraging Note to the Developer</span>" 
+        : "<span>✉️ 개발자에게 응원 한마디 보내기</span>";
+    }
+    if (this.dom.btnDismissDonationModal) {
+      this.dom.btnDismissDonationModal.textContent = isEn ? "Close" : "닫기";
     }
 
     this.renderHistoryContent();
@@ -6462,6 +6610,38 @@ class RosaryApp {
       });
     }
 
+    // 5-8) 후원 및 응원 모달 이벤트
+    if (this.dom.introDonationCard) {
+      this.dom.introDonationCard.addEventListener("click", () => this.openDonationModal());
+    }
+    if (this.dom.btnIntroOpenDonation) {
+      this.dom.btnIntroOpenDonation.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.openDonationModal();
+      });
+    }
+    if (this.dom.btnSettingsOpenDonation) {
+      this.dom.btnSettingsOpenDonation.addEventListener("click", () => {
+        this.closeModals();
+        setTimeout(() => this.openDonationModal(), 150);
+      });
+    }
+    if (this.dom.completionDonationBox) {
+      this.dom.completionDonationBox.addEventListener("click", () => {
+        this.openDonationModal();
+      });
+    }
+    if (this.dom.btnDismissDonationModal) {
+      this.dom.btnDismissDonationModal.addEventListener("click", () => {
+        this.closeModals();
+      });
+    }
+    if (this.dom.btnCopyDonationAccount) {
+      this.dom.btnCopyDonationAccount.addEventListener("click", () => {
+        this.copyDonationAccount();
+      });
+    }
+
     // 6) 모달 닫기
     document.querySelectorAll(".modal-backdrop").forEach(backdrop => {
       backdrop.addEventListener("click", (e) => {
@@ -7133,6 +7313,67 @@ class RosaryApp {
         }, 3500);
       }
     } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  // ==========================================
+  // 후원 및 응원 모달 제어
+  // ==========================================
+  openDonationModal() {
+    if (this.dom.copyAccountFeedback) {
+      this.dom.copyAccountFeedback.style.display = "none";
+    }
+    if (this.dom.btnCopyDonationAccount) {
+      this.dom.btnCopyDonationAccount.textContent = this.settings.lang === "en" ? "Copy" : "복사";
+    }
+    this.openModal(this.dom.donationModal);
+  }
+
+  copyDonationAccount() {
+    const textToCopy = "카카오뱅크 3333338298898 조항준";
+    const isEn = this.settings.lang === "en";
+    
+    const onSuccess = () => {
+      if (this.dom.copyAccountFeedback) {
+        this.dom.copyAccountFeedback.style.display = "block";
+        this.dom.copyAccountFeedback.textContent = isEn 
+          ? "✓ Account number copied. May God bless you!" 
+          : "✓ 계좌번호가 복사되었습니다. 주님의 은총이 가득하시길 빕니다!";
+      }
+      if (this.dom.btnCopyDonationAccount) {
+        this.dom.btnCopyDonationAccount.textContent = isEn ? "✓ Copied" : "✓ 복사됨";
+        setTimeout(() => {
+          if (this.dom.btnCopyDonationAccount) {
+            this.dom.btnCopyDonationAccount.textContent = isEn ? "Copy" : "복사";
+          }
+        }, 3000);
+      }
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(textToCopy).then(onSuccess).catch(() => {
+        this.fallbackCopyAccount(textToCopy, onSuccess);
+      });
+    } else {
+      this.fallbackCopyAccount(textToCopy, onSuccess);
+    }
+  }
+
+  fallbackCopyAccount(text, onSuccess) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    ta.style.top = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try {
+      document.execCommand("copy");
+      onSuccess();
+    } catch (e) {
+      prompt(this.settings.lang === "en" ? "Copy account number:" : "후원 계좌번호를 복사해 주세요:", text);
+    }
     document.body.removeChild(ta);
   }
 }
