@@ -465,6 +465,99 @@ html, body {
   color: var(--text-secondary);
 }
 
+/* ===================================================
+   성경 구절 묵상 아코디언 (Scriptural Rosary)
+   기본은 깔끔하게 접혀있고 탭하면 펼쳐짐
+   =================================================== */
+.scripture-accordion {
+  margin-top: 6px;
+  border-top: 1px solid rgba(243, 198, 105, 0.2);
+  padding-top: 6px;
+}
+
+.scripture-toggle-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(243, 198, 105, 0.08);
+  border: 1px solid rgba(243, 198, 105, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.scripture-toggle-btn:active {
+  background: rgba(243, 198, 105, 0.18);
+  transform: scale(0.99);
+}
+
+.scripture-btn-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.scripture-book-icon {
+  font-size: 0.85rem;
+}
+
+.scripture-btn-title {
+  color: #F8FAFC;
+}
+
+.scripture-verse-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: rgba(243, 198, 105, 0.2);
+  color: var(--gold-primary);
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(243, 198, 105, 0.35);
+}
+
+.scripture-toggle-arrow {
+  font-size: 0.68rem;
+  color: var(--gold-primary);
+  transition: transform 0.2s ease;
+}
+
+.scripture-content-panel {
+  margin-top: 6px;
+  padding: 8px 10px;
+  background: rgba(12, 17, 29, 0.75);
+  border: 1px solid rgba(243, 198, 105, 0.25);
+  border-radius: var(--radius-sm);
+  animation: fadeInDown 0.25s ease;
+}
+
+.scripture-verse-text {
+  font-family: var(--font-serif);
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: #F1F5F9;
+  letter-spacing: -0.2px;
+  word-break: keep-all;
+  white-space: pre-line;
+}
+
+.scripture-source-row {
+  margin-top: 5px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.scripture-source {
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 /* 기도문 본문 스크롤 영역 (위아래 스크롤 100% 원활하게 동작) */
 .prayer-body-scroll {
   flex: 1;
@@ -3264,6 +3357,24 @@ input:checked + .toggle-slider:before {
             <span id="meditationTitle" class="meditation-title">환희의 신비 제1단</span>
             <p id="meditationText" class="meditation-text">"마리아께서 예수님을 잉태하심을 묵상합시다."</p>
             <span id="meditationFruit" class="meditation-fruit">열매: 겸손의 은혜</span>
+
+            <!-- 각 단 성경 구절 묵상 (접기/펼치기 아코디언, 기본은 감춤) -->
+            <div id="scriptureAccordion" class="scripture-accordion" style="display: none;">
+              <button type="button" id="scriptureToggleBtn" class="scripture-toggle-btn" aria-expanded="false">
+                <span class="scripture-btn-left">
+                  <span class="scripture-book-icon">📖</span>
+                  <span id="scriptureBtnTitle" class="scripture-btn-title">성경 구절 묵상</span>
+                  <span id="scriptureVerseBadge" class="scripture-verse-badge">루카 1,30-31</span>
+                </span>
+                <span id="scriptureToggleArrow" class="scripture-toggle-arrow">▼</span>
+              </button>
+              <div id="scriptureContentPanel" class="scripture-content-panel" style="display: none;">
+                <p id="scriptureVerseText" class="scripture-verse-text"></p>
+                <div class="scripture-source-row">
+                  <span id="scriptureSource" class="scripture-source">한국 천주교 주교회의 공인 [가톨릭 성경]</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 기도문 본문 스크롤 영역 -->
@@ -3899,11 +4010,56 @@ const MYSTERIES = {
       dayIndices: [1, 6],
       description: "예수님의 잉태와 탄생, 어린 시절의 기쁨을 묵상합니다.",
       decades: [
-        { decadeNum: 1, title: "환희의 신비 제1단", meditation: "마리아께서 예수님을 잉태하심을 묵상합시다.", fruit: "겸손의 은혜" },
-        { decadeNum: 2, title: "환희의 신비 제2단", meditation: "마리아께서 엘리사벳을 찾아보심을 묵상합시다.", fruit: "이웃 사랑의 은혜" },
-        { decadeNum: 3, title: "환희의 신비 제3단", meditation: "마리아께서 예수님을 낳으심을 묵상합시다.", fruit: "청빈과 영적 가난의 은혜" },
-        { decadeNum: 4, title: "환희의 신비 제4단", meditation: "마리아께서 예수님을 성전에 바치심을 묵상합시다.", fruit: "순명과 정결의 은혜" },
-        { decadeNum: 5, title: "환희의 신비 제5단", meditation: "마리아께서 잃으셨던 예수님을 성전에서 찾으심을 묵상합시다.", fruit: "예수님을 찾고 모시는 열정의 은혜" }
+        {
+          decadeNum: 1,
+          title: "환희의 신비 제1단",
+          meditation: "마리아께서 예수님을 잉태하심을 묵상합시다.",
+          fruit: "겸손의 은혜",
+          scripture: {
+            verse: "루카 1,30-31",
+            text: "천사가 마리아에게 말하였다. \"두려워하지 마라, 마리아야. 너는 하느님의 총애를 받았다. 보라, 이제 네가 잉태하여 아들을 낳을 터이니 그 이름을 예수라 하여라.\""
+          }
+        },
+        {
+          decadeNum: 2,
+          title: "환희의 신비 제2단",
+          meditation: "마리아께서 엘리사벳을 찾아보심을 묵상합시다.",
+          fruit: "이웃 사랑의 은혜",
+          scripture: {
+            verse: "루카 1,41-42",
+            text: "엘리사벳이 마리아의 인사말을 들을 때 그의 태 안에서 아기가 뛰놀았다. 엘리사벳은 성령으로 가득 차 큰 소리로 외쳤다. \"당신은 여인들 가운데에서 가장 복되시며 당신 태중의 아기도 복되십니다.\""
+          }
+        },
+        {
+          decadeNum: 3,
+          title: "환희의 신비 제3단",
+          meditation: "마리아께서 예수님을 낳으심을 묵상합시다.",
+          fruit: "청빈과 영적 가난의 은혜",
+          scripture: {
+            verse: "루카 2,6-7",
+            text: "그들이 거기에 머무르는 동안 마리아는 해산 날이 차서, 첫아들을 낳았다. 그들은 아기를 포대기에 싸서 구유에 뉘었다. 여관에는 그들이 들어갈 자리가 없었던 것이다."
+          }
+        },
+        {
+          decadeNum: 4,
+          title: "환희의 신비 제4단",
+          meditation: "마리아께서 예수님을 성전에 바치심을 묵상합시다.",
+          fruit: "순명과 정결의 은혜",
+          scripture: {
+            verse: "루카 2,22-23",
+            text: "모세의 율법에 따라 정결례를 거행할 날이 되자, 그들은 아기를 예루살렘으로 데리고 올라가 주님께 바쳤다. 주님의 율법에 \"태를 열고 나온 사내아이는 모두 주님께 봉헌된 거룩한 이로 불릴 것이다.\"라고 기록된 대로 한 것이다."
+          }
+        },
+        {
+          decadeNum: 5,
+          title: "환희의 신비 제5단",
+          meditation: "마리아께서 잃으셨던 예수님을 성전에서 찾으심을 묵상합시다.",
+          fruit: "예수님을 찾고 모시는 열정의 은혜",
+          scripture: {
+            verse: "루카 2,46.49",
+            text: "사흘 뒤에야 성전에서 그를 찾아냈는데, 그는 율법 교사들 가운데에 앉아 그들의 말을 듣기도 하고 묻기도 하고 있었다. 예수님께서는 그들에게 이르셨다. \"왜 저를 찾으셨습니까? 저는 제 아버지의 집에 있어야 하는 줄을 모르셨습니까?\""
+          }
+        }
       ]
     },
     luminous: {
@@ -3913,11 +4069,56 @@ const MYSTERIES = {
       dayIndices: [4],
       description: "예수님의 공생활과 복음 선포, 성체성사의 빛을 묵상합니다.",
       decades: [
-        { decadeNum: 1, title: "빛의 신비 제1단", meditation: "예수님께서 세례 받으심을 묵상합시다.", fruit: "성령의 은총과 하느님 자녀 됨" },
-        { decadeNum: 2, title: "빛의 신비 제2단", meditation: "예수님께서 가나에서 첫 기적을 행하심을 묵상합시다.", fruit: "성모님을 통한 굳은 믿음" },
-        { decadeNum: 3, title: "빛의 신비 제3단", meditation: "예수님께서 하느님 나라를 선포하심을 묵상합시다.", fruit: "진정한 회개와 복음 선포" },
-        { decadeNum: 4, title: "빛의 신비 제4단", meditation: "예수님께서 거룩하게 변모하심을 묵상합시다.", fruit: "영적 쇄신과 영광의 희망" },
-        { decadeNum: 5, title: "빛의 신비 제5단", meditation: "예수님께서 성체성사를 세우심을 묵상합시다.", fruit: "성체에 대한 뜨거운 사랑과 흠숭" }
+        {
+          decadeNum: 1,
+          title: "빛의 신비 제1단",
+          meditation: "예수님께서 세례 받으심을 묵상합시다.",
+          fruit: "성령의 은총과 하느님 자녀 됨",
+          scripture: {
+            verse: "마태 3,16-17",
+            text: "예수님께서는 세례를 받으시고 곧 물에서 올라오셨다. 그러자 그분 위에 하늘이 열리고 하느님의 영이 비둘기처럼 내려와 당신 위에 오시는 것이 보였다. 그리고 하늘에서 소리가 들려왔다. \"이는 내가 사랑하는 아들, 내 마음에 드는 아들이다.\""
+          }
+        },
+        {
+          decadeNum: 2,
+          title: "빛의 신비 제2단",
+          meditation: "예수님께서 가나에서 첫 기적을 행하심을 묵상합시다.",
+          fruit: "성모님을 통한 굳은 믿음",
+          scripture: {
+            verse: "요한 2,5.11",
+            text: "예수님의 어머니는 일꾼들에게 \"무엇이든지 그가 시키는 대로 하여라.\" 하고 일렀다. 예수님께서는 갈릴래아 카나에서 첫 번째 표징을 일으키시어 당신의 영광을 드러내셨다. 그리하여 제자들은 예수님을 믿었다."
+          }
+        },
+        {
+          decadeNum: 3,
+          title: "빛의 신비 제3단",
+          meditation: "예수님께서 하느님 나라를 선포하심을 묵상합시다.",
+          fruit: "진정한 회개와 복음 선포",
+          scripture: {
+            verse: "마르 1,14-15",
+            text: "예수님께서는 갈릴래아에 가시어, 하느님의 복음을 선포하시며 이렇게 말씀하셨다. \"때가 차서 하느님의 나라가 가까이 왔다. 회개하고 복음을 믿어라.\""
+          }
+        },
+        {
+          decadeNum: 4,
+          title: "빛의 신비 제4단",
+          meditation: "예수님께서 거룩하게 변모하심을 묵상합시다.",
+          fruit: "영적 쇄신과 영광의 희망",
+          scripture: {
+            verse: "루카 9,29.35",
+            text: "예수님께서 기도하시는데, 그 얼굴 모습이 달라지고 의복은 하얗게 번쩍였다. 그리고 구름 속에서 \"이는 내가 선택한 아들이니 너희는 그의 말을 들어라.\" 하는 소리가 났다."
+          }
+        },
+        {
+          decadeNum: 5,
+          title: "빛의 신비 제5단",
+          meditation: "예수님께서 성체성사를 세우심을 묵상합시다.",
+          fruit: "성체에 대한 뜨거운 사랑과 흠숭",
+          scripture: {
+            verse: "마태 26,26-28",
+            text: "예수님께서는 빵을 들고 찬미를 드리신 다음, 그것을 떼어 제자들에게 주시며 말씀하셨다. \"받아 먹어라. 이는 내 몸이다.\" 또 잔을 들어 감사를 드리신 다음 말씀하셨다. \"모두 이 잔을 마셔라. 이는 죄를 용서해 주려고 많은 사람을 위하여 흘리는 내 계약의 피다.\""
+          }
+        }
       ]
     },
     sorrowful: {
@@ -3927,11 +4128,56 @@ const MYSTERIES = {
       dayIndices: [2, 5],
       description: "우리의 구원을 위하여 십자가 수난과 죽음을 겪으신 예수님의 사랑을 묵상합니다.",
       decades: [
-        { decadeNum: 1, title: "고통의 신비 제1단", meditation: "예수님께서 우리를 위하여 피땀 흘리심을 묵상합시다.", fruit: "죄에 대한 참된 통회" },
-        { decadeNum: 2, title: "고통의 신비 제2단", meditation: "예수님께서 우리를 위하여 매 맞으심을 묵상합시다.", fruit: "육신의 고행과 감각의 절제" },
-        { decadeNum: 3, title: "고통의 신비 제3단", meditation: "예수님께서 우리를 위하여 가시관 쓰심을 묵상합시다.", fruit: "세상 허영과 교만의 정화" },
-        { decadeNum: 4, title: "고통의 신비 제4단", meditation: "예수님께서 우리를 위하여 십자가 지심을 묵상합시다.", fruit: "일상의 십자가를 지는 인내" },
-        { decadeNum: 5, title: "고통의 신비 제5단", meditation: "예수님께서 우리를 위하여 십자가에 못박혀 돌아가심을 묵상합시다.", fruit: "자기를 온전히 바치는 구원의 사랑" }
+        {
+          decadeNum: 1,
+          title: "고통의 신비 제1단",
+          meditation: "예수님께서 우리를 위하여 피땀 흘리심을 묵상합시다.",
+          fruit: "죄에 대한 참된 통회",
+          scripture: {
+            verse: "루카 22,41-44",
+            text: "예수님께서는 무릎을 꿇고 기도하셨다. \"아버지, 아버지께서 원하시면 이 잔을 저에게서 거두어 주십시오. 그러나 제 뜻이 아니라 아버지의 뜻이 이루어지게 하십시오.\" 고뇌에 차서 더욱 간절히 기도하시니, 땀이 핏방울처럼 되어 땅에 떨어졌다."
+          }
+        },
+        {
+          decadeNum: 2,
+          title: "고통의 신비 제2단",
+          meditation: "예수님께서 우리를 위하여 매 맞으심을 묵상합시다.",
+          fruit: "육신의 고행과 감각의 절제",
+          scripture: {
+            verse: "마태 27,26",
+            text: "그러자 빌라도는 바라빠를 풀어 주고, 예수님을 채찍질하게 한 다음 십자가에 못 박으라고 넘겨주었다."
+          }
+        },
+        {
+          decadeNum: 3,
+          title: "고통의 신비 제3단",
+          meditation: "예수님께서 우리를 위하여 가시관 쓰심을 묵상합시다.",
+          fruit: "세상 허영과 교만의 정화",
+          scripture: {
+            verse: "요한 19,2-3",
+            text: "군사들은 가시나무로 관을 엮어 예수님 머리에 씌우고 자주색 옷을 입히고 나서, 그분 앞으로 다가가 \"유다인들의 임금님, 만세!\" 하며 그분의 뺨을 쳤다."
+          }
+        },
+        {
+          decadeNum: 4,
+          title: "고통의 신비 제4단",
+          meditation: "예수님께서 우리를 위하여 십자가 지심을 묵상합시다.",
+          fruit: "일상의 십자가를 지는 인내",
+          scripture: {
+            verse: "요한 19,17",
+            text: "예수님께서는 몸소 십자가를 지시고 '해골 터'라는 곳으로 나가셨다. 그곳은 히브리 말로 골고타라고 한다."
+          }
+        },
+        {
+          decadeNum: 5,
+          title: "고통의 신비 제5단",
+          meditation: "예수님께서 우리를 위하여 십자가에 못박혀 돌아가심을 묵상합시다.",
+          fruit: "자기를 온전히 바치는 구원의 사랑",
+          scripture: {
+            verse: "루카 23,33.46",
+            text: "'해골'이라는 곳에 이르러 그들은 예수님을 십자가에 못 박았다. 예수님께서는 큰 소리로 외치셨다. \"아버지, 제 영을 아버지 손에 맡깁니다.\" 이 말씀을 하시고 숨을 거두셨다."
+          }
+        }
       ]
     },
     glorious: {
@@ -3941,11 +4187,56 @@ const MYSTERIES = {
       dayIndices: [0, 3],
       description: "예수님의 부활과 승천, 성모님의 천상 영광을 묵상합니다.",
       decades: [
-        { decadeNum: 1, title: "영광의 신비 제1단", meditation: "예수님께서 부활하심을 묵상합시다.", fruit: "부활에 대한 굳은 믿음" },
-        { decadeNum: 2, title: "영광의 신비 제2단", meditation: "예수님께서 승천하심을 묵상합시다.", fruit: "천국을 향한 굳은 희망" },
-        { decadeNum: 3, title: "영광의 신비 제3단", meditation: "예수님께서 성령을 보내심을 묵상합시다.", fruit: "성령의 은혜와 하느님 사랑" },
-        { decadeNum: 4, title: "영광의 신비 제4단", meditation: "예수님께서 마리아를 하늘에 불러올리심을 묵상합시다.", fruit: "성모님께 대한 참된 신심과 영복" },
-        { decadeNum: 5, title: "영광의 신비 제5단", meditation: "예수님께서 마리아께 천상 모후의 관을 씌우심을 묵상합시다.", fruit: "마리아의 중재를 통한 영원한 구원" }
+        {
+          decadeNum: 1,
+          title: "영광의 신비 제1단",
+          meditation: "예수님께서 부활하심을 묵상합시다.",
+          fruit: "부활에 대한 굳은 믿음",
+          scripture: {
+            verse: "마태 28,5-6",
+            text: "천사가 여자들에게 말하였다. \"두려워하지 마라. 너희가 십자가에 못 박히신 예수님을 찾는 줄을 나는 안다. 그분께서는 여기에 계시지 않는다. 말씀하신 대로 그분께서는 되살아나셨다.\""
+          }
+        },
+        {
+          decadeNum: 2,
+          title: "영광의 신비 제2단",
+          meditation: "예수님께서 승천하심을 묵상합시다.",
+          fruit: "천국을 향한 굳은 희망",
+          scripture: {
+            verse: "사도 1,9.11",
+            text: "예수님께서는 그들이 보는 앞에서 하늘로 오르셨는데, 구름에 감싸여 그들의 시야에서 사라지셨다. \"갈릴래아 사람들아, 왜 하늘을 쳐다보며 서 있느냐? 하늘로 올라가신 저 예수님께서는 보신 그대로 다시 오실 것이다.\""
+          }
+        },
+        {
+          decadeNum: 3,
+          title: "영광의 신비 제3단",
+          meditation: "예수님께서 성령을 보내심을 묵상합시다.",
+          fruit: "성령의 은혜와 하느님 사랑",
+          scripture: {
+            verse: "사도 2,1.3-4",
+            text: "오순절이 되었을 때 그들은 모두 한자리에 모여 있었다. 불꽃 모양의 혀들이 나타나 갈라지면서 각 사람 위에 내렸다. 그러자 그들은 모두 성령으로 가득 차, 성령께서 주시는 대로 다른 언어들로 말하기 시작하였다."
+          }
+        },
+        {
+          decadeNum: 4,
+          title: "영광의 신비 제4단",
+          meditation: "예수님께서 마리아를 하늘에 불러올리심을 묵상합시다.",
+          fruit: "성모님께 대한 참된 신심과 영복",
+          scripture: {
+            verse: "묵시 12,1",
+            text: "그리고 하늘에 큰 표징이 나타났습니다. 태양을 입고 발밑에 달을 두고 머리에 열두 개 별로 된 관을 쓴 여인이 나타난 것입니다."
+          }
+        },
+        {
+          decadeNum: 5,
+          title: "영광의 신비 제5단",
+          meditation: "예수님께서 마리아께 천상 모후의 관을 씌우심을 묵상합시다.",
+          fruit: "마리아의 중재를 통한 영원한 구원",
+          scripture: {
+            verse: "루카 1,48-49",
+            text: "\"이제부터 과연 모든 세대가 나를 복되다 하리니 전능하신 분께서 나에게 큰일을 하셨기 때문입니다. 그분의 이름은 거룩하고\""
+          }
+        }
       ]
     }
   },
@@ -3957,11 +4248,56 @@ const MYSTERIES = {
       dayIndices: [1, 6],
       description: "Meditating on the Incarnation and early life of Jesus.",
       decades: [
-        { decadeNum: 1, title: "1st Joyful Mystery: The Annunciation", meditation: "The Angel Gabriel announces to Mary that she is to be the Mother of God.", fruit: "Humility" },
-        { decadeNum: 2, title: "2nd Joyful Mystery: The Visitation", meditation: "Mary visits her cousin Elizabeth who is pregnant with John the Baptist.", fruit: "Love of Neighbor" },
-        { decadeNum: 3, title: "3rd Joyful Mystery: The Nativity", meditation: "Jesus is born in a stable in Bethlehem.", fruit: "Poverty of Spirit" },
-        { decadeNum: 4, title: "4th Joyful Mystery: The Presentation", meditation: "Mary and Joseph present the Child Jesus in the Temple.", fruit: "Obedience and Purity" },
-        { decadeNum: 5, title: "5th Joyful Mystery: The Finding in the Temple", meditation: "Mary and Joseph find Jesus teaching in the Temple.", fruit: "Joy in Finding Jesus" }
+        {
+          decadeNum: 1,
+          title: "1st Joyful Mystery: The Annunciation",
+          meditation: "The Angel Gabriel announces to Mary that she is to be the Mother of God.",
+          fruit: "Humility",
+          scripture: {
+            verse: "Luke 1:30-31",
+            text: "Then the angel said to her, \"Do not be afraid, Mary, for you have found favor with God. Behold, you will conceive in your womb and bear a son, and you shall name him Jesus.\""
+          }
+        },
+        {
+          decadeNum: 2,
+          title: "2nd Joyful Mystery: The Visitation",
+          meditation: "Mary visits her cousin Elizabeth who is pregnant with John the Baptist.",
+          fruit: "Love of Neighbor",
+          scripture: {
+            verse: "Luke 1:41-42",
+            text: "When Elizabeth heard Mary’s greeting, the infant leaped in her womb, and Elizabeth, filled with the holy Spirit, cried out in a loud voice and said, \"Most blessed are you among women, and blessed is the fruit of your womb.\""
+          }
+        },
+        {
+          decadeNum: 3,
+          title: "3rd Joyful Mystery: The Nativity",
+          meditation: "Jesus is born in a stable in Bethlehem.",
+          fruit: "Poverty of Spirit",
+          scripture: {
+            verse: "Luke 2:6-7",
+            text: "While they were there, the time came for her to have her child, and she gave birth to her firstborn son. She wrapped him in swaddling clothes and laid him in a manger, because there was no room for them in the inn."
+          }
+        },
+        {
+          decadeNum: 4,
+          title: "4th Joyful Mystery: The Presentation",
+          meditation: "Mary and Joseph present the Child Jesus in the Temple.",
+          fruit: "Obedience and Purity",
+          scripture: {
+            verse: "Luke 2:22-23",
+            text: "When the days were completed for their purification according to the law of Moses, they took him up to Jerusalem to present him to the Lord, just as it is written in the law of the Lord, \"Every male that opens the womb shall be consecrated to the Lord.\""
+          }
+        },
+        {
+          decadeNum: 5,
+          title: "5th Joyful Mystery: The Finding in the Temple",
+          meditation: "Mary and Joseph find Jesus teaching in the Temple.",
+          fruit: "Joy in Finding Jesus",
+          scripture: {
+            verse: "Luke 2:46, 49",
+            text: "After three days they found him in the temple, sitting in the midst of the teachers, listening to them and asking them questions. And he said to them, \"Why were you looking for me? Did you not know that I must be in my Father’s house?\""
+          }
+        }
       ]
     },
     luminous: {
@@ -3971,11 +4307,56 @@ const MYSTERIES = {
       dayIndices: [4],
       description: "Meditating on the public ministry and proclamation of Jesus.",
       decades: [
-        { decadeNum: 1, title: "1st Luminous Mystery: The Baptism in the Jordan", meditation: "Jesus is baptized by John in the Jordan River.", fruit: "Openness to the Holy Spirit" },
-        { decadeNum: 2, title: "2nd Luminous Mystery: The Wedding at Cana", meditation: "Jesus performs His first public miracle at the request of Mary.", fruit: "To Jesus through Mary" },
-        { decadeNum: 3, title: "3rd Luminous Mystery: Proclamation of the Kingdom", meditation: "Jesus proclaims the Gospel and calls all to conversion.", fruit: "Repentance and Trust in God" },
-        { decadeNum: 4, title: "4th Luminous Mystery: The Transfiguration", meditation: "Jesus is transfigured in glory on Mount Tabor.", fruit: "Desire for Holiness" },
-        { decadeNum: 5, title: "5th Luminous Mystery: The Institution of the Eucharist", meditation: "Jesus institutes the Holy Eucharist at the Last Supper.", fruit: "Eucharistic Adoration and Love" }
+        {
+          decadeNum: 1,
+          title: "1st Luminous Mystery: The Baptism in the Jordan",
+          meditation: "Jesus is baptized by John in the Jordan River.",
+          fruit: "Openness to the Holy Spirit",
+          scripture: {
+            verse: "Matthew 3:16-17",
+            text: "After Jesus was baptized, he came up from the water and behold, the heavens were opened, and he saw the Spirit of God descending like a dove and coming upon him. And a voice came from the heavens, saying, \"This is my beloved Son, with whom I am well pleased.\""
+          }
+        },
+        {
+          decadeNum: 2,
+          title: "2nd Luminous Mystery: The Wedding at Cana",
+          meditation: "Jesus performs His first public miracle at the request of Mary.",
+          fruit: "To Jesus through Mary",
+          scripture: {
+            verse: "John 2:5, 11",
+            text: "His mother said to the servers, \"Do whatever he tells you.\" Jesus did this as the beginning of his signs in Cana in Galilee and so revealed his glory, and his disciples began to believe in him."
+          }
+        },
+        {
+          decadeNum: 3,
+          title: "3rd Luminous Mystery: Proclamation of the Kingdom",
+          meditation: "Jesus proclaims the Gospel and calls all to conversion.",
+          fruit: "Repentance and Trust in God",
+          scripture: {
+            verse: "Mark 1:14-15",
+            text: "Jesus came to Galilee proclaiming the gospel of God: \"This is the time of fulfillment. The kingdom of God is at hand. Repent, and believe in the gospel.\""
+          }
+        },
+        {
+          decadeNum: 4,
+          title: "4th Luminous Mystery: The Transfiguration",
+          meditation: "Jesus is transfigured in glory on Mount Tabor.",
+          fruit: "Desire for Holiness",
+          scripture: {
+            verse: "Luke 9:29, 35",
+            text: "While he was praying his face changed in appearance and his clothing became dazzling white. Then from the cloud came a voice that said, \"This is my chosen Son; listen to him.\""
+          }
+        },
+        {
+          decadeNum: 5,
+          title: "5th Luminous Mystery: The Institution of the Eucharist",
+          meditation: "Jesus institutes the Holy Eucharist at the Last Supper.",
+          fruit: "Eucharistic Adoration and Love",
+          scripture: {
+            verse: "Matthew 26:26-28",
+            text: "While they were eating, Jesus took bread, said the blessing, broke it, and giving it to his disciples said, \"Take and eat; this is my body.\" Then he took a cup, gave thanks, and gave it to them, saying, \"Drink from it, all of you, for this is my blood of the covenant, which will be shed on behalf of many for the forgiveness of sins.\""
+          }
+        }
       ]
     },
     sorrowful: {
@@ -3985,11 +4366,56 @@ const MYSTERIES = {
       dayIndices: [2, 5],
       description: "Meditating on the Passion and Death of Jesus for our salvation.",
       decades: [
-        { decadeNum: 1, title: "1st Sorrowful Mystery: The Agony in the Garden", meditation: "Jesus sweats blood while praying in the Garden of Gethsemane.", fruit: "Sorrow for Sin" },
-        { decadeNum: 2, title: "2nd Sorrowful Mystery: The Scourging at the Pillar", meditation: "Jesus is scourged at the pillar by Roman soldiers.", fruit: "Purity and Mortification" },
-        { decadeNum: 3, title: "3rd Sorrowful Mystery: The Crowning with Thorns", meditation: "Jesus is mocked and crowned with sharp thorns.", fruit: "Moral Courage and Humility" },
-        { decadeNum: 4, title: "4th Sorrowful Mystery: The Carrying of the Cross", meditation: "Jesus carries His heavy cross to Calvary.", fruit: "Patience in Bearing Crosses" },
-        { decadeNum: 5, title: "5th Sorrowful Mystery: The Crucifixion and Death", meditation: "Jesus is nailed to the cross and dies for our salvation.", fruit: "Self-giving Love and Forgiveness" }
+        {
+          decadeNum: 1,
+          title: "1st Sorrowful Mystery: The Agony in the Garden",
+          meditation: "Jesus sweats blood while praying in the Garden of Gethsemane.",
+          fruit: "Sorrow for Sin",
+          scripture: {
+            verse: "Luke 22:41-44",
+            text: "He knelt down and prayed, saying, \"Father, if you are willing, take this cup away from me; still, not my will but yours be done.\" He was in such agony and he prayed so fervently that his sweat became like drops of blood falling on the ground."
+          }
+        },
+        {
+          decadeNum: 2,
+          title: "2nd Sorrowful Mystery: The Scourging at the Pillar",
+          meditation: "Jesus is scourged at the pillar by Roman soldiers.",
+          fruit: "Purity and Mortification",
+          scripture: {
+            verse: "Matthew 27:26",
+            text: "Then he released Barabbas to them, but after he had Jesus scourged, he handed him over to be crucified."
+          }
+        },
+        {
+          decadeNum: 3,
+          title: "3rd Sorrowful Mystery: The Crowning with Thorns",
+          meditation: "Jesus is mocked and crowned with sharp thorns.",
+          fruit: "Moral Courage and Humility",
+          scripture: {
+            verse: "John 19:2-3",
+            text: "And the soldiers wove a crown out of thorns and placed it on his head, and clothed him in a purple cloak, and they came to him and said, \"Hail, King of the Jews!\" And they struck him repeatedly."
+          }
+        },
+        {
+          decadeNum: 4,
+          title: "4th Sorrowful Mystery: The Carrying of the Cross",
+          meditation: "Jesus carries His heavy cross to Calvary.",
+          fruit: "Patience in Bearing Crosses",
+          scripture: {
+            verse: "John 19:17",
+            text: "And carrying the cross himself he went out to what is called the Place of the Skull, in Hebrew, Golgotha."
+          }
+        },
+        {
+          decadeNum: 5,
+          title: "5th Sorrowful Mystery: The Crucifixion and Death",
+          meditation: "Jesus is nailed to the cross and dies for our salvation.",
+          fruit: "Self-giving Love and Forgiveness",
+          scripture: {
+            verse: "Luke 23:33, 46",
+            text: "When they came to the place called the Skull, they crucified him. Jesus cried out in a loud voice, \"Father, into your hands I commend my spirit\"; and when he had said this he breathed his last."
+          }
+        }
       ]
     },
     glorious: {
@@ -3999,11 +4425,56 @@ const MYSTERIES = {
       dayIndices: [0, 3],
       description: "Meditating on the Resurrection, Ascension, and Heavenly Glory.",
       decades: [
-        { decadeNum: 1, title: "1st Glorious Mystery: The Resurrection", meditation: "Jesus rises victoriously from the dead on the third day.", fruit: "Faith" },
-        { decadeNum: 2, title: "2nd Glorious Mystery: The Ascension", meditation: "Jesus ascends into heaven forty days after His resurrection.", fruit: "Hope and Desire for Heaven" },
-        { decadeNum: 3, title: "3rd Glorious Mystery: Descent of the Holy Spirit", meditation: "The Holy Spirit descends upon Mary and the Apostles at Pentecost.", fruit: "Love of God and Wisdom" },
-        { decadeNum: 4, title: "4th Glorious Mystery: The Assumption of Mary", meditation: "The Blessed Virgin Mary is taken body and soul into heaven.", fruit: "Devotion to Mary and a Holy Death" },
-        { decadeNum: 5, title: "5th Glorious Mystery: The Coronation of Mary", meditation: "Mary is crowned Queen of Heaven and Earth.", fruit: "Trust in Mary's Intercession" }
+        {
+          decadeNum: 1,
+          title: "1st Glorious Mystery: The Resurrection",
+          meditation: "Jesus rises victoriously from the dead on the third day.",
+          fruit: "Faith",
+          scripture: {
+            verse: "Matthew 28:5-6",
+            text: "Then the angel said to the women in reply, \"Do not be afraid! I know that you are seeking Jesus the crucified. He is not here, for he has been raised just as he said.\""
+          }
+        },
+        {
+          decadeNum: 2,
+          title: "2nd Glorious Mystery: The Ascension",
+          meditation: "Jesus ascends into heaven forty days after His resurrection.",
+          fruit: "Hope and Desire for Heaven",
+          scripture: {
+            verse: "Acts 1:9, 11",
+            text: "As they were looking on, he was lifted up, and a cloud took him from their sight. \"Men of Galilee, why are you standing there looking at the sky? This Jesus who has been taken up from you into heaven will return in the same way as you have seen him going into heaven.\""
+          }
+        },
+        {
+          decadeNum: 3,
+          title: "3rd Glorious Mystery: Descent of the Holy Spirit",
+          meditation: "The Holy Spirit descends upon Mary and the Apostles at Pentecost.",
+          fruit: "Love of God and Wisdom",
+          scripture: {
+            verse: "Acts 2:1, 3-4",
+            text: "When the time for Pentecost was fulfilled, they were all in one place together. Then there appeared to them tongues as of fire, which parted and came to rest on each one of them. And they were all filled with the holy Spirit and began to speak in different tongues, as the Spirit enabled them to proclaim."
+          }
+        },
+        {
+          decadeNum: 4,
+          title: "4th Glorious Mystery: The Assumption of Mary",
+          meditation: "The Blessed Virgin Mary is taken body and soul into heaven.",
+          fruit: "Devotion to Mary and a Holy Death",
+          scripture: {
+            verse: "Revelation 12:1",
+            text: "A great sign appeared in the sky, a woman clothed with the sun, with the moon under her feet, and on her head a crown of twelve stars."
+          }
+        },
+        {
+          decadeNum: 5,
+          title: "5th Glorious Mystery: The Coronation of Mary",
+          meditation: "Mary is crowned Queen of Heaven and Earth.",
+          fruit: "Trust in Mary's Intercession",
+          scripture: {
+            verse: "Luke 1:48-49",
+            text: "\"From now on will all ages call me blessed. The Mighty One has done great things for me, and holy is his name.\""
+          }
+        }
       ]
     }
   }
@@ -4154,7 +4625,7 @@ function buildRosarySteps(mysteryKey, includeFatima = true, lang = "ko") {
       beadLabel: isEn ? `Decade ${dIdx + 1} Large Bead` : `${dIdx + 1}단 큰 알`,
       title: decade.title,
       meditation: decade.meditation,
-      fruit: decade.fruit,
+      fruit: decade.fruit,\n      scripture: decade.scripture,
       badge: isEn ? "Mystery & Our Father" : "신비 묵상 및 주님의 기도",
       guide: isEn ? "Meditate on the mystery, then recite the Lord's Prayer on the large bead." : "신비를 깊이 묵상한 후, 큰 알을 잡고 주님의 기도를 바칩니다.",
       prayers: [prayers.our_father]
@@ -4550,6 +5021,14 @@ class RosaryApp {
       meditationTitle: document.getElementById("meditationTitle"),
       meditationText: document.getElementById("meditationText"),
       meditationFruit: document.getElementById("meditationFruit"),
+      scriptureAccordion: document.getElementById("scriptureAccordion"),
+      scriptureToggleBtn: document.getElementById("scriptureToggleBtn"),
+      scriptureBtnTitle: document.getElementById("scriptureBtnTitle"),
+      scriptureVerseBadge: document.getElementById("scriptureVerseBadge"),
+      scriptureToggleArrow: document.getElementById("scriptureToggleArrow"),
+      scriptureContentPanel: document.getElementById("scriptureContentPanel"),
+      scriptureVerseText: document.getElementById("scriptureVerseText"),
+      scriptureSource: document.getElementById("scriptureSource"),
       prayerMainTitle: document.getElementById("prayerMainTitle"),
       prayerGuideText: document.getElementById("prayerGuideText"),
       startFatimaBox: document.getElementById("startFatimaBox"),
@@ -6384,8 +6863,30 @@ class RosaryApp {
       this.dom.meditationTitle.textContent = step.title;
       this.dom.meditationText.textContent = `"${step.meditation}"`;
       this.dom.meditationFruit.textContent = step.fruit ? (this.settings.lang === "en" ? `Fruit: ${step.fruit}` : `열매: ${step.fruit}`) : "";
+
+      // 각 단 성경 구절 묵상 (기본은 감추어져 있고 탭하면 펼쳐짐)
+      if (step.scripture) {
+        if (this.dom.scriptureAccordion) this.dom.scriptureAccordion.style.display = "block";
+        if (this.dom.scriptureBtnTitle) {
+          this.dom.scriptureBtnTitle.textContent = this.settings.lang === "en" ? "Scripture Meditation" : "성경 구절 묵상";
+        }
+        if (this.dom.scriptureVerseBadge) this.dom.scriptureVerseBadge.textContent = step.scripture.verse;
+        if (this.dom.scriptureVerseText) this.dom.scriptureVerseText.textContent = `"${step.scripture.text}"`;
+        if (this.dom.scriptureSource) {
+          this.dom.scriptureSource.textContent = this.settings.lang === "en"
+            ? "United States Conference of Catholic Bishops (NABRE)"
+            : "한국 천주교 주교회의 공인 [가톨릭 성경]";
+        }
+        // 항상 기본은 닫힌 상태로 초기화
+        if (this.dom.scriptureContentPanel) this.dom.scriptureContentPanel.style.display = "none";
+        if (this.dom.scriptureToggleBtn) this.dom.scriptureToggleBtn.setAttribute("aria-expanded", "false");
+        if (this.dom.scriptureToggleArrow) this.dom.scriptureToggleArrow.textContent = "▼";
+      } else {
+        if (this.dom.scriptureAccordion) this.dom.scriptureAccordion.style.display = "none";
+      }
     } else {
       this.dom.meditationBox.style.display = "none";
+      if (this.dom.scriptureAccordion) this.dom.scriptureAccordion.style.display = "none";
     }
 
     this.dom.prayerMainTitle.textContent = step.title;
@@ -6849,6 +7350,22 @@ class RosaryApp {
     if (this.dom.btnStyleClassic) {
       this.dom.btnStyleClassic.addEventListener("click", () => {
         this.setBeadStyle("classic");
+      });
+    }
+
+    // 각 단 성경 구절 묵상 아코디언 토글 이벤트
+    if (this.dom.scriptureToggleBtn && this.dom.scriptureContentPanel) {
+      this.dom.scriptureToggleBtn.addEventListener("click", () => {
+        const isCollapsed = this.dom.scriptureContentPanel.style.display === "none";
+        if (isCollapsed) {
+          this.dom.scriptureContentPanel.style.display = "block";
+          this.dom.scriptureToggleBtn.setAttribute("aria-expanded", "true");
+          if (this.dom.scriptureToggleArrow) this.dom.scriptureToggleArrow.textContent = "▲";
+        } else {
+          this.dom.scriptureContentPanel.style.display = "none";
+          this.dom.scriptureToggleBtn.setAttribute("aria-expanded", "false");
+          if (this.dom.scriptureToggleArrow) this.dom.scriptureToggleArrow.textContent = "▼";
+        }
       });
     }
 
