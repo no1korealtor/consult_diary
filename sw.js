@@ -1,6 +1,6 @@
-const CACHE_NAME = 'consult-diary-v39';
+const CACHE_NAME = 'consult-diary-v40';
 
-// 湲곕낯?곸쑝濡?罹먯떛???먯뀑 紐⑸줉 (?ㅽ봽?쇱씤?먯꽌???붾㈃??蹂댁뿬二쇨린 ?꾪빐)
+// 기본적으로 캐싱할 에셋 목록 (오프라인에서도 화면을 보여주기 위해)
 const urlsToCache = [
   './login.html',
   './app.css',
@@ -19,8 +19,8 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  if (event.request.url.includes('/rosary')) {
-    return; // rosary 앱은 consult_diary 캐시 대상이 아님
+  if (event.request.url.includes('/rosary') || event.request.url.includes('/harmonica')) {
+    return; // rosary 및 harmonica 앱은 consult_diary 캐시 대상이 아님
   }
   event.respondWith(
     caches.match(event.request)

@@ -1363,10 +1363,542 @@
             color: #fef08a;
             font-weight: bold;
         }
+
+        /* ==========================================
+           7. Rhythm Trainer (박자·리듬 연습: 원 앤 투 앤)
+           ========================================== */
+        .portable-mode-bar {
+            display: none;
+            width: 100%;
+            max-width: 680px;
+            margin: 0 auto;
+            background: #161626;
+            border: 1.5px solid #3a3a5a;
+            border-radius: 16px;
+            padding: 5px;
+            box-sizing: border-box;
+            gap: 5px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+        }
+        .portable-tab-btn {
+            flex: 1;
+            background: transparent;
+            color: #94a3b8;
+            border: none;
+            padding: 9px 8px;
+            border-radius: 12px;
+            font-family: 'Jua', sans-serif;
+            font-size: 14.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .portable-tab-btn.active {
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            color: #ffffff;
+            box-shadow: 0 3px 12px rgba(239, 68, 68, 0.4);
+        }
+        .portable-tab-btn.active-staff {
+            background: linear-gradient(135deg, #4f46e5 0%, #0284c7 100%);
+            color: #ffffff;
+            box-shadow: 0 3px 12px rgba(2, 132, 199, 0.4);
+        }
+        @media(max-width: 899px) {
+            .portable-mode-bar {
+                display: flex !important;
+            }
+            /* 스마트폰에서 악보 제외 휴대용 모드일 때 악보 열기 패널 숨김 */
+            body.mobile-portable-mode #score-panel,
+            body.mobile-portable-mode #file-open-panel,
+            body.mobile-portable-mode .site-footer {
+                display: none !important;
+            }
+            body.mobile-portable-mode.mobile-tab-rhythm #master-scale-panel,
+            body.mobile-portable-mode.mobile-tab-rhythm #metronome-panel,
+            body.mobile-portable-mode.mobile-tab-rhythm #tuner-panel {
+                display: none !important;
+            }
+            body.mobile-portable-mode.mobile-tab-staff #rhythm-trainer-panel {
+                display: none !important;
+            }
+        }
+
+        #rhythm-trainer-panel {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            background: #232338;
+            border-radius: 20px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+            border: 1.5px solid #3e3e5e;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        body.rhythm-trainer-active #rhythm-trainer-panel,
+        body.solo-staff-mode #rhythm-trainer-panel {
+            display: flex !important;
+        }
+        body.solo-staff-mode #rhythm-trainer-panel {
+            max-width: 620px !important;
+            margin: 0 auto !important;
+            border: 1.5px solid #4f46e5 !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55) !important;
+            order: 2;
+        }
+        body.solo-staff-mode .right-panels {
+            order: 1;
+        }
+        body.solo-staff-mode.rhythm-trainer-top #rhythm-trainer-panel {
+            order: 0;
+        }
+        @media(min-width: 900px) {
+            /* PC에서 박자 연습 활성화 시 좌측 메인 영역에 큼직하게 표시 */
+            body.rhythm-trainer-active:not(.solo-staff-mode) #score-panel {
+                display: none !important;
+            }
+            body.rhythm-trainer-active:not(.solo-staff-mode) #rhythm-trainer-panel {
+                grid-column: 1 / 2;
+                min-height: calc(100vh - 130px);
+                justify-content: flex-start;
+                padding: 20px 24px;
+            }
+            body.rhythm-trainer-active.sidebar-collapsed:not(.solo-staff-mode) #rhythm-trainer-panel {
+                grid-column: 1 / -1;
+            }
+            /* PC에서는 터치 패드가 자동으로 숨겨짐! */
+            .rhythm-touch-pad-wrap {
+                display: none !important;
+            }
+            .rhythm-pc-guide-bar {
+                display: flex !important;
+            }
+        }
+        @media(max-width: 899px) {
+            #rhythm-trainer-panel {
+                padding: 12px;
+                gap: 10px;
+            }
+            /* 스마트폰에서는 터치 패드가 자동으로 표시됨! */
+            .rhythm-touch-pad-wrap {
+                display: flex !important;
+            }
+            .rhythm-pc-guide-bar {
+                display: none !important;
+            }
+        }
+
+        .rt-top-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
+            background: #181828;
+            padding: 10px 12px;
+            border-radius: 14px;
+            border: 1px solid #33334d;
+        }
+        .rt-time-sig-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .rt-ts-btn {
+            background: #25253a;
+            color: #94a3b8;
+            border: 1px solid #3e3e5c;
+            padding: 5px 11px;
+            border-radius: 10px;
+            font-family: 'Jua', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .rt-ts-btn.active {
+            background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+            color: #ffffff;
+            border-color: #fca5a5;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+        }
+
+        .rt-preset-bar {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: thin;
+        }
+        .rt-preset-btn {
+            background: #1a1a2e;
+            color: #cbd5e1;
+            border: 1px solid #3a3a56;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-family: 'Jua', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+        .rt-preset-btn.active {
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+            color: #ffffff;
+            border-color: #7dd3fc;
+            box-shadow: 0 2px 8px rgba(56, 189, 248, 0.35);
+        }
+
+        /* 음표 직접 선택 조립 팔레트 */
+        .rt-builder-palette {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #161625;
+            border: 1px solid #383857;
+            border-radius: 14px;
+            padding: 10px 12px;
+        }
+        .rt-palette-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .rt-note-chip {
+            background: #25253c;
+            color: #f8fafc;
+            border: 1px solid #47476b;
+            border-radius: 10px;
+            padding: 5px 10px;
+            font-family: 'Jua', 'Nunito', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.12s;
+            user-select: none;
+        }
+        .rt-note-chip:hover {
+            background: #333354;
+            border-color: #38bdf8;
+            transform: translateY(-1px);
+        }
+        .rt-note-chip:active {
+            transform: scale(0.95);
+        }
+        .rt-note-chip.rest-chip {
+            color: #fda4af;
+            border-color: #881337;
+        }
+        .rt-note-chip.action-chip {
+            background: #332238;
+            color: #fca5a5;
+            border-color: #be123c;
+        }
+
+        /* 리듬 악보 용지 (사진과 동일한 깔끔한 종이 질감 + 선명한 음표/빨간 밑줄) */
+        .rhythm-sheet-paper {
+            background: #f8fafc;
+            color: #0f172a;
+            border-radius: 16px;
+            padding: 14px 12px;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.08), 0 6px 20px rgba(0,0,0,0.35);
+            border: 2px solid #cbd5e1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        @media(min-width: 900px) {
+            .rhythm-sheet-paper {
+                padding: 20px 24px;
+                gap: 14px;
+            }
+        }
+        .rhythm-line-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 6px 8px;
+            transition: all 0.15s ease;
+            position: relative;
+        }
+        .rhythm-line-row.playing-row {
+            border-color: #ef4444;
+            background: #fffdf9;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2), 0 4px 12px rgba(239, 68, 68, 0.12);
+        }
+        .rhythm-line-row.editing-row {
+            border-color: #0284c7;
+            background: #f0f9ff;
+            box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.25);
+        }
+        .rt-line-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            padding: 6px 4px;
+            border-radius: 9px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            font-family: 'Jua', sans-serif;
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.15s;
+            gap: 2px;
+        }
+        .rt-line-badge.loop-locked {
+            background: #ef4444;
+            color: #ffffff;
+            border-color: #dc2626;
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
+        }
+        .rt-line-svg-wrap {
+            flex: 1;
+            min-width: 0;
+            width: 100%;
+        }
+        .rt-line-svg {
+            width: 100%;
+            height: auto;
+            display: block;
+            overflow: visible;
+        }
+
+        /* 스마트폰 전용 하단 터치 패드 */
+        .rhythm-touch-pad-wrap {
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 2px;
+        }
+        .rt-pad-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .rt-pad-area {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            height: 118px;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        .rt-touch-pad-btn {
+            flex: 1;
+            height: 100%;
+            border-radius: 18px;
+            border: 2.5px solid #38bdf8;
+            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.45), inset 0 2px 12px rgba(56, 189, 248, 0.2);
+            transition: transform 0.06s ease, background 0.06s ease, box-shadow 0.06s ease;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: none;
+        }
+        .rt-touch-pad-btn.pad-blow {
+            border-color: #f87171;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.45), inset 0 2px 12px rgba(239, 68, 68, 0.25);
+        }
+        .rt-touch-pad-btn.pad-draw {
+            border-color: #38bdf8;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.45), inset 0 2px 12px rgba(56, 189, 248, 0.25);
+        }
+        .rt-touch-pad-btn.pressing {
+            transform: scale(0.97);
+            background: linear-gradient(135deg, #0284c7 0%, #10b981 100%) !important;
+            border-color: #ffffff !important;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.75), inset 0 0 15px rgba(255,255,255,0.4) !important;
+        }
+        .rt-touch-pad-btn.pad-blow.pressing {
+            background: linear-gradient(135deg, #ef4444 0%, #f59e0b 100%) !important;
+            box-shadow: 0 0 25px rgba(239, 68, 68, 0.8), inset 0 0 15px rgba(255,255,255,0.4) !important;
+        }
+        .rhythm-pc-guide-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: #18182a;
+            border: 1px solid #3a3a5a;
+            border-radius: 14px;
+            padding: 12px 16px;
+            color: #cbd5e1;
+            font-size: 13.5px;
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
     
+    <!-- 스마트폰 전용 상단 모드 전환 바 (악보 제외 휴대용 연습 모드) -->
+    <div class="portable-mode-bar" id="portable-mode-bar">
+        <button type="button" id="ptab-rhythm" class="portable-tab-btn active" onclick="switchMobilePortableTab('rhythm')">
+            <span>🥁 박자·리듬 연습</span>
+        </button>
+        <button type="button" id="ptab-staff" class="portable-tab-btn" onclick="switchMobilePortableTab('staff')">
+            <span>🎼 계이름·튜너</span>
+        </button>
+        <button type="button" id="ptab-score" class="portable-tab-btn" onclick="switchMobilePortableTab('score')">
+            <span>📖 악보 보기</span>
+        </button>
+    </div>
+
+    <!-- Rhythm Trainer Panel (박자·리듬 연습실: 원 앤 투 앤) -->
+    <div id="rhythm-trainer-panel">
+        <!-- Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="font-family: 'Jua', sans-serif; font-size: 22px; color: #f59e0b; display: flex; align-items: center; gap: 6px;">
+                    <span>🥁 리듬·박자 연습</span>
+                </span>
+                <span id="rt-status-badge" style="background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                    원·앤·투·앤 카운트 가이드
+                </span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                <button type="button" id="btn-rt-sound-mode" onclick="toggleRtHarmonicaSound()" class="btn-toolbar" style="background: #25253c; color: #fde047; border: 1px solid #eab308; padding: 5px 11px; border-radius: 14px; font-size: 12px; font-weight: bold;">
+                    🎺 하모니카음 ON
+                </button>
+                <button type="button" id="btn-rt-subclick" onclick="toggleRtSubClick()" class="btn-toolbar" style="background: #25253c; color: #94a3b8; border: 1px solid #475569; padding: 5px 11px; border-radius: 14px; font-size: 12px; font-weight: bold;">
+                    🔔 '앤' 클릭 OFF
+                </button>
+                <button type="button" id="btn-rt-mic" onclick="toggleRtMicDetect()" class="btn-toolbar" style="background: #25253c; color: #ff6b81; border: 1px solid #ff4757; padding: 5px 11px; border-radius: 14px; font-size: 12px; font-weight: bold;" title="책상 두드리는 소리나 하모니카 소리를 마이크로 인식합니다">
+                    🎙️ 책상/소리 인식 OFF
+                </button>
+                <button type="button" onclick="toggleRhythmTrainerMode(false)" class="btn-toolbar" style="background: #3a3a5a; color: #ffffff; border: none; padding: 5px 12px; border-radius: 14px; font-size: 12px; font-weight: bold;">
+                    🎼 악보 뷰어로
+                </button>
+            </div>
+        </div>
+
+        <!-- Top Controls: Time Signature + BPM + Play -->
+        <div class="rt-top-controls">
+            <div class="rt-time-sig-group">
+                <span style="font-family: 'Jua', sans-serif; font-size: 14px; color: #cbd5e1; margin-right: 2px;">박자:</span>
+                <button type="button" class="rt-ts-btn active" data-ts="4/4" onclick="setRtTimeSignature('4/4')">4/4 박자</button>
+                <button type="button" class="rt-ts-btn" data-ts="3/4" onclick="setRtTimeSignature('3/4')">3/4 박자</button>
+                <button type="button" class="rt-ts-btn" data-ts="2/4" onclick="setRtTimeSignature('2/4')">2/4 박자</button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex-grow: 1; justify-content: flex-end;">
+                <div style="display: flex; align-items: center; gap: 6px; background: #121220; padding: 4px 10px; border-radius: 12px; border: 1px solid #2d2d46;">
+                    <button type="button" onclick="changeRtBPM(-4)" style="background:#2d2d46; color:#fff; border:none; border-radius:50%; width:26px; height:26px; font-weight:bold; cursor:pointer;">-</button>
+                    <span style="font-family:'Nunito',sans-serif; font-weight:900; font-size:15px; color:#00f2fe; min-width:68px; text-align:center;">
+                        <span id="rt-bpm-val">76</span> <span style="font-size:11px; color:#94a3b8;">BPM</span>
+                    </span>
+                    <input type="range" id="rt-bpm-slider" min="40" max="160" value="76" oninput="updateRtBPM(this.value)" style="width:80px; margin:0; accent-color:#00f2fe;">
+                    <button type="button" onclick="changeRtBPM(4)" style="background:#2d2d46; color:#fff; border:none; border-radius:50%; width:26px; height:26px; font-weight:bold; cursor:pointer;">+</button>
+                </div>
+
+                <button type="button" id="btn-rt-play" onclick="toggleRtPlayback()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 8px 18px; border-radius: 14px; font-family: 'Jua', sans-serif; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 5px;">
+                    <span>▶ 리듬 재생</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Preset & Custom Builder Selector -->
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <div class="rt-preset-bar" style="flex: 1;">
+                <button type="button" class="rt-preset-btn active" id="rt-preset-1" onclick="loadRtPreset(1)">📗 리듬연습(1) 기본·점음표</button>
+                <button type="button" class="rt-preset-btn" id="rt-preset-2" onclick="loadRtPreset(2)">📘 리듬연습(2) 점4분음표 집중</button>
+                <button type="button" class="rt-preset-btn" id="rt-preset-3" onclick="loadRtPreset(3)">📙 리듬연습(3) 긴 호흡(2분·온)</button>
+                <button type="button" class="rt-preset-btn" id="rt-preset-4" onclick="loadRtPreset(4)">📕 리듬연습(4) 쉼표·당김음</button>
+            </div>
+            <button type="button" id="btn-rt-builder-toggle" onclick="toggleRtBuilderPalette()" style="background: #312e81; color: #e0e7ff; border: 1px solid #6366f1; padding: 6px 12px; border-radius: 12px; font-family: 'Jua', sans-serif; font-size: 13px; cursor: pointer; white-space: nowrap;">
+                ✏️ 음표 직접 넣기
+            </button>
+        </div>
+
+        <!-- Interactive Custom Note Builder Palette -->
+        <div class="rt-builder-palette" id="rt-builder-palette" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+                <span style="font-size: 12.5px; color: #a5b4fc; font-weight: bold;">
+                    🎯 편집 중인 줄: <span id="rt-editing-line-label" style="color: #fde047;">1줄</span> (아래 악보에서 줄 번호를 누르면 바뀝니다)
+                </span>
+                <div style="display: flex; gap: 5px;">
+                    <button type="button" class="rt-note-chip action-chip" onclick="popNoteFromCurrentRtLine()">⌫ 한음 지우기</button>
+                    <button type="button" class="rt-note-chip action-chip" onclick="clearCurrentRtLine()">🗑️ 이 줄 비우기</button>
+                </div>
+            </div>
+            <div class="rt-palette-row">
+                <button type="button" class="rt-note-chip" onclick="addNoteToCurrentRtLine('q')"><b>♩</b> 4분(1박)</button>
+                <button type="button" class="rt-note-chip" onclick="addNoteToCurrentRtLine('e2')"><b>♫</b> 8분묶음(1박)</button>
+                <button type="button" class="rt-note-chip" onclick="addNoteToCurrentRtLine('qd')" style="border-color:#f59e0b; color:#fde047;"><b>♩.</b> 점4분(1.5박)</button>
+                <button type="button" class="rt-note-chip" onclick="addNoteToCurrentRtLine('e')"><b>♪</b> 8분(반박)</button>
+                <button type="button" class="rt-note-chip" onclick="addNoteToCurrentRtLine('h')"><b>𝅗𝅥</b> 2분(2박)</button>
+                <button type="button" class="rt-note-chip" onclick="addNoteToCurrentRtLine('hd')"><b>𝅗𝅥.</b> 점2분(3박)</button>
+                <button type="button" class="rt-note-chip" onclick="addNoteToCurrentRtLine('w')"><b>𝅝</b> 온음표(4박)</button>
+                <button type="button" class="rt-note-chip rest-chip" onclick="addNoteToCurrentRtLine('qr')"><b>𝄽</b> 4분쉼표(1박)</button>
+                <button type="button" class="rt-note-chip rest-chip" onclick="addNoteToCurrentRtLine('er')"><b>𝄾</b> 8분쉼표(반박)</button>
+            </div>
+        </div>
+
+        <!-- Rhythm Sheet Paper (4 Lines with SVG Notes + 원 앤 투 앤 + Red Circles & Underlines) -->
+        <div class="rhythm-sheet-paper" id="rhythm-sheet-paper">
+            <!-- Dynamically rendered via renderRhythmTrainerSheet() -->
+        </div>
+
+        <!-- Smartphone Auto-Visible Touch Pad (컴퓨터에서는 자동으로 숨겨짐) -->
+        <div class="rhythm-touch-pad-wrap" id="rhythm-touch-pad-wrap">
+            <div class="rt-pad-header">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-family: 'Jua', sans-serif; font-size: 15px; color: #38bdf8;">👆 스마트폰 터치 패드</span>
+                    <span id="rt-pad-judge" style="font-size: 12.5px; font-weight: 800; color: #fde047;">음표 밑줄 길이만큼 꾹 누르세요!</span>
+                </div>
+                <div style="display: flex; gap: 4px;">
+                    <button type="button" id="btn-pad-1" onclick="setRtPadMode('1pad')" style="background:#0284c7; color:#fff; border:none; padding:3px 9px; border-radius:8px; font-size:11.5px; font-weight:bold; cursor:pointer;">1패드 (기본)</button>
+                    <button type="button" id="btn-pad-2" onclick="setRtPadMode('2pad')" style="background:#25253a; color:#94a3b8; border:1px solid #3e3e5c; padding:3px 9px; border-radius:8px; font-size:11.5px; font-weight:bold; cursor:pointer;">🔴불기/🔵마시기</button>
+                </div>
+            </div>
+            <div class="rt-pad-area" id="rt-pad-area">
+                <button type="button" class="rt-touch-pad-btn" id="rt-pad-main"
+                    onpointerdown="handleRtPadDown(event, 'blow')"
+                    onpointerup="handleRtPadUp(event)"
+                    onpointercancel="handleRtPadUp(event)"
+                    onpointerleave="handleRtPadUp(event)">
+                    <span style="font-family: 'Jua', sans-serif; font-size: 21px; letter-spacing: 0.5px;">🥁 여기를 꾹 누르며 리듬 연습!</span>
+                    <span style="font-size: 12.5px; color: #94a3b8;">누르고 있는 동안 소리가 나고 박자 길이가 기록됩니다</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- PC Only Guide Bar (스마트폰에서는 숨겨지고 컴퓨터에서만 표시) -->
+        <div class="rhythm-pc-guide-bar">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 18px;">💻</span>
+                <span><b>컴퓨터 연습 모드</b> (터치 패드 자동 숨김): 화면의 <b>원·앤·투·앤</b> 밑줄을 보며 <b>책상을 손으로 두드리거나</b>, <b>하모니카를 직접 불거나</b>, 키보드 <b>[Space]</b> 바를 길게 눌러 연습하세요!</span>
+            </div>
+            <span id="rt-pc-judge" style="font-family: 'Jua', sans-serif; font-size: 15px; color: #34d399;">Space 키 또는 🎙️소리 인식 지원</span>
+        </div>
+    </div>
+
     <!-- Score Viewer Panel -->
     <div class="panel score-panel" id="score-panel" style="display: flex; flex-direction: column; padding: 12px; position: relative;">
         <!-- Score Toolbar -->
@@ -1376,6 +1908,9 @@
                 <label for="pdf-upload" class="btn-toolbar" style="cursor: pointer; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 6px 14px; border-radius: 18px; font-size: 13px; font-weight: bold; box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);">
                     📁 악보 열기
                 </label>
+                <button type="button" onclick="toggleRhythmTrainerMode(true)" class="btn-toolbar" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); color: white; border: none; padding: 6px 14px; border-radius: 18px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);" title="원 앤 투 앤 리듬·박자 연습실 열기">
+                    <span>🥁 박자·리듬 연습</span>
+                </button>
                 <button type="button" onclick="toggleSoloStaffMode(true)" class="btn-toolbar" style="background: #232338; color: #a5b4fc; border: 1px solid #6366f1; padding: 6px 13px; border-radius: 18px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="스마트폰/단독 연습: 오선보만 크게 보기">
                     <span>📱 오선보만 보기</span>
                 </button>
@@ -1422,7 +1957,10 @@
                 <h2 class="panel-title" style="margin: 0; font-size: 17px; display: flex; align-items: center; gap: 6px;">
                     <span>🎼 실시간 오선보</span>
                 </h2>
-                <div style="display: flex; align-items: center; gap: 6px;">
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                    <button type="button" onclick="toggleRhythmTrainerMode()" class="btn-toolbar" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); color: #ffffff; border: none; padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);" title="원 앤 투 앤 박자·리듬 연습 열기">
+                        <span>🥁 박자 연습</span>
+                    </button>
                     <button type="button" id="btn-top-mic" onclick="toggleTunerFromTop()" class="btn-top-mic" style="display: flex; align-items: center; gap: 4px; background: #252538; color: #ff6b81; border: 1px solid #ff4757; padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer; transition: all 0.2s;">
                         <span id="top-mic-icon">🎙️</span>
                         <span id="top-mic-txt">튜너 켜기</span>
@@ -2017,6 +2555,11 @@
         // 키보드 단축키 (하모니카를 불며 손을 최소화할 수 있도록 지원)
         window.addEventListener('keydown', (e) => {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+            if (document.body.classList.contains('rhythm-trainer-active') && e.key === ' ') {
+                e.preventDefault();
+                if (!e.repeat && typeof handleRtSpaceDown === 'function') handleRtSpaceDown();
+                return;
+            }
             
             if (e.key === 'ArrowLeft') {
                 prevPage();
@@ -2029,6 +2572,11 @@
                 setViewMode('1col');
             } else if (e.key === '2') {
                 setViewMode('2col');
+            }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.key === ' ' && typeof handleRtSpaceUp === 'function') {
+                handleRtSpaceUp();
             }
         });
 
@@ -3057,6 +3605,868 @@
             }
         }
 
+        // ==========================================
+        // 7. Rhythm Trainer Engine (박자·리듬 연습: 원 앤 투 앤)
+        // ==========================================
+        let rtTimeSig = '4/4'; // '4/4' (8 slots), '3/4' (6 slots), '2/4' (4 slots)
+        let rtBpm = 76;
+        let rtIsPlaying = false;
+        let rtTimer = null;
+        let rtCurrentLine = 0;
+        let rtCurrentSlot = -1;
+        let rtLoopLine = -1; // -1: 1~4줄 전체 순환, 0~3: 해당 줄만 집중 반복
+        let rtEditingLine = 0;
+        let rtBuilderOpen = false;
+        let rtHarmonicaSoundOn = true;
+        let rtSubClickOn = false;
+        let rtPadMode = '1pad'; // '1pad' | '2pad'
+        let rtCurrentPreset = 1;
+
+        // 각 음표/쉼표 토큰의 반박(slot=0.5박) 길이 정의
+        const RT_NOTE_SPECS = {
+            'w':  { slots: 8, isRest: false, label: '온음표(4박)' },
+            'hd': { slots: 6, isRest: false, label: '점2분(3박)' },
+            'h':  { slots: 4, isRest: false, label: '2분(2박)' },
+            'qd': { slots: 3, isRest: false, label: '점4분(1.5박)' },
+            'q':  { slots: 2, isRest: false, label: '4분(1박)' },
+            'e2': { slots: 2, isRest: false, label: '8분묶음(1박)' },
+            'e':  { slots: 1, isRest: false, label: '8분(반박)' },
+            'qr': { slots: 2, isRest: true,  label: '4분쉼표(1박)' },
+            'er': { slots: 1, isRest: true,  label: '8분쉼표(반박)' }
+        };
+
+        // 박자별 기본 프리셋 데이터
+        const RT_PRESETS = {
+            '4/4': {
+                1: [
+                    ['q', 'q', 'q', 'q'],         // 1줄: ♩ ♩ ♩ ♩ (원 앤 투 앤 쓰리 앤 포 앤)
+                    ['e2', 'e2', 'e2', 'e2'],     // 2줄: ♫ ♫ ♫ ♫
+                    ['q', 'e2', 'q', 'e2'],       // 3줄: ♩ ♫ ♩ ♫
+                    ['qd', 'e', 'qd', 'e']        // 4줄: ♩. ♪ ♩. ♪ (원앤투 + 앤 / 쓰리앤포 + 앤)
+                ],
+                2: [
+                    ['qd', 'e', 'q', 'q'],
+                    ['q', 'qd', 'e', 'q'],
+                    ['qd', 'e', 'e2', 'q'],
+                    ['qd', 'e', 'qd', 'e']
+                ],
+                3: [
+                    ['h', 'h'],
+                    ['h', 'q', 'q'],
+                    ['q', 'q', 'h'],
+                    ['w']
+                ],
+                4: [
+                    ['q', 'qr', 'q', 'qr'],
+                    ['q', 'e2', 'qr', 'q'],
+                    ['qd', 'er', 'q', 'q'],
+                    ['e', 'q', 'e', 'q', 'q']
+                ]
+            },
+            '3/4': {
+                1: [
+                    ['q', 'q', 'q'],
+                    ['e2', 'e2', 'e2'],
+                    ['q', 'e2', 'q'],
+                    ['qd', 'e', 'q']
+                ],
+                2: [
+                    ['qd', 'e', 'q'],
+                    ['q', 'qd', 'e'],
+                    ['qd', 'e', 'e2'],
+                    ['hd']
+                ],
+                3: [
+                    ['h', 'q'],
+                    ['q', 'h'],
+                    ['hd'],
+                    ['q', 'q', 'q']
+                ],
+                4: [
+                    ['q', 'qr', 'q'],
+                    ['qd', 'er', 'q'],
+                    ['e', 'q', 'e', 'q'],
+                    ['q', 'e2', 'qr']
+                ]
+            },
+            '2/4': {
+                1: [
+                    ['q', 'q'],
+                    ['e2', 'e2'],
+                    ['q', 'e2'],
+                    ['qd', 'e']
+                ],
+                2: [
+                    ['qd', 'e'],
+                    ['e2', 'q'],
+                    ['e', 'q', 'e'],
+                    ['qd', 'e']
+                ],
+                3: [
+                    ['h'],
+                    ['q', 'q'],
+                    ['h'],
+                    ['qd', 'e']
+                ],
+                4: [
+                    ['q', 'qr'],
+                    ['qd', 'er'],
+                    ['er', 'e', 'q'],
+                    ['e', 'q', 'e']
+                ]
+            }
+        };
+
+        let rtLines = JSON.parse(JSON.stringify(RT_PRESETS['4/4'][1]));
+        // 사용자가 누른 슬롯 기록 (4줄 x 최대 8슬롯)
+        let rtUserHeldSlots = [
+            new Array(8).fill(false),
+            new Array(8).fill(false),
+            new Array(8).fill(false),
+            new Array(8).fill(false)
+        ];
+
+        function getRtMaxSlots() {
+            if (rtTimeSig === '3/4') return 6;
+            if (rtTimeSig === '2/4') return 4;
+            return 8;
+        }
+
+        function getRtSyllables() {
+            if (rtTimeSig === '3/4') return ['원', '앤', '투', '앤', '쓰리', '앤'];
+            if (rtTimeSig === '2/4') return ['원', '앤', '투', '앤'];
+            return ['원', '앤', '투', '앤', '쓰리', '앤', '포', '앤'];
+        }
+
+        function resetRtUserHeldSlots() {
+            const maxS = getRtMaxSlots();
+            rtUserHeldSlots = [
+                new Array(maxS).fill(false),
+                new Array(maxS).fill(false),
+                new Array(maxS).fill(false),
+                new Array(maxS).fill(false)
+            ];
+        }
+
+        // 토큰 배열을 개별 이벤트 목록으로 변환 (e2 -> 묶음 8분음표 2개)
+        function expandRtLineEvents(tokens) {
+            const maxSlots = getRtMaxSlots();
+            const events = [];
+            let cursor = 0;
+            for (const tok of tokens) {
+                const spec = RT_NOTE_SPECS[tok];
+                if (!spec) continue;
+                if (cursor + spec.slots > maxSlots) break;
+                if (tok === 'e2') {
+                    events.push({ type: 'e', startSlot: cursor, slots: 1, isRest: false, beamGroup: 'start' });
+                    events.push({ type: 'e', startSlot: cursor + 1, slots: 1, isRest: false, beamGroup: 'end' });
+                } else {
+                    events.push({ type: tok, startSlot: cursor, slots: spec.slots, isRest: spec.isRest, beamGroup: null });
+                }
+                cursor += spec.slots;
+            }
+            return { events, totalSlots: cursor };
+        }
+
+        // 사진과 동일한 단선 리듬 악보 + 원 앤 투 앤 + 빨간 동그라미 & 밑줄 SVG 렌더링
+        function renderRhythmTrainerSheet() {
+            const container = document.getElementById('rhythm-sheet-paper');
+            if (!container) return;
+
+            const maxSlots = getRtMaxSlots();
+            const syllables = getRtSyllables();
+            const [topNum, botNum] = rtTimeSig.split('/');
+
+            // SVG 좌표 계산
+            const svgW = 540;
+            const svgH = 104;
+            const staffY = 44;
+            const staffStartX = 40;
+            const staffEndX = 524;
+            const firstSlotX = 88;
+            const lastSlotX = 492;
+            const slotStep = maxSlots > 1 ? (lastSlotX - firstSlotX) / (maxSlots - 1) : 0;
+
+            container.innerHTML = rtLines.map((lineTokens, lineIdx) => {
+                const { events } = expandRtLineEvents(lineTokens);
+                const isLoopingThis = rtLoopLine === lineIdx;
+                const isPlayingThis = rtIsPlaying && rtCurrentLine === lineIdx;
+                const isEditingThis = rtBuilderOpen && rtEditingLine === lineIdx;
+
+                let notesSvg = '';
+                let underlinesSvg = '';
+                let circlesSvg = '';
+
+                events.forEach((ev, evIdx) => {
+                    const x = firstSlotX + ev.startSlot * slotStep;
+                    const endX = firstSlotX + (ev.startSlot + ev.slots - 1) * slotStep;
+
+                    if (ev.isRest) {
+                        if (ev.type === 'qr') {
+                            // 4분쉼표 번개 모양
+                            notesSvg += `<path d="M ${x-3} ${staffY-16} L ${x+5} ${staffY-7} L ${x-4} ${staffY} L ${x+5} ${staffY+9} C ${x+2} ${staffY+14}, ${x-3} ${staffY+16}, ${x-6} ${staffY+14}" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+                        } else {
+                            // 8분쉼표 '7' 모양
+                            notesSvg += `<circle cx="${x-3}" cy="${staffY-8}" r="3.2" fill="#64748b"/>
+                                         <path d="M ${x-3} ${staffY-8} Q ${x+4} ${staffY-6} ${x+5} ${staffY-12} L ${x-2} ${staffY+11}" fill="none" stroke="#64748b" stroke-width="2.6" stroke-linecap="round"/>`;
+                        }
+                        // 쉼표 구간 점선 표시
+                        const uStart = x - 14;
+                        const uEnd = endX + 14;
+                        underlinesSvg += `<line x1="${uStart}" y1="86" x2="${uEnd}" y2="86" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4 3" stroke-linecap="round"/>`;
+                        return;
+                    }
+
+                    // 음표 머리 (온음표/2분음표는 속이 빈 타원, 나머지는 채운 타원)
+                    const isHollow = (ev.type === 'w' || ev.type === 'h' || ev.type === 'hd');
+                    if (ev.type === 'w') {
+                        notesSvg += `<ellipse cx="${x}" cy="${staffY}" rx="9.5" ry="6" transform="rotate(-15 ${x} ${staffY})" fill="#ffffff" stroke="#0f172a" stroke-width="3"/>`;
+                    } else if (isHollow) {
+                        notesSvg += `<ellipse cx="${x}" cy="${staffY}" rx="8.5" ry="5.6" transform="rotate(-22 ${x} ${staffY})" fill="#ffffff" stroke="#0f172a" stroke-width="2.6"/>
+                                     <line x1="${x+7.2}" y1="${staffY-1}" x2="${x+7.2}" y2="${staffY-32}" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>`;
+                    } else {
+                        notesSvg += `<ellipse cx="${x}" cy="${staffY}" rx="8.5" ry="5.6" transform="rotate(-22 ${x} ${staffY})" fill="#0f172a"/>
+                                     <line x1="${x+7}" y1="${staffY-1}" x2="${x+7}" y2="${staffY-32}" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>`;
+                    }
+
+                    // 점음표의 점(.) 표시 (점4분음표 qd, 점2분음표 hd)
+                    if (ev.type === 'qd' || ev.type === 'hd') {
+                        notesSvg += `<circle cx="${x+16}" cy="${staffY-5}" r="3.3" fill="#0f172a"/>`;
+                    }
+
+                    // 8분음표 묶음 막대(Beam) 또는 단독 꼬리(Flag)
+                    if (ev.type === 'e') {
+                        if (ev.beamGroup === 'start') {
+                            const nextX = firstSlotX + (ev.startSlot + 1) * slotStep;
+                            notesSvg += `<line x1="${x+7}" y1="${staffY-31}" x2="${nextX+7}" y2="${staffY-31}" stroke="#0f172a" stroke-width="4.8" stroke-linecap="round"/>`;
+                        } else if (!ev.beamGroup) {
+                            // 사진 4번째 줄처럼 점4분음표 뒤에 오는 단독 8분음표 꼬리 (♪)
+                            const stemTopX = x + 7;
+                            const stemTopY = staffY - 32;
+                            notesSvg += `<path d="M ${stemTopX} ${stemTopY} C ${stemTopX+10} ${stemTopY+5}, ${stemTopX+14} ${stemTopY+12}, ${stemTopX+11} ${stemTopY+21} C ${stemTopX+11} ${stemTopY+14}, ${stemTopX+6} ${stemTopY+8}, ${stemTopX} ${stemTopY+6} Z" fill="#0f172a"/>`;
+                        }
+                    }
+
+                    // 어택(시작) 글자에 빨간 동그라미 (사진의 손글씨 빨간 원 스타일)
+                    circlesSvg += `<ellipse id="rt-circle-${lineIdx}-${ev.startSlot}" cx="${x}" cy="70" rx="16.5" ry="11.5" fill="rgba(239, 68, 68, 0.06)" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="95" />`;
+
+                    // 음 길이만큼 이어지는 빨간 밑줄 (원 앤 투 등 묶음 표시)
+                    const uStart = x - 14;
+                    const uEnd = endX + 14;
+                    underlinesSvg += `<line id="rt-uline-${lineIdx}-${evIdx}" x1="${uStart}" y1="86" x2="${uEnd}" y2="86" stroke="#ef4444" stroke-width="2.8" stroke-linecap="round"/>`;
+                });
+
+                // 박자 카운트 글자 (원 앤 투 앤 쓰리 앤 포 앤) + 사용자 터치/연주 게이지 바
+                let syllablesSvg = '';
+                let userGaugeSvg = '';
+                for (let s = 0; s < maxSlots; s++) {
+                    const sx = firstSlotX + s * slotStep;
+                    const isActiveSlot = isPlayingThis && rtCurrentSlot === s;
+                    const isMainBeat = (s % 2 === 0);
+                    const textColor = isActiveSlot ? '#dc2626' : (isMainBeat ? '#0f172a' : '#334155');
+                    const fontWeight = isActiveSlot ? '900' : (isMainBeat ? '800' : '700');
+                    const activeBg = isActiveSlot
+                        ? `<rect x="${sx - 20}" y="55" width="40" height="28" rx="7" fill="rgba(254, 240, 138, 0.85)" stroke="#f59e0b" stroke-width="1.5"/>`
+                        : '';
+
+                    syllablesSvg += `
+                        ${activeBg}
+                        <text id="rt-syl-${lineIdx}-${s}" x="${sx}" y="75" font-family="'Jua', 'Noto Sans KR', sans-serif" font-size="${syllables[s].length > 1 ? '16.5' : '18'}" font-weight="${fontWeight}" fill="${textColor}" text-anchor="middle" style="user-select:none;">${syllables[s]}</text>
+                    `;
+
+                    // 사용자 터치/스페이스바/마이크 유지 게이지 바 (정답 빨간 밑줄 바로 아래 y=93에 표시)
+                    const barW = Math.max(24, slotStep - 6);
+                    const held = rtUserHeldSlots[lineIdx] && rtUserHeldSlots[lineIdx][s];
+                    userGaugeSvg += `<rect id="rt-ugauge-${lineIdx}-${s}" x="${sx - barW/2}" y="92" width="${barW}" height="6" rx="3" fill="${held ? '#10b981' : '#e2e8f0'}" transition="fill 0.08s"/>`;
+                }
+
+                return `
+                <div class="rhythm-line-row ${isPlayingThis ? 'playing-row' : ''} ${isEditingThis ? 'editing-row' : ''}" id="rt-row-${lineIdx}">
+                    <div class="rt-line-badge ${isLoopingThis ? 'loop-locked' : ''}" onclick="handleRtLineBadgeClick(${lineIdx})" title="클릭: 이 줄만 집중 반복 켜기/끄기 (편집 모드일 땐 편집 줄 선택)">
+                        <span>${lineIdx + 1}줄</span>
+                        <span style="font-size:10px; opacity:0.85;">${isLoopingThis ? '🔁반복중' : '🔁반복'}</span>
+                    </div>
+                    <div class="rt-line-svg-wrap" onclick="selectRtEditingLine(${lineIdx})">
+                        <svg viewBox="0 0 ${svgW} ${svgH}" class="rt-line-svg" xmlns="http://www.w3.org/2000/svg">
+                            <!-- 박자표 (4/4, 3/4, 2/4) -->
+                            <text x="20" y="${staffY - 5}" font-family="'Nunito', sans-serif" font-size="22" font-weight="800" fill="#475569" text-anchor="middle">${topNum}</text>
+                            <line x1="10" y1="${staffY}" x2="30" y2="${staffY}" stroke="#475569" stroke-width="1.8"/>
+                            <text x="20" y="${staffY + 21}" font-family="'Nunito', sans-serif" font-size="22" font-weight="800" fill="#475569" text-anchor="middle">${botNum}</text>
+
+                            <!-- 단선 리듬 보표 가로줄 & 끝 세로줄 -->
+                            <line x1="${staffStartX}" y1="${staffY}" x2="${staffEndX}" y2="${staffY}" stroke="#334155" stroke-width="2"/>
+                            <line x1="${staffEndX}" y1="${staffY - 10}" x2="${staffEndX}" y2="${staffY + 10}" stroke="#334155" stroke-width="2.5"/>
+
+                            <!-- 음표 및 쉼표 -->
+                            ${notesSvg}
+
+                            <!-- 원 앤 투 앤 글자 & 빨간 어택 동그라미 & 빨간 밑줄 -->
+                            ${circlesSvg}
+                            ${syllablesSvg}
+                            ${underlinesSvg}
+
+                            <!-- 내가 누른 길이(터치/Space/소리) 실시간 비교 바 -->
+                            ${userGaugeSvg}
+                        </svg>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function handleRtLineBadgeClick(lineIdx) {
+            rtEditingLine = lineIdx;
+            const editLbl = document.getElementById('rt-editing-line-label');
+            if (editLbl) editLbl.innerText = `${lineIdx + 1}줄`;
+
+            if (rtLoopLine === lineIdx) {
+                rtLoopLine = -1;
+                updateRtStatusBadge('1~4줄 전체 연속 연습 모드');
+            } else {
+                rtLoopLine = lineIdx;
+                rtCurrentLine = lineIdx;
+                rtCurrentSlot = -1;
+                updateRtStatusBadge(`🔁 ${lineIdx + 1}줄 집중 반복 모드`);
+            }
+            renderRhythmTrainerSheet();
+        }
+
+        function selectRtEditingLine(lineIdx) {
+            rtEditingLine = lineIdx;
+            const editLbl = document.getElementById('rt-editing-line-label');
+            if (editLbl) editLbl.innerText = `${lineIdx + 1}줄`;
+            if (rtBuilderOpen) {
+                renderRhythmTrainerSheet();
+            }
+        }
+
+        function updateRtStatusBadge(txt) {
+            const b = document.getElementById('rt-status-badge');
+            if (b) b.innerText = txt;
+        }
+
+        function setRtTimeSignature(ts) {
+            rtTimeSig = ts;
+            document.querySelectorAll('.rt-ts-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.ts === ts);
+            });
+            loadRtPreset(rtCurrentPreset);
+        }
+
+        function loadRtPreset(presetNum) {
+            rtCurrentPreset = presetNum;
+            document.querySelectorAll('.rt-preset-btn').forEach((btn, idx) => {
+                btn.classList.toggle('active', (idx + 1) === presetNum);
+            });
+            const presetData = (RT_PRESETS[rtTimeSig] && RT_PRESETS[rtTimeSig][presetNum]) || RT_PRESETS['4/4'][1];
+            rtLines = JSON.parse(JSON.stringify(presetData));
+            rtCurrentLine = rtLoopLine >= 0 ? rtLoopLine : 0;
+            rtCurrentSlot = -1;
+            resetRtUserHeldSlots();
+            renderRhythmTrainerSheet();
+        }
+
+        function toggleRtBuilderPalette() {
+            rtBuilderOpen = !rtBuilderOpen;
+            const pal = document.getElementById('rt-builder-palette');
+            const btn = document.getElementById('btn-rt-builder-toggle');
+            if (pal) pal.style.display = rtBuilderOpen ? 'flex' : 'none';
+            if (btn) {
+                btn.style.background = rtBuilderOpen ? 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' : '#312e81';
+            }
+            renderRhythmTrainerSheet();
+        }
+
+        function addNoteToCurrentRtLine(noteTok) {
+            const spec = RT_NOTE_SPECS[noteTok];
+            if (!spec) return;
+            const maxSlots = getRtMaxSlots();
+            let { totalSlots } = expandRtLineEvents(rtLines[rtEditingLine]);
+
+            // 현재 줄이 이미 가득 찼다면 자동으로 비우고 새로 채우거나 다음 줄로 이동
+            if (totalSlots >= maxSlots) {
+                rtLines[rtEditingLine] = [];
+                totalSlots = 0;
+            }
+            if (totalSlots + spec.slots > maxSlots) {
+                const remainBeats = (maxSlots - totalSlots) / 2;
+                updateRtStatusBadge(`⚠️ 이 줄에 남은 박자는 ${remainBeats}박입니다!`);
+                return;
+            }
+            rtLines[rtEditingLine].push(noteTok);
+            const after = expandRtLineEvents(rtLines[rtEditingLine]).totalSlots;
+            if (after === maxSlots) {
+                updateRtStatusBadge(`✅ ${rtEditingLine + 1}줄 완성! (${rtTimeSig})`);
+                // 다음 줄로 자동 포커스 이동
+                rtEditingLine = (rtEditingLine + 1) % 4;
+                const editLbl = document.getElementById('rt-editing-line-label');
+                if (editLbl) editLbl.innerText = `${rtEditingLine + 1}줄`;
+            } else {
+                updateRtStatusBadge(`✏️ ${rtEditingLine + 1}줄 입력 중 (${after/2} / ${maxSlots/2}박)`);
+            }
+            resetRtUserHeldSlots();
+            renderRhythmTrainerSheet();
+        }
+
+        function popNoteFromCurrentRtLine() {
+            if (rtLines[rtEditingLine] && rtLines[rtEditingLine].length > 0) {
+                rtLines[rtEditingLine].pop();
+                renderRhythmTrainerSheet();
+            }
+        }
+
+        function clearCurrentRtLine() {
+            rtLines[rtEditingLine] = [];
+            renderRhythmTrainerSheet();
+        }
+
+        // BPM 조절
+        function changeRtBPM(delta) {
+            const slider = document.getElementById('rt-bpm-slider');
+            let next = parseInt(slider ? slider.value : rtBpm) + delta;
+            next = Math.max(40, Math.min(160, next));
+            if (slider) slider.value = next;
+            updateRtBPM(next);
+        }
+
+        function updateRtBPM(val) {
+            rtBpm = parseInt(val) || 76;
+            const lbl = document.getElementById('rt-bpm-val');
+            if (lbl) lbl.innerText = rtBpm;
+            if (rtIsPlaying) {
+                clearInterval(rtTimer);
+                const halfBeatMs = (60 / rtBpm / 2) * 1000;
+                rtTimer = setInterval(stepRtPlayback, halfBeatMs);
+            }
+        }
+
+        function toggleRtHarmonicaSound() {
+            rtHarmonicaSoundOn = !rtHarmonicaSoundOn;
+            const btn = document.getElementById('btn-rt-sound-mode');
+            if (btn) {
+                btn.innerText = rtHarmonicaSoundOn ? '🎺 하모니카음 ON' : '🎺 하모니카음 OFF';
+                btn.style.color = rtHarmonicaSoundOn ? '#fde047' : '#94a3b8';
+                btn.style.borderColor = rtHarmonicaSoundOn ? '#eab308' : '#475569';
+            }
+        }
+
+        function toggleRtSubClick() {
+            rtSubClickOn = !rtSubClickOn;
+            const btn = document.getElementById('btn-rt-subclick');
+            if (btn) {
+                btn.innerText = rtSubClickOn ? "🔔 '앤' 클릭 ON" : "🔔 '앤' 클릭 OFF";
+                btn.style.color = rtSubClickOn ? '#38bdf8' : '#94a3b8';
+                btn.style.borderColor = rtSubClickOn ? '#0284c7' : '#475569';
+            }
+        }
+
+        // Web Audio API 기반 하모니카 리드 사운드 & 메트로놈 클릭 합성기
+        function ensureRtAudioCtx() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playRtMetronomeClick(slotIdx) {
+            const ctx = ensureRtAudioCtx();
+            const isMainBeat = (slotIdx % 2 === 0);
+            if (!isMainBeat && !rtSubClickOn) return;
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            if (slotIdx === 0) {
+                osc.frequency.value = 1150; // 첫 박(원) 강박
+                gain.gain.setValueAtTime(0.45, ctx.currentTime);
+            } else if (isMainBeat) {
+                osc.frequency.value = 820;  // 정박(투, 쓰리, 포)
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+            } else {
+                osc.frequency.value = 580;  // 반박(앤) 가이드 클릭
+                gain.gain.setValueAtTime(0.14, ctx.currentTime);
+            }
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.065);
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 0.07);
+        }
+
+        // 정해진 길이(durationSec)만큼 울리는 하모니카 가이드음
+        function playRtHarmonicaNoteDuration(durationSec, freq = 523.25) {
+            const ctx = ensureRtAudioCtx();
+            const now = ctx.currentTime;
+            // 음과 음 사이 구분(텅깅 느낌)을 위해 끝부분 45ms는 살짝 여백을 둠
+            const playDur = Math.max(0.08, durationSec - 0.045);
+
+            const osc1 = ctx.createOscillator();
+            const osc2 = ctx.createOscillator();
+            const filter = ctx.createBiquadFilter();
+            const gain = ctx.createGain();
+
+            osc1.type = 'sawtooth';
+            osc2.type = 'triangle';
+            osc1.frequency.value = freq;
+            osc2.frequency.value = freq * 1.003; // 복음 하모니카 특유의 은은한 트레몰로 울림
+
+            filter.type = 'bandpass';
+            filter.frequency.value = freq * 2.2;
+            filter.Q.value = 1.2;
+
+            osc1.connect(filter);
+            osc2.connect(filter);
+            filter.connect(gain);
+            gain.connect(ctx.destination);
+
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(0.22, now + 0.025);
+            gain.gain.setValueAtTime(0.20, now + playDur - 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + playDur);
+
+            osc1.start(now);
+            osc2.start(now);
+            osc1.stop(now + playDur + 0.01);
+            osc2.stop(now + playDur + 0.01);
+        }
+
+        function toggleRtPlayback() {
+            const btn = document.getElementById('btn-rt-play');
+            if (rtIsPlaying) {
+                clearInterval(rtTimer);
+                rtIsPlaying = false;
+                rtCurrentSlot = -1;
+                if (btn) {
+                    btn.innerHTML = '<span>▶ 리듬 재생</span>';
+                    btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                }
+                renderRhythmTrainerSheet();
+            } else {
+                ensureRtAudioCtx();
+                rtIsPlaying = true;
+                rtCurrentLine = rtLoopLine >= 0 ? rtLoopLine : 0;
+                rtCurrentSlot = -1;
+                resetRtUserHeldSlots();
+                if (btn) {
+                    btn.innerHTML = '<span>⏸ 정지</span>';
+                    btn.style.background = 'linear-gradient(135deg, #ef4444 0%, #f97316 100%)';
+                }
+                stepRtPlayback();
+                const halfBeatMs = (60 / rtBpm / 2) * 1000;
+                rtTimer = setInterval(stepRtPlayback, halfBeatMs);
+            }
+        }
+
+        function stepRtPlayback() {
+            const maxSlots = getRtMaxSlots();
+            rtCurrentSlot++;
+            if (rtCurrentSlot >= maxSlots) {
+                rtCurrentSlot = 0;
+                if (rtLoopLine >= 0) {
+                    rtCurrentLine = rtLoopLine;
+                } else {
+                    rtCurrentLine = (rtCurrentLine + 1) % rtLines.length;
+                }
+                // 새로 시작하는 줄의 사용자 게이지 초기화
+                rtUserHeldSlots[rtCurrentLine] = new Array(maxSlots).fill(false);
+            }
+
+            // 현재 슬롯에 해당하는 메트로놈 클릭 재생
+            playRtMetronomeClick(rtCurrentSlot);
+
+            // 현재 슬롯에서 시작하는 음표가 있으면 음 길이만큼 하모니카 가이드음 재생 (사용자가 직접 패드를 누르고 있지 않을 때)
+            const { events } = expandRtLineEvents(rtLines[rtCurrentLine]);
+            const startingEv = events.find(ev => ev.startSlot === rtCurrentSlot && !ev.isRest);
+            if (startingEv && rtHarmonicaSoundOn && !rtIsUserHolding) {
+                const halfBeatSec = (60 / rtBpm) / 2;
+                const noteDurationSec = startingEv.slots * halfBeatSec;
+                playRtHarmonicaNoteDuration(noteDurationSec, 523.25);
+            }
+
+            // 사용자가 현재 패드/스페이스바/마이크를 누르고(불고) 있다면 현재 슬롯 게이지 기록
+            if (rtIsUserHolding) {
+                rtUserHeldSlots[rtCurrentLine][rtCurrentSlot] = true;
+            }
+
+            renderRhythmTrainerSheet();
+        }
+
+        // ==========================================
+        // 스마트폰 터치 패드 & PC 스페이스바 / 마이크 리듬 입력
+        // ==========================================
+        let rtIsUserHolding = false;
+        let rtLiveOsc1 = null;
+        let rtLiveOsc2 = null;
+        let rtLiveGain = null;
+        let rtHoldStartTime = 0;
+
+        function setRtPadMode(mode) {
+            rtPadMode = mode;
+            const b1 = document.getElementById('btn-pad-1');
+            const b2 = document.getElementById('btn-pad-2');
+            const area = document.getElementById('rt-pad-area');
+            if (!area) return;
+
+            if (mode === '1pad') {
+                if (b1) { b1.style.background = '#0284c7'; b1.style.color = '#fff'; }
+                if (b2) { b2.style.background = '#25253a'; b2.style.color = '#94a3b8'; }
+                area.innerHTML = `
+                    <button type="button" class="rt-touch-pad-btn" id="rt-pad-main"
+                        onpointerdown="handleRtPadDown(event, 'blow')"
+                        onpointerup="handleRtPadUp(event)"
+                        onpointercancel="handleRtPadUp(event)"
+                        onpointerleave="handleRtPadUp(event)">
+                        <span style="font-family: 'Jua', sans-serif; font-size: 21px; letter-spacing: 0.5px;">🥁 여기를 꾹 누르며 리듬 연습!</span>
+                        <span style="font-size: 12.5px; color: #94a3b8;">누르고 있는 동안 소리가 나고 박자 길이가 기록됩니다</span>
+                    </button>`;
+            } else {
+                if (b2) { b2.style.background = '#0284c7'; b2.style.color = '#fff'; }
+                if (b1) { b1.style.background = '#25253a'; b1.style.color = '#94a3b8'; }
+                area.innerHTML = `
+                    <button type="button" class="rt-touch-pad-btn pad-blow" id="rt-pad-blow"
+                        onpointerdown="handleRtPadDown(event, 'blow')"
+                        onpointerup="handleRtPadUp(event)"
+                        onpointercancel="handleRtPadUp(event)"
+                        onpointerleave="handleRtPadUp(event)">
+                        <span style="font-family: 'Jua', sans-serif; font-size: 19px;">🔴 날숨 (불기)</span>
+                        <span style="font-size: 11.5px; color: #fca5a5;">가온 도 (8번홀)</span>
+                    </button>
+                    <button type="button" class="rt-touch-pad-btn pad-draw" id="rt-pad-draw"
+                        onpointerdown="handleRtPadDown(event, 'draw')"
+                        onpointerup="handleRtPadUp(event)"
+                        onpointercancel="handleRtPadUp(event)"
+                        onpointerleave="handleRtPadUp(event)">
+                        <span style="font-family: 'Jua', sans-serif; font-size: 19px;">🔵 들숨 (마시기)</span>
+                        <span style="font-size: 11.5px; color: #7dd3fc;">중음 레 (9번홀)</span>
+                    </button>`;
+            }
+        }
+
+        function startRtLiveHarmonicaTone(breathType) {
+            const ctx = ensureRtAudioCtx();
+            stopRtLiveHarmonicaTone();
+            const freq = breathType === 'draw' ? 587.33 : 523.25; // D5(마시기) vs C5(불기)
+            const now = ctx.currentTime;
+
+            rtLiveOsc1 = ctx.createOscillator();
+            rtLiveOsc2 = ctx.createOscillator();
+            const filter = ctx.createBiquadFilter();
+            rtLiveGain = ctx.createGain();
+
+            rtLiveOsc1.type = 'sawtooth';
+            rtLiveOsc2.type = 'triangle';
+            rtLiveOsc1.frequency.value = freq;
+            rtLiveOsc2.frequency.value = freq * 1.003;
+
+            filter.type = 'bandpass';
+            filter.frequency.value = freq * 2.2;
+            filter.Q.value = 1.2;
+
+            rtLiveOsc1.connect(filter);
+            rtLiveOsc2.connect(filter);
+            filter.connect(rtLiveGain);
+            rtLiveGain.connect(ctx.destination);
+
+            rtLiveGain.gain.setValueAtTime(0.001, now);
+            rtLiveGain.gain.linearRampToValueAtTime(0.26, now + 0.02);
+
+            rtLiveOsc1.start(now);
+            rtLiveOsc2.start(now);
+        }
+
+        function stopRtLiveHarmonicaTone() {
+            if (rtLiveGain && audioCtx) {
+                try {
+                    const now = audioCtx.currentTime;
+                    rtLiveGain.gain.cancelScheduledValues(now);
+                    rtLiveGain.gain.setValueAtTime(0.0001, now);
+                } catch (e) {}
+            }
+            if (rtLiveOsc1) {
+                try { rtLiveOsc1.stop(); rtLiveOsc1.disconnect(); } catch (e) {}
+                rtLiveOsc1 = null;
+            }
+            if (rtLiveOsc2) {
+                try { rtLiveOsc2.stop(); rtLiveOsc2.disconnect(); } catch (e) {}
+                rtLiveOsc2 = null;
+            }
+            rtLiveGain = null;
+        }
+
+        function handleRtPadDown(e, breathType = 'blow') {
+            if (e && e.cancelable) e.preventDefault();
+            if (rtIsUserHolding) return;
+            rtIsUserHolding = true;
+            rtHoldStartTime = performance.now();
+
+            if (e && e.currentTarget) {
+                e.currentTarget.classList.add('pressing');
+            }
+            if (navigator.vibrate) {
+                try { navigator.vibrate(12); } catch (err) {}
+            }
+
+            startRtLiveHarmonicaTone(breathType);
+            recordRtUserHoldAtCurrentSlot(true);
+        }
+
+        function handleRtPadUp(e) {
+            if (!rtIsUserHolding) return;
+            rtIsUserHolding = false;
+            document.querySelectorAll('.rt-touch-pad-btn.pressing').forEach(el => el.classList.remove('pressing'));
+            stopRtLiveHarmonicaTone();
+
+            const heldMs = performance.now() - rtHoldStartTime;
+            const oneBeatMs = (60 / rtBpm) * 1000;
+            const heldBeats = (heldMs / oneBeatMs).toFixed(1);
+            const msg = `👏 방금 유지한 길이: 약 ${heldBeats}박자 (${Math.round(heldMs)}ms)`;
+            const padJudge = document.getElementById('rt-pad-judge');
+            const pcJudge = document.getElementById('rt-pc-judge');
+            if (padJudge) padJudge.innerText = msg;
+            if (pcJudge) pcJudge.innerText = msg;
+        }
+
+        function handleRtSpaceDown() {
+            if (rtIsUserHolding) return;
+            rtIsUserHolding = true;
+            rtHoldStartTime = performance.now();
+            startRtLiveHarmonicaTone('blow');
+            recordRtUserHoldAtCurrentSlot(true);
+        }
+
+        function handleRtSpaceUp() {
+            if (!rtIsUserHolding) return;
+            handleRtPadUp(null);
+        }
+
+        function recordRtUserHoldAtCurrentSlot() {
+            const lineIdx = rtIsPlaying ? rtCurrentLine : rtEditingLine;
+            const slotIdx = rtIsPlaying && rtCurrentSlot >= 0 ? rtCurrentSlot : 0;
+            if (rtUserHeldSlots[lineIdx]) {
+                rtUserHeldSlots[lineIdx][slotIdx] = true;
+                const gaugeEl = document.getElementById(`rt-ugauge-${lineIdx}-${slotIdx}`);
+                if (gaugeEl) gaugeEl.setAttribute('fill', '#10b981');
+            }
+        }
+
+        // 마이크 소리(책상 두드리기 '탁!' 또는 하모니카 부는 소리) 리듬 인식
+        let rtMicStream = null;
+        let rtMicCtx = null;
+        let rtMicAnalyser = null;
+        let rtMicAnimId = null;
+
+        async function toggleRtMicDetect() {
+            const btn = document.getElementById('btn-rt-mic');
+            if (rtMicStream) {
+                rtMicStream.getTracks().forEach(t => t.stop());
+                rtMicStream = null;
+                if (rtMicAnimId) cancelAnimationFrame(rtMicAnimId);
+                if (btn) {
+                    btn.innerText = '🎙️ 책상/소리 인식 OFF';
+                    btn.style.background = '#25253c';
+                    btn.style.color = '#ff6b81';
+                    btn.style.borderColor = '#ff4757';
+                }
+                return;
+            }
+            try {
+                if (!rtMicCtx) rtMicCtx = new (window.AudioContext || window.webkitAudioContext)();
+                rtMicStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const src = rtMicCtx.createMediaStreamSource(rtMicStream);
+                rtMicAnalyser = rtMicCtx.createAnalyser();
+                rtMicAnalyser.fftSize = 512;
+                src.connect(rtMicAnalyser);
+
+                if (btn) {
+                    btn.innerText = '🎙️ 책상/소리 인식 ON';
+                    btn.style.background = 'rgba(16, 185, 129, 0.25)';
+                    btn.style.color = '#34d399';
+                    btn.style.borderColor = '#10b981';
+                }
+                updateRtStatusBadge('🎙️ 책상을 두드리거나 하모니카를 불면 초록색 바가 기록됩니다');
+                loopRtMicDetect();
+            } catch (err) {
+                alert('마이크 권한을 허용하시면 책상 두드리기/하모니카 소리로 박자를 체크할 수 있습니다.');
+            }
+        }
+
+        function loopRtMicDetect() {
+            if (!rtMicStream || !rtMicAnalyser) return;
+            const buf = new Float32Array(rtMicAnalyser.fftSize);
+            rtMicAnalyser.getFloatTimeDomainData(buf);
+            let sum = 0;
+            for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+            const rms = Math.sqrt(sum / buf.length);
+
+            // 책상 노크 소리나 하모니카 소리 임계값(0.028) 감지
+            if (rms > 0.028) {
+                if (rtIsPlaying && rtCurrentSlot >= 0) {
+                    rtUserHeldSlots[rtCurrentLine][rtCurrentSlot] = true;
+                    const gaugeEl = document.getElementById(`rt-ugauge-${rtCurrentLine}-${rtCurrentSlot}`);
+                    if (gaugeEl) gaugeEl.setAttribute('fill', '#10b981');
+                }
+                const pcJudge = document.getElementById('rt-pc-judge');
+                if (pcJudge) pcJudge.innerText = '🎙️ 소리 감지됨! (박자 기록 중)';
+            }
+            rtMicAnimId = requestAnimationFrame(loopRtMicDetect);
+        }
+
+        // 박자 연습 패널 열기/닫기 및 스마트폰 휴대용 모드 전환
+        function toggleRhythmTrainerMode(forceState) {
+            if (isSoloStaffMode && window.innerWidth >= 900) {
+                document.body.classList.toggle('rhythm-trainer-top');
+                renderRhythmTrainerSheet();
+                const panel = document.getElementById('rhythm-trainer-panel');
+                if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+            const isCurrentlyActive = document.body.classList.contains('rhythm-trainer-active');
+            const nextState = typeof forceState === 'boolean' ? forceState : !isCurrentlyActive;
+
+            if (nextState) {
+                document.body.classList.add('rhythm-trainer-active');
+                if (window.innerWidth < 900) {
+                    switchMobilePortableTab('rhythm');
+                }
+                renderRhythmTrainerSheet();
+            } else {
+                document.body.classList.remove('rhythm-trainer-active');
+                if (rtIsPlaying) toggleRtPlayback();
+                if (window.innerWidth < 900) {
+                    switchMobilePortableTab('score');
+                }
+            }
+        }
+
+        function switchMobilePortableTab(tab) {
+            const bRhythm = document.getElementById('ptab-rhythm');
+            const bStaff = document.getElementById('ptab-staff');
+            const bScore = document.getElementById('ptab-score');
+
+            bRhythm?.classList.remove('active', 'active-staff');
+            bStaff?.classList.remove('active', 'active-staff');
+            bScore?.classList.remove('active', 'active-staff');
+
+            if (tab === 'rhythm') {
+                document.body.classList.add('mobile-portable-mode', 'mobile-tab-rhythm', 'rhythm-trainer-active');
+                document.body.classList.remove('mobile-tab-staff', 'solo-staff-mode');
+                bRhythm?.classList.add('active');
+                renderRhythmTrainerSheet();
+            } else if (tab === 'staff') {
+                if (rtIsPlaying) toggleRtPlayback();
+                document.body.classList.add('mobile-portable-mode', 'mobile-tab-staff', 'solo-staff-mode');
+                document.body.classList.remove('mobile-tab-rhythm', 'rhythm-trainer-active');
+                bStaff?.classList.add('active-staff');
+            } else {
+                if (rtIsPlaying) toggleRtPlayback();
+                document.body.classList.remove('mobile-portable-mode', 'mobile-tab-rhythm', 'mobile-tab-staff', 'rhythm-trainer-active', 'solo-staff-mode');
+                bScore?.classList.add('active-staff');
+                setTimeout(() => { if (currentScoreType) renderScore(); }, 100);
+            }
+        }
+
         // 초기화
         initHarmonicaRuler();
         initMasterStaff();
@@ -3066,6 +4476,8 @@
         }
         updateOctaveButtons();
         renderBeatIndicators();
+        renderRhythmTrainerSheet();
+
         if (isSidebarCollapsed) {
             toggleSidebar(true);
         }
@@ -3080,12 +4492,16 @@
             document.getElementById('btn-view-2col')?.classList.remove('active');
         }
 
-        // URL 파라미터(?mode=solo) 또는 이전 단독 모드 설정 확인
+        // 스마트폰(모바일) 접속 시: 악보 보는 부분을 제외하고 들고 다니면서 바로 연습할 수 있도록 휴대용 박자·리듬 모드로 자동 진입!
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('mode') === 'solo') {
+        if (urlParams.get('mode') === 'rhythm') {
+            toggleRhythmTrainerMode(true);
+        } else if (urlParams.get('mode') === 'solo') {
             isSoloStaffMode = true;
-        }
-        if (isSoloStaffMode) {
+            toggleSoloStaffMode(true);
+        } else if (window.innerWidth < 900) {
+            switchMobilePortableTab('rhythm');
+        } else if (isSoloStaffMode) {
             toggleSoloStaffMode(true);
         }
 
