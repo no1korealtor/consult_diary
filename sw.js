@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'consult-diary-v39';
+const CACHE_NAME = 'consult-diary-v39';
 
 // 湲곕낯?곸쑝濡?罹먯떛???먯뀑 紐⑸줉 (?ㅽ봽?쇱씤?먯꽌???붾㈃??蹂댁뿬二쇨린 ?꾪빐)
 const urlsToCache = [
@@ -19,10 +19,12 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  if (event.request.url.includes('/rosary')) {
+    return; // rosary 앱은 consult_diary 캐시 대상이 아님
+  }
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // 罹먯떆???덉쑝硫?罹먯떆???묐떟 諛섑솚, ?놁쑝硫??ㅽ듃?뚰겕 ?붿껌
         return response || fetch(event.request);
       })
   );
