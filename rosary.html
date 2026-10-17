@@ -235,20 +235,20 @@ html, body {
    3. 묵주알 비주얼 트랙 (장미꽃송이가 잘 보이도록 76px)
    =================================================== */
 .bead-visualizer-container {
-  height: 76px;
+  height: 80px;
   width: 100%;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
   flex-shrink: 0;
 }
 
 .bead-track-string {
   position: absolute;
-  top: 48%;
+  top: 50%;
   left: 0;
   right: 0;
   height: 2px;
@@ -291,8 +291,8 @@ html, body {
 }
 
 .bead-item.active .bead-rose-icon {
-  transform: scale(1.18);
-  filter: drop-shadow(0 0 14px rgba(243, 198, 105, 0.95)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7));
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 12px rgba(243, 198, 105, 0.95)) drop-shadow(0 3px 6px rgba(0, 0, 0, 0.7));
 }
 
 /* 묵주알 모양 (클래식 모드 호환) */
@@ -345,7 +345,7 @@ html, body {
 
 /* 활성 알 (CENTER GLOW) */
 .bead-item.active {
-  transform: scale(1.25);
+  transform: scale(1.15);
   z-index: 5;
 }
 
@@ -374,12 +374,7 @@ html, body {
 }
 
 .bead-label-hint {
-  font-size: 0.68rem;
-  color: var(--gold-primary);
-  margin-top: 3px;
-  font-weight: 700;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  white-space: nowrap;
+  display: none !important;
 }
 
 /* ===================================================
@@ -6160,7 +6155,6 @@ class RosaryApp {
       
       beadEl.innerHTML = `
         ${this.getBeadMarkup(step, isActive)}
-        ${isActive ? `<div class="bead-label-hint">${step.beadLabel}</div>` : ""}
       `;
 
       beadEl.addEventListener("click", () => {
