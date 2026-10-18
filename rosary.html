@@ -4643,9 +4643,6 @@ function buildRosarySteps(mysteryKey, includeFatima = true, lang = "ko") {
         beadNumber: b,
         beadLabel: isEn ? `Decade ${dIdx + 1} Hail Mary ${b}/10` : `${dIdx + 1}단 성모송 ${b}/10`,
         title: isEn ? `Hail Mary (${b}/10)` : `성모송 (${b}/10)`,
-        meditation: decade.meditation,
-        fruit: decade.fruit,
-        scripture: decade.scripture,
         badge: isEn ? `Decade ${dIdx + 1} · Bead ${b}` : `${dIdx + 1}단 ${b}번째 알`,
         guide: isEn ? `Keeping ${decade.title} in your heart, recite with devotion.` : `${decade.title}을 마음에 품고 정성껏 바칩니다.`,
         prayers: [prayers.hail_mary]
@@ -6918,13 +6915,15 @@ class RosaryApp {
     this.dom.cardBadge.textContent = `${step.section} · ${step.badge}`;
     this.dom.cardCounter.textContent = `${this.currentIndex + 1} / ${this.steps.length}`;
 
-    if (step.meditation) {
+    // 신비 묵상 및 성경 구절 아코디언은 '단 시작 큰 알(Large Bead)'에서만 노출
+    // (성모송 10알에서는 숨겨 기도문 본문 공간을 넓고 쾌적하게 확보)
+    if (step.beadType === "large" && step.meditation) {
       this.dom.meditationBox.style.display = "flex";
       this.dom.meditationTitle.textContent = step.title;
       this.dom.meditationText.textContent = `"${step.meditation}"`;
       this.dom.meditationFruit.textContent = step.fruit ? (this.settings.lang === "en" ? `Fruit: ${step.fruit}` : `열매: ${step.fruit}`) : "";
 
-      // 각 단 성경 구절 묵상 (기본은 감추어져 있고 탭하면 펼쳐짐)
+      // 각 단 성경 구절 묵상 (단 시작 큰 알에서 묵상 후 성모송 10알 진입)
       if (step.scripture) {
         if (this.dom.scriptureAccordion) this.dom.scriptureAccordion.style.display = "block";
         if (this.dom.scriptureBtnTitle) {
@@ -6964,41 +6963,6 @@ class RosaryApp {
     }
 
     this.dom.prayerContentSection.innerHTML = "";
-
-    // 시작 기도(십자가 성호경·사도신경) 화면에서 제1단 성경 묵상 구절을 바로 읽을 수 있는 프리뷰 아코디언 제공
-    if (this.currentIndex === 0) {
-      const d1 = this.steps.find(s => s.decadeNum === 1 && s.beadType === "large");
-      if (d1 && d1.scripture) {
-        const previewDiv = document.createElement("div");
-        previewDiv.className = "step-zero-scripture-card";
-        previewDiv.style.cssText = "margin-bottom:14px; padding:10px 12px; background:rgba(243,198,105,0.08); border:1px solid rgba(243,198,105,0.28); border-radius:8px;";
-        previewDiv.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;" id="btnStepZeroScriptureToggle">
-            <span style="font-weight:700; color:var(--gold-primary); font-size:0.84rem;">📖 제1단 신비 성경 묵상 미리 읽기 (${d1.scripture.verse})</span>
-            <span id="stepZeroScriptureArrow" style="color:var(--gold-primary); font-size:0.75rem;">▼</span>
-          </div>
-          <div id="stepZeroScriptureBody" style="display:none; margin-top:8px; font-size:0.8rem; color:#FEF3C7; line-height:1.55; word-break:keep-all; border-top:1px solid rgba(243,198,105,0.2); padding-top:8px;">
-            <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:4px;">"${d1.meditation}"</div>
-            "${d1.scripture.text}"
-            <div style="font-size:0.68rem; color:rgba(255,255,255,0.5); text-align:right; margin-top:4px;">${this.settings.lang === "en" ? 'USCCB (NABRE)' : '한국천주교주교회의 [가톨릭 성경]'}</div>
-          </div>
-        `;
-        this.dom.prayerContentSection.appendChild(previewDiv);
-
-        setTimeout(() => {
-          const btn = document.getElementById("btnStepZeroScriptureToggle");
-          const body = document.getElementById("stepZeroScriptureBody");
-          const arr = document.getElementById("stepZeroScriptureArrow");
-          if (btn && body && arr) {
-            btn.addEventListener("click", () => {
-              const isHidden = body.style.display === "none";
-              body.style.display = isHidden ? "block" : "none";
-              arr.textContent = isHidden ? "▲" : "▼";
-            });
-          }
-        }, 10);
-      }
-    }
     step.prayers.forEach(p => {
       const pDiv = document.createElement("div");
       pDiv.className = "single-prayer-item";
@@ -8156,10 +8120,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=17').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=18').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=17').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=18').catch(() => {});
         });
       });
 
@@ -8167,7 +8131,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v17' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v18' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
