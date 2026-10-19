@@ -711,11 +711,11 @@
            ========================================== */
         .master-staff-container {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 10px 12px;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 10px 14px;
             background: linear-gradient(135deg, #181829 0%, #1f1f35 100%);
             border-radius: 14px;
             border: 1px solid #3a3a56;
@@ -726,9 +726,9 @@
             overflow: hidden;
         }
         .master-staff-svg-wrap {
-            width: 100%;
-            max-width: 380px;
-            height: 125px;
+            flex: 0 0 46%;
+            max-width: 220px;
+            height: 116px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -738,7 +738,7 @@
             overflow: hidden;
             box-shadow: inset 0 2px 10px rgba(0,0,0,0.4);
             box-sizing: border-box;
-            margin: 0 auto;
+            margin: 0;
         }
         .master-staff-svg {
             width: 100%;
@@ -746,13 +746,13 @@
             display: block;
         }
         .master-note-info {
+            flex: 1;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            width: 100%;
-            max-width: 100%;
             box-sizing: border-box;
             gap: 5px;
             overflow: hidden;
@@ -1010,25 +1010,26 @@
 
         @media(max-width: 899px) {
             .master-staff-container {
-                flex-direction: column !important;
+                flex-direction: row !important;
                 align-items: center !important;
-                justify-content: center !important;
-                gap: 8px !important;
-                padding: 10px 10px !important;
+                justify-content: space-between !important;
+                gap: 10px !important;
+                padding: 8px 10px !important;
                 width: 100% !important;
                 box-sizing: border-box !important;
             }
             .master-staff-svg-wrap {
-                width: 100% !important;
-                max-width: 100% !important;
-                height: 118px !important;
-                margin: 0 auto !important;
+                flex: 0 0 45% !important;
+                max-width: 190px !important;
+                height: 108px !important;
+                margin: 0 !important;
             }
             .master-note-info {
+                flex: 1 !important;
+                min-width: 0 !important;
                 align-items: center !important;
                 justify-content: center !important;
                 text-align: center !important;
-                width: 100% !important;
                 box-sizing: border-box !important;
             }
             .master-name-row {
@@ -1038,26 +1039,26 @@
                 gap: 6px !important;
             }
             .master-name-kr {
-                font-size: 26px !important;
+                font-size: 24px !important;
             }
             .master-note-header-row {
                 justify-content: center !important;
                 align-items: center !important;
                 width: 100% !important;
-                gap: 6px !important;
+                gap: 5px !important;
             }
             .master-hole-badge {
-                font-size: 13px !important;
-                padding: 3px 10px !important;
+                font-size: 12.5px !important;
+                padding: 3px 9px !important;
             }
             .master-cents-badge {
-                font-size: 11px !important;
-                padding: 3px 8px !important;
+                font-size: 10.5px !important;
+                padding: 2px 7px !important;
             }
             .master-guide-tip {
                 text-align: center !important;
                 width: 100% !important;
-                font-size: 11.5px !important;
+                font-size: 11px !important;
             }
             .octave-shift-row {
                 padding: 4px 6px !important;
@@ -1100,7 +1101,7 @@
         body.solo-staff-mode #master-scale-panel {
             width: 100% !important;
             max-width: 620px !important;
-            padding: 14px 14px !important;
+            padding: 12px 14px !important;
             box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55) !important;
             border: 1.5px solid #4f46e5 !important;
             border-radius: 20px !important;
@@ -1117,21 +1118,23 @@
             box-sizing: border-box !important;
         }
         body.solo-staff-mode .master-staff-container {
-            flex-direction: column !important;
+            flex-direction: row !important;
             align-items: center !important;
-            justify-content: center !important;
+            justify-content: space-between !important;
+            gap: 14px !important;
             width: 100% !important;
             box-sizing: border-box !important;
-            padding: 12px 12px !important;
+            padding: 10px 14px !important;
         }
         body.solo-staff-mode .master-staff-svg-wrap {
-            width: 100% !important;
-            max-width: 100% !important;
-            height: 140px !important; /* 스마트폰 전용 대형 오선 */
-            margin: 0 auto !important;
+            flex: 0 0 46% !important;
+            max-width: 240px !important;
+            height: 120px !important;
+            margin: 0 !important;
         }
         body.solo-staff-mode .master-note-info {
-            width: 100% !important;
+            flex: 1 !important;
+            min-width: 0 !important;
             align-items: center !important;
             justify-content: center !important;
             text-align: center !important;
@@ -2086,31 +2089,7 @@
                 <button onclick="changeBPMBy(1)" style="background:#3a3a5a; color:white; border:none; border-radius:50%; width:38px; height:38px; font-size:20px; font-weight:bold; cursor:pointer; flex-shrink:0;">+</button>
             </div>
         </div>
-
-        <!-- File Open Panel -->
-        <div class="panel" id="file-open-panel" style="padding: 14px;">
-            <div class="panel-title" style="margin-bottom: 0;">
-                <span style="display:flex; align-items:center; font-size: 17px;">🎼 내 악보 보기</span>
-                <label for="pdf-upload" style="cursor: pointer; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 7px 15px; border-radius: 20px; font-size: 14px; font-family: 'Nunito', sans-serif; font-weight: bold; box-shadow: 0 4px 10px rgba(79, 172, 254, 0.3);">
-                    📁 파일 열기
-                </label>
-                <input type="file" id="pdf-upload" accept="application/pdf, image/*" multiple onchange="handleFileUpload(event)" style="display: none;">
-            </div>
-        </div>
-
-        <!-- Tuner Panel -->
-        <div class="panel" id="tuner-panel">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h2 class="panel-title" style="margin: 0; font-size: 17px;">🎙️ 튜너</h2>
-                <button class="btn-mic" id="mic-btn" onclick="startTuner()" style="padding: 6px 14px; font-size: 13px; margin: 0; border-radius: 16px; box-shadow: 0 2px 5px rgba(255, 71, 87, 0.4);">🎙️ 켜기</button>
-            </div>
-            <div class="tuner-note" id="note-display">-</div>
-            <div class="tuner-meter" style="margin-bottom: 10px;">
-                <div class="meter-center"></div>
-                <div class="meter-indicator" id="meter-indicator"></div>
-            </div>
-            <canvas id="oscilloscope" style="width: 100%; height: 35px; background: #1e1e2f; border-radius: 8px; margin-bottom: 0px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);"></canvas>
-        </div>
+        <input type="file" id="pdf-upload" accept="application/pdf, image/*" multiple onchange="handleFileUpload(event)" style="display: none;">
     </div>
 
     <script>
@@ -2825,8 +2804,10 @@
                 topBtn.style.borderColor = '#ff4757';
                 topBtn.style.background = '#252538';
             }
-            document.getElementById('note-display').innerText = '-';
-            document.getElementById('meter-indicator').style.left = '50%';
+            const noteDisplayEl = document.getElementById('note-display');
+            if (noteDisplayEl) noteDisplayEl.innerText = '-';
+            const meterIndicatorEl = document.getElementById('meter-indicator');
+            if (meterIndicatorEl) meterIndicatorEl.style.left = '50%';
             
             const canvas = document.getElementById('oscilloscope');
             if (canvas) {
@@ -2939,33 +2920,37 @@
                 const octaveNum = Math.floor(note / 12) - 1;
                 const pitchString = noteLetters[note % 12] + octaveNum;
 
-                // 하모니카 정보(몇 번 홀, 불기/마시기) 매칭
-                const matchedNote = HARMONICA_NOTES.find(n => n.pitch === pitchString);
-                let holeInfoBadge = '';
-                if (matchedNote) {
-                    const breathBadgeColor = matchedNote.breathType === 'blow' ? '#ef4444' : '#0284c7';
-                    const breathIcon = matchedNote.breathType === 'blow' ? '🔴' : '🔵';
-                    holeInfoBadge = `<span style="font-size:14px; color:#fff; background:${breathBadgeColor}; padding:2px 8px; border-radius:10px; margin-left:6px; font-family:'Jua',sans-serif; vertical-align:middle; box-shadow:0 2px 6px rgba(0,0,0,0.3); white-space:nowrap;">${matchedNote.hole}번 ${matchedNote.breath} ${breathIcon}</span>`;
-                }
-                
-                let shiftNotice = '';
-                if (tunerOctaveShift === -1) {
-                    shiftNotice = `<span style="font-size:12px; background:#4f46e5; color:#fff; padding:2px 7px; border-radius:8px; margin-left:6px; font-family:'Jua',sans-serif; vertical-align:middle; box-shadow:0 2px 5px rgba(79,70,229,0.4);">🪈 -1옥타브</span>`;
-                } else if (tunerOctaveShift === 1) {
-                    shiftNotice = `<span style="font-size:12px; background:#d97706; color:#fff; padding:2px 7px; border-radius:8px; margin-left:6px; font-family:'Jua',sans-serif; vertical-align:middle; box-shadow:0 2px 5px rgba(217,119,6,0.4);">+1옥타브</span>`;
-                }
+                const noteDisplayEl = document.getElementById('note-display');
+                if (noteDisplayEl) {
+                    // 하모니카 정보(몇 번 홀, 불기/마시기) 매칭
+                    const matchedNote = HARMONICA_NOTES.find(n => n.pitch === pitchString);
+                    let holeInfoBadge = '';
+                    if (matchedNote) {
+                        const breathBadgeColor = matchedNote.breathType === 'blow' ? '#ef4444' : '#0284c7';
+                        const breathIcon = matchedNote.breathType === 'blow' ? '🔴' : '🔵';
+                        holeInfoBadge = `<span style="font-size:14px; color:#fff; background:${breathBadgeColor}; padding:2px 8px; border-radius:10px; margin-left:6px; font-family:'Jua',sans-serif; vertical-align:middle; box-shadow:0 2px 6px rgba(0,0,0,0.3); white-space:nowrap;">${matchedNote.hole}번 ${matchedNote.breath} ${breathIcon}</span>`;
+                    }
+                    
+                    let shiftNotice = '';
+                    if (tunerOctaveShift === -1) {
+                        shiftNotice = `<span style="font-size:12px; background:#4f46e5; color:#fff; padding:2px 7px; border-radius:8px; margin-left:6px; font-family:'Jua',sans-serif; vertical-align:middle; box-shadow:0 2px 5px rgba(79,70,229,0.4);">🪈 -1옥타브</span>`;
+                    } else if (tunerOctaveShift === 1) {
+                        shiftNotice = `<span style="font-size:12px; background:#d97706; color:#fff; padding:2px 7px; border-radius:8px; margin-left:6px; font-family:'Jua',sans-serif; vertical-align:middle; box-shadow:0 2px 5px rgba(217,119,6,0.4);">+1옥타브</span>`;
+                    }
 
-                document.getElementById('note-display').innerHTML = `<span>${noteStrings[note % 12]}</span> <span style="font-size:22px; color:#a0a0b0;">(${pitchString})</span> ${shiftNotice} ${holeInfoBadge}`;
+                    noteDisplayEl.innerHTML = `<span>${noteStrings[note % 12]}</span> <span style="font-size:22px; color:#a0a0b0;">(${pitchString})</span> ${shiftNotice} ${holeInfoBadge}`;
+                }
                 
-                let percent = (cents + 50) / 100;
-                percent = Math.max(0, Math.min(1, percent));
                 let meterEl = document.getElementById('meter-indicator');
-                meterEl.style.left = (percent * 100) + '%';
-                
-                if (Math.abs(cents) < 8) {
-                    meterEl.style.background = '#1dd1a1';
-                } else {
-                    meterEl.style.background = '#ff4757';
+                if (meterEl) {
+                    let percent = (cents + 50) / 100;
+                    percent = Math.max(0, Math.min(1, percent));
+                    meterEl.style.left = (percent * 100) + '%';
+                    if (Math.abs(cents) < 8) {
+                        meterEl.style.background = '#1dd1a1';
+                    } else {
+                        meterEl.style.background = '#ff4757';
+                    }
                 }
 
                 // 상단 오선보 계이름 카드 실시간 하이라이트 반응!
