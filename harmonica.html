@@ -1421,9 +1421,14 @@
                 display: none !important;
             }
             body.mobile-portable-mode.mobile-tab-rhythm #master-scale-panel,
-            body.mobile-portable-mode.mobile-tab-rhythm #metronome-panel,
             body.mobile-portable-mode.mobile-tab-rhythm #tuner-panel {
                 display: none !important;
+            }
+            body.mobile-portable-mode.mobile-tab-rhythm .right-panels {
+                order: 1;
+            }
+            body.mobile-portable-mode.mobile-tab-rhythm #rhythm-trainer-panel {
+                order: 2;
             }
             body.mobile-portable-mode.mobile-tab-staff #rhythm-trainer-panel {
                 display: none !important;
@@ -1775,14 +1780,14 @@
 
     <!-- Rhythm Trainer Panel (박자·리듬 연습실: 원 앤 투 앤) -->
     <div id="rhythm-trainer-panel">
-        <!-- Header -->
+        <!-- Header (상단 튜너 및 메트로놈과 통합되어 중복 컨트롤 제거) -->
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <span style="font-family: 'Jua', sans-serif; font-size: 22px; color: #f59e0b; display: flex; align-items: center; gap: 6px;">
                     <span>🥁 리듬·박자 연습</span>
                 </span>
                 <span id="rt-status-badge" style="background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">
-                    원·앤·투·앤 카운트 가이드
+                    상단 메트로놈(박자·BPM) 및 튜너 연동됨
                 </span>
             </div>
             <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
@@ -1792,36 +1797,10 @@
                 <button type="button" id="btn-rt-subclick" onclick="toggleRtSubClick()" class="btn-toolbar" style="background: #25253c; color: #94a3b8; border: 1px solid #475569; padding: 5px 11px; border-radius: 14px; font-size: 12px; font-weight: bold;">
                     🔔 '앤' 클릭 OFF
                 </button>
-                <button type="button" id="btn-rt-mic" onclick="toggleRtMicDetect()" class="btn-toolbar" style="background: #25253c; color: #ff6b81; border: 1px solid #ff4757; padding: 5px 11px; border-radius: 14px; font-size: 12px; font-weight: bold;" title="책상 두드리는 소리나 하모니카 소리를 마이크로 인식합니다">
-                    🎙️ 책상/소리 인식 OFF
-                </button>
                 <button type="button" onclick="toggleRhythmTrainerMode(false)" class="btn-toolbar" style="background: #3a3a5a; color: #ffffff; border: none; padding: 5px 12px; border-radius: 14px; font-size: 12px; font-weight: bold;">
                     🎼 악보 뷰어로
                 </button>
-            </div>
-        </div>
-
-        <!-- Top Controls: Time Signature + BPM + Play -->
-        <div class="rt-top-controls">
-            <div class="rt-time-sig-group">
-                <span style="font-family: 'Jua', sans-serif; font-size: 14px; color: #cbd5e1; margin-right: 2px;">박자:</span>
-                <button type="button" class="rt-ts-btn active" data-ts="4/4" onclick="setRtTimeSignature('4/4')">4/4 박자</button>
-                <button type="button" class="rt-ts-btn" data-ts="3/4" onclick="setRtTimeSignature('3/4')">3/4 박자</button>
-                <button type="button" class="rt-ts-btn" data-ts="2/4" onclick="setRtTimeSignature('2/4')">2/4 박자</button>
-                <button type="button" class="rt-ts-btn" data-ts="6/8" onclick="setRtTimeSignature('6/8')">6/8 박자</button>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex-grow: 1; justify-content: flex-end;">
-                <div style="display: flex; align-items: center; gap: 6px; background: #121220; padding: 4px 10px; border-radius: 12px; border: 1px solid #2d2d46;">
-                    <button type="button" onclick="changeRtBPM(-4)" style="background:#2d2d46; color:#fff; border:none; border-radius:50%; width:26px; height:26px; font-weight:bold; cursor:pointer;">-</button>
-                    <span style="font-family:'Nunito',sans-serif; font-weight:900; font-size:15px; color:#00f2fe; min-width:68px; text-align:center;">
-                        <span id="rt-bpm-val">76</span> <span style="font-size:11px; color:#94a3b8;">BPM</span>
-                    </span>
-                    <input type="range" id="rt-bpm-slider" min="40" max="160" value="76" oninput="updateRtBPM(this.value)" style="width:80px; margin:0; accent-color:#00f2fe;">
-                    <button type="button" onclick="changeRtBPM(4)" style="background:#2d2d46; color:#fff; border:none; border-radius:50%; width:26px; height:26px; font-weight:bold; cursor:pointer;">+</button>
-                </div>
-
-                <button type="button" id="btn-rt-play" onclick="toggleRtPlayback()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 8px 18px; border-radius: 14px; font-family: 'Jua', sans-serif; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 5px;">
+                <button type="button" id="btn-rt-play" onclick="toggleRtPlayback()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 6px 15px; border-radius: 14px; font-family: 'Jua', sans-serif; font-size: 14.5px; cursor: pointer; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 4px;">
                     <span>▶ 리듬 재생</span>
                 </button>
             </div>
@@ -2064,28 +2043,28 @@
             </div>
         </div>
 
-        <!-- Metronome Panel (실시간 오선보 바로 아래 배치) -->
+        <!-- Metronome Panel (실시간 오선보 바로 아래 배치 · 리듬 연습과 박자/BPM 통합 연동) -->
         <div class="panel" id="metronome-panel">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h2 class="panel-title" style="margin: 0; font-size: 17px; display: flex; align-items: center; gap: 6px;">
-                    <span>⏱️ 메트로놈</span>
+                    <span>⏱️ 메트로놈 (박자·빠르기)</span>
                 </h2>
                 <button class="btn-play" id="play-btn" onclick="toggleMetronome()" style="padding: 6px 14px; font-size: 13px; margin: 0; border-radius: 16px; box-shadow: 0 2px 5px rgba(79, 172, 254, 0.4);">▶ 재생</button>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-                <div class="bpm-display" style="margin:0; font-size:26px;"><span id="bpm-val">120</span> <span style="font-size:14px; color:#94a3b8; font-weight:600;">BPM</span></div>
+                <div class="bpm-display" style="margin:0; font-size:26px;"><span id="bpm-val">76</span> <span style="font-size:14px; color:#94a3b8; font-weight:600;">BPM</span></div>
                 <select id="time-signature" onchange="updateTimeSignature(this.value)" style="padding:6px 10px; border-radius:10px; background:#3a3a5a; color:white; border:none; font-size:14px; font-family:'Jua', sans-serif; cursor:pointer; outline:none; max-width:100%; flex-grow:1;">
+                    <option value="4" selected>4/4 박자 (강-약-중강-약)</option>
+                    <option value="3">3/4 박자 (강-약-약)</option>
+                    <option value="2">2/4 박자 (강-약)</option>
+                    <option value="6">6/8 박자 (강-약-약-중강-약-약)</option>
                     <option value="1">기본 (강세 없음)</option>
-                    <option value="2">2박자 (강-약)</option>
-                    <option value="3">3박자 (강-약-약)</option>
-                    <option value="4" selected>4박자 (강-약-중강-약)</option>
-                    <option value="6">6박자 (강-약-약-중강-약-약)</option>
                 </select>
             </div>
             <div id="beat-indicators" style="display:flex; justify-content:center; gap:12px; margin-bottom:12px; height:16px; align-items:center;"></div>
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
                 <button onclick="changeBPMBy(-1)" style="background:#3a3a5a; color:white; border:none; border-radius:50%; width:38px; height:38px; font-size:20px; font-weight:bold; cursor:pointer; flex-shrink:0;">-</button>
-                <input type="range" id="bpm-slider" min="40" max="240" value="120" oninput="updateBPM(this.value)" style="flex-grow:1; margin-bottom:0;">
+                <input type="range" id="bpm-slider" min="40" max="240" value="76" oninput="updateBPM(this.value)" style="flex-grow:1; margin-bottom:0;">
                 <button onclick="changeBPMBy(1)" style="background:#3a3a5a; color:white; border:none; border-radius:50%; width:38px; height:38px; font-size:20px; font-weight:bold; cursor:pointer; flex-shrink:0;">+</button>
             </div>
         </div>
@@ -2580,7 +2559,7 @@
         // ==========================================
         let audioCtx;
         let isPlaying = false;
-        let bpm = 120;
+        let bpm = 76;
         let timerID;
         let beatsPerMeasure = 4;
         let currentBeat = 0;
@@ -2595,11 +2574,15 @@
         }
 
         function updateBPM(val) {
-            bpm = val;
-            document.getElementById('bpm-val').innerText = bpm;
+            bpm = parseInt(val) || 76;
+            const bpmValEl = document.getElementById('bpm-val');
+            if (bpmValEl) bpmValEl.innerText = bpm;
             if (isPlaying) {
                 clearInterval(timerID);
                 timerID = setInterval(playClick, (60 / bpm) * 1000);
+            }
+            if (typeof updateRtBPM === 'function') {
+                updateRtBPM(bpm);
             }
         }
 
@@ -2607,6 +2590,10 @@
             beatsPerMeasure = parseInt(val);
             currentBeat = 0;
             renderBeatIndicators();
+            if (typeof setRtTimeSignature === 'function') {
+                const tsMap = { 2: '2/4', 3: '3/4', 4: '4/4', 6: '6/8', 1: '4/4' };
+                setRtTimeSignature(tsMap[beatsPerMeasure] || '4/4', true);
+            }
         }
 
         function renderBeatIndicators() {
@@ -2677,6 +2664,9 @@
                 btn.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
                 document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active', 'active-strong'));
             } else {
+                if (typeof rtIsPlaying !== 'undefined' && rtIsPlaying && typeof toggleRtPlayback === 'function') {
+                    toggleRtPlayback();
+                }
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 if (audioCtx.state === 'suspended') audioCtx.resume();
                 
@@ -2903,6 +2893,20 @@
             analyser.getFloatTimeDomainData(buf);
             
             drawOscilloscope(buf);
+
+            // 상단 튜너가 켜져 있으면 리듬·박자 연습의 소리/책상 두드리기 인식도 함께 작동!
+            let sumSq = 0;
+            for (let i = 0; i < buf.length; i++) sumSq += buf[i] * buf[i];
+            const rmsVol = Math.sqrt(sumSq / buf.length);
+            if (rmsVol > 0.025 && typeof rtIsPlaying !== 'undefined') {
+                if (rtIsPlaying && rtCurrentSlot >= 0 && rtUserHeldSlots[rtCurrentLine]) {
+                    rtUserHeldSlots[rtCurrentLine][rtCurrentSlot] = true;
+                    const gaugeEl = document.getElementById(`rt-ugauge-${rtCurrentLine}-${rtCurrentSlot}`);
+                    if (gaugeEl) gaugeEl.setAttribute('fill', '#10b981');
+                }
+                const pcJudge = document.getElementById('rt-pc-judge');
+                if (pcJudge) pcJudge.innerText = '🎙️ 상단 튜너 소리 감지됨! (박자 기록 중)';
+            }
             
             let pitch = autoCorrelate(buf, tunerCtx.sampleRate);
             
@@ -4118,11 +4122,20 @@
             if (b) b.innerText = txt;
         }
 
-        function setRtTimeSignature(ts) {
+        function setRtTimeSignature(ts, fromMetronome = false) {
             rtTimeSig = ts;
             document.querySelectorAll('.rt-ts-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.ts === ts);
             });
+            if (!fromMetronome) {
+                const revMap = { '2/4': 2, '3/4': 3, '4/4': 4, '6/8': 6 };
+                const sel = document.getElementById('time-signature');
+                if (sel && revMap[ts]) {
+                    sel.value = String(revMap[ts]);
+                    beatsPerMeasure = revMap[ts];
+                    renderBeatIndicators();
+                }
+            }
             const presetData = (RT_PRESETS[rtTimeSig] && RT_PRESETS[rtTimeSig][rtCurrentPreset]) || RT_PRESETS[rtTimeSig][1];
             rtLines = JSON.parse(JSON.stringify(presetData));
             rtCurrentLine = rtLoopLine >= 0 ? rtLoopLine : 0;
@@ -4135,15 +4148,9 @@
             rtCurrentPreset = presetNum;
             // 5번 프리셋(6/8박자 고향의봄 3개묶음) 선택 시 자동으로 6/8박자로 전환해주고, 다른 프리셋 선택 시 6/8이었다면 4/4로 복귀
             if (presetNum === 5 && rtTimeSig !== '6/8') {
-                rtTimeSig = '6/8';
-                document.querySelectorAll('.rt-ts-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.ts === '6/8');
-                });
+                setRtTimeSignature('6/8');
             } else if (presetNum !== 5 && rtTimeSig === '6/8') {
-                rtTimeSig = '4/4';
-                document.querySelectorAll('.rt-ts-btn').forEach(btn => {
-                    btn.classList.toggle('active', btn.dataset.ts === '4/4');
-                });
+                setRtTimeSignature('4/4');
             }
             document.querySelectorAll('.rt-preset-btn').forEach((btn, idx) => {
                 btn.classList.toggle('active', (idx + 1) === presetNum);
@@ -4209,13 +4216,9 @@
             renderRhythmTrainerSheet();
         }
 
-        // BPM 조절
+        // BPM 조절 (상단 메트로놈과 통합 연동)
         function changeRtBPM(delta) {
-            const slider = document.getElementById('rt-bpm-slider');
-            let next = parseInt(slider ? slider.value : rtBpm) + delta;
-            next = Math.max(40, Math.min(160, next));
-            if (slider) slider.value = next;
-            updateRtBPM(next);
+            changeBPMBy(delta);
         }
 
         function updateRtBPM(val) {
@@ -4263,6 +4266,19 @@
         function playRtMetronomeClick(slotIdx) {
             const ctx = ensureRtAudioCtx();
             const isMainBeat = (rtTimeSig === '6/8') ? (slotIdx === 0 || slotIdx === 3) : (slotIdx % 2 === 0);
+
+            // 상단 메트로놈 패널의 박자 불빛(beat-dot)도 리듬 재생에 맞춰 함께 점등!
+            if (rtTimeSig === '6/8') {
+                document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active', 'active-strong'));
+                const dotEl = document.getElementById(`beat-dot-${slotIdx + 1}`);
+                if (dotEl) dotEl.classList.add(slotIdx === 0 ? 'active-strong' : 'active');
+            } else if (slotIdx % 2 === 0) {
+                const beatNum = Math.floor(slotIdx / 2) + 1;
+                document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active', 'active-strong'));
+                const dotEl = document.getElementById(`beat-dot-${beatNum}`);
+                if (dotEl) dotEl.classList.add(beatNum === 1 ? 'active-strong' : 'active');
+            }
+
             if (!isMainBeat && !rtSubClickOn && rtTimeSig !== '6/8') return;
 
             const osc = ctx.createOscillator();
@@ -4332,8 +4348,12 @@
                     btn.innerHTML = '<span>▶ 리듬 재생</span>';
                     btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
                 }
+                document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active', 'active-strong'));
                 renderRhythmTrainerSheet();
             } else {
+                if (isPlaying) {
+                    toggleMetronome();
+                }
                 ensureRtAudioCtx();
                 rtIsPlaying = true;
                 rtCurrentLine = rtLoopLine >= 0 ? rtLoopLine : 0;
