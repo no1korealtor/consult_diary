@@ -8176,7 +8176,9 @@ class RosaryApp {
 
 // 앱 실행
 document.addEventListener("DOMContentLoaded", () => {
-  window.rosaryApp = new RosaryApp();
+  if (!window.__DISABLE_AUTO_INIT__) {
+    window.rosaryApp = new RosaryApp();
+  }
 });
 
 </script>
