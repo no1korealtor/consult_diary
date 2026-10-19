@@ -3163,15 +3163,18 @@ input:checked + .toggle-slider:before {
 
         <!-- 3. 지난 기도 이어하기 카드 (기록이 있을 때만 노출) -->
         <div id="introResumeCard" class="intro-section-card resume-card" style="display: none;">
-          <div class="intro-card-header">
-            <span class="intro-card-icon">🕊️</span>
-            <span id="introResumeTitle" class="intro-card-title">지난 기도 이어하기</span>
+          <div class="intro-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="intro-card-icon">🕊️</span>
+              <span id="introResumeTitle" class="intro-card-title">지난 기도 이어하기</span>
+            </div>
+            <button type="button" id="btnIntroDismissResume" title="이어하기 기록 삭제" style="background: none; border: none; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; padding: 2px 6px;">✕ 기록 삭제</button>
           </div>
           <div class="intro-resume-detail">
             <span id="introResumeMystery" class="resume-mystery-text">환희의 신비</span>
             <span id="introResumeStep" class="resume-step-text">제1단 · 성모송 3/10</span>
           </div>
-          <button type="button" id="btnIntroContinue" class="intro-cta-btn resume" onclick="if(window.rosaryApp){window.rosaryApp.startPrayer();}else{var iv=document.getElementById('introView');var pv=document.getElementById('prayerView');if(iv)iv.style.display='none';if(pv)pv.style.display='flex';}">
+          <button type="button" id="btnIntroContinue" class="intro-cta-btn resume" onclick="if(window.rosaryApp){window.rosaryApp.continuePrayer();}else{var iv=document.getElementById('introView');var pv=document.getElementById('prayerView');if(iv)iv.style.display='none';if(pv)pv.style.display='flex';}">
             <span>🕊️</span>
             <span id="introContinueText">이어서 계속 기도하기</span>
           </button>
@@ -5189,9 +5192,13 @@ class RosaryApp {
     this.bindEvents();
     this.initInstallManager();
 
-    // 초기 상태: 오늘 요일 신비 설정 후 정갈한 인트로 준비 화면 시작
+    // 초기 상태: 오늘 요일 신비 설정 후 정갈한 인트로 준비 화면 시작 (저장된 진행 상태 보호)
     this.setMystery(this.todayMysteryKey, false);
-    this.goToStep(0, false);
+    this.currentIndex = 0;
+    this.renderCurrentStep(false);
+    this.updateBeadChain();
+    this.updateDecadePillsState();
+    this.updateButtonsState();
     this.switchView("intro");
   }
 
@@ -5423,6 +5430,10 @@ class RosaryApp {
   }
 
   saveProgress() {
+    // 기도 화면에 머물고 있을 때만 저장하며, 0단계(기도 시작 전)이거나 인트로 화면일 때는 이전 상태를 덮어쓰지 않음
+    if (this.currentView !== "prayer") return;
+    if (this.currentIndex <= 0) return;
+
     const cur = this.steps[this.currentIndex];
     if (!cur) return;
     const data = {
@@ -5620,12 +5631,53 @@ class RosaryApp {
       this.sessionCompletedDecades = new Set();
       this.steps = this.buildCurrentSteps();
       this.renderDecadeProgressPills();
+      this.switchView("prayer");
       this.goToStep(0, true);
     } catch (err) {
       console.error("startPrayer error:", err);
-    } finally {
       this.switchView("prayer");
     }
+  }
+
+  continuePrayer() {
+    try {
+      const saved = this.loadSavedProgress();
+      if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0) {
+        if (typeof saved.includeFatima === "boolean") {
+          this.settings.includeFatima = saved.includeFatima;
+          this.syncFatimaUI();
+        }
+        if (saved.lang) {
+          this.settings.lang = saved.lang;
+          this.syncLanguageUI();
+        }
+        if (saved.prayerType === "divine_mercy") {
+          this.currentPrayerType = "divine_mercy";
+          this.syncPrayerTypeUI();
+        } else {
+          this.currentPrayerType = "rosary";
+          this.currentMysteryKey = saved.mysteryKey || this.todayMysteryKey;
+          this.syncPrayerTypeUI();
+          this.syncHeaderMysteryUI();
+        }
+        this.steps = this.buildCurrentSteps();
+        this.renderDecadeProgressPills();
+        this.sessionCompletedDecades = new Set();
+        for (let i = 0; i <= saved.stepIndex; i++) {
+          const s = this.steps[i];
+          if (s && s.decadeNum && s.beadType === "connector") {
+            this.sessionCompletedDecades.add(s.decadeNum);
+          }
+        }
+        const targetStep = Math.min(saved.stepIndex, this.steps.length - 1);
+        this.switchView("prayer");
+        this.goToStep(targetStep, false);
+        return;
+      }
+    } catch (err) {
+      console.error("continuePrayer error:", err);
+    }
+    this.startPrayer();
   }
 
   updateIntroView() {
@@ -6918,7 +6970,9 @@ class RosaryApp {
     this.updateDecadePillsState();
     this.updateButtonsState();
 
-    this.saveProgress();
+    if (this.currentView === "prayer" && index > 0) {
+      this.saveProgress();
+    }
 
     // 단 완료 시 주간 기록에 자동 누적
     this.checkDecadeAutoTrack(index);
@@ -7084,43 +7138,19 @@ class RosaryApp {
     // 0-4) 인트로 이어하기 버튼 클릭 -> 지난 기도 위치로 복귀하여 기도 화면 시작
     if (this.dom.btnIntroContinue) {
       const handleContinue = (e) => {
-        if (e && e.type === "click" && e.detail === 0) {} // handle normal click
-        try {
-          const saved = this.loadSavedProgress();
-          if (saved) {
-            if (typeof saved.includeFatima === "boolean") {
-              this.settings.includeFatima = saved.includeFatima;
-              this.syncFatimaUI();
-            }
-            if (saved.lang) {
-              this.settings.lang = saved.lang;
-              this.syncLanguageUI();
-            }
-            if (saved.prayerType === "divine_mercy") {
-              this.setPrayerType("divine_mercy", false);
-            } else {
-              this.setPrayerType("rosary", false);
-              this.setMystery(saved.mysteryKey || this.todayMysteryKey, false);
-            }
-            this.sessionCompletedDecades = new Set();
-            for (let i = 0; i <= saved.stepIndex; i++) {
-              const s = this.steps[i];
-              if (s && s.decadeNum && s.beadType === "connector") {
-                this.sessionCompletedDecades.add(s.decadeNum);
-              }
-            }
-            this.goToStep(saved.stepIndex, false);
-          }
-        } catch (err) {
-          console.error("continuePrayer error:", err);
-        } finally {
-          this.switchView("prayer");
-        }
+        if (e && e.cancelable) e.preventDefault();
+        this.continuePrayer();
       };
       this.dom.btnIntroContinue.addEventListener("click", handleContinue);
-      this.dom.btnIntroContinue.addEventListener("touchend", (e) => {
-        e.preventDefault();
-        handleContinue(e);
+      this.dom.btnIntroContinue.addEventListener("touchend", handleContinue);
+    }
+
+    const btnDismissResume = document.getElementById("btnIntroDismissResume");
+    if (btnDismissResume) {
+      btnDismissResume.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.clearProgress();
+        this.updateIntroView();
       });
     }
 
@@ -8162,10 +8192,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=19').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=20').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=19').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=20').catch(() => {});
         });
       });
 
@@ -8173,7 +8203,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v19' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v20' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
