@@ -212,7 +212,10 @@
             transform: scale(0.96);
         }
         .score-display {
-            flex-grow: 1;
+            flex: 1 1 0;
+            min-height: 0;
+            width: 100%;
+            height: 100%;
             background: #151522;
             border-radius: 15px;
             padding: 0;
@@ -227,29 +230,32 @@
         .score-container {
             width: 100%;
             height: 100%;
+            min-height: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 12px;
             padding: 10px;
             box-sizing: border-box;
-            overflow: auto;
+            overflow: hidden;
         }
         .score-column-pane {
-            flex: 1;
+            flex: 1 1 0;
             height: 100%;
+            min-height: 0;
             min-width: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
+            overflow: hidden;
         }
         .score-column-label {
             position: absolute;
             top: 8px;
             left: 12px;
-            background: rgba(30, 30, 47, 0.8);
+            background: rgba(30, 30, 47, 0.85);
             color: #00f2fe;
             font-size: 12px;
             font-weight: bold;
@@ -260,6 +266,8 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
         .score-render-item {
+            width: auto;
+            height: auto;
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
@@ -267,6 +275,7 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.4);
             background: #ffffff;
             transition: transform 0.2s ease;
+            display: block;
         }
         
         .note-block {
@@ -1913,6 +1922,14 @@
                     <button type="button" id="btn-view-2col" class="mode-btn" onclick="setViewMode('2col')">2단 보기</button>
                 </div>
 
+                <!-- 2단 분할 위치 미세 조절 (단일 페이지 악보 2단 분할 시 표시) -->
+                <div id="split-adjust-controls" style="display: none; align-items: center; gap: 4px; background: #1e1e2f; padding: 3px 8px; border-radius: 12px; border: 1px solid #3a3a5a;">
+                    <span style="font-size: 12px; color: #a5b4fc; font-weight: bold;">✂️ 분할선:</span>
+                    <button type="button" onclick="adjustSplitGap(-1)" class="nav-btn" style="padding: 3px 7px; font-size: 11.5px;" title="분할 위치를 윗줄 여백으로 올리기">▲ 위로</button>
+                    <button type="button" onclick="adjustSplitGap(0)" class="nav-btn" style="padding: 3px 7px; font-size: 11.5px; background: #312e81; color: #e0e7ff;" title="단 사이 여백 자동 맞춤">자동</button>
+                    <button type="button" onclick="adjustSplitGap(1)" class="nav-btn" style="padding: 3px 7px; font-size: 11.5px;" title="분할 위치를 아랫줄 여백으로 내리기">▼ 아래로</button>
+                </div>
+
                 <!-- Page Navigation (for multi-page PDF or image list) -->
                 <div id="page-nav-controls" style="display: none; align-items: center; gap: 6px; background: #1e1e2f; padding: 3px 8px; border-radius: 12px;">
                     <button type="button" onclick="prevPage()" class="nav-btn" title="이전 페이지 (단축키: ←)">◀</button>
@@ -2229,6 +2246,7 @@
                     currentPdfDoc = await loadingTask.promise;
                     totalPages = currentPdfDoc.numPages;
                     currentPage = 1;
+                    splitGapShift = 0;
                     renderScore();
                 } catch (err) {
                     console.error("PDF.js load error, fallback to embed:", err);
@@ -2244,6 +2262,7 @@
                     currentImageObj = img;
                     currentPage = 1;
                     totalPages = 1;
+                    splitGapShift = 0;
                     renderScore();
                 };
                 img.onerror = () => {
@@ -2275,7 +2294,188 @@
             currentImagesList = await Promise.all(promises);
             totalPages = currentImagesList.length;
             currentPage = 1;
+            splitGapShift = 0;
             renderScore();
+        }
+
+        // 2단 분할 시 단(System) 사이 여백 인덱스 조정값 (0 = 중앙 자동, -1 = 한 단 위로, +1 = 한 단 아래로)
+        let splitGapShift = 0;
+
+        function adjustSplitGap(delta) {
+            if (delta === 0) {
+                splitGapShift = 0;
+            } else {
+                splitGapShift += delta;
+            }
+            renderScore();
+        }
+
+        // 악보 이미지/캔버스에서 오선·숫자보·가사 단(System) 사이의 넓은 가로 여백 구간을 자동 탐색
+        function findBestScoreSplitRegion(sourceEl, origW, origH, shiftSteps = 0) {
+            const halfH = Math.floor(origH / 2);
+            try {
+                const probeCanvas = document.createElement('canvas');
+                probeCanvas.width = origW;
+                probeCanvas.height = origH;
+                const pCtx = probeCanvas.getContext('2d');
+                pCtx.fillStyle = '#ffffff';
+                pCtx.fillRect(0, 0, origW, origH);
+                pCtx.drawImage(sourceEl, 0, 0, origW, origH);
+
+                // 세로 방향 18% ~ 82% 구간을 스캔 (좌우 테두리 6%는 제본선/테두리 노이즈 방지를 위해 제외)
+                const scanStartY = Math.floor(origH * 0.18);
+                const scanEndY = Math.floor(origH * 0.82);
+                const scanX = Math.floor(origW * 0.06);
+                const scanW = Math.max(1, Math.floor(origW * 0.88));
+                const scanH = scanEndY - scanStartY;
+
+                const imgData = pCtx.getImageData(scanX, scanStartY, scanW, scanH).data;
+                const isRowBlank = new Uint8Array(scanH);
+
+                for (let r = 0; r < scanH; r++) {
+                    let darkPixels = 0;
+                    const rowOffset = r * scanW * 4;
+                    // 가로 샘플링 (2px 간격으로 빠르게 스캔)
+                    let sampled = 0;
+                    for (let c = 0; c < scanW; c += 2) {
+                        const idx = rowOffset + c * 4;
+                        const luma = (imgData[idx] * 299 + imgData[idx + 1] * 587 + imgData[idx + 2] * 114) / 1000;
+                        if (luma < 228) darkPixels++;
+                        sampled++;
+                    }
+                    // 어두운 픽셀(음표/글자/선)이 0.3% 미만이면 빈 줄(여백)로 판정
+                    isRowBlank[r] = (darkPixels / Math.max(1, sampled)) < 0.003 ? 1 : 0;
+                }
+
+                // 연속된 빈 줄(가로 여백 밴드) 수집
+                const bands = [];
+                let bandStart = -1;
+                for (let r = 0; r < scanH; r++) {
+                    if (isRowBlank[r]) {
+                        if (bandStart === -1) bandStart = r;
+                    } else {
+                        if (bandStart !== -1) {
+                            const h = r - bandStart;
+                            if (h >= 3) {
+                                bands.push({
+                                    top: scanStartY + bandStart,
+                                    bottom: scanStartY + r,
+                                    center: scanStartY + bandStart + Math.floor(h / 2),
+                                    height: h
+                                });
+                            }
+                            bandStart = -1;
+                        }
+                    }
+                }
+                if (bandStart !== -1) {
+                    const h = scanH - bandStart;
+                    if (h >= 3) {
+                        bands.push({
+                            top: scanStartY + bandStart,
+                            bottom: scanStartY + scanH,
+                            center: scanStartY + bandStart + Math.floor(h / 2),
+                            height: h
+                        });
+                    }
+                }
+
+                if (bands.length > 0) {
+                    // 단(System)과 단 사이의 큰 여백은 오선-가사 사이의 좁은 여백보다 훨씬 넓음
+                    // 상위 밴드(최대 높이의 45% 이상이거나 전체 높이의 1.2% 이상인 밴드)만 '단 사이 여백'으로 선별
+                    const maxBandH = Math.max(...bands.map(b => b.height));
+                    const minSystemGapH = Math.max(4, Math.min(Math.floor(maxBandH * 0.45), Math.floor(origH * 0.015)));
+                    const majorBands = bands.filter(b => b.height >= minSystemGapH);
+                    const candidates = majorBands.length > 0 ? majorBands : bands;
+
+                    // 50% 중앙에서 가장 가까운 단 사이 여백 찾기
+                    let bestIdx = 0;
+                    let minDist = Infinity;
+                    for (let i = 0; i < candidates.length; i++) {
+                        const dist = Math.abs(candidates[i].center - halfH);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            bestIdx = i;
+                        }
+                    }
+
+                    // 사용자가 ▲/▼ 버튼으로 조정한 경우 이전/다음 단 사이 여백으로 이동
+                    const targetIdx = Math.max(0, Math.min(candidates.length - 1, bestIdx + shiftSteps));
+                    const chosen = candidates[targetIdx];
+
+                    // 좌측(1단)은 여백 하단까지 포함하여 윗단 가사가 절대 잘리지 않게 하고,
+                    // 우측(2단)은 여백 상단부터 시작하여 아랫단 코드/마디번호가 절대 잘리지 않게 함
+                    return {
+                        leftEnd: chosen.bottom,
+                        rightStart: chosen.top
+                    };
+                }
+            } catch (e) {
+                console.warn("Smart score split fallback:", e);
+            }
+
+            // 여백 탐색 실패 시 폴백
+            const shiftPx = shiftSteps * Math.floor(origH * 0.08);
+            const splitY = Math.max(Math.floor(origH * 0.2), Math.min(Math.floor(origH * 0.8), halfH + shiftPx));
+            return {
+                leftEnd: splitY,
+                rightStart: splitY
+            };
+        }
+
+        // 단일 페이지 악보(이미지 또는 1페이지 PDF)를 스마트 여백 분할로 좌/우 2단에 렌더링
+        function renderSplitTwoColumnScore(sourceEl, origW, origH, container) {
+            const splitCtrl = document.getElementById('split-adjust-controls');
+            if (splitCtrl) splitCtrl.style.display = 'inline-flex';
+
+            const { leftEnd, rightStart } = findBestScoreSplitRegion(sourceEl, origW, origH, splitGapShift);
+
+            // 1) 좌측: 앞부분 (1단) - 0 ~ leftEnd
+            const leftPane = document.createElement('div');
+            leftPane.className = 'score-column-pane';
+            const leftLabel = document.createElement('div');
+            leftLabel.className = 'score-column-label';
+            leftLabel.innerText = '① 앞부분 (1단)';
+            leftPane.appendChild(leftLabel);
+
+            const leftH = Math.max(1, leftEnd);
+            const c1 = document.createElement('canvas');
+            c1.width = origW;
+            c1.height = leftH;
+            const ctx1 = c1.getContext('2d');
+            ctx1.fillStyle = '#ffffff';
+            ctx1.fillRect(0, 0, c1.width, c1.height);
+            ctx1.drawImage(sourceEl, 0, 0, origW, leftH, 0, 0, origW, leftH);
+
+            const img1 = document.createElement('img');
+            img1.className = 'score-render-item';
+            img1.src = c1.toDataURL();
+            leftPane.appendChild(img1);
+            container.appendChild(leftPane);
+
+            // 2) 우측: 뒷부분 (2단) - rightStart ~ origH
+            const rightPane = document.createElement('div');
+            rightPane.className = 'score-column-pane';
+            const rightLabel = document.createElement('div');
+            rightLabel.className = 'score-column-label';
+            rightLabel.innerText = '② 뒷부분 (2단)';
+            rightPane.appendChild(rightLabel);
+
+            const bottomStart = Math.max(0, Math.min(origH - 1, rightStart));
+            const bottomH = Math.max(1, origH - bottomStart);
+            const c2 = document.createElement('canvas');
+            c2.width = origW;
+            c2.height = bottomH;
+            const ctx2 = c2.getContext('2d');
+            ctx2.fillStyle = '#ffffff';
+            ctx2.fillRect(0, 0, c2.width, c2.height);
+            ctx2.drawImage(sourceEl, 0, bottomStart, origW, bottomH, 0, 0, origW, bottomH);
+
+            const img2 = document.createElement('img');
+            img2.className = 'score-render-item';
+            img2.src = c2.toDataURL();
+            rightPane.appendChild(img2);
+            container.appendChild(rightPane);
         }
 
         async function renderScore() {
@@ -2285,22 +2485,38 @@
             
             const navControls = document.getElementById('page-nav-controls');
             const pageNumInfo = document.getElementById('page-num-info');
+            const splitCtrl = document.getElementById('split-adjust-controls');
+            if (splitCtrl) splitCtrl.style.display = 'none';
 
             if (currentScoreType === 'pdf') {
                 if (!currentPdfDoc) return;
-                navControls.style.display = 'flex';
                 
                 if (currentViewMode === '1col') {
                     // 1단 보기: 1페이지 단독 표시
+                    navControls.style.display = 'flex';
                     pageNumInfo.innerText = `${currentPage} / ${totalPages}`;
                     const pane = document.createElement('div');
                     pane.className = 'score-column-pane';
                     container.appendChild(pane);
                     
                     const canvas = await renderPdfPageToCanvas(currentPage, pane);
-                    if (canvas) pane.appendChild(canvas);
+                    if (canvas) {
+                        const imgEl = document.createElement('img');
+                        imgEl.className = 'score-render-item';
+                        imgEl.src = canvas.toDataURL();
+                        pane.appendChild(imgEl);
+                    }
+                } else if (totalPages === 1) {
+                    // 1페이지짜리 PDF를 2단 보기로 볼 때: 이미지와 동일하게 상/하단 스마트 분할!
+                    navControls.style.display = 'none';
+                    const tempPane = document.createElement('div');
+                    const fullCanvas = await renderPdfPageToCanvas(1, tempPane);
+                    if (fullCanvas) {
+                        renderSplitTwoColumnScore(fullCanvas, fullCanvas.width, fullCanvas.height, container);
+                    }
                 } else {
-                    // 2단 보기: 좌/우 2페이지 나란히 표시
+                    // 다중 페이지 PDF 2단 보기: 좌/우 2페이지 나란히 표시
+                    navControls.style.display = 'flex';
                     const nextPageNum = currentPage + 1;
                     if (nextPageNum <= totalPages) {
                         pageNumInfo.innerText = `${currentPage}-${nextPageNum} / ${totalPages}`;
@@ -2318,7 +2534,12 @@
                     container.appendChild(leftPane);
 
                     const canvasLeft = await renderPdfPageToCanvas(currentPage, leftPane);
-                    if (canvasLeft) leftPane.appendChild(canvasLeft);
+                    if (canvasLeft) {
+                        const imgLeft = document.createElement('img');
+                        imgLeft.className = 'score-render-item';
+                        imgLeft.src = canvasLeft.toDataURL();
+                        leftPane.appendChild(imgLeft);
+                    }
 
                     // 오른쪽 페이지
                     if (nextPageNum <= totalPages) {
@@ -2331,7 +2552,12 @@
                         container.appendChild(rightPane);
 
                         const canvasRight = await renderPdfPageToCanvas(nextPageNum, rightPane);
-                        if (canvasRight) rightPane.appendChild(canvasRight);
+                        if (canvasRight) {
+                            const imgRight = document.createElement('img');
+                            imgRight.className = 'score-render-item';
+                            imgRight.src = canvasRight.toDataURL();
+                            rightPane.appendChild(imgRight);
+                        }
                     }
                 }
             } else if (currentScoreType === 'image') {
@@ -2349,53 +2575,11 @@
                     pane.appendChild(imgEl);
                     container.appendChild(pane);
                 } else {
-                    // 2단 보기: 꽃밭에서 처럼 길면 상반부/하반부 좌우 2단으로 분할 표시!
+                    // 2단 보기: 단(System) 사이 흰 여백을 자동 감지하여 마디·가사 잘림 없이 상반부/하반부 2단 분할 표시
                     navControls.style.display = 'none';
-                    
                     const origW = currentImageObj.naturalWidth;
                     const origH = currentImageObj.naturalHeight;
-                    const halfH = Math.floor(origH / 2);
-                    const overlap = Math.floor(origH * 0.04); // 마디 절단 방지용 4% 버퍼
-
-                    // 1) 좌측: 앞부분
-                    const leftPane = document.createElement('div');
-                    leftPane.className = 'score-column-pane';
-                    const leftLabel = document.createElement('div');
-                    leftLabel.className = 'score-column-label';
-                    leftLabel.innerText = '① 앞부분 (1단)';
-                    leftPane.appendChild(leftLabel);
-
-                    const c1 = document.createElement('canvas');
-                    c1.className = 'score-render-item';
-                    c1.width = origW;
-                    c1.height = halfH + overlap;
-                    const ctx1 = c1.getContext('2d');
-                    ctx1.fillStyle = '#ffffff';
-                    ctx1.fillRect(0, 0, c1.width, c1.height);
-                    ctx1.drawImage(currentImageObj, 0, 0, origW, halfH + overlap, 0, 0, origW, halfH + overlap);
-                    leftPane.appendChild(c1);
-                    container.appendChild(leftPane);
-
-                    // 2) 우측: 뒷부분
-                    const rightPane = document.createElement('div');
-                    rightPane.className = 'score-column-pane';
-                    const rightLabel = document.createElement('div');
-                    rightLabel.className = 'score-column-label';
-                    rightLabel.innerText = '② 뒷부분 (2단)';
-                    rightPane.appendChild(rightLabel);
-
-                    const c2 = document.createElement('canvas');
-                    c2.className = 'score-render-item';
-                    c2.width = origW;
-                    const bottomStart = Math.max(0, halfH - overlap);
-                    const bottomH = origH - bottomStart;
-                    c2.height = bottomH;
-                    const ctx2 = c2.getContext('2d');
-                    ctx2.fillStyle = '#ffffff';
-                    ctx2.fillRect(0, 0, c2.width, c2.height);
-                    ctx2.drawImage(currentImageObj, 0, bottomStart, origW, bottomH, 0, 0, origW, bottomH);
-                    rightPane.appendChild(c2);
-                    container.appendChild(rightPane);
+                    renderSplitTwoColumnScore(currentImageObj, origW, origH, container);
                 }
             } else if (currentScoreType === 'multi-image') {
                 navControls.style.display = 'flex';
