@@ -1377,36 +1377,37 @@
         }
 
         /* ==========================================
-           7. Rhythm Trainer (박자·리듬 연습: 원 앤 투 앤)
+           7. Rhythm Trainer & App 2-Tab Mode (오선보+메트로놈 ↔ 메트로놈+리듬박자)
            ========================================== */
         .portable-mode-bar {
             display: none;
             width: 100%;
-            max-width: 680px;
+            max-width: 620px;
             margin: 0 auto;
             background: #161626;
             border: 1.5px solid #3a3a5a;
             border-radius: 16px;
             padding: 5px;
             box-sizing: border-box;
-            gap: 5px;
+            gap: 6px;
             box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+            order: 0;
         }
         .portable-tab-btn {
             flex: 1;
             background: transparent;
             color: #94a3b8;
             border: none;
-            padding: 9px 8px;
+            padding: 9px 10px;
             border-radius: 12px;
             font-family: 'Jua', sans-serif;
-            font-size: 14.5px;
+            font-size: 15px;
             cursor: pointer;
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 6px;
             white-space: nowrap;
         }
         .portable-tab-btn.active {
@@ -1419,45 +1420,77 @@
             color: #ffffff;
             box-shadow: 0 3px 12px rgba(2, 132, 199, 0.4);
         }
+
+        /* 리코더 설명 안내 박스 */
+        .recorder-guide-box {
+            display: none;
+            background: linear-gradient(135deg, rgba(49, 46, 129, 0.45) 0%, rgba(15, 23, 42, 0.85) 100%);
+            border: 1px solid #6366f1;
+            border-radius: 12px;
+            padding: 9px 12px;
+            margin-bottom: 8px;
+            color: #e2e8f0;
+            font-size: 12px;
+            line-height: 1.55;
+            box-sizing: border-box;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+        .recorder-guide-box.open {
+            display: block;
+        }
+
+        /* 앱/단독 모드 및 스마트폰에서 상단 2탭 바 표시 & 2개씩만 깔끔하게 분할 */
+        body.solo-staff-mode .portable-mode-bar,
+        body.mobile-portable-mode .portable-mode-bar {
+            display: flex !important;
+        }
+        body.mobile-portable-mode #score-panel,
+        body.mobile-portable-mode #file-open-panel,
+        body.mobile-portable-mode .site-footer {
+            display: none !important;
+        }
+
+        /* [탭 1] 오선보 + 메트로놈 모드: 리듬·박자 연습 숨김 */
+        body.solo-staff-mode:not(.mobile-tab-rhythm) #rhythm-trainer-panel,
+        body.mobile-portable-mode.mobile-tab-staff #rhythm-trainer-panel {
+            display: none !important;
+        }
+
+        /* [탭 2] 메트로놈 + 리듬·박자 모드: 실시간 오선보 숨김 & 메트로놈(위) + 리듬연습(아래) 배치 */
+        body.solo-staff-mode.mobile-tab-rhythm #master-scale-panel,
+        body.mobile-portable-mode.mobile-tab-rhythm #master-scale-panel,
+        body.mobile-portable-mode.mobile-tab-rhythm #tuner-panel {
+            display: none !important;
+        }
+        body.solo-staff-mode.mobile-tab-rhythm .right-panels,
+        body.mobile-portable-mode.mobile-tab-rhythm .right-panels {
+            order: 1 !important;
+        }
+        body.solo-staff-mode.mobile-tab-rhythm #rhythm-trainer-panel,
+        body.mobile-portable-mode.mobile-tab-rhythm #rhythm-trainer-panel {
+            display: flex !important;
+            order: 2 !important;
+        }
+
         @media(max-width: 899px) {
             .portable-mode-bar {
                 display: flex !important;
-            }
-            /* 스마트폰에서 악보 제외 휴대용 모드일 때 악보 열기 패널 숨김 */
-            body.mobile-portable-mode #score-panel,
-            body.mobile-portable-mode #file-open-panel,
-            body.mobile-portable-mode .site-footer {
-                display: none !important;
-            }
-            body.mobile-portable-mode.mobile-tab-rhythm #master-scale-panel,
-            body.mobile-portable-mode.mobile-tab-rhythm #tuner-panel {
-                display: none !important;
-            }
-            body.mobile-portable-mode.mobile-tab-rhythm .right-panels {
-                order: 1;
-            }
-            body.mobile-portable-mode.mobile-tab-rhythm #rhythm-trainer-panel {
-                order: 2;
-            }
-            body.mobile-portable-mode.mobile-tab-staff #rhythm-trainer-panel {
-                display: none !important;
             }
         }
 
         #rhythm-trainer-panel {
             display: none;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             background: #232338;
             border-radius: 20px;
-            padding: 16px;
+            padding: 14px 16px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.45);
             border: 1.5px solid #3e3e5e;
             box-sizing: border-box;
             width: 100%;
         }
-        body.rhythm-trainer-active #rhythm-trainer-panel,
-        body.solo-staff-mode #rhythm-trainer-panel {
+        body.rhythm-trainer-active:not(.solo-staff-mode) #rhythm-trainer-panel {
             display: flex !important;
         }
         body.solo-staff-mode #rhythm-trainer-panel {
@@ -1470,11 +1503,8 @@
         body.solo-staff-mode .right-panels {
             order: 1;
         }
-        body.solo-staff-mode.rhythm-trainer-top #rhythm-trainer-panel {
-            order: 0;
-        }
         @media(min-width: 900px) {
-            /* PC에서 박자 연습 활성화 시 좌측 메인 영역에 큼직하게 표시 */
+            /* PC(악보 뷰어 모드)에서 박자 연습 활성화 시 좌측 메인 영역에 표시 */
             body.rhythm-trainer-active:not(.solo-staff-mode) #score-panel {
                 display: none !important;
             }
@@ -1482,7 +1512,7 @@
                 grid-column: 1 / 2;
                 min-height: calc(100vh - 130px);
                 justify-content: flex-start;
-                padding: 20px 24px;
+                padding: 18px 22px;
             }
             body.rhythm-trainer-active.sidebar-collapsed:not(.solo-staff-mode) #rhythm-trainer-panel {
                 grid-column: 1 / -1;
@@ -1498,7 +1528,7 @@
         @media(max-width: 899px) {
             #rhythm-trainer-panel {
                 padding: 12px;
-                gap: 10px;
+                gap: 8px;
             }
             /* 스마트폰에서는 터치 패드가 자동으로 표시됨! */
             .rhythm-touch-pad-wrap {
@@ -1774,39 +1804,40 @@
 </head>
 <body>
     
-    <!-- 스마트폰 전용 상단 모드 전환 바 (악보 제외 휴대용 연습 모드) -->
+    <!-- 앱 상단 2모드 전환 바 (1: 오선보+메트로놈 / 2: 메트로놈+리듬박자, 악보보기 제외) -->
     <div class="portable-mode-bar" id="portable-mode-bar">
-        <button type="button" id="ptab-rhythm" class="portable-tab-btn active" onclick="switchMobilePortableTab('rhythm')">
-            <span>🥁 박자·리듬 연습</span>
+        <button type="button" id="ptab-staff" class="portable-tab-btn active-staff" onclick="switchMobilePortableTab('staff')">
+            <span>🎼 오선보 · 메트로놈</span>
         </button>
-        <button type="button" id="ptab-staff" class="portable-tab-btn" onclick="switchMobilePortableTab('staff')">
-            <span>🎼 계이름·튜너</span>
-        </button>
-        <button type="button" id="ptab-score" class="portable-tab-btn" onclick="switchMobilePortableTab('score')">
-            <span>📖 악보 보기</span>
+        <button type="button" id="ptab-rhythm" class="portable-tab-btn" onclick="switchMobilePortableTab('rhythm')">
+            <span>🥁 메트로놈 · 리듬박자</span>
         </button>
     </div>
 
     <!-- Rhythm Trainer Panel (박자·리듬 연습실: 원 앤 투 앤) -->
     <div id="rhythm-trainer-panel">
-        <!-- Header (상단 튜너 및 메트로놈과 통합되어 중복 컨트롤 제거) -->
+        <!-- Header (상단 튜너 및 메트로놈과 통합되어 중복 컨트롤 제거 + 마이크 바로 켜기 지원) -->
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span style="font-family: 'Jua', sans-serif; font-size: 22px; color: #f59e0b; display: flex; align-items: center; gap: 6px;">
+                <span style="font-family: 'Jua', sans-serif; font-size: 21px; color: #f59e0b; display: flex; align-items: center; gap: 6px;">
                     <span>🥁 리듬·박자 연습</span>
                 </span>
-                <span id="rt-status-badge" style="background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold;">
-                    상단 메트로놈(박자·BPM) 및 튜너 연동됨
+                <span id="rt-status-badge" style="background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 3px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold;">
+                    메트로놈 연동 · 박수/하모니카 인식
                 </span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                <button type="button" id="btn-rt-sound-mode" onclick="toggleRtHarmonicaSound()" class="btn-toolbar" style="background: #25253c; color: #fde047; border: 1px solid #eab308; padding: 5px 11px; border-radius: 14px; font-size: 12px; font-weight: bold;">
+            <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+                <button type="button" id="btn-rt-top-mic" onclick="toggleTunerFromTop()" class="btn-toolbar" style="display: flex; align-items: center; gap: 4px; background: #252538; color: #ff6b81; border: 1px solid #ff4757; padding: 5px 10px; border-radius: 14px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                    <span id="rt-top-mic-icon">🎙️</span>
+                    <span id="rt-top-mic-txt">마이크 켜기</span>
+                </button>
+                <button type="button" id="btn-rt-sound-mode" onclick="toggleRtHarmonicaSound()" class="btn-toolbar" style="background: #25253c; color: #fde047; border: 1px solid #eab308; padding: 5px 10px; border-radius: 14px; font-size: 12px; font-weight: bold;">
                     🎺 하모니카음 ON
                 </button>
-                <button type="button" id="btn-rt-subclick" onclick="toggleRtSubClick()" class="btn-toolbar" style="background: #25253c; color: #94a3b8; border: 1px solid #475569; padding: 5px 11px; border-radius: 14px; font-size: 12px; font-weight: bold;">
+                <button type="button" id="btn-rt-subclick" onclick="toggleRtSubClick()" class="btn-toolbar" style="background: #25253c; color: #94a3b8; border: 1px solid #475569; padding: 5px 10px; border-radius: 14px; font-size: 12px; font-weight: bold;">
                     🔔 '앤' 클릭 OFF
                 </button>
-                <button type="button" id="btn-rt-play" onclick="toggleRtPlayback()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 6px 15px; border-radius: 14px; font-family: 'Jua', sans-serif; font-size: 14.5px; cursor: pointer; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 4px;">
+                <button type="button" id="btn-rt-play" onclick="toggleRtPlayback()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 6px 14px; border-radius: 14px; font-family: 'Jua', sans-serif; font-size: 14px; cursor: pointer; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 4px;">
                     <span>▶ 리듬 재생</span>
                 </button>
             </div>
@@ -1889,9 +1920,9 @@
         <div class="rhythm-pc-guide-bar">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <span style="font-size: 18px;">💻</span>
-                <span><b>컴퓨터 연습 모드</b> (터치 패드 자동 숨김): 화면의 <b>원·앤·투·앤</b> 밑줄을 보며 <b>책상을 손으로 두드리거나</b>, <b>하모니카를 직접 불거나</b>, 키보드 <b>[Space]</b> 바를 길게 눌러 연습하세요!</span>
+                <span><b>리듬 연습 방법</b>: 화면의 <b>원·앤·투·앤</b> 밑줄을 보며 <b>책상을 손으로 두드리거나</b>, <b>하모니카/리코더를 직접 불거나</b>, 키보드 <b>[Space]</b> 바를 눌러 연습하세요!</span>
             </div>
-            <span id="rt-pc-judge" style="font-family: 'Jua', sans-serif; font-size: 15px; color: #34d399;">Space 키 또는 🎙️소리 인식 지원</span>
+            <span id="rt-pc-judge" style="font-family: 'Jua', sans-serif; font-size: 15px; color: #34d399;">Space 키 또는 🎙️마이크 인식 지원</span>
         </div>
     </div>
 
@@ -1962,9 +1993,6 @@
                     <span>🎼 실시간 오선보</span>
                 </h2>
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                    <button type="button" onclick="toggleRhythmTrainerMode()" class="btn-toolbar" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); color: #ffffff; border: none; padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);" title="원 앤 투 앤 박자·리듬 연습 열기">
-                        <span>🥁 박자 연습</span>
-                    </button>
                     <button type="button" id="btn-top-mic" onclick="toggleTunerFromTop()" class="btn-top-mic" style="display: flex; align-items: center; gap: 4px; background: #252538; color: #ff6b81; border: 1px solid #ff4757; padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer; transition: all 0.2s;">
                         <span id="top-mic-icon">🎙️</span>
                         <span id="top-mic-txt">튜너 켜기</span>
@@ -1975,23 +2003,32 @@
                     <button type="button" onclick="openScaleModal()" class="btn-toolbar" style="background: #252538; color: #00f2fe; border: 1px solid #4facfe; padding: 4px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer;" title="오선보 전체 1~22홀 대조표 보기">
                         🔍 전체 대조표
                     </button>
-                    <button type="button" id="btn-solo-toggle" onclick="toggleSoloStaffMode()" class="btn-toolbar" style="background: #252538; color: #a5b4fc; border: 1px solid #6366f1; padding: 4px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="오선보만 단독 연습 모드로 보기">
-                        <span id="solo-toggle-icon">📱</span>
-                        <span id="solo-toggle-txt">단독 모드</span>
-                    </button>
                 </div>
             </div>
 
             <!-- Octave Shift Controls (리코더 / 하모니카 옥타브 조절 바) -->
             <div class="octave-shift-row">
-                <div style="display: flex; align-items: center; gap: 6px; color: #cbd5e1; font-weight: bold; font-family: 'Jua', sans-serif;">
-                    <span>🎚️ 옥타브:</span>
+                <div style="display: flex; align-items: center; gap: 6px; color: #cbd5e1; font-weight: bold; font-family: 'Jua', sans-serif; flex-wrap: wrap;">
+                    <span>🎚️ 악기:</span>
                     <span id="octave-mode-desc" style="font-size: 11.5px; color: #94a3b8; font-weight: normal;">기본 (하모니카)</span>
+                    <button type="button" onclick="toggleRecorderGuide()" style="background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid #6366f1; padding: 1px 7px; border-radius: 10px; font-size: 10.5px; font-family: 'Nunito', sans-serif; font-weight: bold; cursor: pointer;" title="초·중등 리코더 차 안/이동 중 연습 활용법 보기">💡 리코더 활용법</button>
                 </div>
                 <div style="display: flex; gap: 4px; align-items: center;">
-                    <button type="button" id="btn-oct-down" onclick="setOctaveShift(-1)" class="octave-btn" title="리코더 등 1옥타브 높은 악기용 (1옥타브 낮춰 인식)">🪈 리코더(-1)</button>
-                    <button type="button" id="btn-oct-zero" onclick="setOctaveShift(0)" class="octave-btn active" title="하모니카 표준 음높이">기본(0)</button>
+                    <button type="button" id="btn-oct-down" onclick="setOctaveShift(-1)" class="octave-btn" title="초·중등 소프라노 리코더용 (1옥타브 낮춰 교과서 오선보 위치로 인식)">🪈 리코더(-1)</button>
+                    <button type="button" id="btn-oct-zero" onclick="setOctaveShift(0)" class="octave-btn active" title="하모니카 표준 음높이">🎺 하모니카(0)</button>
                     <button type="button" id="btn-oct-up" onclick="setOctaveShift(1)" class="octave-btn" title="1옥타브 올려서 인식">+1 옥타브</button>
+                </div>
+            </div>
+
+            <!-- 초·중등 리코더 차 안/휴대용 연습 설명 박스 -->
+            <div class="recorder-guide-box" id="recorder-guide-box">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 3px;">
+                    <span style="font-family: 'Jua', sans-serif; font-size: 13px; color: #a5b4fc;">🪈 초·중등 리코더 휴대용 연습 가이드 (차 안 · 이동 중 · 수행평가 대비)</span>
+                    <button type="button" onclick="toggleRecorderGuide(false)" style="background: none; border: none; color: #94a3b8; font-size: 13px; cursor: pointer; padding: 0 2px; line-height: 1;">✕</button>
+                </div>
+                <div style="color: #cbd5e1; font-size: 11.5px; line-height: 1.5;">
+                    • <b>왜 <span style="color:#fde047;">리코더(-1)</span>를 켜나요?</b> 초·중학교 음악 시간에 쓰는 소프라노 리코더는 실제 소리가 악보보다 <b>1옥타브 높게</b> 나는 악기입니다. <b>[🪈 리코더(-1)]</b>를 누르면 1옥타브를 자동 보정하여 <b>교과서 오선보 위치(가온 도~높은 레) 그대로</b> 보여줍니다.<br>
+                    • <b>🚗 차 안이나 외출 중 연습할 때:</b> 악보 책을 펼치기 힘든 차 안·이동 중에도 앱의 <b>[🎙️ 튜너 켜기]</b>만 누르고 리코더를 불면, 내가 짚은 운지(도·레·미·파·솔·라·시)와 호흡 세기(음정 정확도)가 맞는지 오선보로 즉시 확인하며 연습할 수 있습니다!
                 </div>
             </div>
 
@@ -2927,6 +2964,8 @@
             const btn = document.getElementById('mic-btn');
             const topBtn = document.getElementById('btn-top-mic');
             const topTxt = document.getElementById('top-mic-txt');
+            const rtTopBtn = document.getElementById('btn-rt-top-mic');
+            const rtTopTxt = document.getElementById('rt-top-mic-txt');
             
             try {
                 if(!tunerCtx) tunerCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -2946,6 +2985,12 @@
                     topBtn.style.color = '#10b981';
                     topBtn.style.borderColor = '#10b981';
                     topBtn.style.background = 'rgba(16, 185, 129, 0.2)';
+                }
+                if (rtTopBtn && rtTopTxt) {
+                    rtTopTxt.innerText = '마이크 켜짐';
+                    rtTopBtn.style.color = '#10b981';
+                    rtTopBtn.style.borderColor = '#10b981';
+                    rtTopBtn.style.background = 'rgba(16, 185, 129, 0.2)';
                 }
                 
                 updatePitch();
@@ -2974,6 +3019,14 @@
                 topBtn.style.color = '#ff6b81';
                 topBtn.style.borderColor = '#ff4757';
                 topBtn.style.background = '#252538';
+            }
+            const rtTopBtn = document.getElementById('btn-rt-top-mic');
+            const rtTopTxt = document.getElementById('rt-top-mic-txt');
+            if (rtTopBtn && rtTopTxt) {
+                rtTopTxt.innerText = '마이크 켜기';
+                rtTopBtn.style.color = '#ff6b81';
+                rtTopBtn.style.borderColor = '#ff4757';
+                rtTopBtn.style.background = '#252538';
             }
             const noteDisplayEl = document.getElementById('note-display');
             if (noteDisplayEl) noteDisplayEl.innerText = '-';
@@ -3042,10 +3095,25 @@
         // 옥타브 조절 상태 (-1: 리코더 등 1옥타브 낮춤, 0: 기본, 1: 1옥타브 높임)
         let tunerOctaveShift = parseInt(localStorage.getItem('harmonica_octave_shift')) || 0;
 
+        function toggleRecorderGuide(forceState) {
+            const box = document.getElementById('recorder-guide-box');
+            if (!box) return;
+            if (typeof forceState === 'boolean') {
+                box.classList.toggle('open', forceState);
+            } else {
+                box.classList.toggle('open');
+            }
+        }
+
         function setOctaveShift(shift) {
             tunerOctaveShift = parseInt(shift) || 0;
             localStorage.setItem('harmonica_octave_shift', tunerOctaveShift);
             updateOctaveButtons();
+            if (tunerOctaveShift === -1) {
+                toggleRecorderGuide(true);
+            } else {
+                toggleRecorderGuide(false);
+            }
         }
 
         function updateOctaveButtons() {
@@ -3056,7 +3124,7 @@
             const desc = document.getElementById('octave-mode-desc');
             if (desc) {
                 if (tunerOctaveShift === -1) {
-                    desc.innerText = '🪈 리코더 모드 (-1 옥타브)';
+                    desc.innerText = '🪈 리코더 모드 (초·중등 연습용 -1옥타브)';
                     desc.style.color = '#a5b4fc';
                 } else if (tunerOctaveShift === 1) {
                     desc.innerText = '고음 모드 (+1 옥타브)';
@@ -3756,38 +3824,27 @@
         });
 
         // ==========================================
-        // 6. Solo Staff Mode (오선보 단독 연습 모드)
+        // 6. Solo Staff / App 2-Tab Mode (오선보+메트로놈 ↔ 메트로놈+리듬박자)
         // ==========================================
-        let isSoloStaffMode = localStorage.getItem('harmonica_solo_mode') === 'true';
+        let isSoloStaffMode = localStorage.getItem('harmonica_solo_mode') !== 'false';
 
         function toggleSoloStaffMode(forceState) {
-            const isRhythmOpen = document.body.classList.contains('rhythm-trainer-active');
             if (typeof forceState === 'boolean') {
                 isSoloStaffMode = forceState;
-            } else if (isSoloStaffMode || isRhythmOpen) {
-                isSoloStaffMode = false;
-                document.body.classList.remove('rhythm-trainer-active');
-                if (typeof rtIsPlaying !== 'undefined' && rtIsPlaying) toggleRtPlayback();
             } else {
-                isSoloStaffMode = true;
+                isSoloStaffMode = !isSoloStaffMode;
             }
             localStorage.setItem('harmonica_solo_mode', isSoloStaffMode);
 
-            document.body.classList.toggle('solo-staff-mode', isSoloStaffMode);
-
-            const toggleTxt = document.getElementById('solo-toggle-txt');
-            const toggleIcon = document.getElementById('solo-toggle-icon');
-            if (toggleTxt && toggleIcon) {
-                if (isSoloStaffMode || document.body.classList.contains('rhythm-trainer-active')) {
-                    toggleTxt.innerText = '악보 보기';
-                    toggleIcon.innerText = '📖';
-                } else {
-                    toggleTxt.innerText = '단독 모드';
-                    toggleIcon.innerText = '📱';
+            if (isSoloStaffMode) {
+                const savedTab = localStorage.getItem('harmonica_app_tab') || 'staff';
+                switchMobilePortableTab(savedTab === 'rhythm' ? 'rhythm' : 'staff');
+            } else {
+                if (typeof rtIsPlaying !== 'undefined' && rtIsPlaying) toggleRtPlayback();
+                document.body.classList.remove('solo-staff-mode', 'mobile-portable-mode', 'mobile-tab-rhythm', 'mobile-tab-staff', 'rhythm-trainer-active');
+                if (typeof currentScoreType !== 'undefined' && currentScoreType) {
+                    setTimeout(() => renderScore(), 100);
                 }
-            }
-            if (!isSoloStaffMode && typeof currentScoreType !== 'undefined' && currentScoreType) {
-                setTimeout(() => renderScore(), 100);
             }
         }
 
@@ -4847,13 +4904,12 @@
             rtMicAnimId = requestAnimationFrame(loopRtMicDetect);
         }
 
-        // 박자 연습 패널 열기/닫기 및 스마트폰 휴대용 모드 전환
+        // 박자 연습 패널 열기/닫기 및 앱 2탭 모드 전환
         function toggleRhythmTrainerMode(forceState) {
-            if (isSoloStaffMode && window.innerWidth >= 900) {
-                document.body.classList.toggle('rhythm-trainer-top');
-                renderRhythmTrainerSheet();
-                const panel = document.getElementById('rhythm-trainer-panel');
-                if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (isSoloStaffMode || window.innerWidth < 900) {
+                const isRhythmTab = document.body.classList.contains('mobile-tab-rhythm');
+                const nextRhythm = typeof forceState === 'boolean' ? forceState : !isRhythmTab;
+                switchMobilePortableTab(nextRhythm ? 'rhythm' : 'staff');
                 return;
             }
             const isCurrentlyActive = document.body.classList.contains('rhythm-trainer-active');
@@ -4861,54 +4917,35 @@
 
             if (nextState) {
                 document.body.classList.add('rhythm-trainer-active');
-                if (window.innerWidth < 900) {
-                    switchMobilePortableTab('rhythm');
-                }
                 renderRhythmTrainerSheet();
             } else {
                 document.body.classList.remove('rhythm-trainer-active');
                 if (rtIsPlaying) toggleRtPlayback();
-                if (window.innerWidth < 900) {
-                    switchMobilePortableTab('score');
-                }
-            }
-            const toggleTxt = document.getElementById('solo-toggle-txt');
-            const toggleIcon = document.getElementById('solo-toggle-icon');
-            if (toggleTxt && toggleIcon) {
-                if (isSoloStaffMode || document.body.classList.contains('rhythm-trainer-active')) {
-                    toggleTxt.innerText = '악보 보기';
-                    toggleIcon.innerText = '📖';
-                } else {
-                    toggleTxt.innerText = '단독 모드';
-                    toggleIcon.innerText = '📱';
-                }
             }
         }
 
         function switchMobilePortableTab(tab) {
             const bRhythm = document.getElementById('ptab-rhythm');
             const bStaff = document.getElementById('ptab-staff');
-            const bScore = document.getElementById('ptab-score');
 
             bRhythm?.classList.remove('active', 'active-staff');
             bStaff?.classList.remove('active', 'active-staff');
-            bScore?.classList.remove('active', 'active-staff');
 
             if (tab === 'rhythm') {
-                document.body.classList.add('mobile-portable-mode', 'mobile-tab-rhythm', 'rhythm-trainer-active');
-                document.body.classList.remove('mobile-tab-staff', 'solo-staff-mode');
+                isSoloStaffMode = true;
+                document.body.classList.add('solo-staff-mode', 'mobile-portable-mode', 'mobile-tab-rhythm', 'rhythm-trainer-active');
+                document.body.classList.remove('mobile-tab-staff');
                 bRhythm?.classList.add('active');
+                localStorage.setItem('harmonica_app_tab', 'rhythm');
                 renderRhythmTrainerSheet();
-            } else if (tab === 'staff') {
+            } else {
+                // 기본: 오선보 + 메트로놈 모드
                 if (rtIsPlaying) toggleRtPlayback();
-                document.body.classList.add('mobile-portable-mode', 'mobile-tab-staff', 'solo-staff-mode');
+                isSoloStaffMode = true;
+                document.body.classList.add('solo-staff-mode', 'mobile-portable-mode', 'mobile-tab-staff');
                 document.body.classList.remove('mobile-tab-rhythm', 'rhythm-trainer-active');
                 bStaff?.classList.add('active-staff');
-            } else {
-                if (rtIsPlaying) toggleRtPlayback();
-                document.body.classList.remove('mobile-portable-mode', 'mobile-tab-rhythm', 'mobile-tab-staff', 'rhythm-trainer-active', 'solo-staff-mode');
-                bScore?.classList.add('active-staff');
-                setTimeout(() => { if (currentScoreType) renderScore(); }, 100);
+                localStorage.setItem('harmonica_app_tab', 'staff');
             }
         }
 
@@ -4920,6 +4957,9 @@
             toggleScaleCollapse(true);
         }
         updateOctaveButtons();
+        if (tunerOctaveShift === -1) {
+            toggleRecorderGuide(true);
+        }
         renderBeatIndicators();
         renderRhythmTrainerSheet();
 
@@ -4937,17 +4977,18 @@
             document.getElementById('btn-view-2col')?.classList.remove('active');
         }
 
-        // 스마트폰(모바일) 접속 시: 악보 보는 부분을 제외하고 들고 다니면서 바로 연습할 수 있도록 휴대용 박자·리듬 모드로 자동 진입!
+        // 앱 2탭 모드 진입 (1: 오선보+메트로놈 / 2: 메트로놈+리듬박자)
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('mode') === 'rhythm') {
-            toggleRhythmTrainerMode(true);
-        } else if (urlParams.get('mode') === 'solo') {
-            isSoloStaffMode = true;
-            toggleSoloStaffMode(true);
-        } else if (window.innerWidth < 900) {
+        if (urlParams.get('mode') === 'score') {
+            isSoloStaffMode = false;
+            toggleSoloStaffMode(false);
+        } else if (urlParams.get('mode') === 'rhythm') {
             switchMobilePortableTab('rhythm');
-        } else if (isSoloStaffMode) {
-            toggleSoloStaffMode(true);
+        } else if (urlParams.get('mode') === 'solo' || urlParams.get('mode') === 'staff') {
+            switchMobilePortableTab('staff');
+        } else {
+            const savedTab = localStorage.getItem('harmonica_app_tab') || 'staff';
+            switchMobilePortableTab(savedTab === 'rhythm' ? 'rhythm' : 'staff');
         }
 
         loadScoreFromDB();
