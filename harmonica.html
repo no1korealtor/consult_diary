@@ -1797,9 +1797,6 @@
                 <button type="button" id="btn-rt-subclick" onclick="toggleRtSubClick()" class="btn-toolbar" style="background: #25253c; color: #94a3b8; border: 1px solid #475569; padding: 5px 11px; border-radius: 14px; font-size: 12px; font-weight: bold;">
                     🔔 '앤' 클릭 OFF
                 </button>
-                <button type="button" onclick="toggleRhythmTrainerMode(false)" class="btn-toolbar" style="background: #3a3a5a; color: #ffffff; border: none; padding: 5px 12px; border-radius: 14px; font-size: 12px; font-weight: bold;">
-                    🎼 악보 뷰어로
-                </button>
                 <button type="button" id="btn-rt-play" onclick="toggleRtPlayback()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 6px 15px; border-radius: 14px; font-family: 'Jua', sans-serif; font-size: 14.5px; cursor: pointer; box-shadow: 0 3px 10px rgba(16, 185, 129, 0.4); display: flex; align-items: center; gap: 4px;">
                     <span>▶ 리듬 재생</span>
                 </button>
@@ -3580,10 +3577,15 @@
         let isSoloStaffMode = localStorage.getItem('harmonica_solo_mode') === 'true';
 
         function toggleSoloStaffMode(forceState) {
+            const isRhythmOpen = document.body.classList.contains('rhythm-trainer-active');
             if (typeof forceState === 'boolean') {
                 isSoloStaffMode = forceState;
+            } else if (isSoloStaffMode || isRhythmOpen) {
+                isSoloStaffMode = false;
+                document.body.classList.remove('rhythm-trainer-active');
+                if (typeof rtIsPlaying !== 'undefined' && rtIsPlaying) toggleRtPlayback();
             } else {
-                isSoloStaffMode = !isSoloStaffMode;
+                isSoloStaffMode = true;
             }
             localStorage.setItem('harmonica_solo_mode', isSoloStaffMode);
 
@@ -3592,13 +3594,16 @@
             const toggleTxt = document.getElementById('solo-toggle-txt');
             const toggleIcon = document.getElementById('solo-toggle-icon');
             if (toggleTxt && toggleIcon) {
-                if (isSoloStaffMode) {
+                if (isSoloStaffMode || document.body.classList.contains('rhythm-trainer-active')) {
                     toggleTxt.innerText = '악보 보기';
                     toggleIcon.innerText = '📖';
                 } else {
                     toggleTxt.innerText = '단독 모드';
                     toggleIcon.innerText = '📱';
                 }
+            }
+            if (!isSoloStaffMode && typeof currentScoreType !== 'undefined' && currentScoreType) {
+                setTimeout(() => renderScore(), 100);
             }
         }
 
@@ -4681,6 +4686,17 @@
                 if (rtIsPlaying) toggleRtPlayback();
                 if (window.innerWidth < 900) {
                     switchMobilePortableTab('score');
+                }
+            }
+            const toggleTxt = document.getElementById('solo-toggle-txt');
+            const toggleIcon = document.getElementById('solo-toggle-icon');
+            if (toggleTxt && toggleIcon) {
+                if (isSoloStaffMode || document.body.classList.contains('rhythm-trainer-active')) {
+                    toggleTxt.innerText = '악보 보기';
+                    toggleIcon.innerText = '📖';
+                } else {
+                    toggleTxt.innerText = '단독 모드';
+                    toggleIcon.innerText = '📱';
                 }
             }
         }
