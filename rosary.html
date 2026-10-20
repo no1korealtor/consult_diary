@@ -4583,58 +4583,48 @@ function buildRosarySteps(mysteryKey, includeFatima = true, lang = "ko") {
   ];
   const introIntentions = isEn ? introIntentionsEn : introIntentionsKo;
 
-  // 6. 시작 성모송 3번 (작은 알 3개: 믿음, 희망, 사랑) 및 영광송·구원의 기도
-  // [가톨릭 굿뉴스 공식 표준 준수]
-  // "작은 알 3개에서 성모송 각 1번씩, 그리고 맨 마지막 알에서 영광송을 바칩니다. 이어서 구원을 위한 기도(구원송)를 바칠 수 있습니다."
-  // 실제 묵주에 없는 인공 '줄 / 간격' 알을 제거하고, 세 번째 작은 알(맨 마지막 알)에서 성모송 + 영광송 + 구원송을 바친 후 곧바로 제1단 큰 알로 진행합니다.
+  // 6. 시작 성모송 3번 (작은 알 3개: 믿음, 희망, 사랑)
+  // 스마트폰 화면의 쾌적한 가독성과 기도의 자연스러운 호흡을 위해
+  // 시작 성모송 3알은 성모송 본문에만 집중하도록 단독 구성합니다.
   for (let i = 0; i < 3; i++) {
-    if (i < 2) {
-      steps.push({
-        index: steps.length,
-        section: isEn ? "Introductory Prayers" : "시작 기도",
-        sectionCode: "intro",
-        introIndex: i + 1,
-        beadType: "small",
-        beadLabel: isEn ? `Hail Mary ${i + 1}/3` : `시작 성모송 ${i + 1}/3`,
-        title: introIntentions[i].title,
-        badge: introIntentions[i].intent,
-        guide: isEn ? `Praying for the theological virtue: ${introIntentions[i].intent}.` : `향주삼덕(${introIntentions[i].intent})을 청하며 바칩니다.`,
-        prayers: [prayers.hail_mary]
-      });
-    } else {
-      // 세 번째 작은 알 (맨 마지막 알): 성모송 + 영광송 + 구원의 기도 (굿뉴스 공식 지침)
-      const lastIntroPrayers = includeFatima 
-        ? [prayers.hail_mary, prayers.glory_be, prayers.fatima_prayer] 
-        : [prayers.hail_mary, prayers.glory_be];
-
-      const lastIntroTitle = isEn 
-        ? (includeFatima ? "Hail Mary (3rd) · Glory Be · Fatima Prayer" : "Hail Mary (3rd) · Glory Be")
-        : (includeFatima ? "성모송 (세 번째) · 영광송 · 구원의 기도" : "성모송 (세 번째) · 영광송");
-
-      const lastIntroBadge = isEn ? "Charity & Glory Be" : "사랑을 북돋우며 · 영광송";
-
-      const lastIntroGuide = isEn 
-        ? (includeFatima 
-            ? "Praying for Charity, recite the Hail Mary, then recite the Glory Be and Fatima Prayer on this last small bead." 
-            : "Praying for Charity, recite the Hail Mary, then give glory to the Holy Trinity on this last small bead.")
-        : (includeFatima 
-            ? "향주삼덕(사랑을 북돋우기 위하여)을 청하며 성모송을 바친 후, 맨 마지막 알에서 영광송과 구원의 기도를 바칩니다." 
-            : "향주삼덕(사랑을 북돋우기 위하여)을 청하며 성모송을 바친 후, 맨 마지막 알에서 영광송을 바칩니다.");
-
-      steps.push({
-        index: steps.length,
-        section: isEn ? "Introductory Prayers" : "시작 기도",
-        sectionCode: "intro",
-        introIndex: 3,
-        beadType: "small",
-        beadLabel: isEn ? "3rd Small Bead (Last Bead)" : "세 번째 작은 알 (맨 마지막 알)",
-        title: lastIntroTitle,
-        badge: lastIntroBadge,
-        guide: lastIntroGuide,
-        prayers: lastIntroPrayers
-      });
-    }
+    steps.push({
+      index: steps.length,
+      section: isEn ? "Introductory Prayers" : "시작 기도",
+      sectionCode: "intro",
+      introIndex: i + 1,
+      beadType: "small",
+      beadLabel: isEn ? `Hail Mary ${i + 1}/3` : `시작 성모송 ${i + 1}/3`,
+      title: introIntentions[i].title,
+      badge: introIntentions[i].intent,
+      guide: isEn ? `Praying for the theological virtue: ${introIntentions[i].intent}.` : `향주삼덕(${introIntentions[i].intent})을 청하며 바칩니다.`,
+      prayers: [prayers.hail_mary]
+    });
   }
+
+  // 7. 시작 영광송 & 구원의 기도 (선택 옵션 반영) - 작은 연결 알 (줄 / 간격)
+  // 스마트폰 작은 화면에서 영광송과 구원의 기도가 독립 화면으로 시원하게 노출되어
+  // 삼위일체 찬미와 연옥 영혼을 위한 전구를 바치고 다음 1단 큰 알로 진입합니다.
+  const introConnectorPrayers = includeFatima 
+    ? [prayers.glory_be, prayers.fatima_prayer] 
+    : [prayers.glory_be];
+
+  const introTitle = isEn 
+    ? (includeFatima ? "Glory Be & Fatima Prayer" : "Glory Be")
+    : (includeFatima ? "영광송 · 구원의 기도" : "영광송");
+
+  steps.push({
+    index: steps.length,
+    section: isEn ? "Introductory Prayers" : "시작 기도",
+    sectionCode: "intro",
+    beadType: "connector",
+    beadLabel: isEn ? "Chain / Space" : "줄 / 간격",
+    title: introTitle,
+    badge: isEn ? "Praise the Trinity" : "삼위일체 찬미",
+    guide: isEn 
+      ? (includeFatima ? "Praise the Holy Trinity and recite the Fatima Prayer." : "Give glory to the Holy Trinity.")
+      : (includeFatima ? "삼위일체 하느님께 영광을 드리고 구원의 기도를 바칩니다." : "삼위일체 하느님께 영광을 드립니다."),
+    prayers: introConnectorPrayers
+  });
 
   // 1단 ~ 5단 반복
   mystery.decades.forEach((decade, dIdx) => {
@@ -8201,10 +8191,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=21').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=22').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=21').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=22').catch(() => {});
         });
       });
 
@@ -8212,7 +8202,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v21' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v22' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
