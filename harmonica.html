@@ -377,21 +377,147 @@
             cursor: pointer;
         }
         .beat-dot {
-            width: 16px;
-            height: 16px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: #3a3a5a;
+            background: #25253c;
+            border: 1.5px solid #45456b;
+            color: #94a3b8;
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: all 0.1s ease;
+            user-select: none;
         }
         .beat-dot.active {
             background: #00f2fe;
-            box-shadow: 0 0 12px #00f2fe;
-            transform: scale(1.3);
+            border-color: #ffffff;
+            color: #0f172a;
+            box-shadow: 0 0 14px #00f2fe;
+            transform: scale(1.18);
         }
         .beat-dot.active-strong {
-            background: #ff758c;
-            box-shadow: 0 0 12px #ff758c;
-            transform: scale(1.4);
+            background: #ff4757;
+            border-color: #ffffff;
+            color: #ffffff;
+            box-shadow: 0 0 16px #ff4757;
+            transform: scale(1.25);
+        }
+        .metro-dual-actions {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        .btn-metro-action {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 12px;
+            border-radius: 14px;
+            font-family: 'Jua', sans-serif;
+            font-size: 15.5px;
+            border: 1.5px solid transparent;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+            user-select: none;
+        }
+        .btn-metro-action:active {
+            transform: scale(0.96);
+        }
+        .btn-metro-tuner {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+            color: #ffffff;
+            border-color: rgba(255,255,255,0.28);
+            box-shadow: 0 4px 14px rgba(255, 71, 87, 0.4);
+        }
+        .btn-metro-tuner.active-on {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            color: #ffffff !important;
+            border-color: #a7f3d0 !important;
+            box-shadow: 0 0 16px rgba(16, 185, 129, 0.65) !important;
+        }
+        .btn-metro-play {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: #ffffff;
+            border-color: rgba(255,255,255,0.28);
+            box-shadow: 0 4px 14px rgba(79, 172, 254, 0.4);
+        }
+        .bpm-number-input {
+            width: 68px;
+            background: #141424;
+            color: #00f2fe;
+            border: 1.5px solid #4facfe;
+            border-radius: 10px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 24px;
+            font-weight: 900;
+            text-align: center;
+            padding: 2px 4px;
+            outline: none;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.45);
+        }
+        .bpm-number-input:focus {
+            border-color: #fde047;
+            color: #fde047;
+            box-shadow: 0 0 10px rgba(253, 224, 71, 0.35);
+        }
+        .bpm-preset-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 5px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .bpm-preset-chip {
+            flex: 1;
+            min-width: 40px;
+            background: #1c1c30;
+            color: #cbd5e1;
+            border: 1px solid #3a3a58;
+            border-radius: 8px;
+            padding: 4px 4px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 12.5px;
+            font-weight: 800;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s ease;
+        }
+        .bpm-preset-chip:hover {
+            border-color: #00f2fe;
+            color: #ffffff;
+        }
+        .bpm-preset-chip.active {
+            background: rgba(0, 242, 254, 0.18);
+            color: #00f2fe;
+            border-color: #00f2fe;
+            box-shadow: 0 0 8px rgba(0, 242, 254, 0.25);
+        }
+        .bpm-step-btn {
+            background: #32324e;
+            color: #ffffff;
+            border: 1px solid #4a4a6e;
+            border-radius: 10px;
+            height: 36px;
+            padding: 0 9px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 13px;
+            font-weight: 900;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.12s;
+        }
+        .bpm-step-btn:active {
+            transform: scale(0.93);
+            background: #4facfe;
         }
         .site-footer {
             grid-column: 1 / -1;
@@ -889,70 +1015,147 @@
             padding: 0 4px;
         }
         
-        /* 1~22 Hole Slim Harmonica Ruler */
+        /* 1~22 Hole Interactive Harmonica Ruler (Octave Zoom + Auto-Slide) */
         .harmonica-ruler-container {
             display: flex;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            margin-top: 6px;
-            padding: 4px 8px;
-            background: #141424;
-            border-radius: 10px;
-            border: 1px solid #2d2d44;
-            box-sizing: border-box;
-            overflow-x: auto;
-        }
-        .harmonica-ruler-label {
-            font-size: 11px;
-            font-weight: bold;
-            color: #94a3b8;
-            white-space: nowrap;
-            font-family: 'Jua', sans-serif;
-            flex-shrink: 0;
-            display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 6px;
+            width: 100%;
+            margin-top: 8px;
+            padding: 8px 10px;
+            background: #141424;
+            border-radius: 12px;
+            border: 1px solid #323250;
+            box-sizing: border-box;
         }
-        .harmonica-ruler-label .ruler-title {
+        .harmonica-ruler-header {
             display: flex;
             align-items: center;
-            gap: 3px;
-            color: #cbd5e1;
-            font-size: 11px;
+            justify-content: space-between;
+            gap: 6px;
+            flex-wrap: wrap;
+            width: 100%;
         }
-        .harmonica-ruler-label .ruler-legend {
+        .harmonica-ruler-title-wrap {
             display: flex;
             align-items: center;
-            gap: 3px;
-            font-size: 9px;
-            font-weight: 700;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .harmonica-ruler-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 13px;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .btn-ruler-autofollow {
+            background: rgba(16, 185, 129, 0.16);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.45);
+            border-radius: 8px;
+            padding: 2px 7px;
             font-family: 'Nunito', sans-serif;
-            color: #64748b;
+            font-size: 10.5px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn-ruler-autofollow.off {
+            background: #252538;
+            color: #94a3b8;
+            border-color: #3e3e5c;
+        }
+        .ruler-oct-tabs {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .ruler-oct-tab {
+            background: #222238;
+            color: #94a3b8;
+            border: 1px solid #3a3a58;
+            border-radius: 8px;
+            padding: 3px 8px;
+            font-family: 'Jua', sans-serif;
+            font-size: 11.5px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .ruler-oct-tab.active {
+            background: linear-gradient(135deg, #4f46e5 0%, #0284c7 100%);
+            color: #ffffff;
+            border-color: #7dd3fc;
+            box-shadow: 0 0 8px rgba(2, 132, 199, 0.4);
+        }
+        .harmonica-ruler-viewport {
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            padding: 4px 2px;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: #3a3a5a transparent;
+        }
+        .harmonica-ruler-viewport::-webkit-scrollbar {
+            height: 4px;
+        }
+        .harmonica-ruler-viewport::-webkit-scrollbar-thumb {
+            background: #3a3a5a;
+            border-radius: 4px;
         }
         .harmonica-ruler-grid {
             display: flex;
-            flex: 1;
-            gap: 3px;
-            justify-content: space-between;
-            min-width: 480px;
+            gap: 5px;
+            width: 100%;
+            box-sizing: border-box;
         }
         .ruler-hole-slot {
-            flex: 1;
-            min-width: 18px;
-            height: 35px;
+            flex: 0 0 calc((100% - 35px) / 8);
+            min-width: 38px;
+            height: 50px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 1px;
-            border-radius: 5px;
+            gap: 2px;
+            border-radius: 9px;
             cursor: pointer;
-            transition: all 0.12s ease;
-            border: 1px solid transparent;
+            transition: all 0.14s ease;
+            border: 1.5px solid transparent;
             user-select: none;
-            padding: 1px 0;
+            padding: 3px 2px;
             box-sizing: border-box;
+            position: relative;
+        }
+        /* 전체 22홀 한눈에 보기 모드 */
+        .harmonica-ruler-container.view-all-22 .harmonica-ruler-grid {
+            width: 100%;
+            min-width: 0;
+            gap: 2px;
+        }
+        .harmonica-ruler-container.view-all-22 .ruler-hole-slot {
+            flex: 1 1 0;
+            min-width: 14px;
+            height: 38px;
+            padding: 1px 0;
+            border-radius: 5px;
+        }
+        .harmonica-ruler-container.view-all-22 .ruler-hole-num {
+            font-size: 8.5px !important;
+        }
+        .harmonica-ruler-container.view-all-22 .ruler-breath-mini {
+            display: none !important;
+        }
+        .harmonica-ruler-container.view-all-22 .ruler-scale-syllable {
+            font-size: 12px !important;
         }
         .ruler-hole-slot.blow {
             background: rgba(239, 68, 68, 0.15);
@@ -967,18 +1170,24 @@
             transform: translateY(-1px);
         }
         .ruler-hole-num {
-            font-size: 8px;
-            font-weight: 700;
+            font-size: 10.5px;
+            font-weight: 800;
             font-family: 'Nunito', sans-serif;
             line-height: 1;
-            color: #94a3b8;
-            opacity: 0.75;
+            color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            gap: 1px;
+        }
+        .ruler-breath-mini {
+            font-size: 8.5px;
+            opacity: 0.9;
         }
         .ruler-scale-syllable {
-            font-size: 12px;
+            font-size: 17px;
             font-weight: 900;
             font-family: 'Jua', 'Noto Sans KR', sans-serif;
-            line-height: 1.05;
+            line-height: 1.1;
         }
         /* 높낮이(옥타브) 색상 구분: 저음(따뜻한 골드), 중음(선명한 화이트), 고음(화사한 네온 바이올렛) */
         .ruler-scale-syllable.octave-low {
@@ -1169,14 +1378,14 @@
             width: 100% !important;
             gap: 8px !important;
         }
-        body.solo-staff-mode .ruler-hole-slot {
-            height: 40px !important;
+        body.solo-staff-mode .harmonica-ruler-container:not(.view-all-22) .ruler-hole-slot {
+            height: 52px !important;
         }
-        body.solo-staff-mode .ruler-hole-num {
-            font-size: 9px !important;
+        body.solo-staff-mode .harmonica-ruler-container:not(.view-all-22) .ruler-hole-num {
+            font-size: 11px !important;
         }
-        body.solo-staff-mode .ruler-scale-syllable {
-            font-size: 14px !important;
+        body.solo-staff-mode .harmonica-ruler-container:not(.view-all-22) .ruler-scale-syllable {
+            font-size: 18px !important;
         }
         body.solo-staff-mode #btn-solo-toggle {
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
@@ -1827,10 +2036,6 @@
                 </span>
             </div>
             <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
-                <button type="button" id="btn-rt-top-mic" onclick="toggleTunerFromTop()" class="btn-toolbar" style="display: flex; align-items: center; gap: 4px; background: #252538; color: #ff6b81; border: 1px solid #ff4757; padding: 5px 10px; border-radius: 14px; font-size: 12px; font-weight: bold; cursor: pointer;">
-                    <span id="rt-top-mic-icon">🎙️</span>
-                    <span id="rt-top-mic-txt">마이크 켜기</span>
-                </button>
                 <button type="button" id="btn-rt-sound-mode" onclick="toggleRtHarmonicaSound()" class="btn-toolbar" style="background: #25253c; color: #fde047; border: 1px solid #eab308; padding: 5px 10px; border-radius: 14px; font-size: 12px; font-weight: bold;">
                     🎺 하모니카음 ON
                 </button>
@@ -1993,10 +2198,6 @@
                     <span>🎼 실시간 오선보</span>
                 </h2>
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                    <button type="button" id="btn-top-mic" onclick="toggleTunerFromTop()" class="btn-top-mic" style="display: flex; align-items: center; gap: 4px; background: #252538; color: #ff6b81; border: 1px solid #ff4757; padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer; transition: all 0.2s;">
-                        <span id="top-mic-icon">🎙️</span>
-                        <span id="top-mic-txt">튜너 켜기</span>
-                    </button>
                     <button type="button" onclick="openRhythmModal()" class="btn-toolbar" style="background: #252538; color: #38bdf8; border: 1px solid #0284c7; padding: 4px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="초보자용 음표·쉼표 박자 가이드">
                         <span>🎵 음표·쉼표</span>
                     </button>
@@ -2080,43 +2281,80 @@
                 </div>
             </div>
 
-            <!-- 3. Slim Interactive Harmonica Ruler (1~22 홀 가이드 바) -->
+            <!-- 3. Interactive Harmonica Ruler (옥타브 확대 + 실시간 자동 좌우 슬라이딩) -->
             <div class="harmonica-ruler-container" id="harmonica-ruler-container">
-                <div class="harmonica-ruler-label">
-                    <div class="ruler-title">🎹 22홀 음계:</div>
-                    <div class="ruler-legend">
-                        <span style="color:#fbbf24;">●</span>저 <span style="color:#ffffff;">●</span>중 <span style="color:#c084fc;">●</span>고
+                <div class="harmonica-ruler-header">
+                    <div class="harmonica-ruler-title-wrap">
+                        <span class="harmonica-ruler-title">🎹 22홀 음의 배열</span>
+                        <button type="button" id="btn-ruler-autofollow" class="btn-ruler-autofollow" onclick="toggleRulerAutoFollow()" title="소리 나는 홀/옥타브 위치로 자동 좌우 이동">🔄 자동이동 ON</button>
+                    </div>
+                    <div class="ruler-oct-tabs">
+                        <button type="button" id="ruler-tab-low" class="ruler-oct-tab" onclick="scrollRulerToOctave('low')">🟡 저음 1~7</button>
+                        <button type="button" id="ruler-tab-mid" class="ruler-oct-tab active" onclick="scrollRulerToOctave('mid')">⚪ 중음 8~15</button>
+                        <button type="button" id="ruler-tab-high" class="ruler-oct-tab" onclick="scrollRulerToOctave('high')">🟣 고음 16~22</button>
+                        <button type="button" id="ruler-tab-all" class="ruler-oct-tab" onclick="toggleRulerAllMode()">전체 22홀</button>
                     </div>
                 </div>
-                <div class="harmonica-ruler-grid" id="harmonica-ruler-grid">
-                    <!-- Populated dynamically via JS -->
+                <div class="harmonica-ruler-viewport" id="harmonica-ruler-viewport">
+                    <div class="harmonica-ruler-grid" id="harmonica-ruler-grid">
+                        <!-- Populated dynamically via JS -->
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Metronome Panel (실시간 오선보 바로 아래 배치 · 리듬 연습과 박자/BPM 통합 연동) -->
+        <!-- Metronome & Tuner Control Panel (양쪽 탭 공통 핵심 컨트롤 + 숫자 직접 설정) -->
         <div class="panel" id="metronome-panel">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h2 class="panel-title" style="margin: 0; font-size: 17px; display: flex; align-items: center; gap: 6px;">
-                    <span>⏱️ 메트로놈 (박자·빠르기)</span>
-                </h2>
-                <button class="btn-play" id="play-btn" onclick="toggleMetronome()" style="padding: 6px 14px; font-size: 13px; margin: 0; border-radius: 16px; box-shadow: 0 2px 5px rgba(79, 172, 254, 0.4);">▶ 재생</button>
+            <!-- 상단 고가독성 2대 핵심 버튼: [🎙️ 튜너 켜기] & [▶ 메트로놈 재생] -->
+            <div class="metro-dual-actions">
+                <button type="button" id="btn-metro-mic" class="btn-metro-action btn-metro-tuner" onclick="toggleTunerFromTop()">
+                    <span id="metro-mic-icon">🎙️</span>
+                    <span id="metro-mic-txt">튜너(마이크) 켜기</span>
+                </button>
+                <button type="button" id="play-btn" class="btn-metro-action btn-metro-play" onclick="toggleMetronome()">
+                    <span>▶ 메트로놈 재생</span>
+                </button>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
-                <div class="bpm-display" style="margin:0; font-size:26px;"><span id="bpm-val">76</span> <span style="font-size:14px; color:#94a3b8; font-weight:600;">BPM</span></div>
-                <select id="time-signature" onchange="updateTimeSignature(this.value)" style="padding:6px 10px; border-radius:10px; background:#3a3a5a; color:white; border:none; font-size:14px; font-family:'Jua', sans-serif; cursor:pointer; outline:none; max-width:100%; flex-grow:1;">
-                    <option value="4" selected>4/4 박자 (강-약-중강-약)</option>
-                    <option value="3">3/4 박자 (강-약-약)</option>
-                    <option value="2">2/4 박자 (강-약)</option>
-                    <option value="6">6/8 박자 (강-약-약-중강-약-약)</option>
-                    <option value="1">기본 (강세 없음)</option>
+
+            <!-- 빠르기(BPM) 숫자 직접 입력 & 박자표 선택 -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-family:'Jua',sans-serif; font-size:14px; color:#cbd5e1;">⏱️ 빠르기:</span>
+                    <input type="number" id="bpm-input" class="bpm-number-input" min="40" max="240" value="76"
+                        onchange="commitBPMInput(this.value)"
+                        onkeydown="if(event.key==='Enter'){this.blur(); commitBPMInput(this.value);}"
+                        title="숫자를 직접 입력하여 빠르기(40~240 BPM) 설정">
+                    <span id="bpm-val" style="display:none;">76</span>
+                    <span style="font-size:13px; color:#94a3b8; font-weight:800;">BPM</span>
+                </div>
+                <select id="time-signature" onchange="updateTimeSignature(this.value)" style="padding:7px 10px; border-radius:10px; background:#2b2b44; color:white; border:1px solid #45456b; font-size:14px; font-family:'Jua', sans-serif; cursor:pointer; outline:none; max-width:100%; flex-grow:1;">
+                    <option value="4" selected>4/4 박자 (1·2·3·4)</option>
+                    <option value="3">3/4 박자 (1·2·3)</option>
+                    <option value="2">2/4 박자 (1·2)</option>
+                    <option value="6">6/8 박자 (1·2·3·4·5·6)</option>
+                    <option value="1">1박 기본 (강세 없음)</option>
                 </select>
             </div>
-            <div id="beat-indicators" style="display:flex; justify-content:center; gap:12px; margin-bottom:12px; height:16px; align-items:center;"></div>
-            <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
-                <button onclick="changeBPMBy(-1)" style="background:#3a3a5a; color:white; border:none; border-radius:50%; width:38px; height:38px; font-size:20px; font-weight:bold; cursor:pointer; flex-shrink:0;">-</button>
+
+            <!-- 자주 쓰는 빠르기 원터치 숫자 버튼 -->
+            <div class="bpm-preset-row" id="bpm-preset-row">
+                <button type="button" class="bpm-preset-chip" data-bpm="60" onclick="setExactBPM(60)">60 <span style="font-size:10px;font-weight:normal;color:#94a3b8;">느림</span></button>
+                <button type="button" class="bpm-preset-chip active" data-bpm="76" onclick="setExactBPM(76)">76 <span style="font-size:10px;font-weight:normal;color:#94a3b8;">기본</span></button>
+                <button type="button" class="bpm-preset-chip" data-bpm="90" onclick="setExactBPM(90)">90 <span style="font-size:10px;font-weight:normal;color:#94a3b8;">보통</span></button>
+                <button type="button" class="bpm-preset-chip" data-bpm="105" onclick="setExactBPM(105)">105 <span style="font-size:10px;font-weight:normal;color:#94a3b8;">경쾌</span></button>
+                <button type="button" class="bpm-preset-chip" data-bpm="120" onclick="setExactBPM(120)">120 <span style="font-size:10px;font-weight:normal;color:#94a3b8;">빠름</span></button>
+            </div>
+
+            <!-- 박자 카운트 숫자 표시등 (1 · 2 · 3 · 4) -->
+            <div id="beat-indicators" style="display:flex; justify-content:center; gap:12px; margin-bottom:10px; min-height:34px; align-items:center;"></div>
+
+            <!-- 슬라이더 및 -5 / -1 / +1 / +5 미세 숫자 조절 -->
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                <button type="button" class="bpm-step-btn" onclick="changeBPMBy(-5)" title="5 BPM 느리게">-5</button>
+                <button type="button" class="bpm-step-btn" onclick="changeBPMBy(-1)" title="1 BPM 느리게">-1</button>
                 <input type="range" id="bpm-slider" min="40" max="240" value="76" oninput="updateBPM(this.value)" style="flex-grow:1; margin-bottom:0;">
-                <button onclick="changeBPMBy(1)" style="background:#3a3a5a; color:white; border:none; border-radius:50%; width:38px; height:38px; font-size:20px; font-weight:bold; cursor:pointer; flex-shrink:0;">+</button>
+                <button type="button" class="bpm-step-btn" onclick="changeBPMBy(1)" title="1 BPM 빠르게">+1</button>
+                <button type="button" class="bpm-step-btn" onclick="changeBPMBy(5)" title="5 BPM 빠르게">+5</button>
             </div>
         </div>
         <input type="file" id="pdf-upload" accept="application/pdf, image/*" multiple onchange="handleFileUpload(event)" style="display: none;">
@@ -2782,19 +3020,38 @@
         let beatsPerMeasure = 4;
         let currentBeat = 0;
 
+        function setExactBPM(val) {
+            const clamped = Math.max(40, Math.min(240, parseInt(val) || 76));
+            const slider = document.getElementById('bpm-slider');
+            if (slider) slider.value = clamped;
+            updateBPM(clamped);
+        }
+
+        function commitBPMInput(val) {
+            setExactBPM(val);
+        }
+
         function changeBPMBy(amount) {
             let slider = document.getElementById('bpm-slider');
-            let newVal = parseInt(slider.value) + amount;
-            if (newVal < 40) newVal = 40;
-            if (newVal > 240) newVal = 240;
-            slider.value = newVal;
-            updateBPM(newVal);
+            let newVal = (parseInt(slider ? slider.value : bpm) || 76) + amount;
+            setExactBPM(newVal);
         }
 
         function updateBPM(val) {
-            bpm = parseInt(val) || 76;
+            bpm = Math.max(40, Math.min(240, parseInt(val) || 76));
             const bpmValEl = document.getElementById('bpm-val');
             if (bpmValEl) bpmValEl.innerText = bpm;
+            const bpmInputEl = document.getElementById('bpm-input');
+            if (bpmInputEl && document.activeElement !== bpmInputEl) {
+                bpmInputEl.value = bpm;
+            }
+            const slider = document.getElementById('bpm-slider');
+            if (slider && parseInt(slider.value) !== bpm) {
+                slider.value = bpm;
+            }
+            document.querySelectorAll('.bpm-preset-chip').forEach(chip => {
+                chip.classList.toggle('active', parseInt(chip.getAttribute('data-bpm')) === bpm);
+            });
             if (isPlaying) {
                 clearInterval(timerID);
                 timerID = setInterval(playClick, (60 / bpm) * 1000);
@@ -2816,13 +3073,15 @@
 
         function renderBeatIndicators() {
             const container = document.getElementById('beat-indicators');
+            if (!container) return;
             container.innerHTML = '';
-            // 1박자일 경우 점을 하나만 표시
+            // 각 박자 번호(1, 2, 3, 4...)를 원판 안에 큼직하게 표시
             const count = beatsPerMeasure === 1 ? 1 : beatsPerMeasure;
             for (let i = 0; i < count; i++) {
                 const dot = document.createElement('div');
                 dot.className = 'beat-dot';
                 dot.id = `beat-dot-${i + 1}`;
+                dot.innerText = i + 1;
                 container.appendChild(dot);
             }
         }
@@ -2878,7 +3137,7 @@
                 clearInterval(timerID);
                 isPlaying = false;
                 currentBeat = 0;
-                btn.innerText = '▶ 재생';
+                btn.innerHTML = '<span>▶ 메트로놈 재생</span>';
                 btn.style.background = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
                 document.querySelectorAll('.beat-dot').forEach(d => d.classList.remove('active', 'active-strong'));
             } else {
@@ -2890,8 +3149,8 @@
                 
                 isPlaying = true;
                 currentBeat = 0;
-                btn.innerText = '⏸ 정지';
-                btn.style.background = 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)';
+                btn.innerHTML = '<span>⏸ 메트로놈 정지</span>';
+                btn.style.background = 'linear-gradient(135deg, #f59e0b 0%, #ef4444 100%)';
                 
                 playClick(); 
                 timerID = setInterval(playClick, (60 / bpm) * 1000);
@@ -2992,6 +3251,12 @@
                     rtTopBtn.style.borderColor = '#10b981';
                     rtTopBtn.style.background = 'rgba(16, 185, 129, 0.2)';
                 }
+                const metroMicBtn = document.getElementById('btn-metro-mic');
+                const metroMicTxt = document.getElementById('metro-mic-txt');
+                if (metroMicBtn && metroMicTxt) {
+                    metroMicBtn.classList.add('active-on');
+                    metroMicTxt.innerText = '튜너 작동중 (끄기)';
+                }
                 
                 updatePitch();
             } catch (err) {
@@ -3027,6 +3292,12 @@
                 rtTopBtn.style.color = '#ff6b81';
                 rtTopBtn.style.borderColor = '#ff4757';
                 rtTopBtn.style.background = '#252538';
+            }
+            const metroMicBtn = document.getElementById('btn-metro-mic');
+            const metroMicTxt = document.getElementById('metro-mic-txt');
+            if (metroMicBtn && metroMicTxt) {
+                metroMicBtn.classList.remove('active-on');
+                metroMicTxt.innerText = '튜너(마이크) 켜기';
             }
             const noteDisplayEl = document.getElementById('note-display');
             if (noteDisplayEl) noteDisplayEl.innerText = '-';
@@ -3430,19 +3701,101 @@
         let currentHighlightedPitch = null;
         let highlightClearTimer = null;
 
-        // 1~22 홀 인터랙티브 가이드 바 초기화 (계명 및 옥타브 색상 표시)
+        let rulerAutoFollow = true;
+        let rulerAll22Mode = false;
+
+        function toggleRulerAutoFollow() {
+            rulerAutoFollow = !rulerAutoFollow;
+            const btn = document.getElementById('btn-ruler-autofollow');
+            if (btn) {
+                btn.classList.toggle('off', !rulerAutoFollow);
+                btn.innerText = rulerAutoFollow ? '🔄 자동이동 ON' : '⏸ 자동이동 OFF';
+            }
+        }
+
+        function updateRulerOctaveTabHighlight(activeOctave) {
+            document.getElementById('ruler-tab-low')?.classList.toggle('active', !rulerAll22Mode && activeOctave === 'low');
+            document.getElementById('ruler-tab-mid')?.classList.toggle('active', !rulerAll22Mode && activeOctave === 'mid');
+            document.getElementById('ruler-tab-high')?.classList.toggle('active', !rulerAll22Mode && activeOctave === 'high');
+            document.getElementById('ruler-tab-all')?.classList.toggle('active', rulerAll22Mode);
+        }
+
+        let currentRulerOctaveView = 'mid';
+
+        function slideRulerToOctaveUnit(octaveKey, smooth = true) {
+            currentRulerOctaveView = octaveKey;
+            updateRulerOctaveTabHighlight(octaveKey);
+            if (rulerAll22Mode) return;
+
+            const viewport = document.getElementById('harmonica-ruler-viewport');
+            if (!viewport) return;
+
+            // 8칸씩 화면에 꽉 차게 보이도록 옥타브 단위 시작 홀 설정 (저음: 1~8번, 중음: 8~15번, 고음: 15~22번)
+            let startHole = 8;
+            if (octaveKey === 'low') startHole = 1;
+            else if (octaveKey === 'mid') startHole = 8;
+            else if (octaveKey === 'high') startHole = 15;
+
+            const firstSlot = document.getElementById('ruler-slot-1');
+            const targetSlot = document.getElementById(`ruler-slot-${startHole}`);
+            if (!targetSlot || !firstSlot) return;
+
+            const targetScrollLeft = Math.max(0, targetSlot.offsetLeft - firstSlot.offsetLeft);
+            viewport.scrollTo({
+                left: targetScrollLeft,
+                behavior: smooth ? 'smooth' : 'auto'
+            });
+        }
+
+        function scrollHoleIntoRulerView(holeNum, smooth = true) {
+            const note = HARMONICA_NOTES.find(n => n.hole === holeNum);
+            if (!note) return;
+            slideRulerToOctaveUnit(note.octave, smooth);
+        }
+
+        function scrollRulerToOctave(octaveKey) {
+            if (rulerAll22Mode) {
+                rulerAll22Mode = false;
+                document.getElementById('harmonica-ruler-container')?.classList.remove('view-all-22');
+            }
+            slideRulerToOctaveUnit(octaveKey, true);
+
+            // 대표 홀 프리뷰도 함께 표시 (저음: 2번 도, 중음: 8번 가온 도, 고음: 16번 높은 미)
+            const repHoleMap = { low: 2, mid: 8, high: 16 };
+            const repNote = HARMONICA_NOTES.find(n => n.hole === (repHoleMap[octaveKey] || 8));
+            if (repNote) {
+                updateMasterStaffNote(repNote, null, true);
+            }
+        }
+
+        function toggleRulerAllMode() {
+            rulerAll22Mode = !rulerAll22Mode;
+            const container = document.getElementById('harmonica-ruler-container');
+            if (container) {
+                container.classList.toggle('view-all-22', rulerAll22Mode);
+            }
+            if (rulerAll22Mode) {
+                updateRulerOctaveTabHighlight('all');
+            } else {
+                scrollRulerToOctave('mid');
+            }
+        }
+
+        // 1~22 홀 인터랙티브 가이드 바 초기화 (계명 및 옥타브 색상 + 호흡 표시)
         function initHarmonicaRuler() {
             const grid = document.getElementById('harmonica-ruler-grid');
             if (!grid) return;
             grid.innerHTML = HARMONICA_NOTES.map(n => {
                 const breathClass = n.breathType === 'blow' ? 'blow' : 'draw';
+                const breathArrow = n.breathType === 'blow' ? '🔴' : '🔵';
                 const syllable = n.name.split(' ').pop(); // '도', '레', '미', '파', '솔', '라', '시'
                 const rootClass = n.hole === 8 ? 'special-root' : '';
                 return `<div class="ruler-hole-slot ${breathClass} ${rootClass}" id="ruler-slot-${n.hole}" onclick="previewHarmonicaNote(${n.hole})" title="${n.hole}번 홀: ${n.name} (${n.pitch}) ${n.breath}">
-                    <span class="ruler-hole-num">${n.hole}</span>
+                    <span class="ruler-hole-num">${n.hole}<span class="ruler-breath-mini">${breathArrow}</span></span>
                     <span class="ruler-scale-syllable octave-${n.octave}">${syllable}</span>
                 </div>`;
             }).join('');
+            setTimeout(() => scrollHoleIntoRulerView(11, false), 60);
         }
 
         // 특정 홀 번호 클릭 시 대형 오선보 프리뷰
@@ -3457,7 +3810,7 @@
         }
 
         // 단일 대형 동적 오선보 및 정보 배지 실시간 갱신
-        function updateMasterStaffNote(note, cents) {
+        function updateMasterStaffNote(note, cents, skipRulerScroll = false) {
             // 1. 덧줄(Ledger lines) 갱신
             const ledgersG = document.getElementById('master-ledgers');
             if (ledgersG) {
@@ -3562,11 +3915,16 @@
                 guideTip.innerText = `${note.guide}${note.specialText ? ' · ' + note.specialText : ''}`;
             }
 
-            // 7. 슬림 하모니카 눈금자(1~22) 활성화
+            // 7. 슬림 하모니카 눈금자(1~22) 활성화 및 옥타브/홀 자동 좌우 슬라이딩
             document.querySelectorAll('.ruler-hole-slot.active').forEach(slot => slot.classList.remove('active'));
             const activeSlot = document.getElementById(`ruler-slot-${note.hole}`);
             if (activeSlot) {
                 activeSlot.classList.add('active');
+                if (rulerAutoFollow && !skipRulerScroll) {
+                    scrollHoleIntoRulerView(note.hole, true);
+                } else if (!rulerAll22Mode) {
+                    updateRulerOctaveTabHighlight(note.octave);
+                }
             }
         }
 
@@ -4946,6 +5304,11 @@
                 document.body.classList.remove('mobile-tab-rhythm', 'rhythm-trainer-active');
                 bStaff?.classList.add('active-staff');
                 localStorage.setItem('harmonica_app_tab', 'staff');
+                setTimeout(() => {
+                    if (typeof slideRulerToOctaveUnit === 'function') {
+                        slideRulerToOctaveUnit(currentRulerOctaveView || 'mid', false);
+                    }
+                }, 30);
             }
         }
 
