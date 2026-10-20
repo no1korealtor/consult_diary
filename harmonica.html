@@ -85,29 +85,26 @@
             .view-mode-toggle, .mode-2col-tip {
                 display: none !important;
             }
-            /* 스마트폰에서 22음 음계(1~22홀 룰러) 숨김 */
+            /* 스마트폰에서도 옥타브 확대 22홀 음의 배열 바를 선명하게 표시! */
             #harmonica-ruler-container {
-                display: none !important;
+                display: flex !important;
             }
             /* 스마트폰에서 오선보와 메트로놈 여백 최적화 (한 화면에 함께 표시) */
             #master-scale-panel {
-                padding: 12px 12px !important;
+                padding: 10px 12px !important;
             }
             #metronome-panel {
                 padding: 12px 14px !important;
             }
-            .bpm-display {
-                font-size: 26px !important;
-                margin: 4px 0 !important;
-            }
             #beat-indicators {
-                margin-bottom: 12px !important;
-                height: 14px !important;
+                margin-bottom: 10px !important;
+                min-height: 32px !important;
                 gap: 10px !important;
             }
             .beat-dot {
-                width: 13px !important;
-                height: 13px !important;
+                width: 30px !important;
+                height: 30px !important;
+                font-size: 13.5px !important;
             }
         }
 
