@@ -439,8 +439,8 @@ html, body {
 
 /* 신비 묵상 박스 */
 .meditation-box {
-  margin: 4px 12px 2px;
-  padding: 6px 12px;
+  margin: 0 0 12px 0;
+  padding: 8px 12px;
   background: linear-gradient(135deg, rgba(243, 198, 105, 0.12), rgba(255, 255, 255, 0.02));
   border-left: 3px solid var(--gold-primary);
   border-radius: var(--radius-sm);
@@ -487,12 +487,13 @@ html, body {
   background: rgba(243, 198, 105, 0.08);
   border: 1px solid rgba(243, 198, 105, 0.25);
   border-radius: var(--radius-sm);
-  padding: 5px 8px;
+  padding: 6px 10px;
   color: var(--text-primary);
   font-family: inherit;
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
+  touch-action: manipulation;
   transition: all 0.2s ease;
 }
 
@@ -538,6 +539,7 @@ html, body {
   border: 1px solid rgba(243, 198, 105, 0.25);
   border-radius: var(--radius-sm);
   animation: fadeInDown 0.25s ease;
+  touch-action: pan-y;
 }
 
 .scripture-verse-text {
@@ -3376,33 +3378,33 @@ input:checked + .toggle-slider:before {
             <span id="cardCounter" class="card-step-counter">1 / 69</span>
           </div>
 
-          <!-- 신비 묵상 영역 (각 단 시작 및 성모송 시 상시 안내) -->
-          <div id="meditationBox" class="meditation-box">
-            <span id="meditationTitle" class="meditation-title">환희의 신비 제1단</span>
-            <p id="meditationText" class="meditation-text">"마리아께서 예수님을 잉태하심을 묵상합시다."</p>
-            <span id="meditationFruit" class="meditation-fruit">열매: 겸손의 은혜</span>
+          <!-- 기도문 본문 스크롤 영역 (신비 묵상 & 성경 구절 포함하여 상하 스크롤 100% 원활) -->
+          <div id="prayerBodyScroll" class="prayer-body-scroll">
+            <!-- 신비 묵상 영역 (각 단 시작 큰 알에서 노출) -->
+            <div id="meditationBox" class="meditation-box">
+              <span id="meditationTitle" class="meditation-title">환희의 신비 제1단</span>
+              <p id="meditationText" class="meditation-text">"마리아께서 예수님을 잉태하심을 묵상합시다."</p>
+              <span id="meditationFruit" class="meditation-fruit">열매: 겸손의 은혜</span>
 
-            <!-- 각 단 성경 구절 묵상 (접기/펼치기 아코디언, 기본은 감춤) -->
-            <div id="scriptureAccordion" class="scripture-accordion" style="display: none;">
-              <button type="button" id="scriptureToggleBtn" class="scripture-toggle-btn" aria-expanded="false">
-                <span class="scripture-btn-left">
-                  <span class="scripture-book-icon">📖</span>
-                  <span id="scriptureBtnTitle" class="scripture-btn-title">성경 구절 묵상</span>
-                  <span id="scriptureVerseBadge" class="scripture-verse-badge">루카 1,30-31</span>
-                </span>
-                <span id="scriptureToggleArrow" class="scripture-toggle-arrow">▼</span>
-              </button>
-              <div id="scriptureContentPanel" class="scripture-content-panel" style="display: none;">
-                <p id="scriptureVerseText" class="scripture-verse-text"></p>
-                <div class="scripture-source-row">
-                  <span id="scriptureSource" class="scripture-source">한국 천주교 주교회의 공인 [가톨릭 성경]</span>
+              <!-- 각 단 성경 구절 묵상 (접기/펼치기 아코디언, 기본은 감춤) -->
+              <div id="scriptureAccordion" class="scripture-accordion" style="display: none;">
+                <button type="button" id="scriptureToggleBtn" class="scripture-toggle-btn" aria-expanded="false">
+                  <span class="scripture-btn-left">
+                    <span class="scripture-book-icon">📖</span>
+                    <span id="scriptureBtnTitle" class="scripture-btn-title">성경 구절 묵상</span>
+                    <span id="scriptureVerseBadge" class="scripture-verse-badge">루카 1,30-31</span>
+                  </span>
+                  <span id="scriptureToggleArrow" class="scripture-toggle-arrow">▼</span>
+                </button>
+                <div id="scriptureContentPanel" class="scripture-content-panel" style="display: none;">
+                  <p id="scriptureVerseText" class="scripture-verse-text"></p>
+                  <div class="scripture-source-row">
+                    <span id="scriptureSource" class="scripture-source">한국 천주교 주교회의 공인 [가톨릭 성경]</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- 기도문 본문 스크롤 영역 -->
-          <div id="prayerBodyScroll" class="prayer-body-scroll">
             <h1 id="prayerMainTitle" class="prayer-main-title">성호경</h1>
             <p id="prayerGuideText" class="prayer-guide-text">십자가를 잡고 성호를 그으며 기도를 시작합니다.</p>
             
@@ -7503,6 +7505,11 @@ class RosaryApp {
           this.dom.scriptureContentPanel.style.display = "block";
           this.dom.scriptureToggleBtn.setAttribute("aria-expanded", "true");
           if (this.dom.scriptureToggleArrow) this.dom.scriptureToggleArrow.textContent = "▲";
+          setTimeout(() => {
+            if (this.dom.prayerBodyScroll) {
+              this.dom.prayerBodyScroll.scrollBy({ top: 60, behavior: "smooth" });
+            }
+          }, 60);
         } else {
           this.dom.scriptureContentPanel.style.display = "none";
           this.dom.scriptureToggleBtn.setAttribute("aria-expanded", "false");
@@ -8194,10 +8201,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=20').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=21').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=20').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=21').catch(() => {});
         });
       });
 
@@ -8205,7 +8212,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v20' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v21' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
