@@ -2013,8 +2013,11 @@
 </head>
 <body>
     
-    <!-- 앱 상단 2모드 전환 바 (1: 오선보+메트로놈 / 2: 메트로놈+리듬박자, 악보보기 제외) -->
+    <!-- 앱 상단 2모드 전환 바 (앱/모바일: 2탭만 표시 / PC에서 단독모드 진입 시 악보 복귀 버튼 표시) -->
     <div class="portable-mode-bar" id="portable-mode-bar">
+        <button type="button" id="ptab-score-pc" class="portable-tab-btn pc-only-score-btn" onclick="toggleSoloStaffMode(false)" style="display:none; background:#25253c; color:#38bdf8; border:1px solid #0284c7;">
+            <span>📖 악보 뷰어 (PC)</span>
+        </button>
         <button type="button" id="ptab-staff" class="portable-tab-btn active-staff" onclick="switchMobilePortableTab('staff')">
             <span>🎼 오선보 · 메트로놈</span>
         </button>
@@ -2036,6 +2039,9 @@
                 </span>
             </div>
             <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+                <button type="button" id="btn-rt-back-score-pc" onclick="toggleRhythmTrainerMode(false)" class="btn-toolbar" style="display: none; background: #1e293b; color: #38bdf8; border: 1px solid #0284c7; padding: 5px 11px; border-radius: 14px; font-family: 'Jua', sans-serif; font-size: 13px; cursor: pointer;">
+                    📖 악보 뷰어로 돌아가기
+                </button>
                 <button type="button" id="btn-rt-sound-mode" onclick="toggleRtHarmonicaSound()" class="btn-toolbar" style="background: #25253c; color: #fde047; border: 1px solid #eab308; padding: 5px 10px; border-radius: 14px; font-size: 12px; font-weight: bold;">
                     🎺 하모니카음 ON
                 </button>
@@ -4182,9 +4188,10 @@
         });
 
         // ==========================================
-        // 6. Solo Staff / App 2-Tab Mode (오선보+메트로놈 ↔ 메트로놈+리듬박자)
+        // 6. Solo Staff / App 2-Tab Mode (앱/모바일: 2탭 모드 / PC: 악보 뷰어 + 우측 오선보·메트로놈)
         // ==========================================
-        let isSoloStaffMode = localStorage.getItem('harmonica_solo_mode') !== 'false';
+        const isAndroidAppEnv = window.location.hostname === 'appassets.local' || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        let isSoloStaffMode = isAndroidAppEnv || window.innerWidth < 900;
 
         function toggleSoloStaffMode(forceState) {
             if (typeof forceState === 'boolean') {
@@ -5340,8 +5347,17 @@
             document.getElementById('btn-view-2col')?.classList.remove('active');
         }
 
-        // 앱 2탭 모드 진입 (1: 오선보+메트로놈 / 2: 메트로놈+리듬박자)
+        // PC vs 모바일/앱 자동 감지 진입:
+        // - PC 화면(폭 900px 이상 & 일반 브라우저): 항상 좌측 [악보 뷰어] + 우측 [실시간 오선보 & 메트로놈·튜너] 표시!
+        // - 안드로이드 앱 또는 스마트폰 화면: 상단 2탭([오선보·메트로놈] ↔ [메트로놈·리듬박자]) 표시!
         const urlParams = new URLSearchParams(window.location.search);
+        const pcScoreBtn = document.getElementById('ptab-score-pc');
+        const rtBackScoreBtn = document.getElementById('btn-rt-back-score-pc');
+        if (!isAndroidAppEnv && window.innerWidth >= 900) {
+            if (pcScoreBtn) pcScoreBtn.style.display = 'flex';
+            if (rtBackScoreBtn) rtBackScoreBtn.style.display = 'inline-flex';
+        }
+
         if (urlParams.get('mode') === 'score') {
             isSoloStaffMode = false;
             toggleSoloStaffMode(false);
@@ -5349,9 +5365,18 @@
             switchMobilePortableTab('rhythm');
         } else if (urlParams.get('mode') === 'solo' || urlParams.get('mode') === 'staff') {
             switchMobilePortableTab('staff');
-        } else {
+        } else if (isAndroidAppEnv || window.innerWidth < 900) {
             const savedTab = localStorage.getItem('harmonica_app_tab') || 'staff';
             switchMobilePortableTab(savedTab === 'rhythm' ? 'rhythm' : 'staff');
+        } else {
+            // PC 기본 모드: 악보 보면서 오른쪽 오선보/튜너/메트로놈으로 연습!
+            isSoloStaffMode = false;
+            toggleSoloStaffMode(false);
+            setTimeout(() => {
+                if (typeof slideRulerToOctaveUnit === 'function') {
+                    slideRulerToOctaveUnit('mid', false);
+                }
+            }, 60);
         }
 
         loadScoreFromDB();
