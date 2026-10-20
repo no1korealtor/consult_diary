@@ -338,13 +338,20 @@ html, body {
   border: 1.5px solid #F6E05E;
 }
 
-/* 연결부 / 줄 */
+/* 연결 메달 / 줄 (Sacred Connector Medal) */
 .bead-item.type-connector .bead-shape {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  background: radial-gradient(circle at 35% 30%, #CBD5E0, #4A5568);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FDE047, #B45309, #78350F);
+  border: 1.5px solid #FDE68A;
+  color: #FFFDF0;
+  font-size: 0.75rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.45);
 }
 
 /* 활성 알 (CENTER GLOW) */
@@ -6599,16 +6606,34 @@ class RosaryApp {
     }
 
     if (isConnector) {
-      const size = isActive ? 44 : 34;
-      const petalGrad = isActive ? "url(#sacredGoldRoseGrad)" : "url(#mysticWhiteRoseGrad)";
-      const coreGrad = isActive ? "url(#roseCoreGrad)" : "url(#whiteRoseCoreGrad)";
+      // 백장미/황금 순결한 성모 연결 메달 (Sacred Medallion & Trinity Gloria Star)
+      const size = isActive ? 50 : 40;
+      const rimGrad = isActive ? "url(#sacredGoldRoseGrad)" : "url(#mysticWhiteRoseGrad)";
+      const starGrad = isActive ? "url(#royalGoldRoseGrad)" : "url(#whiteRoseCoreGrad)";
       const strokeColor = isActive ? "#FFE58F" : "#EADBCE";
       return `
         <svg class="bead-rose-icon" width="${size}" height="${size}" viewBox="0 0 100 100" ${isActive ? 'filter="url(#roseBloomHalo)"' : ''}>
-          <circle cx="50" cy="50" r="36" fill="${petalGrad}" stroke="${strokeColor}" stroke-width="2.5"/>
-          <circle cx="50" cy="50" r="22" fill="${coreGrad}" stroke="${strokeColor}" stroke-width="1.5"/>
-          <path d="M 50 36 L 58 50 L 50 64 L 42 50 Z" fill="#FFF" opacity="0.95"/>
-          <circle cx="50" cy="50" r="3" fill="#78350F"/>
+          ${isActive ? '<circle cx="50" cy="50" r="48" fill="none" stroke="#FDE68A" stroke-width="1.8" opacity="0.8" stroke-dasharray="3,3" />' : ''}
+          
+          <!-- 상하 은빛/금빛 사슬 체인 연결 고리 -->
+          <rect x="47" y="2" width="6" height="12" rx="3" fill="${strokeColor}" stroke="#78350F" stroke-width="1.2"/>
+          <rect x="47" y="86" width="6" height="12" rx="3" fill="${strokeColor}" stroke="#78350F" stroke-width="1.2"/>
+
+          <!-- 순결한 메달 외곽 림 -->
+          <circle cx="50" cy="50" r="37" fill="${rimGrad}" stroke="${strokeColor}" stroke-width="2"/>
+          <circle cx="50" cy="50" r="31" fill="#1E293B" stroke="${strokeColor}" stroke-width="1" stroke-dasharray="2.5,2"/>
+
+          <!-- 삼위일체 8각 영광의 별 (Gloria Star) -->
+          <path d="M 50 23 L 53.5 44 L 77 50 L 53.5 56 L 50 77 L 46.5 56 L 23 50 L 46.5 44 Z" fill="${starGrad}" stroke="#FFE082" stroke-width="0.8"/>
+          <path d="M 50 31 L 52.5 45 L 69 50 L 52.5 55 L 50 69 L 47.5 55 L 31 50 L 47.5 45 Z" fill="#FFF" opacity="0.95" transform="rotate(45 50 50)"/>
+          
+          <!-- 중심 진주빛 광채 -->
+          <circle cx="50" cy="50" r="5" fill="#FFE58F" stroke="#B45309" stroke-width="1"/>
+          <circle cx="50" cy="50" r="2" fill="#FFF"/>
+
+          <!-- 우측 하단 전용 영광 뱃지 (✦ Gloria Badge) -->
+          <circle cx="76" cy="76" r="14" fill="#B45309" stroke="#FFE58F" stroke-width="1.8"/>
+          <text x="76" y="81.5" font-size="13" font-weight="900" text-anchor="middle" fill="#FFF">✦</text>
         </svg>
       `;
     }
@@ -6780,16 +6805,39 @@ class RosaryApp {
     }
 
     if (isConnector) {
-      // 원목/황동 연결부 (기적의 패)
-      const size = isActive ? 44 : 34;
+      // 거룩한 황동 연결 메달 (Sacred Linking Medal & Trinity Gloria Star)
+      // 상하 사슬 체인 연결 고리 + 8각 삼위일체 영광의 별 + 고유 영광 뱃지(✦)
+      const size = isActive ? 50 : 40;
       return `
         <svg class="bead-rose-icon" width="${size}" height="${size}" viewBox="0 0 100 100" ${isActive ? 'filter="url(#warmWoodGlow)"' : ''}>
-          <circle cx="50" cy="50" r="36" fill="#8A4B20"/>
-          <circle cx="50" cy="50" r="36" fill="url(#woodCrossGrad)" stroke="#E4A875" stroke-width="1.6"/>
-          <circle cx="50" cy="50" r="28" fill="#C88A58"/>
-          <circle cx="50" cy="50" r="28" fill="url(#woodBeadGrad)" stroke="#F5CDA2" stroke-width="1"/>
-          <path d="M 50 32 L 60 50 L 50 68 L 40 50 Z" fill="#FFF" opacity="0.9"/>
-          <circle cx="50" cy="50" r="3" fill="#5A2A0C"/>
+          ${isActive ? '<circle cx="50" cy="50" r="48" fill="none" stroke="#FDE68A" stroke-width="1.8" opacity="0.85" stroke-dasharray="3,3" />' : ''}
+          
+          <!-- 상하 묵주 사슬 체인 연결 고리 (Chain Links) -->
+          <rect x="47" y="2" width="6" height="12" rx="3" fill="#D97706" stroke="#78350F" stroke-width="1.2"/>
+          <circle cx="50" cy="7" r="1.5" fill="#FFF" opacity="0.8"/>
+          <rect x="47" y="86" width="6" height="12" rx="3" fill="#D97706" stroke="#78350F" stroke-width="1.2"/>
+          <circle cx="50" cy="93" r="1.5" fill="#FFF" opacity="0.8"/>
+
+          <!-- 앤틱 황동 메달 외곽 림 (Medallion Outer Rim) -->
+          <circle cx="50" cy="50" r="37" fill="url(#paterCapGold)" stroke="#78350F" stroke-width="2"/>
+          <!-- 메달 내부 베젤 링 (Inner Bezel with dashed filigree) -->
+          <circle cx="50" cy="50" r="32" fill="#78350F" stroke="#FDE047" stroke-width="1" stroke-dasharray="2.5,2"/>
+          <circle cx="50" cy="50" r="29" fill="url(#woodCrossGrad)" stroke="#B45309" stroke-width="1"/>
+
+          <!-- 삼위일체 8각 영광의 황금 별 (Trinity Gloria Star) -->
+          <!-- 1) 주 광채 4각 (상하좌우) -->
+          <path d="M 50 23 L 53.5 44 L 77 50 L 53.5 56 L 50 77 L 46.5 56 L 23 50 L 46.5 44 Z" fill="url(#paterCrossGold)" stroke="#FFE082" stroke-width="0.8"/>
+          <!-- 2) 대각선 보조 광채 4각 (45도 회전) -->
+          <path d="M 50 31 L 52.5 45 L 69 50 L 52.5 55 L 50 69 L 47.5 55 L 31 50 L 47.5 45 Z" fill="#FFFBEB" opacity="0.95" transform="rotate(45 50 50)"/>
+          
+          <!-- 중심 신성의 거룩한 빛 (Divine Center Light) -->
+          <circle cx="50" cy="50" r="6" fill="#D97706" stroke="#FEF08A" stroke-width="1.2"/>
+          <circle cx="50" cy="50" r="3" fill="#FFFFFF"/>
+
+          <!-- 우측 하단 고유 영광 뱃지 (✦ Gloria Badge) -->
+          <circle cx="76" cy="76" r="14" fill="#B45309" stroke="#FDE68A" stroke-width="1.8"/>
+          <circle cx="76" cy="76" r="12" fill="#78350F" opacity="0.5"/>
+          <text x="76" y="81.5" font-size="13" font-weight="900" text-anchor="middle" fill="#FFFDF0">✦</text>
         </svg>
       `;
     }
@@ -6879,6 +6927,8 @@ class RosaryApp {
       let beadContent = "";
       if (step.beadType === "cross") {
         beadContent = "✝";
+      } else if (step.beadType === "connector") {
+        beadContent = "✦";
       } else if (step.beadNumber || step.introIndex) {
         beadContent = step.beadNumber || step.introIndex;
       } else if (step.beadType === "large") {
@@ -8191,10 +8241,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=22').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=23').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=22').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=23').catch(() => {});
         });
       });
 
@@ -8202,7 +8252,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v22' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v23' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
