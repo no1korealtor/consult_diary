@@ -2006,20 +2006,273 @@
             font-size: 13.5px;
             flex-wrap: wrap;
         }
+
+        /* ==========================================
+           8. Instrument Selection Intro Screen & Clean UI
+           ========================================== */
+        .instrument-intro-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 50% 20%, #1e2246 0%, #0f1021 75%);
+            z-index: 100000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 18px 16px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            transition: opacity 0.22s ease;
+        }
+        .instrument-intro-overlay.hidden {
+            display: none !important;
+        }
+        .intro-box {
+            width: 100%;
+            max-width: 560px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            text-align: center;
+        }
+        .intro-badge {
+            background: rgba(56, 189, 248, 0.14);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-family: 'Jua', sans-serif;
+            font-size: 13px;
+            letter-spacing: 0.3px;
+        }
+        .intro-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 28px;
+            color: #ffffff;
+            margin: 0;
+            line-height: 1.25;
+            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        }
+        .intro-subtitle {
+            font-size: 14px;
+            color: #94a3b8;
+            margin: -6px 0 4px 0;
+            line-height: 1.5;
+        }
+        .intro-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            width: 100%;
+        }
+        @media(min-width: 600px) {
+            .intro-cards-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .intro-inst-card {
+            background: linear-gradient(155deg, #1d203a 0%, #15172c 100%);
+            border: 2px solid #33385e;
+            border-radius: 22px;
+            padding: 20px 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            text-align: left;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .intro-inst-card:hover {
+            transform: translateY(-3px);
+        }
+        .intro-inst-card:active {
+            transform: scale(0.98);
+        }
+        .intro-inst-card.card-harmonica {
+            border-color: #ef4444;
+            background: linear-gradient(155deg, rgba(239, 68, 68, 0.14) 0%, #171930 65%);
+        }
+        .intro-inst-card.card-harmonica:hover {
+            box-shadow: 0 14px 32px rgba(239, 68, 68, 0.28);
+        }
+        .intro-inst-card.card-recorder {
+            border-color: #38bdf8;
+            background: linear-gradient(155deg, rgba(56, 189, 248, 0.14) 0%, #171930 65%);
+        }
+        .intro-inst-card.card-recorder:hover {
+            box-shadow: 0 14px 32px rgba(56, 189, 248, 0.28);
+        }
+        .intro-card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .intro-card-icon {
+            font-size: 36px;
+            line-height: 1;
+        }
+        .intro-card-tag {
+            font-family: 'Jua', sans-serif;
+            font-size: 11.5px;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+        .card-harmonica .intro-card-tag {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+        .card-recorder .intro-card-tag {
+            background: rgba(56, 189, 248, 0.2);
+            color: #7dd3fc;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+        }
+        .intro-card-name {
+            font-family: 'Jua', sans-serif;
+            font-size: 22px;
+            color: #ffffff;
+            margin: 2px 0 0 0;
+        }
+        .intro-card-features {
+            font-size: 12.5px;
+            color: #cbd5e1;
+            line-height: 1.55;
+            margin: 0;
+            padding-left: 0;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .intro-card-cta {
+            margin-top: 6px;
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-family: 'Jua', sans-serif;
+            font-size: 15px;
+            text-align: center;
+            color: #ffffff;
+            box-sizing: border-box;
+        }
+        .card-harmonica .intro-card-cta {
+            background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+        }
+        .card-recorder .intro-card-cta {
+            background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+        }
+        .intro-footer-note {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        /* 상단 악기 전환 스위치 버튼 */
+        .btn-switch-inst {
+            background: #22253e;
+            color: #fde047;
+            border: 1.5px solid #4f46e5;
+            border-radius: 12px;
+            padding: 7px 11px;
+            font-family: 'Jua', sans-serif;
+            font-size: 13.5px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+        .btn-switch-inst:hover {
+            border-color: #38bdf8;
+            background: #2b2f4c;
+        }
+
+        /* 기존 복잡한 옥타브/악기 선택 줄 숨김 (인트로로 통합) */
+        .octave-shift-row {
+            display: none !important;
+        }
+        /* 리코더 모드에서는 하모니카 전용 22홀 전체 대조표 버튼 숨김, 리코더 팁 버튼 표시 */
+        body.inst-recorder #btn-open-scale-modal {
+            display: none !important;
+        }
+        body.inst-harmonica #btn-open-recorder-tip {
+            display: none !important;
+        }
+
     </style>
 </head>
-<body>
+<body class="inst-harmonica">
+
+    <!-- 🎵 첫 화면 인트로: 악기 선택 스튜디오 (하모니카 vs 리코더) -->
+    <div class="instrument-intro-overlay" id="instrument-intro-overlay">
+        <div class="intro-box">
+            <span class="intro-badge">🎼 실시간 오선보 · 메트로놈 · 리듬 트레이너</span>
+            <h1 class="intro-title">어떤 악기를 연습하실까요?</h1>
+            <p class="intro-subtitle">연습할 악기를 선택하면 그 악기에 꼭 맞는 깔끔한 화면으로 시작됩니다</p>
+
+            <div class="intro-cards-grid">
+                <!-- 1. 복음 하모니카 카드 -->
+                <div class="intro-inst-card card-harmonica" onclick="selectInstrumentMode('harmonica')">
+                    <div class="intro-card-top">
+                        <span class="intro-card-icon">🎺</span>
+                        <span class="intro-card-tag">시니어 · 동호회 · 22홀 표준</span>
+                    </div>
+                    <div class="intro-card-name">복음 하모니카 연습실</div>
+                    <ul class="intro-card-features">
+                        <li>✔ 실시간 오선보 & <b>1~22홀 불기🔴/마시기🔵</b> 안내</li>
+                        <li>✔ <b>옥타브 단위 8칸 자동 좌우 슬라이딩</b> 음의 배열</li>
+                        <li>✔ 원·앤·투·앤 리듬 박자 & 메트로놈 튜너</li>
+                    </ul>
+                    <div class="intro-card-cta">🎺 하모니카로 시작하기 →</div>
+                </div>
+
+                <!-- 2. 초·중등 소프라노 리코더 카드 -->
+                <div class="intro-inst-card card-recorder" onclick="selectInstrumentMode('recorder')">
+                    <div class="intro-card-top">
+                        <span class="intro-card-icon">🪈</span>
+                        <span class="intro-card-tag">초·중등 교과서 (-1옥타브 자동)</span>
+                    </div>
+                    <div class="intro-card-name">초·중등 리코더 연습실</div>
+                    <ul class="intro-card-features">
+                        <li>✔ 실제 소리를 <b>교과서 오선보 위치</b>로 자동 변환</li>
+                        <li>✔ <b>차 안·이동 중</b> 악보 없이 운지 & 호흡 세기 체크</li>
+                        <li>✔ 학교 음악 수행평가 박자·리듬 완벽 대비</li>
+                    </ul>
+                    <div class="intro-card-cta">🪈 리코더로 시작하기 →</div>
+                </div>
+            </div>
+
+            <div class="intro-footer-note">
+                💡 연습 중에도 상단 <b>[🔄 악기변경]</b> 버튼을 눌러 언제든 바꿀 수 있습니다
+            </div>
+        </div>
+    </div>
     
-    <!-- 앱 상단 2모드 전환 바 (앱/모바일: 2탭만 표시 / PC에서 단독모드 진입 시 악보 복귀 버튼 표시) -->
+    <!-- 앱 상단 2모드 전환 바 (좌측: 악기변경 / 우측: 2탭 전환) -->
     <div class="portable-mode-bar" id="portable-mode-bar">
+        <button type="button" id="btn-portable-inst" class="btn-switch-inst" onclick="openInstrumentIntro()" title="하모니카 / 리코더 악기 변경">
+            <span id="portable-inst-label">🎺 악기변경</span>
+        </button>
         <button type="button" id="ptab-score-pc" class="portable-tab-btn pc-only-score-btn" onclick="toggleSoloStaffMode(false)" style="display:none; background:#25253c; color:#38bdf8; border:1px solid #0284c7;">
-            <span>📖 악보 뷰어 (PC)</span>
+            <span>📖 악보보기</span>
         </button>
         <button type="button" id="ptab-staff" class="portable-tab-btn active-staff" onclick="switchMobilePortableTab('staff')">
-            <span>🎼 오선보 · 메트로놈</span>
+            <span>🎼 오선보·메트로놈</span>
         </button>
         <button type="button" id="ptab-rhythm" class="portable-tab-btn" onclick="switchMobilePortableTab('rhythm')">
-            <span>🥁 메트로놈 · 리듬박자</span>
+            <span>🥁 메트로놈·리듬</span>
         </button>
     </div>
 
@@ -2028,11 +2281,8 @@
         <!-- Header (상단 튜너 및 메트로놈과 통합되어 중복 컨트롤 제거 + 마이크 바로 켜기 지원) -->
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span style="font-family: 'Jua', sans-serif; font-size: 21px; color: #f59e0b; display: flex; align-items: center; gap: 6px;">
+                <span style="font-family: 'Jua', sans-serif; font-size: 20px; color: #f59e0b; display: flex; align-items: center; gap: 6px;">
                     <span>🥁 리듬·박자 연습</span>
-                </span>
-                <span id="rt-status-badge" style="background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 3px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold;">
-                    메트로놈 연동 · 박수/하모니카 인식
                 </span>
             </div>
             <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
@@ -2139,18 +2389,14 @@
         <!-- Score Toolbar -->
         <div class="score-toolbar">
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span style="font-family: 'Jua', sans-serif; font-size: 20px; color: #4facfe;">🎼 악보 뷰어</span>
+                <button type="button" id="btn-pc-inst" class="btn-switch-inst" onclick="openInstrumentIntro()" title="하모니카 / 리코더 악기 선택 화면 열기">
+                    <span id="pc-inst-label">🎺 하모니카 모드 ▾</span>
+                </button>
                 <label for="pdf-upload" class="btn-toolbar" style="cursor: pointer; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 6px 14px; border-radius: 18px; font-size: 13px; font-weight: bold; box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);">
                     📁 악보 열기
                 </label>
                 <button type="button" onclick="toggleRhythmTrainerMode(true)" class="btn-toolbar" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%); color: white; border: none; padding: 6px 14px; border-radius: 18px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);" title="원 앤 투 앤 리듬·박자 연습실 열기">
                     <span>🥁 박자·리듬 연습</span>
-                </button>
-                <button type="button" onclick="toggleSoloStaffMode(true)" class="btn-toolbar" style="background: #232338; color: #a5b4fc; border: 1px solid #6366f1; padding: 6px 13px; border-radius: 18px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="스마트폰/단독 연습: 오선보만 크게 보기">
-                    <span>📱 오선보만 보기</span>
-                </button>
-                <button type="button" onclick="openRhythmModal()" class="btn-toolbar" style="background: #232338; color: #38bdf8; border: 1px solid #0284c7; padding: 6px 13px; border-radius: 18px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="초보자를 위한 음표와 쉼표 박자 가이드">
-                    <span>🎵 음표·쉼표</span>
                 </button>
             </div>
             
@@ -2198,14 +2444,17 @@
         <div class="panel" id="master-scale-panel" style="padding: 12px 14px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
                 <h2 class="panel-title" style="margin: 0; font-size: 17px; display: flex; align-items: center; gap: 6px;">
-                    <span>🎼 실시간 오선보</span>
+                    <span id="master-panel-title-txt">🎺 하모니카 오선보</span>
                 </h2>
-                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                    <button type="button" onclick="openRhythmModal()" class="btn-toolbar" style="background: #252538; color: #38bdf8; border: 1px solid #0284c7; padding: 4px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 4px;" title="초보자용 음표·쉼표 박자 가이드">
-                        <span>🎵 음표·쉼표</span>
+                <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+                    <button type="button" onclick="openRhythmModal()" class="btn-toolbar" style="background: #252538; color: #38bdf8; border: 1px solid #0284c7; padding: 4px 9px; border-radius: 10px; font-size: 11.5px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 3px;" title="초보자용 음표·쉼표 박자 사전">
+                        <span>🎵 음표사전</span>
                     </button>
-                    <button type="button" onclick="openScaleModal()" class="btn-toolbar" style="background: #252538; color: #00f2fe; border: 1px solid #4facfe; padding: 4px 9px; border-radius: 12px; font-size: 11.5px; font-weight: bold; cursor: pointer;" title="오선보 전체 1~22홀 대조표 보기">
-                        🔍 전체 대조표
+                    <button type="button" id="btn-open-scale-modal" onclick="openScaleModal()" class="btn-toolbar" style="background: #252538; color: #00f2fe; border: 1px solid #4facfe; padding: 4px 9px; border-radius: 10px; font-size: 11.5px; font-weight: bold; cursor: pointer;" title="오선보 전체 1~22홀 대조표 보기">
+                        🔍 22홀표
+                    </button>
+                    <button type="button" id="btn-open-recorder-tip" onclick="toggleRecorderGuide()" class="btn-toolbar" style="background: #252538; color: #a5b4fc; border: 1px solid #6366f1; padding: 4px 9px; border-radius: 10px; font-size: 11.5px; font-weight: bold; cursor: pointer;" title="초·중등 리코더 차 안 연습 가이드">
+                        💡 리코더팁
                     </button>
                 </div>
             </div>
@@ -2287,15 +2536,16 @@
             <!-- 3. Interactive Harmonica Ruler (옥타브 확대 + 실시간 자동 좌우 슬라이딩) -->
             <div class="harmonica-ruler-container" id="harmonica-ruler-container">
                 <div class="harmonica-ruler-header">
-                    <div class="harmonica-ruler-title-wrap">
-                        <span class="harmonica-ruler-title">🎹 22홀 음의 배열</span>
-                        <button type="button" id="btn-ruler-autofollow" class="btn-ruler-autofollow" onclick="toggleRulerAutoFollow()" title="소리 나는 홀/옥타브 위치로 자동 좌우 이동">🔄 자동이동 ON</button>
+                    <span class="harmonica-ruler-title" id="ruler-main-title">🎹 22홀 음의 배열</span>
+                    <div class="ruler-oct-tabs" id="ruler-oct-tabs-harmonica">
+                        <button type="button" id="ruler-tab-low" class="ruler-oct-tab" onclick="scrollRulerToOctave('low')">🟡저음</button>
+                        <button type="button" id="ruler-tab-mid" class="ruler-oct-tab active" onclick="scrollRulerToOctave('mid')">⚪중음</button>
+                        <button type="button" id="ruler-tab-high" class="ruler-oct-tab" onclick="scrollRulerToOctave('high')">🟣고음</button>
+                        <button type="button" id="ruler-tab-all" class="ruler-oct-tab" onclick="toggleRulerAllMode()">전체</button>
                     </div>
-                    <div class="ruler-oct-tabs">
-                        <button type="button" id="ruler-tab-low" class="ruler-oct-tab" onclick="scrollRulerToOctave('low')">🟡 저음 1~7</button>
-                        <button type="button" id="ruler-tab-mid" class="ruler-oct-tab active" onclick="scrollRulerToOctave('mid')">⚪ 중음 8~15</button>
-                        <button type="button" id="ruler-tab-high" class="ruler-oct-tab" onclick="scrollRulerToOctave('high')">🟣 고음 16~22</button>
-                        <button type="button" id="ruler-tab-all" class="ruler-oct-tab" onclick="toggleRulerAllMode()">전체 22홀</button>
+                    <div class="ruler-oct-tabs" id="ruler-oct-tabs-recorder" style="display:none;">
+                        <button type="button" id="rec-tab-mid" class="ruler-oct-tab active" onclick="scrollRulerToOctave('mid')">⚪기본음(도~시)</button>
+                        <button type="button" id="rec-tab-high" class="ruler-oct-tab" onclick="scrollRulerToOctave('high')">🟣높은음(도~솔)</button>
                     </div>
                 </div>
                 <div class="harmonica-ruler-viewport" id="harmonica-ruler-viewport">
@@ -3721,6 +3971,8 @@
             document.getElementById('ruler-tab-mid')?.classList.toggle('active', !rulerAll22Mode && activeOctave === 'mid');
             document.getElementById('ruler-tab-high')?.classList.toggle('active', !rulerAll22Mode && activeOctave === 'high');
             document.getElementById('ruler-tab-all')?.classList.toggle('active', rulerAll22Mode);
+            document.getElementById('rec-tab-mid')?.classList.toggle('active', activeOctave !== 'high');
+            document.getElementById('rec-tab-high')?.classList.toggle('active', activeOctave === 'high');
         }
 
         let currentRulerOctaveView = 'mid';
@@ -3733,11 +3985,15 @@
             const viewport = document.getElementById('harmonica-ruler-viewport');
             if (!viewport) return;
 
-            // 8칸씩 화면에 꽉 차게 보이도록 옥타브 단위 시작 홀 설정 (저음: 1~8번, 중음: 8~15번, 고음: 15~22번)
+            // 8칸씩 화면에 꽉 차게 보이도록 옥타브 단위 시작 홀 설정
             let startHole = 8;
-            if (octaveKey === 'low') startHole = 1;
-            else if (octaveKey === 'mid') startHole = 8;
-            else if (octaveKey === 'high') startHole = 15;
+            if (currentInstrumentMode === 'recorder') {
+                startHole = (octaveKey === 'high') ? 12 : 8;
+            } else {
+                if (octaveKey === 'low') startHole = 1;
+                else if (octaveKey === 'mid') startHole = 8;
+                else if (octaveKey === 'high') startHole = 15;
+            }
 
             const firstSlot = document.getElementById('ruler-slot-1');
             const targetSlot = document.getElementById(`ruler-slot-${startHole}`);
@@ -3784,21 +4040,98 @@
             }
         }
 
-        // 1~22 홀 인터랙티브 가이드 바 초기화 (계명 및 옥타브 색상 + 호흡 표시)
+        let currentInstrumentMode = localStorage.getItem('selected_instrument_mode') || 'harmonica';
+
+        // 소프라노 리코더 교과서 기보 음계 순서 (가온 도 C5 ~ 높은 솔 G6, 홀 번호는 HARMONICA_NOTES의 매칭 홀 재사용)
+        const RECORDER_ORDERED_HOLES = [8, 9, 10, 11, 12, 13, 15, 14, 17, 16, 19, 18];
+
+        function openInstrumentIntro() {
+            const overlay = document.getElementById('instrument-intro-overlay');
+            if (overlay) overlay.classList.remove('hidden');
+        }
+
+        function selectInstrumentMode(mode, closeOverlay = true) {
+            currentInstrumentMode = (mode === 'recorder') ? 'recorder' : 'harmonica';
+            localStorage.setItem('selected_instrument_mode', currentInstrumentMode);
+
+            document.body.classList.toggle('inst-recorder', currentInstrumentMode === 'recorder');
+            document.body.classList.toggle('inst-harmonica', currentInstrumentMode !== 'recorder');
+
+            // 하모니카는 0옥타브, 리코더는 -1옥타브(교과서 오선보 자동 보정) 적용
+            tunerOctaveShift = (currentInstrumentMode === 'recorder') ? -1 : 0;
+            localStorage.setItem('harmonica_octave_shift', tunerOctaveShift);
+            updateOctaveButtons();
+            toggleRecorderGuide(false);
+
+            // 상단 및 패널 제목/라벨 갱신
+            const pLabel = document.getElementById('portable-inst-label');
+            const pcLabel = document.getElementById('pc-inst-label');
+            const panelTitle = document.getElementById('master-panel-title-txt');
+            const rulerTitle = document.getElementById('ruler-main-title');
+            const hTabs = document.getElementById('ruler-oct-tabs-harmonica');
+            const rTabs = document.getElementById('ruler-oct-tabs-recorder');
+            const rtSoundBtn = document.getElementById('btn-rt-sound-mode');
+
+            if (currentInstrumentMode === 'recorder') {
+                if (pLabel) pLabel.innerText = '🪈 악기변경';
+                if (pcLabel) pcLabel.innerText = '🪈 리코더 모드 ▾';
+                if (panelTitle) panelTitle.innerText = '🪈 리코더 오선보 (교과서 기준)';
+                if (rulerTitle) rulerTitle.innerText = '🪈 리코더 음계 배열';
+                if (hTabs) hTabs.style.display = 'none';
+                if (rTabs) rTabs.style.display = 'flex';
+                if (rtSoundBtn && rtHarmonicaSoundOn) rtSoundBtn.innerText = '🪈 악기음 ON';
+            } else {
+                if (pLabel) pLabel.innerText = '🎺 악기변경';
+                if (pcLabel) pcLabel.innerText = '🎺 하모니카 모드 ▾';
+                if (panelTitle) panelTitle.innerText = '🎺 하모니카 오선보';
+                if (rulerTitle) rulerTitle.innerText = '🎹 22홀 음의 배열';
+                if (hTabs) hTabs.style.display = 'flex';
+                if (rTabs) rTabs.style.display = 'none';
+                if (rtSoundBtn && rtHarmonicaSoundOn) rtSoundBtn.innerText = '🎺 하모니카음 ON';
+            }
+
+            initHarmonicaRuler();
+            initMasterStaff();
+
+            if (closeOverlay) {
+                const overlay = document.getElementById('instrument-intro-overlay');
+                if (overlay) overlay.classList.add('hidden');
+                setTimeout(() => slideRulerToOctaveUnit('mid', false), 50);
+            }
+        }
+
+        // 하모니카(1~22홀) 또는 리코더(도~높은솔) 가이드 바 초기화
         function initHarmonicaRuler() {
             const grid = document.getElementById('harmonica-ruler-grid');
             if (!grid) return;
-            grid.innerHTML = HARMONICA_NOTES.map(n => {
-                const breathClass = n.breathType === 'blow' ? 'blow' : 'draw';
-                const breathArrow = n.breathType === 'blow' ? '🔴' : '🔵';
-                const syllable = n.name.split(' ').pop(); // '도', '레', '미', '파', '솔', '라', '시'
-                const rootClass = n.hole === 8 ? 'special-root' : '';
-                return `<div class="ruler-hole-slot ${breathClass} ${rootClass}" id="ruler-slot-${n.hole}" onclick="previewHarmonicaNote(${n.hole})" title="${n.hole}번 홀: ${n.name} (${n.pitch}) ${n.breath}">
-                    <span class="ruler-hole-num">${n.hole}<span class="ruler-breath-mini">${breathArrow}</span></span>
-                    <span class="ruler-scale-syllable octave-${n.octave}">${syllable}</span>
-                </div>`;
-            }).join('');
-            setTimeout(() => scrollHoleIntoRulerView(11, false), 60);
+
+            if (currentInstrumentMode === 'recorder') {
+                const recNotes = RECORDER_ORDERED_HOLES.map(h => HARMONICA_NOTES.find(n => n.hole === h)).filter(Boolean);
+                grid.innerHTML = recNotes.map(n => {
+                    const syllable = n.name.split(' ').pop();
+                    const isThumbHalf = n.hole >= 16; // 높은 레(D6)/높은 미(E6) 이상 서밍 구간
+                    const thumbLabel = isThumbHalf ? '◐반막기' : '●막기';
+                    const slotClass = isThumbHalf ? 'blow' : 'draw';
+                    const rootClass = n.hole === 8 ? 'special-root' : '';
+                    return `<div class="ruler-hole-slot ${slotClass} ${rootClass}" id="ruler-slot-${n.hole}" onclick="previewHarmonicaNote(${n.hole})" title="${n.name} (${n.pitch}) · 뒷구멍 ${thumbLabel}">
+                        <span class="ruler-hole-num" style="font-size:9.5px;">${thumbLabel}</span>
+                        <span class="ruler-scale-syllable octave-${n.octave}">${syllable}</span>
+                    </div>`;
+                }).join('');
+                setTimeout(() => slideRulerToOctaveUnit('mid', false), 60);
+            } else {
+                grid.innerHTML = HARMONICA_NOTES.map(n => {
+                    const breathClass = n.breathType === 'blow' ? 'blow' : 'draw';
+                    const breathArrow = n.breathType === 'blow' ? '🔴' : '🔵';
+                    const syllable = n.name.split(' ').pop(); // '도', '레', '미', '파', '솔', '라', '시'
+                    const rootClass = n.hole === 8 ? 'special-root' : '';
+                    return `<div class="ruler-hole-slot ${breathClass} ${rootClass}" id="ruler-slot-${n.hole}" onclick="previewHarmonicaNote(${n.hole})" title="${n.hole}번 홀: ${n.name} (${n.pitch}) ${n.breath}">
+                        <span class="ruler-hole-num">${n.hole}<span class="ruler-breath-mini">${breathArrow}</span></span>
+                        <span class="ruler-scale-syllable octave-${n.octave}">${syllable}</span>
+                    </div>`;
+                }).join('');
+                setTimeout(() => scrollHoleIntoRulerView(11, false), 60);
+            }
         }
 
         // 특정 홀 번호 클릭 시 대형 오선보 프리뷰
@@ -3860,23 +4193,41 @@
                 }
             }
 
-            // 3. 홀 번호 & 호흡 배지 갱신
+            // 3. 홀 번호(하모니카) 또는 뒷구멍 운지(리코더) 배지 갱신
             const holeBadge = document.getElementById('master-hole-badge');
             if (holeBadge) {
-                const breathIcon = note.breathType === 'blow' ? '🔴' : '🔵';
-                holeBadge.className = `master-hole-badge ${note.breathType}`;
-                holeBadge.innerHTML = `<span class="m-hole-num">${note.hole}</span>번 홀 <span class="m-breath-txt">${note.breath}</span> <span class="m-breath-icon">${breathIcon}</span>`;
+                if (currentInstrumentMode === 'recorder') {
+                    const isThumbHalf = note.hole >= 16;
+                    holeBadge.className = `master-hole-badge ${isThumbHalf ? 'blow' : 'draw'}`;
+                    holeBadge.innerHTML = isThumbHalf
+                        ? `<span>🪈 뒷구멍 ◐ 반막기(서밍)</span>`
+                        : `<span>🪈 뒷구멍 ● 다 막기</span>`;
+                } else {
+                    const breathIcon = note.breathType === 'blow' ? '🔴' : '🔵';
+                    holeBadge.className = `master-hole-badge ${note.breathType}`;
+                    holeBadge.innerHTML = `<span class="m-hole-num">${note.hole}</span>번 홀 <span class="m-breath-txt">${note.breath}</span> <span class="m-breath-icon">${breathIcon}</span>`;
+                }
             }
 
-            // 4. 튜너 센트 정확도 배지 갱신
+            // 4. 튜너 센트 정확도 및 리코더 호흡 세기 배지 갱신
             const centsBadge = document.getElementById('master-cents-badge');
             const centsTxt = document.getElementById('m-cents-txt');
             if (centsBadge && centsTxt) {
                 if (typeof cents === 'number' && !isNaN(cents)) {
-                    const isAccurate = Math.abs(cents) < 8;
+                    const isAccurate = Math.abs(cents) < 10;
                     centsBadge.className = `master-cents-badge ${isAccurate ? 'in-tune' : 'off-tune'}`;
                     const sign = cents > 0 ? '+' : '';
-                    centsTxt.innerText = `${sign}${Math.round(cents)} cents ${isAccurate ? '(정확)' : ''}`;
+                    if (currentInstrumentMode === 'recorder') {
+                        if (isAccurate) {
+                            centsTxt.innerText = `✅ 호흡·음정 정확 (${sign}${Math.round(cents)}c)`;
+                        } else if (cents > 0) {
+                            centsTxt.innerText = `💨 조금 살살 불기 (${sign}${Math.round(cents)}c)`;
+                        } else {
+                            centsTxt.innerText = `💨 호흡 조금 더 (${sign}${Math.round(cents)}c)`;
+                        }
+                    } else {
+                        centsTxt.innerText = `${sign}${Math.round(cents)} cents ${isAccurate ? '(정확)' : ''}`;
+                    }
                     centsBadge.style.display = 'inline-flex';
                 } else {
                     centsBadge.className = 'master-cents-badge in-tune';
@@ -3943,7 +4294,9 @@
                 }
                 const guideTip = document.getElementById('master-guide-tip');
                 if (guideTip) {
-                    guideTip.innerText = '하모니카를 불거나 마시면 실시간 계이름과 오선보가 표시됩니다.';
+                    guideTip.innerText = currentInstrumentMode === 'recorder'
+                        ? '리코더를 불면 교과서 오선보 위치와 호흡 세기가 실시간 표시됩니다.'
+                        : '하모니카를 불거나 마시면 실시간 계이름과 오선보가 표시됩니다.';
                 }
                 const head = document.getElementById('master-notehead');
                 if (head) head.style.opacity = '0.75';
@@ -5316,9 +5669,8 @@
             }
         }
 
-        // 초기화
-        initHarmonicaRuler();
-        initMasterStaff();
+        // 초기화 (저장된 악기 모드 반영하되 첫 진입 시 인트로 화면에서 선택 가능)
+        selectInstrumentMode(currentInstrumentMode, false);
         switchOctaveTab(currentOctaveTab);
         if (isScaleCollapsed) {
             toggleScaleCollapse(true);
