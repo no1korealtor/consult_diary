@@ -2850,20 +2850,16 @@
                 pCtx.fillRect(0, 0, origW, origH);
                 pCtx.drawImage(sourceEl, 0, 0, origW, origH);
 
-                // 세로 방향 18% ~ 82% 구간을 스캔 (좌우 테두리 6%는 제본선/테두리 노이즈 방지를 위해 제외)
-                const scanStartY = Math.floor(origH * 0.18);
-                const scanEndY = Math.floor(origH * 0.82);
+                // 좌우 여백 및 제본선 노이즈 제외한 본문 영역 스캔
                 const scanX = Math.floor(origW * 0.06);
                 const scanW = Math.max(1, Math.floor(origW * 0.88));
-                const scanH = scanEndY - scanStartY;
+                const imgData = pCtx.getImageData(scanX, 0, scanW, origH).data;
 
-                const imgData = pCtx.getImageData(scanX, scanStartY, scanW, scanH).data;
-                const isRowBlank = new Uint8Array(scanH);
-
-                for (let r = 0; r < scanH; r++) {
+                // 행별 어두운 픽셀 밀도(dark ratio) 계산
+                const rowDarkRatio = new Float32Array(origH);
+                for (let r = 0; r < origH; r++) {
                     let darkPixels = 0;
                     const rowOffset = r * scanW * 4;
-                    // 가로 샘플링 (2px 간격으로 빠르게 스캔)
                     let sampled = 0;
                     for (let c = 0; c < scanW; c += 2) {
                         const idx = rowOffset + c * 4;
@@ -2871,24 +2867,117 @@
                         if (luma < 228) darkPixels++;
                         sampled++;
                     }
-                    // 어두운 픽셀(음표/글자/선)이 0.3% 미만이면 빈 줄(여백)로 판정
-                    isRowBlank[r] = (darkPixels / Math.max(1, sampled)) < 0.003 ? 1 : 0;
+                    rowDarkRatio[r] = darkPixels / Math.max(1, sampled);
                 }
 
-                // 연속된 빈 줄(가로 여백 밴드) 수집
+                // 1단계: 오선(Staff) 위치 정밀 감지 (가로로 긴 5줄 오선은 밀도가 보통 0.25 이상)
+                const isStaffRow = new Uint8Array(origH);
+                for (let r = 0; r < origH; r++) {
+                    if (rowDarkRatio[r] >= 0.25) isStaffRow[r] = 1;
+                }
+
+                const systems = [];
+                let staffStart = -1;
+                for (let r = 0; r < origH; r++) {
+                    if (isStaffRow[r]) {
+                        if (staffStart === -1) staffStart = r;
+                    } else {
+                        if (staffStart !== -1) {
+                            if (systems.length > 0 && (staffStart - systems[systems.length - 1].bottom) <= 15) {
+                                systems[systems.length - 1].bottom = r;
+                            } else {
+                                systems.push({ top: staffStart, bottom: r });
+                            }
+                            staffStart = -1;
+                        }
+                    }
+                }
+                if (staffStart !== -1) {
+                    if (systems.length > 0 && (staffStart - systems[systems.length - 1].bottom) <= 15) {
+                        systems[systems.length - 1].bottom = origH;
+                    } else {
+                        systems.push({ top: staffStart, bottom: origH });
+                    }
+                }
+
+                // 2단계: 오선이 2개 이상 감지된 경우, 각 단(System) 사이의 '가사 아래 ~ 다음 단 코드 위' 순수 여백을 정밀 타겟팅
+                if (systems.length >= 2) {
+                    const candidateSplits = [];
+                    for (let i = 0; i < systems.length - 1; i++) {
+                        const prevStaffB = systems[i].bottom;
+                        const nextStaffT = systems[i + 1].top;
+                        const pitch = nextStaffT - prevStaffB;
+                        if (pitch <= 10) continue;
+
+                        // 다음 단의 코드/마디번호는 오선 상단 25% 이내(최대 40px)에 위치
+                        const maxChordReach = Math.min(40, Math.max(12, Math.floor(pitch * 0.25)));
+                        const chordSearchStart = Math.max(prevStaffB, nextStaffT - maxChordReach);
+
+                        let chordTop = nextStaffT;
+                        for (let y = chordSearchStart; y < nextStaffT; y++) {
+                            if (rowDarkRatio[y] >= 0.003) {
+                                chordTop = y;
+                                break;
+                            }
+                        }
+
+                        // 코드 상단에서 위쪽으로 연속된 빈 여백(0.3% 미만) 탐색
+                        const gapBottom = chordTop;
+                        let gapTop = chordTop;
+                        while (gapTop > prevStaffB && rowDarkRatio[gapTop - 1] < 0.003) {
+                            gapTop--;
+                        }
+
+                        const gapH = gapBottom - gapTop;
+                        const mid = Math.floor((gapTop + gapBottom) / 2);
+                        candidateSplits.push({
+                            top: gapTop,
+                            bottom: gapBottom,
+                            center: mid,
+                            height: gapH
+                        });
+                    }
+
+                    if (candidateSplits.length > 0) {
+                        // 화면 중앙(50%)에서 가장 가까운 단 사이 분할점 선택
+                        let bestIdx = 0;
+                        let minDist = Infinity;
+                        for (let i = 0; i < candidateSplits.length; i++) {
+                            const dist = Math.abs(candidateSplits[i].center - halfH);
+                            if (dist < minDist) {
+                                minDist = dist;
+                                bestIdx = i;
+                            }
+                        }
+
+                        const targetIdx = Math.max(0, Math.min(candidateSplits.length - 1, bestIdx + shiftSteps));
+                        const chosen = candidateSplits[targetIdx];
+
+                        // 좌측 1단은 여백 하단(다음 단 코드 직전)까지 넉넉히 포함하여 윗단 가사가 100% 온전하게 보이도록 하고,
+                        // 우측 2단은 여백 상단(윗단 가사 끝 직후)부터 시작하여 코드/마디번호 위에 안전한 상단 여백을 확보
+                        return {
+                            leftEnd: Math.min(origH, chosen.bottom),
+                            rightStart: Math.max(0, chosen.top)
+                        };
+                    }
+                }
+
+                // 오선 감지가 어려운 악보(손글씨/특수악보 등)는 가로 여백 밴드 기반 폴백
+                const scanStartY = Math.floor(origH * 0.18);
+                const scanEndY = Math.floor(origH * 0.82);
                 const bands = [];
                 let bandStart = -1;
-                for (let r = 0; r < scanH; r++) {
-                    if (isRowBlank[r]) {
+                for (let r = scanStartY; r < scanEndY; r++) {
+                    if (rowDarkRatio[r] < 0.003) {
                         if (bandStart === -1) bandStart = r;
                     } else {
                         if (bandStart !== -1) {
                             const h = r - bandStart;
-                            if (h >= 3) {
+                            if (h >= 4) {
                                 bands.push({
-                                    top: scanStartY + bandStart,
-                                    bottom: scanStartY + r,
-                                    center: scanStartY + bandStart + Math.floor(h / 2),
+                                    top: bandStart,
+                                    bottom: r,
+                                    center: bandStart + Math.floor(h / 2),
                                     height: h
                                 });
                             }
@@ -2897,26 +2986,23 @@
                     }
                 }
                 if (bandStart !== -1) {
-                    const h = scanH - bandStart;
-                    if (h >= 3) {
+                    const h = scanEndY - bandStart;
+                    if (h >= 4) {
                         bands.push({
-                            top: scanStartY + bandStart,
-                            bottom: scanStartY + scanH,
-                            center: scanStartY + bandStart + Math.floor(h / 2),
+                            top: bandStart,
+                            bottom: scanEndY,
+                            center: bandStart + Math.floor(h / 2),
                             height: h
                         });
                     }
                 }
 
                 if (bands.length > 0) {
-                    // 단(System)과 단 사이의 큰 여백은 오선-가사 사이의 좁은 여백보다 훨씬 넓음
-                    // 상위 밴드(최대 높이의 45% 이상이거나 전체 높이의 1.2% 이상인 밴드)만 '단 사이 여백'으로 선별
                     const maxBandH = Math.max(...bands.map(b => b.height));
                     const minSystemGapH = Math.max(4, Math.min(Math.floor(maxBandH * 0.45), Math.floor(origH * 0.015)));
                     const majorBands = bands.filter(b => b.height >= minSystemGapH);
                     const candidates = majorBands.length > 0 ? majorBands : bands;
 
-                    // 50% 중앙에서 가장 가까운 단 사이 여백 찾기
                     let bestIdx = 0;
                     let minDist = Infinity;
                     for (let i = 0; i < candidates.length; i++) {
@@ -2927,22 +3013,18 @@
                         }
                     }
 
-                    // 사용자가 ▲/▼ 버튼으로 조정한 경우 이전/다음 단 사이 여백으로 이동
                     const targetIdx = Math.max(0, Math.min(candidates.length - 1, bestIdx + shiftSteps));
                     const chosen = candidates[targetIdx];
-
-                    // 좌측(1단)은 여백 하단까지 포함하여 윗단 가사가 절대 잘리지 않게 하고,
-                    // 우측(2단)은 여백 상단부터 시작하여 아랫단 코드/마디번호가 절대 잘리지 않게 함
                     return {
                         leftEnd: chosen.bottom,
                         rightStart: chosen.top
                     };
                 }
             } catch (e) {
-                console.warn("Smart score split fallback:", e);
+                console.warn('Smart score split fallback:', e);
             }
 
-            // 여백 탐색 실패 시 폴백
+            // 완전 실패 시 폴백
             const shiftPx = shiftSteps * Math.floor(origH * 0.08);
             const splitY = Math.max(Math.floor(origH * 0.2), Math.min(Math.floor(origH * 0.8), halfH + shiftPx));
             return {
