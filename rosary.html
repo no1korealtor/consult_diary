@@ -2966,6 +2966,257 @@ input:checked + .toggle-slider:before {
   flex-shrink: 0;
 }
 
+/* ===================================================
+   15. 십자가 친구(親吻) 성스러운 시작 오버레이
+   =================================================== */
+.crucifix-kiss-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: radial-gradient(circle at 50% 38%, rgba(20, 28, 52, 0.98) 0%, rgba(9, 13, 26, 0.99) 70%, #050811 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: scale(0.97);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: calc(var(--safe-top) + 16px) 20px calc(var(--safe-bottom) + 16px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.crucifix-kiss-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: scale(1);
+}
+
+.crucifix-kiss-overlay.fade-out {
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+  pointer-events: none;
+}
+
+.crucifix-kiss-container {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 85vh;
+  margin: auto;
+  text-align: center;
+}
+
+/* 헤더 구절 */
+.crucifix-kiss-header {
+  margin-bottom: 12px;
+  animation: kissFadeSlideDown 0.6s ease-out;
+}
+
+.crucifix-kiss-latin {
+  font-family: 'Cinzel', serif;
+  font-size: 0.76rem;
+  letter-spacing: 1.5px;
+  color: var(--gold-light, #FDE68A);
+  opacity: 0.85;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.crucifix-kiss-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.3px;
+  margin: 0 0 6px;
+  text-shadow: 0 2px 10px rgba(245, 158, 11, 0.25);
+}
+
+.crucifix-kiss-desc {
+  font-size: 0.88rem;
+  color: rgba(226, 232, 240, 0.85);
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* 성스러운 십자가 비주얼 */
+.crucifix-kiss-visual {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  animation: kissCrossFloat 4s ease-in-out infinite;
+  transition: transform 0.18s ease;
+}
+
+.crucifix-kiss-visual:active {
+  transform: scale(0.96);
+}
+
+/* 후광 효과 */
+.crucifix-halo-pulse {
+  position: absolute;
+  top: 36%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.45) 0%, rgba(217, 119, 6, 0.15) 55%, transparent 72%);
+  filter: blur(14px);
+  pointer-events: none;
+  animation: kissHaloBreath 3s ease-in-out infinite alternate;
+}
+
+.crucifix-halo-outer {
+  position: absolute;
+  top: 36%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 270px;
+  height: 270px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(254, 243, 199, 0.18) 0%, rgba(245, 158, 11, 0.08) 50%, transparent 70%);
+  filter: blur(24px);
+  pointer-events: none;
+}
+
+.crucifix-svg {
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.65)) drop-shadow(0 0 16px rgba(245, 158, 11, 0.35));
+  max-height: 350px;
+  transition: filter 0.3s ease;
+}
+
+.crucifix-kiss-visual:hover .crucifix-svg {
+  filter: drop-shadow(0 16px 32px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 24px rgba(245, 158, 11, 0.6));
+}
+
+/* 터치 파동 (Ripple Effect) */
+.crucifix-ripple-container {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.kiss-ripple-wave {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(253, 224, 71, 0.7) 35%, rgba(245, 158, 11, 0.35) 60%, transparent 75%);
+  pointer-events: none;
+  animation: kissRippleExpand 0.65s cubic-bezier(0.12, 0.8, 0.32, 1) forwards;
+}
+
+/* 하단 푸터 */
+.crucifix-kiss-footer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  animation: kissFadeSlideUp 0.6s ease-out;
+}
+
+.crucifix-touch-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.38);
+  border-radius: 9999px;
+  color: var(--gold-light, #FDE68A);
+  font-size: 0.86rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  animation: kissPillPulse 2.5s ease-in-out infinite;
+}
+
+.crucifix-touch-icon {
+  font-size: 1rem;
+}
+
+.crucifix-skip-btn {
+  background: none;
+  border: none;
+  color: rgba(226, 232, 240, 0.6);
+  font-size: 0.8rem;
+  padding: 8px 16px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.crucifix-skip-btn:hover {
+  color: #FFFFFF;
+}
+
+/* 애니메이션 키프레임 */
+@keyframes kissHaloBreath {
+  0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) scale(1.12); opacity: 1; }
+}
+
+@keyframes kissCrossFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes kissRippleExpand {
+  0% {
+    width: 20px;
+    height: 20px;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.2);
+  }
+  100% {
+    width: 380px;
+    height: 380px;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes kissPillPulse {
+  0%, 100% {
+    transform: scale(1);
+    border-color: rgba(245, 158, 11, 0.38);
+  }
+  50% {
+    transform: scale(1.02);
+    border-color: rgba(245, 158, 11, 0.75);
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.28);
+  }
+}
+
+@keyframes kissFadeSlideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes kissFadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 
 
 
@@ -3931,6 +4182,148 @@ input:checked + .toggle-slider:before {
       <div class="toast-pill-right">
         <button id="btnToastInstall" class="toast-pill-cta">추가</button>
         <button id="btnToastDismiss" class="toast-pill-close" aria-label="닫기">✕</button>
+      </div>
+    </div>
+
+    <!-- ==============================================
+         십자가 친구(親吻, 입맞춤) 성스러운 시작 오버레이
+         ============================================== -->
+    <div id="crucifixKissOverlay" class="crucifix-kiss-overlay" style="display: none;" role="dialog" aria-modal="true" aria-label="십자가에 친구">
+      <div class="crucifix-kiss-container">
+        <!-- 상단 성호경 안내 구절 -->
+        <div class="crucifix-kiss-header">
+          <div class="crucifix-kiss-latin">In nómine Patris, et Fílii, et Spíritus Sancti</div>
+          <h2 class="crucifix-kiss-title">십자가에 친구(親吻)합니다</h2>
+          <p class="crucifix-kiss-desc">성호경을 바치며 주님의 거룩한 십자가에 입맞춥니다</p>
+        </div>
+
+        <!-- 성스러운 십자가 고상 비주얼 -->
+        <div class="crucifix-kiss-visual" id="crucifixKissTarget" tabindex="0" role="button" aria-label="십자가를 터치하여 친구하고 기도를 시작합니다">
+          <!-- 거룩한 천상 후광 방사 효과 -->
+          <div class="crucifix-halo-pulse"></div>
+          <div class="crucifix-halo-outer"></div>
+
+          <!-- 정밀 벡터 십자가 고상 SVG -->
+          <svg class="crucifix-svg" viewBox="0 0 240 360" width="230" height="345" aria-hidden="true">
+            <defs>
+              <!-- 십자가 원목 질감 그라데이션 -->
+              <linearGradient id="kissWoodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#3D1D09" />
+                <stop offset="35%" stop-color="#5C2C10" />
+                <stop offset="70%" stop-color="#2D1405" />
+                <stop offset="100%" stop-color="#1A0A02" />
+              </linearGradient>
+              <linearGradient id="kissWoodHGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#4A220B" />
+                <stop offset="50%" stop-color="#6E3514" />
+                <stop offset="100%" stop-color="#230E04" />
+              </linearGradient>
+              <!-- 황금 베벨 테두리 그라데이션 -->
+              <linearGradient id="kissGoldBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FFFBEB" />
+                <stop offset="35%" stop-color="#F59E0B" />
+                <stop offset="70%" stop-color="#B45309" />
+                <stop offset="100%" stop-color="#FDE68A" />
+              </linearGradient>
+              <!-- 예수님 성체/부조 앤틱 황동 그라데이션 -->
+              <linearGradient id="kissCorpusGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#FFFFFF" />
+                <stop offset="25%" stop-color="#FDE68A" />
+                <stop offset="55%" stop-color="#F59E0B" />
+                <stop offset="85%" stop-color="#B45309" />
+                <stop offset="100%" stop-color="#78350F" />
+              </linearGradient>
+              <!-- 천상 후광 블러 필터 -->
+              <filter id="kissGlowFilter" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="6" result="blur" />
+                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+              </filter>
+            </defs>
+
+            <!-- 1. 십자가 그림자 -->
+            <g opacity="0.35" transform="translate(4, 6)">
+              <rect x="108" y="26" width="24" height="308" rx="4" fill="#000" />
+              <rect x="36" y="86" width="168" height="24" rx="4" fill="#000" />
+            </g>
+
+            <!-- 2. 황금 베벨 테두리 (외곽 라인) -->
+            <rect x="106" y="24" width="28" height="312" rx="5" fill="none" stroke="url(#kissGoldBorder)" stroke-width="2" opacity="0.9" />
+            <rect x="34" y="84" width="172" height="28" rx="5" fill="none" stroke="url(#kissGoldBorder)" stroke-width="2" opacity="0.9" />
+
+            <!-- 3. 원목 본체 빔 (세로목 & 가로목) -->
+            <rect x="108" y="26" width="24" height="308" rx="4" fill="url(#kissWoodGrad)" />
+            <rect x="36" y="86" width="168" height="24" rx="4" fill="url(#kissWoodHGrad)" />
+
+            <!-- 나무 질감 하이라이트 라인 -->
+            <line x1="120" y1="28" x2="120" y2="332" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" />
+            <line x1="38" y1="98" x2="202" y2="98" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" />
+
+            <!-- 십자가 4단 끝 장식 메달리온/삼엽 장식 -->
+            <circle cx="120" cy="27" r="6" fill="url(#kissGoldBorder)" />
+            <circle cx="120" cy="333" r="6" fill="url(#kissGoldBorder)" />
+            <circle cx="37" cy="98" r="6" fill="url(#kissGoldBorder)" />
+            <circle cx="203" cy="98" r="6" fill="url(#kissGoldBorder)" />
+
+            <!-- 4. INRI 명패 -->
+            <g id="kissInriTitulus" transform="translate(107, 44)">
+              <rect x="0" y="0" width="26" height="14" rx="2" fill="#FDF6E2" stroke="url(#kissGoldBorder)" stroke-width="1" />
+              <text x="13" y="10.5" fill="#78350F" font-size="7" font-weight="900" font-family="'Cinzel', serif" text-anchor="middle" letter-spacing="1">INRI</text>
+            </g>
+
+            <!-- 5. 거룩한 예수님 머리 뒤 후광 (Halo nimbus) -->
+            <circle cx="120" cy="98" r="28" fill="none" stroke="url(#kissGoldBorder)" stroke-width="2.5" opacity="0.85" filter="url(#kissGlowFilter)" />
+            <circle cx="120" cy="98" r="22" fill="rgba(245, 158, 11, 0.12)" stroke="url(#kissGoldBorder)" stroke-width="1" stroke-dasharray="2,3" />
+
+            <!-- 6. 십자가에 달리신 예수님 (Corpus Christi) -->
+            <g id="kissCorpus" fill="url(#kissCorpusGrad)">
+              <!-- 머리 & 가시면류관 -->
+              <ellipse cx="120" cy="91" rx="8" ry="9.5" />
+              <!-- 기울어진 거룩한 얼굴 실루엣 -->
+              <path d="M120 83 C124 83 127 86 127 90 C127 94 124 98 120 100 C117 98 116 93 116 88 Z" opacity="0.9" />
+              <!-- 가시면류관 -->
+              <circle cx="120" cy="87" r="7.5" fill="none" stroke="#78350F" stroke-width="1.5" stroke-dasharray="3,2" />
+
+              <!-- 팔 (양 옆으로 펼치신 거룩한 손) -->
+              <!-- 왼팔 -->
+              <path d="M120 98 Q102 96 66 94 Q63 94 62 97 Q63 100 66 99 Q102 103 115 107 Z" />
+              <!-- 오른팔 -->
+              <path d="M120 98 Q138 96 174 94 Q177 94 178 97 Q177 100 174 99 Q138 103 125 107 Z" />
+              
+              <!-- 양손의 못 (못 자국) -->
+              <circle cx="65" cy="96" r="2" fill="#78350F" />
+              <circle cx="175" cy="96" r="2" fill="#78350F" />
+
+              <!-- 가슴 & 몸체 (Torso) -->
+              <path d="M115 104 C113 114 114 130 115 142 L125 142 C126 130 127 114 125 104 Z" />
+              <!-- 옆구리 상흔 빛 -->
+              <circle cx="123" cy="122" r="1.5" fill="#DC2626" opacity="0.8" />
+
+              <!-- 허리포 (Perizoma) -->
+              <path d="M112 140 C111 146 113 158 120 160 C127 158 129 146 128 140 C124 142 116 142 112 140 Z" fill="#FFFDF0" stroke="url(#kissGoldBorder)" stroke-width="0.8" />
+
+              <!-- 다리 -->
+              <path d="M116 158 C117 180 118 205 119 230 L121 230 C122 205 123 180 124 158 Z" />
+
+              <!-- 포개진 두 발과 못 -->
+              <ellipse cx="120" cy="233" rx="4.5" ry="6" />
+              <circle cx="120" cy="233" r="2" fill="#78350F" />
+            </g>
+          </svg>
+
+          <!-- 터치 파동 (Ripple) 동적 컨테이너 -->
+          <div class="crucifix-ripple-container" id="crucifixRippleContainer"></div>
+        </div>
+
+        <!-- 하단 친근한 행동 유도 가이드 -->
+        <div class="crucifix-kiss-footer">
+          <div class="crucifix-touch-pill">
+            <span class="crucifix-touch-icon">✨</span>
+            <span class="crucifix-touch-text">십자가를 터치하여 친구하고 기도를 시작하세요</span>
+          </div>
+          <button type="button" id="btnCrucifixSkip" class="crucifix-skip-btn">
+            건너뛰고 바로 시작
+          </button>
+        </div>
       </div>
     </div>
 
@@ -5078,6 +5471,12 @@ class RosaryApp {
       btnResumeConfirmRestart: document.getElementById("btnResumeConfirmRestart"),
       btnResumeConfirmCancel: document.getElementById("btnResumeConfirmCancel"),
 
+      // 십자가 친구(親吻) 오버레이
+      crucifixKissOverlay: document.getElementById("crucifixKissOverlay"),
+      crucifixKissTarget: document.getElementById("crucifixKissTarget"),
+      crucifixRippleContainer: document.getElementById("crucifixRippleContainer"),
+      btnCrucifixSkip: document.getElementById("btnCrucifixSkip"),
+
       // 기도 화면 헤더
       headerMysteryName: document.getElementById("headerMysteryName"),
       headerMysteryDay: document.getElementById("headerMysteryDay"),
@@ -5714,17 +6113,148 @@ class RosaryApp {
     this.openModal(this.dom.resumeConfirmModal);
   }
 
-  startPrayer() {
-    try {
-      this.clearProgress();
-      this.sessionCompletedDecades = new Set();
-      this.steps = this.buildCurrentSteps();
-      this.renderDecadeProgressPills();
-      this.switchView("prayer");
-      this.goToStep(0, true);
-    } catch (err) {
-      console.error("startPrayer error:", err);
-      this.switchView("prayer");
+  // 십자가에 친구(親吻) 성스러운 시작 연출 후 기도 화면 진입
+  startPrayer(skipKissOverlay = false) {
+    const proceed = () => {
+      try {
+        this.clearProgress();
+        this.sessionCompletedDecades = new Set();
+        this.steps = this.buildCurrentSteps();
+        this.renderDecadeProgressPills();
+        this.switchView("prayer");
+        this.goToStep(0, true);
+      } catch (err) {
+        console.error("startPrayer error:", err);
+        this.switchView("prayer");
+      }
+    };
+
+    if (skipKissOverlay || !this.dom.crucifixKissOverlay) {
+      proceed();
+    } else {
+      this.showCrucifixKissOverlay(proceed);
+    }
+  }
+
+  showCrucifixKissOverlay(onComplete) {
+    const overlay = this.dom.crucifixKissOverlay;
+    if (!overlay) {
+      if (onComplete) onComplete();
+      return;
+    }
+
+    // 언어 설정 반영
+    const isEn = this.settings.lang === "en";
+    const titleEl = overlay.querySelector(".crucifix-kiss-title");
+    const descEl = overlay.querySelector(".crucifix-kiss-desc");
+    const touchTextEl = overlay.querySelector(".crucifix-touch-text");
+    const skipBtn = overlay.querySelector(".crucifix-skip-btn");
+
+    if (titleEl) {
+      titleEl.textContent = isEn ? "Venerating the Holy Cross" : "십자가에 친구(親吻)합니다";
+    }
+    if (descEl) {
+      descEl.textContent = isEn 
+        ? "Making the Sign of the Cross and kissing our Lord's Holy Crucifix"
+        : "성호경을 바치며 주님의 거룩한 십자가에 입맞춥니다";
+    }
+    if (touchTextEl) {
+      touchTextEl.textContent = isEn
+        ? "Touch the Crucifix to venerate and begin prayer"
+        : "십자가를 터치하여 친구하고 기도를 시작하세요";
+    }
+    if (skipBtn) {
+      skipBtn.textContent = isEn ? "Skip & Start directly" : "건너뛰고 바로 시작";
+    }
+
+    // 오버레이 표시 초기화
+    overlay.classList.remove("fade-out");
+    overlay.style.display = "flex";
+    // DOM reflow 강제 후 애니메이션 클래스 추가
+    void overlay.offsetWidth;
+    overlay.classList.add("show");
+
+    let isHandled = false;
+
+    const finishOverlay = (e) => {
+      if (isHandled) return;
+      isHandled = true;
+
+      // 1. 햅틱 진동 (경건하고 묵직한 성스러운 3단 터치 피드백)
+      if (this.settings.hapticEnabled) {
+        this.triggerHaptic([30, 40, 50]);
+      }
+
+      // 2. 사운드 (천상의 맑은 장미 차임/종소리 화음)
+      if (this.settings.soundEnabled) {
+        this.playRoseChime();
+      }
+
+      // 3. 터치 지점 파동(Ripple) 효과 생성
+      if (this.dom.crucifixRippleContainer) {
+        const ripple = document.createElement("div");
+        ripple.className = "kiss-ripple-wave";
+
+        if (e && (e.clientX || (e.touches && e.touches[0]))) {
+          const clientX = e.clientX || e.touches[0].clientX;
+          const clientY = e.clientY || e.touches[0].clientY;
+          const rect = this.dom.crucifixKissTarget ? this.dom.crucifixKissTarget.getBoundingClientRect() : overlay.getBoundingClientRect();
+          ripple.style.left = `${clientX - rect.left}px`;
+          ripple.style.top = `${clientY - rect.top}px`;
+        } else {
+          ripple.style.left = "50%";
+          ripple.style.top = "50%";
+        }
+
+        this.dom.crucifixRippleContainer.appendChild(ripple);
+        setTimeout(() => {
+          if (ripple.parentNode) ripple.parentNode.removeChild(ripple);
+        }, 700);
+      }
+
+      // 4. 부드러운 페이드 아웃 전환
+      overlay.classList.add("fade-out");
+      setTimeout(() => {
+        overlay.classList.remove("show", "fade-out");
+        overlay.style.display = "none";
+        if (onComplete) onComplete();
+      }, 350);
+    };
+
+    // 타겟 또는 오버레이 전체 터치 시 발동
+    const clickHandler = (e) => {
+      e.stopPropagation();
+      finishOverlay(e);
+      cleanup();
+    };
+
+    const skipHandler = (e) => {
+      e.stopPropagation();
+      if (isHandled) return;
+      isHandled = true;
+      overlay.classList.remove("show");
+      overlay.style.display = "none";
+      if (onComplete) onComplete();
+      cleanup();
+    };
+
+    const cleanup = () => {
+      if (this.dom.crucifixKissTarget) {
+        this.dom.crucifixKissTarget.removeEventListener("click", clickHandler);
+      }
+      overlay.removeEventListener("click", clickHandler);
+      if (this.dom.btnCrucifixSkip) {
+        this.dom.btnCrucifixSkip.removeEventListener("click", skipHandler);
+      }
+    };
+
+    if (this.dom.crucifixKissTarget) {
+      this.dom.crucifixKissTarget.addEventListener("click", clickHandler, { once: true });
+    }
+    overlay.addEventListener("click", clickHandler, { once: true });
+
+    if (this.dom.btnCrucifixSkip) {
+      this.dom.btnCrucifixSkip.addEventListener("click", skipHandler, { once: true });
     }
   }
 
@@ -8350,10 +8880,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=24').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=25').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=24').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=25').catch(() => {});
         });
       });
 
@@ -8361,7 +8891,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v24' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v25' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
