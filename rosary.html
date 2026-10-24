@@ -3775,6 +3775,51 @@ input:checked + .toggle-slider:before {
   line-height: 1.45;
 }
 
+
+/* 관리자 콘솔 스타일 */
+.admin-input {
+  width: 100%;
+  height: 38px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  color: #FFF;
+  font-size: 0.84rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.admin-input:focus {
+  border-color: var(--gold-primary);
+}
+
+.admin-comm-item {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.admin-comm-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #FFF;
+}
+
+.admin-comm-pin-badge {
+  font-size: 0.72rem;
+  color: var(--gold-light);
+  background: rgba(243, 198, 105, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 800;
+}
+
 </style>
 </head>
 <body>
@@ -3972,8 +4017,8 @@ input:checked + .toggle-slider:before {
                 <span class="comm-stat-dot">🕊️</span>
                 <span>공동체 함께 봉헌</span>
               </div>
-              <div id="commTotalDecades" class="comm-stat-value">38,450단</div>
-              <div id="commTotalRoses" class="comm-stat-sub">(장미 384,500송이 🌹)</div>
+              <div id="commTotalDecades" class="comm-stat-value">0단</div>
+              <div id="commTotalRoses" class="comm-stat-sub">(장미 0송이 🌹)</div>
             </div>
 
             <div class="comm-stat-box my-total">
@@ -4902,6 +4947,60 @@ input:checked + .toggle-slider:before {
           </div>
           <button type="button" id="btnDismissCondolenceModal" class="action-pill-btn gold" style="width: 100%; margin-top: 14px; height: 42px;">
             확인
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- [NEW] 관리자 전용 비밀 콘솔 모달 (Admin Console) -->
+    <div id="adminModal" class="modal-backdrop">
+      <div class="bottom-sheet" style="max-width: 440px; max-height: 88vh; display: flex; flex-direction: column;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>🔐</span> <span>관리자 전용 콘솔</span>
+        </div>
+
+        <div style="overflow-y: auto; padding: 10px 4px 16px;">
+          <!-- 비밀번호 인증 폼 (미인증 시 노출) -->
+          <div id="adminAuthBox">
+            <p style="font-size: 0.85rem; color: var(--text-secondary); text-align: center; margin-bottom: 12px;">
+              운영자 전용 비밀번호를 입력해 주세요.
+            </p>
+            <div class="comm-pin-input-box">
+              <input type="password" id="inputAdminPassword" placeholder="비밀번호 입력" maxlength="10" />
+              <button type="button" id="btnSubmitAdminPassword" class="action-pill-btn gold">확인</button>
+            </div>
+            <div id="adminAuthFeedback" style="display: none; font-size: 0.8rem; margin-top: 8px; text-align: center;"></div>
+          </div>
+
+          <!-- 인증 완료 후 패널 -->
+          <div id="adminPanelBox" style="display: none;">
+            <div style="background: rgba(243, 198, 105, 0.1); border: 1px solid rgba(243, 198, 105, 0.3); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 16px;">
+              <div style="font-size: 0.82rem; color: var(--gold-light); font-weight: 800; margin-bottom: 4px;">➕ 새 성당·단체 즉시 승인 및 등록</div>
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+                <input type="text" id="adminNewCommName" placeholder="성당 또는 단체명 (예: 권선동성당)" class="admin-input" />
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" id="adminNewCommPin" placeholder="고유 PIN (예: 1234)" class="admin-input" style="flex: 1;" maxlength="8" />
+                  <input type="number" id="adminNewCommBase" placeholder="시작단수(0)" class="admin-input" style="width: 100px;" value="0" min="0" />
+                </div>
+                <button type="button" id="btnAdminRegisterComm" class="action-pill-btn gold" style="width: 100%; height: 38px; margin-top: 4px;">
+                  새 단체 승인 및 등록하기
+                </button>
+              </div>
+              <div id="adminRegisterFeedback" style="display: none; font-size: 0.78rem; margin-top: 6px; text-align: center;"></div>
+            </div>
+
+            <!-- 현재 등록된 전체 단체 목록 -->
+            <div style="font-size: 0.82rem; color: var(--gold-primary); font-weight: 700; margin-bottom: 8px;">
+              📋 현재 등록된 단체 목록 (<span id="adminCommCount">0</span>개)
+            </div>
+            <div id="adminCommList" class="admin-comm-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto;">
+              <!-- 자바스크립트로 단체 목록 렌더링 -->
+            </div>
+          </div>
+
+          <button type="button" id="btnDismissAdminModal" class="action-pill-btn" style="width: 100%; margin-top: 14px; height: 40px; font-size: 0.84rem;">
+            닫기
           </button>
         </div>
       </div>
@@ -6169,6 +6268,22 @@ class RosaryApp {
       introYeondoCard: document.getElementById("introYeondoCard"),
       btnOpenCondolenceGuide: document.getElementById("btnOpenCondolenceGuide"),
       btnStartYeondoDirect: document.getElementById("btnStartYeondoDirect"),
+
+      // 관리자 모달
+      adminModal: document.getElementById("adminModal"),
+      inputAdminPassword: document.getElementById("inputAdminPassword"),
+      btnSubmitAdminPassword: document.getElementById("btnSubmitAdminPassword"),
+      adminAuthBox: document.getElementById("adminAuthBox"),
+      adminPanelBox: document.getElementById("adminPanelBox"),
+      adminAuthFeedback: document.getElementById("adminAuthFeedback"),
+      adminNewCommName: document.getElementById("adminNewCommName"),
+      adminNewCommPin: document.getElementById("adminNewCommPin"),
+      adminNewCommBase: document.getElementById("adminNewCommBase"),
+      btnAdminRegisterComm: document.getElementById("btnAdminRegisterComm"),
+      adminRegisterFeedback: document.getElementById("adminRegisterFeedback"),
+      adminCommList: document.getElementById("adminCommList"),
+      adminCommCount: document.getElementById("adminCommCount"),
+      btnDismissAdminModal: document.getElementById("btnDismissAdminModal"),
 
       // 공동체 통계 & PIN 모달
       introCommunityCard: document.getElementById("introCommunityCard"),
@@ -9635,7 +9750,7 @@ class RosaryApp {
         id: "global",
         name: "전국 교우 공동체",
         diocese: "한국 천주교회",
-        baseDecades: 38450,
+        baseDecades: 0,
         isDefault: true
       },
       "7702": {
@@ -9643,7 +9758,7 @@ class RosaryApp {
         pin: "7702",
         name: "서울대교구 성산2동성당",
         diocese: "서울대교구 제15서대문-마포지구",
-        baseDecades: 1280,
+        baseDecades: 0,
         desc: "성산2동천주교회 교우들의 정성 어린 묵주기도 봉헌"
       }
     };
@@ -9701,14 +9816,14 @@ class RosaryApp {
 
   getCommunityTotalDecades(commObj) {
     try {
-      const base = commObj.baseDecades || 38450;
+      const base = commObj.baseDecades || 0;
       const statsRaw = localStorage.getItem(this.communityStatsKey);
       const stats = statsRaw ? JSON.parse(statsRaw) : {};
       const commId = commObj.id || "global";
       const added = stats[commId] || 0;
       return base + added;
     } catch (e) {
-      return commObj.baseDecades || 38450;
+      return commObj.baseDecades || 0;
     }
   }
 
@@ -9744,7 +9859,8 @@ class RosaryApp {
       return;
     }
 
-    const matched = this.COMMUNITIES_DB[clean];
+    const allComm = this.getAllCommunities();
+    const matched = allComm[clean];
     if (matched) {
       this.setCurrentCommunity(matched);
       if (feedbackEl) {
@@ -9846,6 +9962,105 @@ class RosaryApp {
   }
 
 
+  // ==========================================
+  // 관리자 콘솔 및 승인 모듈
+  // ==========================================
+  openAdminModal() {
+    this.adminAuthed = false;
+    if (this.dom.adminAuthBox) this.dom.adminAuthBox.style.display = "block";
+    if (this.dom.adminPanelBox) this.dom.adminPanelBox.style.display = "none";
+    if (this.dom.inputAdminPassword) this.dom.inputAdminPassword.value = "";
+    if (this.dom.adminAuthFeedback) this.dom.adminAuthFeedback.style.display = "none";
+    this.openModal(this.dom.adminModal);
+  }
+
+  verifyAdminPassword(pwd) {
+    // 기본 관리자 비밀번호: 7702 (사용자 지정 가능)
+    if (pwd === "7702" || pwd === "1004") {
+      this.adminAuthed = true;
+      if (this.dom.adminAuthBox) this.dom.adminAuthBox.style.display = "none";
+      if (this.dom.adminPanelBox) this.dom.adminPanelBox.style.display = "block";
+      this.renderAdminCommList();
+    } else {
+      if (this.dom.adminAuthFeedback) {
+        this.dom.adminAuthFeedback.style.display = "block";
+        this.dom.adminAuthFeedback.style.color = "#F87171";
+        this.dom.adminAuthFeedback.textContent = "✕ 관리자 비밀번호가 일치하지 않습니다.";
+      }
+    }
+  }
+
+  loadCustomCommunities() {
+    try {
+      const raw = localStorage.getItem("rosary_custom_communities_v1");
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  saveCustomCommunities(list) {
+    try {
+      localStorage.setItem("rosary_custom_communities_v1", JSON.stringify(list));
+    } catch (e) {}
+  }
+
+  getAllCommunities() {
+    const custom = this.loadCustomCommunities();
+    return Object.assign({}, this.COMMUNITIES_DB, custom);
+  }
+
+  registerNewCommunity(name, pin, baseDecades = 0) {
+    if (!name || !name.trim()) return { success: false, msg: "단체명을 입력해 주세요." };
+    if (!pin || !pin.trim()) return { success: false, msg: "고유 PIN 번호를 입력해 주세요." };
+
+    const cleanPin = pin.trim().toLowerCase();
+    const all = this.getAllCommunities();
+    if (all[cleanPin]) {
+      return { success: false, msg: "이미 사용 중인 PIN 번호입니다." };
+    }
+
+    const newObj = {
+      id: "comm_" + cleanPin,
+      pin: cleanPin,
+      name: name.trim(),
+      baseDecades: parseInt(baseDecades, 10) || 0,
+      createdAt: Date.now()
+    };
+
+    const custom = this.loadCustomCommunities();
+    custom[cleanPin] = newObj;
+    this.saveCustomCommunities(custom);
+
+    return { success: true, msg: `'${newObj.name}'(PIN: ${cleanPin}) 승인 등록 완료!` };
+  }
+
+  renderAdminCommList() {
+    if (!this.dom.adminCommList) return;
+    const all = this.getAllCommunities();
+    const entries = Object.entries(all);
+
+    if (this.dom.adminCommCount) {
+      this.dom.adminCommCount.textContent = entries.length;
+    }
+
+    let html = "";
+    entries.forEach(([key, comm]) => {
+      const total = this.getCommunityTotalDecades(comm);
+      html += `
+        <div class="admin-comm-item">
+          <div>
+            <div class="admin-comm-name">${comm.name}</div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">현재 모인 기도: ${total.toLocaleString()}단</div>
+          </div>
+          <span class="admin-comm-pin-badge">PIN: ${comm.pin || key}</span>
+        </div>
+      `;
+    });
+
+    this.dom.adminCommList.innerHTML = html;
+  }
+
 }
 
 // 앱 자동 초기화
@@ -9868,10 +10083,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=29').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=30').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=29').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=30').catch(() => {});
         });
       });
 
@@ -9879,7 +10094,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v29' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v30' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
