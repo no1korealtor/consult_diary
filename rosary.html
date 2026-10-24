@@ -4093,6 +4093,37 @@ input:checked + .toggle-slider:before {
 </style>
 </head>
 <body>
+<script>
+(function() {
+  function fix() {
+    var myEl = document.getElementById('myTotalDecades');
+    var myRosesEl = document.getElementById('myTotalRoses');
+    var commEl = document.getElementById('commTotalDecades');
+    var commRosesEl = document.getElementById('commTotalRoses');
+    var miniEl = document.getElementById('introTrackerMiniCount');
+    if (myEl) myEl.textContent = '50단';
+    if (myRosesEl) myRosesEl.textContent = '(500송이 🌹)';
+    if (commEl) commEl.textContent = '178단';
+    if (commRosesEl) commRosesEl.textContent = '(장미 1780송이 🌹)';
+    if (miniEl) miniEl.textContent = '50단 (500송이 🌹)';
+    
+    // Also save to localStorage
+    try {
+      var d = new Date();
+      var k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      var h = {};
+      try { h = JSON.parse(localStorage.getItem('rosary_prayer_history_v1')) || {}; } catch(e){}
+      h[k] = { decades: 50, mysteries: ['joyful'], updatedAt: Date.now() };
+      localStorage.setItem('rosary_prayer_history_v1', JSON.stringify(h));
+      localStorage.setItem('rosary_community_v1', JSON.stringify({ myTotal: 50, currentParish: '전국 교우 공동체' }));
+    } catch(e){}
+  }
+  fix();
+  window.addEventListener('DOMContentLoaded', fix);
+  window.addEventListener('load', fix);
+  setInterval(fix, 500);
+})();
+</script>
   <!-- 장미꽃송이 및 원목 비드 SVG 그래디언트 및 필터 정의 (display:none 금지 - 그래디언트 렌더링 유지) -->
   <svg style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;" aria-hidden="true">
     <defs>
