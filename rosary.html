@@ -10371,7 +10371,7 @@ class RosaryApp {
 
   verifyAdminPassword(pwd) {
     // 기본 관리자 비밀번호: 7702 (사용자 지정 가능)
-    if (pwd === "7702" || pwd === "1004") {
+    if (pwd === "1228" || pwd === "1004") {
       this.adminAuthed = true;
       if (this.dom.adminAuthBox) this.dom.adminAuthBox.style.display = "none";
       if (this.dom.adminPanelBox) this.dom.adminPanelBox.style.display = "block";
@@ -10610,10 +10610,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=36').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=37').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=36').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=37').catch(() => {});
         });
       });
 
@@ -10621,7 +10621,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v36' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v37' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
