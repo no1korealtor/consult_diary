@@ -6224,6 +6224,9 @@ class RosaryApp {
     this.selectedTrackerDate = this.getTodayStr();
     this.sessionCompletedDecades = new Set();
 
+    // 공동체 및 총 봉헌 단수 초기화
+    this.initCommunityStats();
+
     // 오늘 요일 신비
     this.todayMysteryKey = getTodayMysteryKey();
     this.currentMysteryKey = this.todayMysteryKey;
@@ -6552,6 +6555,9 @@ class RosaryApp {
 
     if (saveImmediate) {
       this.sessionCompletedDecades = new Set();
+
+    // 공동체 및 총 봉헌 단수 초기화
+    this.initCommunityStats();
       this.goToStep(0, true);
     }
   }
@@ -7025,6 +7031,9 @@ class RosaryApp {
       try {
         this.clearProgress();
         this.sessionCompletedDecades = new Set();
+
+    // 공동체 및 총 봉헌 단수 초기화
+    this.initCommunityStats();
         this.steps = this.buildCurrentSteps();
         this.renderDecadeProgressPills();
         this.switchView("prayer");
@@ -7188,6 +7197,9 @@ class RosaryApp {
         this.steps = this.buildCurrentSteps();
         this.renderDecadeProgressPills();
         this.sessionCompletedDecades = new Set();
+
+    // 공동체 및 총 봉헌 단수 초기화
+    this.initCommunityStats();
         for (let i = 0; i <= saved.stepIndex; i++) {
           const s = this.steps[i];
           if (s && s.decadeNum && s.beadType === "connector") {
@@ -7206,6 +7218,7 @@ class RosaryApp {
   }
 
   updateIntroView() {
+    this.renderCommunityStats();
     const isEn = this.settings.lang === "en";
     const now = new Date();
     const monthsKo = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
@@ -7979,6 +7992,9 @@ class RosaryApp {
     
     // 이어서 시작할 때 이미 완료했던 단은 세션에 등록하여 중복 누적 방지
     this.sessionCompletedDecades = new Set();
+
+    // 공동체 및 총 봉헌 단수 초기화
+    this.initCommunityStats();
     for (let i = 0; i <= saved.stepIndex; i++) {
       const s = this.steps[i];
       if (s && s.decadeNum && s.beadType === "connector") {
@@ -8011,6 +8027,9 @@ class RosaryApp {
 
     if (saveImmediate) {
       this.sessionCompletedDecades = new Set();
+
+    // 공동체 및 총 봉헌 단수 초기화
+    this.initCommunityStats();
       this.goToStep(0, true);
     }
   }
@@ -9026,6 +9045,9 @@ class RosaryApp {
       restartBtn.addEventListener("click", () => {
         this.clearProgress();
         this.sessionCompletedDecades = new Set();
+
+    // 공동체 및 총 봉헌 단수 초기화
+    this.initCommunityStats();
         this.setMystery(this.todayMysteryKey, false);
         this.goToStep(0);
         this.closeModals();
@@ -9039,6 +9061,9 @@ class RosaryApp {
         if (this.dom.completionModal) this.dom.completionModal.classList.remove("show");
         this.clearProgress();
         this.sessionCompletedDecades = new Set();
+
+    // 공동체 및 총 봉헌 단수 초기화
+    this.initCommunityStats();
         this.switchView("intro");
       });
     }
@@ -10083,10 +10108,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=30').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=31').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=30').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=31').catch(() => {});
         });
       });
 
@@ -10094,7 +10119,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v30' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v31' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
