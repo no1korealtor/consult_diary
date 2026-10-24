@@ -1,3 +1,3 @@
 @echo off
-python run_deploy.py
+python overwrite_manifest.py
 pause
