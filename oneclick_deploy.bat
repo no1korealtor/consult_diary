@@ -1,3 +1,3 @@
 @echo off
-python overwrite_manifest.py
+python fix_calendar.py
 pause
