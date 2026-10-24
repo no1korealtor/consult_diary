@@ -4701,37 +4701,6 @@ input:checked + .toggle-slider:before {
             <input type="text" id="deceasedNameInput" placeholder="예: 요셉, 마리아" maxlength="15" />
           </div>
 
-          <!-- [NEW REAL AUDIO] 가톨릭 연도 실제 육성 합송 음원 플레이어 -->
-          <div class="yeondo-real-audio-card">
-            <div class="yeondo-audio-header">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 1.2rem;">🎧</span>
-                <div>
-                  <div style="font-size: 0.88rem; font-weight: 700; color: #FFF;">가톨릭 연도 실제 육성 합송 듣기</div>
-                  <div style="font-size: 0.72rem; color: #94A3B8;">한국 천주교 전통 가락 (선창과 후창 합송)</div>
-                </div>
-              </div>
-              <span class="intro-today-badge yeondo-badge" style="font-size: 0.7rem; padding: 2px 7px;">실제 음원</span>
-            </div>
-
-            <!-- HTML5 네이티브 오디오 플레이어 (모든 스마트폰 100% 호환, 끊김 없음) -->
-            <div class="yeondo-player-box" style="margin-top: 10px;">
-              <audio id="yeondoNativeAudio" controls preload="none" style="width: 100%; height: 42px; border-radius: 8px; outline: none;">
-                <!-- 공인 천주교 연도 실황 음원 스트림 -->
-                <source src="https://ia800109.us.archive.org/31/items/catholic-korean-yeondo/catholic_yeondo_stream.mp3" type="audio/mp3">
-                브라우저가 오디오 재생을 지원하지 않습니다.
-              </audio>
-            </div>
-
-            <!-- 공식 cpbc 가톨릭 평화방송 연도 영상/음원 원터치 바로듣기 보조 링크 -->
-            <div class="yeondo-audio-external-row" style="display: flex; gap: 8px; margin-top: 8px;">
-              <a href="https://www.youtube.com/results?search_query=%EA%B0%80%ED%86%A8%EB%A6%AD+%EC%97%B0%EB%8F%84+%EC%8B%A4%ED%99%A9" 
-                 target="_blank" rel="noopener noreferrer" class="yeondo-ext-audio-btn">
-                <span>📺 cpbc 공식 연도 실황 전체 듣기 ❯</span>
-              </a>
-            </div>
-          </div>
-
           <!-- 연도 기도문 본문 -->
           <div id="yeondoContentContainer" class="yeondo-content-container">
             <!-- 자바스크립트로 연도문 전체 정갈하게 렌더링 -->
@@ -9288,14 +9257,12 @@ class RosaryApp {
     }
 if (this.dom.btnYeondoBackToIntro) {
       this.dom.btnYeondoBackToIntro.addEventListener("click", () => {
-        this.stopYeondoAudio();
-        this.switchView("intro");
+                this.switchView("intro");
       });
     }
     if (this.dom.btnFinishYeondo) {
       this.dom.btnFinishYeondo.addEventListener("click", () => {
-        this.stopYeondoAudio();
-        this.switchView("intro");
+                this.switchView("intro");
       });
     }
     if (this.dom.btnYeondoCondolenceTab) {
@@ -10442,21 +10409,7 @@ if (this.dom.btnYeondoBackToIntro) {
   // 가톨릭 연도 & 조문 예절 렌더링 모듈
   // ==========================================
   
-  // ==========================================
-  // [NEW] 가톨릭 연도 실제 음원 플레이어 관리
-  // ==========================================
-  initYeondoAudio() {
-    this.yeondoNativeAudio = document.getElementById("yeondoNativeAudio");
-  }
 
-  stopYeondoAudio() {
-    try {
-      const audioEl = document.getElementById("yeondoNativeAudio");
-      if (audioEl && !audioEl.paused) {
-        audioEl.pause();
-      }
-    } catch (e) {}
-  }
 
   renderYeondoPrayer() {
     if (!this.dom.yeondoContentContainer) return;
@@ -10792,10 +10745,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=41').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=42').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=41').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=42').catch(() => {});
         });
       });
 
@@ -10803,7 +10756,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v41' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v42' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
