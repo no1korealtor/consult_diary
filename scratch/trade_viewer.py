@@ -40,29 +40,370 @@ def format_member_name(name):
 KAKAO_API_KEY = "133155e52871811db4337080ae0a2d13"
 GOV_API_KEY = "88ec4e85897c086c4c9438db67c35f2bc10d730913b9ba6be67a9ea755e70770"
 CURRENT_EXPANSION_MODE = "none"
+
+GLOBAL_WOLSE_MULTIPLIER = 100
+GLOBAL_CONVERSION_RATE = 12.0
+
+def update_global_wolse_multiplier(jeonses, wolses):
+    global GLOBAL_WOLSE_MULTIPLIER, GLOBAL_CONVERSION_RATE
+    jeonse_deposits = []
+    for item in jeonses:
+        d = item.get("deposit")
+        if d:
+            if isinstance(d, str):
+                try: d = int(d.replace(",", "").strip())
+                except: d = 0
+            if d > 0:
+                jeonse_deposits.append(d)
+                
+    wolse_deposits = []
+    wolse_rents = []
+    for item in wolses:
+        d = item.get("deposit")
+        r = item.get("monthlyRent") or item.get("monthly")
+        if d:
+            if isinstance(d, str):
+                try: d = int(d.replace(",", "").strip())
+                except: d = 0
+        else:
+            d = 0
+        if r:
+            if isinstance(r, str):
+                try: r = int(r.replace(",", "").strip())
+                except: r = 0
+        if r and r > 0:
+            wolse_deposits.append(d)
+            wolse_rents.append(r)
+            
+    if not jeonse_deposits or not wolse_rents:
+        GLOBAL_CONVERSION_RATE = 12.0
+        GLOBAL_WOLSE_MULTIPLIER = 100
+        return
+
+    avg_j_dep = sum(jeonse_deposits) / len(jeonse_deposits)
+    avg_w_dep = sum(wolse_deposits) / len(wolse_deposits)
+    avg_w_mon = sum(wolse_rents) / len(wolse_rents)
+    
+    if avg_j_dep <= avg_w_dep or avg_w_mon == 0:
+        GLOBAL_CONVERSION_RATE = 12.0
+        GLOBAL_WOLSE_MULTIPLIER = 100
+        return
+        
+    annual_rent = avg_w_mon * 12
+    deposit_diff = avg_j_dep - avg_w_dep
+    rate = (annual_rent / deposit_diff) * 100
+    
+    if rate < 3.0: rate = 3.0
+    if rate > 12.0: rate = 12.0
+    
+    GLOBAL_CONVERSION_RATE = round(rate, 2)
+    GLOBAL_WOLSE_MULTIPLIER = int(round((12 / GLOBAL_CONVERSION_RATE) * 100))
+
+def clean_apartment_name(name):
+    """
+    아파트 단지명에서 개별 동 번호(예: '102동', '제102동', 'A동', '제1동')를 제거하여
+    단지 전체 명칭(예: '건영 월드컵 아파트')으로 정제합니다.
+    """
+    if not name:
+        return ""
+    cleaned = str(name).strip()
+    cleaned = re.sub(r'\s*(?:제\s*)?[0-9A-Za-z가-힣]{1,4}\s*동\s*$', '', cleaned)
+    return cleaned.strip() or name.strip()
+
 def match_dong(target_dong, record_dong):
-    if not target_dong or record_dong:
+    if not target_dong or not record_dong:
         return False
     td = re.sub("\\D", "", str(target_dong)); rd = re.sub("\\D", "", str(record_dong))
     if td and rd and td == rd:
         return True
-    t_clean = str(target_dong).strip().replace("동", "").lower()
+    t_clean = re.sub(r"동$", "", str(target_dong).strip()).lower()
+    r_clean = re.sub(r"동$", "", str(record_dong).strip()).lower()
     
-    r_clean = str(record_dong).strip().replace("동", "").lower()
-    if not t_clean == r_clean:
-        t_clean == r_clean
-        if not t_clean in r_clean:
-            t_clean in r_clean
+    if t_clean == r_clean:
+        return True
+    if t_clean in r_clean or r_clean in t_clean:
+        return True
+    return False
+
+def format_assessed_price(val):
+    if not val:
+        return "정보없음"
+    if val >= 100_000_000:
+        eok = val // 100_000_000
+        man = val % 100_000_000 // 10_000
+        if man > 0:
+            return f"{eok}억 {man:,}만원"
+        return f"{eok}억원"
+    man = val // 10_000
+    return f"{man:,}만원"
+
+def get_property_comprehensive_overview(sigunguCd=None, bjdongCd=None, bun=None, ji=None, address_str=""):
+    """
+    특정 지번 주소에 대해 정부 공적장부(건축물대장 + VWorld 토지이용/공시지가)를
+    실시간으로 조회하여 종합 개요 딕셔너리를 구성합니다.
+    """
+    if not (sigunguCd and bjdongCd and bun is not None):
+        if address_str:
+            clean_addr = address_str.strip()
+            addr_info = get_kakao_address_info(clean_addr)
+            if not addr_info:
+                # 괄호 제거 후 재시도
+                c_addr = re.sub(r"\(.*?\)", "", clean_addr).strip()
+                addr_info = get_kakao_address_info(c_addr)
+            if addr_info:
+                if not sigunguCd: sigunguCd = addr_info.get("sigunguCd")
+                if not bjdongCd: bjdongCd = addr_info.get("bjdongCd")
+                if bun is None or str(bun).strip() == "": bun = addr_info.get("bun")
+                if ji is None: ji = addr_info.get("ji", "0")
+                
+    if not (sigunguCd and bjdongCd and bun is not None):
+        return None
+        
+    bun_pad = str(bun).zfill(4)
+    ji_pad = str(ji or 0).zfill(4)
+    pnu = f"{sigunguCd}{bjdongCd}1{bun_pad}{ji_pad}"
+    VWORLD_KEY = "80194C85-0EE3-3220-A3C1-3268AD8756B9"
     
-    return r_clean in t_clean
+    overview = {
+        "has_data": False,
+        "address": address_str,
+        "plat_area_m2": 0.0,
+        "plat_area_py": 0.0,
+        "plat_area_str": "-",
+        "arch_area_m2": 0.0,
+        "arch_area_py": 0.0,
+        "arch_area_str": "-",
+        "tot_area_m2": 0.0,
+        "tot_area_py": 0.0,
+        "tot_area_str": "-",
+        "bc_rat_str": "-",
+        "vl_rat_str": "-",
+        "land_use_zone": "-",
+        "land_category": "-",
+        "official_land_price_str": "-",
+        "main_purpose": "-",
+        "detail_purpose": "-",
+        "structure": "-",
+        "floors_str": "-",
+        "households_str": "-",
+        "parking_str": "-",
+        "apr_date_str": "-",
+        "viol_status_str": "해당 없음 (정상 건축물)",
+        "reg_zones_str": "-"
+    }
+    
+    from get_building_info import get_building_data
+    bld_data = None
+    try:
+        bld_data = get_building_data(sigunguCd, bjdongCd, bun_pad, ji_pad)
+    except:
+        bld_data = None
+        
+    land_info = None
+    land_price = None
+    land_reg = None
+    try:
+        from building_viewer import get_vworld_land_info, get_vworld_land_price, get_vworld_land_use_info
+        land_info = get_vworld_land_info(VWORLD_KEY, pnu)
+        land_price = get_vworld_land_price(VWORLD_KEY, pnu)
+        land_reg = get_vworld_land_use_info(VWORLD_KEY, pnu, sigunguCd)
+    except:
+        pass
+        
+    if not bld_data and not land_info:
+        return None
+        
+    overview["has_data"] = True
+    
+    p_area = 0.0
+    if bld_data and bld_data.get("platArea"):
+        try: p_area = float(bld_data["platArea"])
+        except: pass
+    if p_area <= 0 and land_info and land_info.get("lndpclAr"):
+        try: p_area = float(land_info["lndpclAr"])
+        except: pass
+        
+    if p_area > 0:
+        p_py = p_area * 0.3025
+        overview["plat_area_m2"] = p_area
+        overview["plat_area_py"] = p_py
+        overview["plat_area_str"] = f"{p_area:,.1f}㎡ (약 {p_py:,.1f}평)"
+        
+    a_area = 0.0
+    t_area = 0.0
+    if bld_data:
+        try: a_area = float(bld_data.get("archArea", 0) or 0)
+        except: pass
+        try: t_area = float(bld_data.get("totArea", 0) or 0)
+        except: pass
+        
+    if a_area > 0:
+        a_py = a_area * 0.3025
+        overview["arch_area_m2"] = a_area
+        overview["arch_area_py"] = a_py
+        overview["arch_area_str"] = f"{a_area:,.1f}㎡ (약 {a_py:,.1f}평)"
+        
+    if t_area > 0:
+        t_py = t_area * 0.3025
+        overview["tot_area_m2"] = t_area
+        overview["tot_area_py"] = t_py
+        overview["tot_area_str"] = f"{t_area:,.1f}㎡ (약 {t_py:,.1f}평)"
+        
+    bc_val = bld_data.get("bcRat", "") if bld_data else ""
+    vl_val = bld_data.get("vlRat", "") if bld_data else ""
+    if (not bc_val or float(bc_val or 0) == 0) and p_area > 0 and a_area > 0:
+        bc_val = f"{(a_area / p_area) * 100:.2f}"
+    if (not vl_val or float(vl_val or 0) == 0) and p_area > 0 and t_area > 0:
+        vl_val = f"{(t_area / p_area) * 100:.2f}"
+    overview["bc_rat_str"] = f"{float(bc_val):.2f}%" if (bc_val and float(bc_val or 0) > 0) else "-"
+    overview["vl_rat_str"] = f"{float(vl_val):.2f}%" if (vl_val and float(vl_val or 0) > 0) else "-"
+    
+    if land_info:
+        overview["land_use_zone"] = land_info.get("prposArea1Nm", "-")
+        overview["land_category"] = land_info.get("lndcgrCodeNm", "-")
+        
+    if land_price and land_price.get("price"):
+        lp = land_price["price"]
+        lp_py = lp / 0.3025
+        overview["official_land_price_str"] = f"{lp:,}원/㎡ (평당 {lp_py/10000:,.0f}만)"
+        
+    if bld_data:
+        purp = bld_data.get("purpose", "")
+        etc_p = bld_data.get("etcPurps", "")
+        overview["main_purpose"] = purp if purp else "-"
+        overview["detail_purpose"] = f"{purp} ({etc_p})" if etc_p and etc_p != purp else (purp or "-")
+        overview["structure"] = bld_data.get("strctCdNm", "-") or "-"
+        
+        g_flr = int(bld_data.get("grndFlrCnt", 0) or 0)
+        u_flr = int(bld_data.get("ugrndFlrCnt", 0) or 0)
+        if g_flr > 0 or u_flr > 0:
+            overview["floors_str"] = f"지상 {g_flr}층" + (f" / 지하 {u_flr}층" if u_flr > 0 else " (지하 없음)")
+        else:
+            overview["floors_str"] = "-"
+        
+        hh = int(bld_data.get("households", 0) or 0)
+        overview["households_str"] = f"총 {hh}세대(가구)" if hh > 0 else "-"
+        
+        pk = int(bld_data.get("totalParking", 0) or 0)
+        if pk > 0:
+            overview["parking_str"] = f"총 {pk:,}대 (자주식/기계식)"
+        else:
+            overview["parking_str"] = "-"
+        
+        apr = bld_data.get("useAprDay", "")
+        if apr and len(apr) == 8:
+            yr = int(apr[:4])
+            diff_yr = max(1, datetime.now().year - yr)
+            overview["apr_date_str"] = f"{apr[:4]}.{apr[4:6]}.{apr[6:8]} (준공 {diff_yr}년차)"
+        elif bld_data.get("aprYear"):
+            overview["apr_date_str"] = f"{bld_data.get('aprYear')}년 준공"
+            
+        viol = bld_data.get("violBldYn", "N")
+        if viol == "Y":
+            overview["viol_status_str"] = "⚠️ 위반건축물 등재"
+        else:
+            overview["viol_status_str"] = "해당 없음 (정상 건축물)"
+            
+    reg_parts = []
+    if land_reg:
+        if land_reg.get("moatown"): reg_parts.append(f"모아타운({land_reg.get('moatown_name') or '지정'})")
+        if land_reg.get("redev"): reg_parts.append(f"재개발/정비구역({land_reg.get('redev_name') or '구역'})")
+        if land_reg.get("permit"): reg_parts.append("토지거래허가구역")
+    overview["reg_zones_str"] = ", ".join(reg_parts) if reg_parts else "해당 없음 (일반 지역)"
+    
+    return overview
+
+def parse_money_input(text):
+    """
+    다양한 금액 입력 형태를 만원 단위 정수로 안전하게 변환합니다.
+    예: 50000 -> 50000, 50,000 -> 50000, 5억 -> 50000, 5.5억 -> 55000,
+        5억2000만 -> 52000, 16억 -> 160000, 150 -> 150, 150만 -> 150
+    """
+    if text is None:
+        return None
+    s = str(text).strip().replace(",", "").replace(" ", "").replace("원", "")
+    if not s:
+        return None
+    if s.isdigit():
+        return int(s)
+    
+    m_eok = re.match(r"^(\d+(?:\.\d+)?)억(?:(\d+)만?)?$", s)
+    if m_eok:
+        eok_part = float(m_eok.group(1)) * 10000
+        man_part = float(m_eok.group(2) or 0)
+        return int(round(eok_part + man_part))
+        
+    m_man = re.match(r"^(\d+)만$", s)
+    if m_man:
+        return int(m_man.group(1))
+        
+    m_float = re.match(r"^(\d+(?:\.\d+)?)$", s)
+    if m_float:
+        return int(round(float(m_float.group(1))))
+        
+    return None
+
+def extract_floor_from_string(text, unit_info=None):
+    """
+    호실명(ho_name), 입력 문자열 또는 전유부 정보로부터
+    실제 층수(정수, 지하는 음수)를 판별합니다.
+    """
+    if unit_info and unit_info.get("flrNo") is not None:
+        flr_raw = str(unit_info.get("flrNo")).strip()
+        try:
+            return int(flr_raw)
+        except ValueError:
+            pass
+        if "지하" in flr_raw or "B" in flr_raw.upper() or "-" in flr_raw:
+            digits = re.findall(r"\d+", flr_raw)
+            return -int(digits[0]) if digits else -1
+        else:
+            digits = re.findall(r"\d+", flr_raw)
+            if digits:
+                return int(digits[0])
+
+    s = str(text or "").strip()
+    if not s:
+        return None
+        
+    s_upper = s.upper().replace(" ", "")
+    if any(k in s_upper for k in ("지하", "반지하", "B")):
+        digits = re.findall(r"\d+", s_upper)
+        if digits:
+            num = int(digits[0])
+            if num >= 100:
+                flr = num // 100
+                return -flr
+            elif num > 0:
+                return -num
+            return -1
+        return -1
+        
+    if "층" in s_upper:
+        digits = re.findall(r"\d+", s_upper)
+        if digits:
+            return int(digits[0])
+            
+    digits = re.findall(r"\d+", s_upper)
+    if digits:
+        num = int(digits[0])
+        if num >= 100:
+            return num // 100
+        elif num > 0:
+            return num
+            
+    return None
+
 def parse_address_and_ho(address_str):
     address_str = address_str.strip()
+    address_str = re.sub(r"\(.*?\)", "", address_str).strip()
     words = address_str.split()
     jibun_idx = -1
     for idx, w in enumerate(words):
         clean_w = w.strip(",.")
         if re.match(r"^산?\d+(-\d+)?$", clean_w):
             jibun_idx = idx
+            break
     if jibun_idx == -1:
         return (address_str, "", "")
     clean_address = " ".join(words[:jibun_idx + 1])
@@ -70,103 +411,200 @@ def parse_address_and_ho(address_str):
     dong_name = ""
     ho_name = ""
     
-    if len(extra_words) == 1:
-        word = extra_words[0].strip()
-        if "동" in word and "호" in word:
-            m = re.search(r"([A-Za-z0-9가-힣\\-]+)\s*동\s*([A-Za-z0-9가-힣\\-]+)\s*호", word)
-            if m:
-                dong_name = m.group(1)
-                ho_name = m.group(2)
-        elif word.endswith("동"):
-            dong_name = word.replace("동", "")
-        elif word.endswith("호"):
-            ho_name = word.replace("호", "")
-        elif "-" in word:
-            parts = word.split("-")
-            if len(parts) == 2 and parts[0].isalnum() and parts[1].isalnum():
-                dong_name = parts[0]
-                ho_name = parts[1]
-        elif word.isalnum() and any(c.isdigit() for c in word):
-            ho_name = word
-    elif len(extra_words) >= 2:
-        w1 = extra_words[0].strip()
-        w2 = extra_words[1].strip()
-        d_match = re.search(r"([A-Za-z0-9가-힣\\-]+)\s*동", w1)
-        h_match = re.search(r"([A-Za-z0-9가-힣\\-]+)\s*호", w2)
-        dong_name = d_match.group(1) if d_match else w1.replace("동", "")
-        ho_name = h_match.group(1) if h_match else w2.replace("호", "")
+    if not extra_words:
+        return (clean_address, "", "")
+        
+    extra_text = " ".join(extra_words).strip()
+    
+    # 1. 동(Dong) 패턴 탐색 (예: 101동, A동)
+    d_match = re.search(r"([A-Za-z0-9가-힣]+)\s*동(?!\s*호)", extra_text)
+    if d_match:
+        potential_dong = d_match.group(1)
+        if not potential_dong.endswith("로") and not potential_dong.endswith("길"):
+            dong_name = potential_dong
+            extra_text = extra_text[:d_match.start()] + extra_text[d_match.end():]
+            extra_text = extra_text.strip()
+            
+    # 2. 호(Ho) 또는 층(Floor) 정보 파싱 (지하, 반지하, B01, 101호 등)
+    extra_text = extra_text.strip()
+    if extra_text:
+        extra_text = re.sub(r"^[-,\s]+", "", extra_text)
+        extra_text = re.sub(r"[-,\s]+$", "", extra_text)
+        
+        h_match = re.search(r"([A-Za-z0-9가-힣\s\-]+호)", extra_text)
+        if h_match:
+            ho_name = re.sub(r"호$", "", h_match.group(1).strip()).strip()
+        elif any(kw in extra_text for kw in ("지하", "반지하", "B", "b", "층")):
+            ho_name = extra_text
+        elif "-" in extra_text:
+            parts = extra_text.split("-")
+            if len(parts) == 2 and not dong_name:
+                dong_name = parts[0].strip()
+                ho_name = parts[1].strip()
+            else:
+                ho_name = extra_text
+        else:
+            if not dong_name and (extra_text.isdigit() or re.match(r"^[A-Za-z0-9]+$", extra_text)):
+                ho_name = extra_text
+            elif not dong_name:
+                if any(c.isdigit() for c in extra_text):
+                    ho_name = extra_text
+                else:
+                    dong_name = extra_text
+            else:
+                ho_name = extra_text
+
     return (clean_address, dong_name, ho_name)
 def get_expos_unit_details(sigungu, bjdong, bun, ji, ho_name, dong_name):
     try:
         if not ho_name:
             return None
-        url_info = "https://apis.data.go.kr/1613000/BldRgstHubService/getBrExposInfo"
-        url_area = "https://apis.data.go.kr/1613000/BldRgstHubService/getBrExposPubuseAreaInfo"
+        url_info = "http://apis.data.go.kr/1613000/BldRgstHubService/getBrExposInfo"
+        url_area = "http://apis.data.go.kr/1613000/BldRgstHubService/getBrExposPubuseAreaInfo"
         bun_str = str(bun).zfill(4) if bun else "0000"
         ji_str = str(ji).zfill(4) if ji else "0000"
-        result = {"area": None, "supply_area": None, "flrNo": None, "violBldYn": "N", "hoNm": ""}
+        
+        target_ho_clean = re.sub(r'[^0-9]', '', str(ho_name))
+        
+        def match_ho(item_ho):
+            if not item_ho:
+                return False
+            i_str = str(item_ho).strip()
+            h_str = str(ho_name).strip()
+            if i_str == h_str:
+                return True
+            i_clean = re.sub(r'[^0-9]', '', i_str)
+            if target_ho_clean and i_clean == target_ho_clean:
+                return True
+            if h_str.replace("호", "") == i_str.replace("호", ""):
+                return True
+            return False
+
+        result = {"area": None, "supply_area": None, "flrNo": None, "violBldYn": "N", "hoNm": "", "main_purp": "", "etc_purp": "", "purpose": "", "is_commercial": False}
         for plat in (0, 1, 2):
-            query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo=1&_type=json"
-            req_info = urllib.request.Request(url_info + query)
-            req_info.add_header("User-Agent", "Mozilla/5.0")
-            req_info.add_header("Accept", "application/json, text/plain, */*")
-            try:
-                with urllib.request.urlopen(req_info, timeout=5) as resp:
-                    res_body = resp.read().decode("utf-8")
-                if res_body.strip():
-                    data = json.loads(res_body)
-                    items = data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
-                    if items:
-                        if isinstance(items, dict):
-                            items = [items]
-                        for item in items:
-                            item_ho = str(item.get("hoNm") or "")
-                            item_dong = str(item.get("dongNm") or "")
-                            if ho_name not in item_ho and item_ho not in ho_name:
-                                continue
-                            if dong_name and not match_dong(dong_name, item_dong):
-                                continue
-                            result["flrNo"] = item.get("flrNo")
-                            result["violBldYn"] = item.get("violBldYn", "N")
-                            result["hoNm"] = item_ho
-            except Exception as e:
-                print(f"표제부/전유부 API 조회 중 오류: {e}")
+            # 1. 전유부 정보 조회 (층수, 호명, 위반건축물 여부)
+            page_no = 1
+            while True:
+                query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo={page_no}&_type=json"
+                req_info = urllib.request.Request(url_info + query, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, text/plain, */*"})
+                success = False
+                for attempt in range(3):
+                    try:
+                        with urllib.request.urlopen(req_info, timeout=10) as resp:
+                            res_body = resp.read().decode("utf-8")
+                        if res_body.strip():
+                            data = json.loads(res_body)
+                            body = data.get("response", {}).get("body", {})
+                            items = body.get("items", {}).get("item", [])
+                            total_count = int(body.get("totalCount", 0))
+                            if items:
+                                if isinstance(items, dict):
+                                    items = [items]
+                                for item in items:
+                                    item_ho = item.get("hoNm")
+                                    item_dong = item.get("dongNm")
+                                    if not match_ho(item_ho):
+                                        continue
+                                    if dong_name and not match_dong(dong_name, item_dong):
+                                        continue
+                                    result["flrNo"] = item.get("flrNo")
+                                    result["violBldYn"] = item.get("violBldYn", "N")
+                                    result["hoNm"] = str(item_ho)
+                                    if item.get("mainPurpsCdNm"):
+                                        result["main_purp"] = str(item.get("mainPurpsCdNm", "")).strip()
+                                    if item.get("etcPurps"):
+                                        result["etc_purp"] = str(item.get("etcPurps", "")).strip()
+                                    break
+                            success = True
+                            if result["flrNo"] is not None or (page_no * 1000 >= total_count) or total_count == 0:
+                                break
+                        break
+                    except Exception as e:
+                        import time
+                        time.sleep(0.4 * (attempt + 1))
+                if not success or result["flrNo"] is not None or (page_no * 1000 >= total_count) or total_count == 0:
+                    break
+                page_no += 1
 
-            req_area = urllib.request.Request(url_area + query)
-            req_area.add_header("User-Agent", "Mozilla/5.0")
-            req_area.add_header("Accept", "application/json, text/plain, */*")
-            try:
-                with urllib.request.urlopen(req_area, timeout=5) as resp:
-                    res_body = resp.read().decode("utf-8")
-                if res_body.strip():
-                    data = json.loads(res_body)
-                    items = data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
-                    if items:
-                        if isinstance(items, dict):
-                            items = [items]
-                        area_exclusive = 0.0
-                        area_supply = 0.0
-                        for item in items:
-                            item_ho = str(item.get("hoNm") or "")
-                            item_dong = str(item.get("dongNm") or "")
-                            if ho_name not in item_ho and item_ho not in ho_name:
-                                continue
-                            if dong_name and not match_dong(dong_name, item_dong):
-                                continue
-                            val = item.get("area")
-                            if not val:
-                                continue
-                            f_val = float(val)
-                            area_supply += f_val
-                            if str(item.get("exposPubuseGbCd", "")) == "1":
-                                area_exclusive += f_val
-                        if area_supply > 0:
-                            result["area"] = round(area_exclusive, 2) if area_exclusive > 0 else round(area_supply, 2)
-                            result["supply_area"] = round(area_supply, 2)
-            except Exception as e:
-                print(f"공용면적 API 조회 중 오류: {e}")
+            # 2. 공용/전유 면적 정보 조회 (면적 가져오기)
+            page_no = 1
+            area_exclusive = 0.0
+            area_common = 0.0
+            found_area = False
+            while True:
+                query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo={page_no}&_type=json"
+                req_area = urllib.request.Request(url_area + query, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, text/plain, */*"})
+                success = False
+                for attempt in range(3):
+                    try:
+                        with urllib.request.urlopen(req_area, timeout=10) as resp:
+                            res_body = resp.read().decode("utf-8")
+                        if res_body.strip():
+                            data = json.loads(res_body)
+                            body = data.get("response", {}).get("body", {})
+                            items = body.get("items", {}).get("item", [])
+                            total_count = int(body.get("totalCount", 0))
+                            if items:
+                                if isinstance(items, dict):
+                                    items = [items]
+                                for item in items:
+                                    item_ho = item.get("hoNm")
+                                    item_dong = item.get("dongNm")
+                                    if not match_ho(item_ho):
+                                        continue
+                                    if dong_name and not match_dong(dong_name, item_dong):
+                                        continue
+                                    val = item.get("area")
+                                    if not val:
+                                        continue
+                                    f_val = float(val)
+                                    gb = str(item.get("exposPubuseGbCd", "")).strip()
+                                    if gb == "1":
+                                        area_exclusive += f_val
+                                        found_area = True
+                                        if item.get("mainPurpsCdNm") and not result.get("main_purp"):
+                                            result["main_purp"] = str(item.get("mainPurpsCdNm", "")).strip()
+                                        if item.get("etcPurps") and not result.get("etc_purp"):
+                                            result["etc_purp"] = str(item.get("etcPurps", "")).strip()
+                                        if not result.get("flrNo") and item.get("flrNo"):
+                                            result["flrNo"] = item.get("flrNo")
+                                    elif gb == "2":
+                                        area_common += f_val
+                                        found_area = True
+                                    else:
+                                        area_exclusive += f_val
+                                        found_area = True
+                                        if item.get("mainPurpsCdNm") and not result.get("main_purp"):
+                                            result["main_purp"] = str(item.get("mainPurpsCdNm", "")).strip()
+                                        if item.get("etcPurps") and not result.get("etc_purp"):
+                                            result["etc_purp"] = str(item.get("etcPurps", "")).strip()
+                            success = True
+                            if (page_no * 1000 >= total_count) or total_count == 0:
+                                break
+                        break
+                    except Exception as e:
+                        import time
+                        time.sleep(0.4 * (attempt + 1))
+                if not success or (page_no * 1000 >= total_count) or total_count == 0:
+                    break
+                page_no += 1
 
-            if result["flrNo"] or result["area"]:
+            if found_area:
+                result["area"] = round(area_exclusive, 2)
+                result["supply_area"] = round(area_exclusive + area_common, 2)
+
+            mp = result.get("main_purp", "").strip()
+            ep = result.get("etc_purp", "").strip()
+            if ep and mp and ep != mp:
+                purpose = ep if (mp in ep or ep in mp) else f"{ep} ({mp})"
+            else:
+                purpose = ep or mp or ""
+            result["purpose"] = purpose
+
+            comm_keywords = ["근린생활", "근생", "사무소", "소매점", "음식점", "학원", "상가", "점포", "창고", "공장", "의원", "판매시설", "고시원"]
+            result["is_commercial"] = any(k in purpose for k in comm_keywords)
+
+            if result.get("flrNo") is not None or result.get("area") is not None:
                 return result
         return result
     except Exception as e:
@@ -179,7 +617,7 @@ def get_kakao_address_info(address_str):
     params = urllib.parse.urlencode({"query": address_str})
     req = urllib.request.Request(f"{url}?{params}", headers=headers)
     try:
-        with urllib.request.urlopen(req, timeout=5) as response:
+        with urllib.request.urlopen(req, timeout=20) as response:
             res_text = response.read().decode("utf-8")
             data = json.loads(res_text)
         if data.get("documents"):
@@ -194,10 +632,16 @@ def get_kakao_address_info(address_str):
                 road_addr_val = ""
                 if doc.get("road_address"):
                     road_addr_val = doc.get("road_address", {}).get("address_name", "")
+                bjdong_val = addr.get("region_3depth_name", "")
+                admin_dong_val = addr.get("region_3depth_h_name", "")
+                if not bjdong_val:
+                    bjdong_val = admin_dong_val
                 return {
                     "sigunguCd": code_to_use[:5],
                     "bjdongCd": code_to_use[5:10],
-                    "bjdongNm": addr.get("region_3depth_name", ""),
+                    "bjdongNm": bjdong_val,
+                    "adminDongNm": admin_dong_val or bjdong_val,
+                    "hDongNm": admin_dong_val or bjdong_val,
                     "bun": addr.get("main_address_no", ""),
                     "ji": addr.get("sub_address_no", "0") or "0",
                     "road_address": road_addr_val,
@@ -208,6 +652,140 @@ def get_kakao_address_info(address_str):
     except Exception as e:
         print(f"카카오 API 에러: {e}")
         return None
+
+_admin_dong_cache = {}
+_cache_loaded = False
+import threading
+_cache_lock = threading.Lock()
+
+def get_kakao_admin_dong(address_str):
+    url = "https://dapi.kakao.com/v2/local/search/address.json"
+    headers = {"Authorization": f"KakaoAK {KAKAO_API_KEY}"}
+    params = urllib.parse.urlencode({"query": address_str})
+    req = urllib.request.Request(f"{url}?{params}", headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_text = response.read().decode('utf-8')
+            data = json.loads(res_text)
+            if data.get("documents"):
+                doc = data["documents"][0]
+                addr = doc.get("address", {})
+                if addr:
+                    return addr.get("region_3depth_h_name", "")
+    except Exception:
+        pass
+    return ""
+
+def load_admin_dong_cache():
+    global _admin_dong_cache, _cache_loaded
+    if _cache_loaded:
+        return
+    import os
+    if getattr(sys, "frozen", False):
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+    cache_path = os.path.join(base_dir, "admin_dong_cache.json")
+    with _cache_lock:
+        if _cache_loaded:
+            return
+        if os.path.exists(cache_path):
+            try:
+                with open(cache_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    for k, v in data.items():
+                        parts = k.split("|")
+                        if len(parts) == 3:
+                            _admin_dong_cache[tuple(parts)] = v
+            except Exception:
+                pass
+        _cache_loaded = True
+
+def save_admin_dong_cache():
+    import os
+    if getattr(sys, "frozen", False):
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+    cache_path = os.path.join(base_dir, "admin_dong_cache.json")
+    try:
+        data = {}
+        with _cache_lock:
+            for k, v in _admin_dong_cache.items():
+                data["|".join(k)] = v
+            with open(cache_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+def get_cached_admin_dong(full_region_name, bjdong, jibun):
+    if not jibun:
+        return ""
+    load_admin_dong_cache()
+    clean_jibun = str(jibun).strip()
+    key = (str(full_region_name).strip(), str(bjdong).strip(), clean_jibun)
+    if key in _admin_dong_cache:
+        return _admin_dong_cache[key]
+        
+    query_str = f"{full_region_name} {bjdong} {clean_jibun}".strip()
+    h_dong = get_kakao_admin_dong(query_str)
+    _admin_dong_cache[key] = h_dong
+    save_admin_dong_cache()
+    return h_dong
+
+def normalize_h_dong_name(name):
+    if not name:
+        return ""
+    name = str(name).strip()
+    while True:
+        m = re.match(r'^(?:서울(?:특별)?시|서울|경기(?:도)?|인천(?:광역시)?|부산(?:광역시)?|대구(?:광역시)?|대전(?:광역시)?|광주(?:광역시)?|울산(?:광역시)?|세종(?:특별자치시)?|[가-힣]{2,}(?:시|도|구|군))\s*(.*)$', name)
+        if m and m.group(1):
+            name = m.group(1).strip()
+        else:
+            break
+    name = re.sub(r'제(\d+동)', r'\1', name)
+    return name
+
+def filter_by_admin_dong(tx_list, target_admin_dong, full_region_name=""):
+    """
+    수집된 실거래가 목록 중 대상 행정동(생활권)에 속하는 거래만 추출합니다.
+    """
+    if not tx_list or not target_admin_dong:
+        return tx_list
+    norm_target = normalize_h_dong_name(target_admin_dong)
+    
+    unique_keys = set()
+    for t in tx_list:
+        bjdong = t.get('umdNm') or t.get('dong') or ""
+        jibun = t.get('jibun') or ""
+        if bjdong and jibun:
+            unique_keys.add((str(bjdong).strip(), str(jibun).strip()))
+            
+    h_dong_map = {}
+    def resolve_one(key):
+        bjdong, jibun = key
+        h_dong = get_cached_admin_dong(full_region_name, bjdong, jibun)
+        return key, h_dong
+        
+    with concurrent.ThreadPoolExecutor(max_workers=16) as executor:
+        res = executor.map(resolve_one, unique_keys)
+        for key, h_dong in res:
+            h_dong_map[key] = h_dong
+            
+    filtered = []
+    for t in tx_list:
+        bjdong = str(t.get('umdNm') or t.get('dong') or "").strip()
+        jibun = str(t.get('jibun') or "").strip()
+        h_dong = h_dong_map.get((bjdong, jibun), "")
+        
+        if h_dong:
+            if normalize_h_dong_name(h_dong) == norm_target:
+                filtered.append(t)
+        else:
+            filtered.append(t)
+            
+    save_admin_dong_cache()
+    return filtered
 def normalize_jibun(jibun_str):
     if not jibun_str:
         return ""
@@ -218,15 +796,15 @@ def normalize_jibun(jibun_str):
             continue
         normalized_parts.append(str(int(p_clean)))
     return "-".join(normalized_parts)
-def classify_property_type(main_purp, bld_name, etc_purp):
+def classify_property_type(main_purp, bld_name, etc_purp, hhld_cnt=0):
     main_purp = main_purp or ""; bld_name = bld_name or ""; etc_purp = etc_purp or ""; combined = main_purp + " " + bld_name + " " + etc_purp.lower()
-    if "아파트" in combined:
+    if "아파트" in combined or hhld_cnt >= 30:
         return "1"
     elif "오피스텔" in combined:
         return "3"
     elif "단독" in combined or "다가구" in combined:
         return "4"
-    elif "다세대" in combined and "연립" in combined and "빌라" in combined and "도시형" in combined or "공동주택" in combined:
+    elif "다세대" in combined or "연립" in combined or "빌라" in combined or "도시형" in combined or "공동주택" in combined:
         return "2"
     
     return "2"
@@ -243,7 +821,7 @@ def fetch_trade_data_month(api_url, sigungu, deal_ymd):
     req = urllib.request.Request(api_url + query)
     req.add_header("User-Agent", "Mozilla/5.0")
     try:
-        with urllib.request.urlopen(req, timeout=5) as response:
+        with urllib.request.urlopen(req, timeout=20) as response:
             res_text = response.read().decode("utf-8")
         if not res_text.strip():
             return []
@@ -291,7 +869,7 @@ class TransactionList(list):
         self.trade_permission_error = False
         self.rent_permission_error = False
 def match_masked_jibun(api_jibun, target_jibun):
-    if not api_jibun or target_jibun:
+    if not api_jibun or not target_jibun:
         return False
     api_jibun = str(api_jibun).strip(); target_jibun = str(target_jibun).strip()
     if "*" not in api_jibun:
@@ -318,12 +896,11 @@ def match_masked_jibun(api_jibun, target_jibun):
         for char_idx, char_api in enumerate(api_p):
             if char_api == "*":
                 continue
-            if not char_api != target_p[char_idx]:
-                pass
-        return False
+            if char_api != target_p[char_idx]:
+                return False
     
     return True
-def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_build_year=None, target_house_type=None, expand_similar=False, target_area=None, build_year_margin=3, area_margin=0.15):
+def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_build_year=None, target_house_type=None, expand_similar=False, target_area=None, build_year_margin=3, area_margin=0.15, target_admin_dong=None, full_region_name=""):
     if prop_type == "1":
         api_trade = "http://apis.data.go.kr/1613000/RTMSDataSvcAptTrade/getRTMSDataSvcAptTrade"
         api_rent = "http://apis.data.go.kr/1613000/RTMSDataSvcAptRent/getRTMSDataSvcAptRent"
@@ -351,13 +928,8 @@ def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_
     else:
         target_jibun = ""
     if expand_similar:
-        if not bjdong_nm:
-            bjdong_nm
-        if not target_build_year:
-            target_build_year
-        if target_area:
-            pass
-            print(f" -> [{type_name}] 인근 유사 매물 검색 중 (법정동: {bjdong_nm or '전체'}, 준공년도: {target_build_year or '전체'}±{build_year_margin}년, 면적: {f'{target_area:.2f}㎡' if target_area else '전체'}±{int(area_margin * 100)}%내외)")
+        dong_label = f"행정동: {target_admin_dong}" if target_admin_dong else f"법정동: {bjdong_nm or '전체'}"
+        print(f" -> [{type_name}] 인근 유사 매물 검색 중 ({dong_label}, 준공년도: {target_build_year or '전체'}±{build_year_margin}년, 면적: {f'{target_area:.2f}㎡' if target_area else '전체'}±{int(area_margin * 100)}%내외)")
     else:
         print(f" -> [{type_name}] 실거래 매매/전월세 통합 조회 대상 지번: {target_jibun}")
     print(" -> 최근 24개월간의 실거래 정보를 조회 중입니다 (병렬 처리)..."); now = datetime.now()
@@ -381,35 +953,43 @@ def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_
                 trade_items = future.result()
                 for item in trade_items:
                     item_dong = item.get("dong") or item.get("umdNm") or ""
-                    if bjdong_nm and bjdong_nm not in item_dong:
-                        continue
+                    if bjdong_nm:
+                        valid_dongs = [d.strip() for d in bjdong_nm.split(",") if d.strip()]
+                        if valid_dongs and not any(d in item_dong for d in valid_dongs):
+                            continue
                         
-                    if expand_similar:
-                        if target_build_year:
-                            item_by = item.get("buildYear") or item.get("constructionYear")
-                            if item_by and abs(int(item_by) - int(target_build_year)) > build_year_margin:
-                                continue
-                        if target_area:
-                            item_ar = item.get("excluUseAr") or item.get("totalFloorAr")
-                            if item_ar:
-                                area_val = float(item_ar)
-                                if abs(area_val - target_area) / target_area > area_margin:
+                    is_target_jibun = False
+                    if target_jibun:
+                        t_jibun = item.get("jibun", "")
+                        if normalize_jibun(t_jibun) == target_jibun or match_masked_jibun(t_jibun, target_jibun):
+                            is_target_jibun = True
+                            
+                    if not is_target_jibun:
+                        if expand_similar:
+                            if target_build_year:
+                                item_by = item.get("buildYear") or item.get("constructionYear")
+                                if item_by and abs(int(item_by) - int(target_build_year)) > build_year_margin:
                                     continue
-                    elif prop_type == "4":
-                        if target_build_year:
-                            item_by = item.get("buildYear") or item.get("constructionYear")
-                            if item_by and abs(int(item_by) - int(target_build_year)) > 1:
-                                continue
-                        if target_house_type:
-                            item_ht = item.get("houseType")
-                            if item_ht and target_house_type not in str(item_ht):
-                                continue
-                    else:
-                        if not expand_similar and target_jibun:
-                            if not match_masked_jibun(item.get("jibun", ""), target_jibun) and normalize_jibun(item.get("jibun", "")) != target_jibun:
-                                continue
+                            if target_area:
+                                item_ar = item.get("excluUseAr") or item.get("totalFloorAr")
+                                if item_ar:
+                                    area_val = float(item_ar)
+                                    if abs(area_val - target_area) / target_area > area_margin:
+                                        continue
+                        elif prop_type == "4":
+                            if target_build_year:
+                                item_by = item.get("buildYear") or item.get("constructionYear")
+                                if item_by and abs(int(item_by) - int(target_build_year)) > 1:
+                                    continue
+                            if target_house_type:
+                                item_ht = item.get("houseType")
+                                if item_ht and target_house_type not in str(item_ht):
+                                    continue
+                        else:
+                            continue
                                 
                     item["_trade_type"] = "매매"
+                    item["_is_target_property"] = is_target_jibun
                     matches.append(item)
             except PermissionError:
                 trade_permission_error = True
@@ -421,33 +1001,40 @@ def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_
                 rent_items = future.result()
                 for item in rent_items:
                     item_dong = item.get("dong") or item.get("umdNm") or ""
-                    if bjdong_nm and bjdong_nm not in item_dong:
-                        continue
+                    if bjdong_nm:
+                        valid_dongs = [d.strip() for d in bjdong_nm.split(",") if d.strip()]
+                        if valid_dongs and not any(d in item_dong for d in valid_dongs):
+                            continue
                         
-                    if expand_similar:
-                        if target_build_year:
-                            item_by = item.get("buildYear") or item.get("constructionYear")
-                            if item_by and abs(int(item_by) - int(target_build_year)) > build_year_margin:
-                                continue
-                        if target_area:
-                            item_ar = item.get("excluUseAr") or item.get("totalFloorAr")
-                            if item_ar:
-                                area_val = float(item_ar)
-                                if abs(area_val - target_area) / target_area > area_margin:
+                    is_target_jibun = False
+                    if target_jibun:
+                        t_jibun = item.get("jibun", "")
+                        if normalize_jibun(t_jibun) == target_jibun or match_masked_jibun(t_jibun, target_jibun):
+                            is_target_jibun = True
+                            
+                    if not is_target_jibun:
+                        if expand_similar:
+                            if target_build_year:
+                                item_by = item.get("buildYear") or item.get("constructionYear")
+                                if item_by and abs(int(item_by) - int(target_build_year)) > build_year_margin:
                                     continue
-                    elif prop_type == "4":
-                        if target_build_year:
-                            item_by = item.get("buildYear") or item.get("constructionYear")
-                            if item_by and abs(int(item_by) - int(target_build_year)) > 1:
-                                continue
-                        if target_house_type:
-                            item_ht = item.get("houseType")
-                            if item_ht and target_house_type not in str(item_ht):
-                                continue
-                    else:
-                        if not expand_similar and target_jibun:
-                            if not match_masked_jibun(item.get("jibun", ""), target_jibun) and normalize_jibun(item.get("jibun", "")) != target_jibun:
-                                continue
+                            if target_area:
+                                item_ar = item.get("excluUseAr") or item.get("totalFloorAr")
+                                if item_ar:
+                                    area_val = float(item_ar)
+                                    if abs(area_val - target_area) / target_area > area_margin:
+                                        continue
+                        elif prop_type == "4":
+                            if target_build_year:
+                                item_by = item.get("buildYear") or item.get("constructionYear")
+                                if item_by and abs(int(item_by) - int(target_build_year)) > 1:
+                                    continue
+                            if target_house_type:
+                                item_ht = item.get("houseType")
+                                if item_ht and target_house_type not in str(item_ht):
+                                    continue
+                        else:
+                            continue
                     
                     monthly_val = item.get("monthlyRent") or item.get("monthly") or 0
                     if isinstance(monthly_val, str):
@@ -462,6 +1049,7 @@ def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_
                         item["_trade_type"] = "월세"
                     else:
                         item["_trade_type"] = "전세"
+                    item["_is_target_property"] = is_target_jibun
                     matches.append(item)
             except PermissionError:
                 rent_permission_error = True
@@ -503,13 +1091,22 @@ def get_recent_transactions(sigungu, bun, ji, prop_type, bjdong_nm=None, target_
             print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
         matches.trade_permission_error = trade_permission_error
         matches.rent_permission_error = rent_permission_error
+        if expand_similar and target_admin_dong and matches:
+            target_only = [t for t in matches if t.get("_is_target_property")]
+            similar_only = [t for t in matches if not t.get("_is_target_property")]
+            if similar_only:
+                filtered_similar = filter_by_admin_dong(similar_only, target_admin_dong, full_region_name)
+                if filtered_similar:
+                    new_matches = TransactionList(target_only + filtered_similar)
+                    new_matches.trade_permission_error = trade_permission_error
+                    new_matches.rent_permission_error = rent_permission_error
+                    matches = new_matches
         def get_date_key(item):
             try:
                 y = int(item.get("dealYear", 0))
                 m = int(item.get("dealMonth", 0))
                 d = int(item.get("dealDay", 0))
-                return (y, m,
-                    d)
+                return (y, m, d)
             except:
                 pass
         matches.sort(key=get_date_key, reverse=True)
@@ -612,24 +1209,96 @@ def get_group_for_item(item, groups):
         return best_group
     except:
         pass
-def calculate_subset_stats(subset, is_rent, is_wolse):
+
+def calculate_trend_info(subset, is_rent, is_wolse):
+    from datetime import datetime
+    valid_items = []
+    for item in subset:
+        if is_wolse:
+            _, dep, mon = format_price(item, is_rent=True)
+            amt = (dep or 0) + (mon or 0) * GLOBAL_WOLSE_MULTIPLIER
+        else:
+            _, amt, _ = format_price(item, is_rent=is_rent)
+            
+        area_val = item.get("excluUseAr") or item.get("totalFloorAr")
+        try:
+            area = float(area_val) if area_val else 0
+        except:
+            area = 0
+            
+        try:
+            year = int(item.get("dealYear"))
+            month = int(item.get("dealMonth"))
+            day = int(item.get("dealDay", 1))
+            dt = datetime(year, month, day)
+        except:
+            continue
+            
+        if amt and area > 0:
+            pyung_price = amt / (area * 0.3025)
+            valid_items.append({"dt": dt, "price": pyung_price})
+            
+    if len(valid_items) < 2:
+        return ("➡️ 보합", 0.0, valid_items[-1]["price"] if valid_items else None)
+        
+    valid_items.sort(key=lambda x: x["dt"])
+    
+    n = len(valid_items)
+    min_dt = valid_items[0]["dt"]
+    x = [(v["dt"] - min_dt).days for v in valid_items]
+    y = [v["price"] for v in valid_items]
+    
+    sum_x = sum(x)
+    sum_y = sum(y)
+    sum_x2 = sum(xi * xi for xi in x)
+    sum_xy = sum(xi * yi for xi, yi in zip(x, y))
+    
+    denominator = n * sum_x2 - sum_x**2
+    if denominator == 0:
+        return ("➡️ 보합", 0.0, valid_items[-1]["price"])
+        
+    slope = (n * sum_xy - sum_x * sum_y) / denominator
+    intercept = (sum_y - slope * sum_x) / n
+    start_y = intercept
+    end_y = slope * x[-1] + intercept
+    
+    if start_y <= 0:
+        trend_pct = 0.0
+    else:
+        trend_pct = ((end_y - start_y) / start_y) * 100
+        
+    if trend_pct > 2.0:
+        marker = "↗️ 상승"
+    elif trend_pct < -2.0:
+        marker = "↘️ 하락"
+    else:
+        marker = "➡️ 보합"
+        
+    recent_price = valid_items[-1]["price"]
+    return (marker, trend_pct, recent_price)
+def calculate_subset_stats(subset, is_rent, is_wolse, is_dev_zone=False):
     if not subset:
         return None
     sum_price = 0
     sum_area_pyung = 0.0
     count_area = 0
-    trade_amts = []
+    trade_list = []
+    
+    recent_brokerage_amt = None
+    recent_brokerage_area = None
     
     for item in subset:
         if is_wolse:
             _, dep, mon = format_price(item, is_rent=True)
-            amt = (dep or 0) + (mon or 0) * 100
+            amt = (dep or 0) + (mon or 0) * GLOBAL_WOLSE_MULTIPLIER
         else:
             _, amt, _ = format_price(item, is_rent=is_rent)
             
         if not amt:
             continue
-        trade_amts.append(amt)
+            
+        apt_nm = (item.get("aptNm") or item.get("mhouseNm") or "").strip()
+        trade_list.append({"amt": amt, "apt_nm": apt_nm})
         
         area_val = item.get("excluUseAr") or item.get("totalFloorAr")
         if not area_val:
@@ -644,12 +1313,16 @@ def calculate_subset_stats(subset, is_rent, is_wolse):
             sum_area_pyung += area * 0.3025
             count_area += 1
 
-    if not trade_amts:
+            if recent_brokerage_amt is None:
+                req_gbn = item.get("reqGbn", "")
+                if req_gbn != "직거래":
+                    recent_brokerage_amt = amt
+                    recent_brokerage_area = area
+
+    if not trade_list:
         return None
         
-    min_amt = min(trade_amts)
-    max_amt = max(trade_amts)
-    avg_amt = sum(trade_amts) / len(trade_amts)
+    avg_amt = sum(x["amt"] for x in trade_list) / len(trade_list)
     
     def local_format(val):
         if val >= 10_000:
@@ -660,7 +1333,6 @@ def calculate_subset_stats(subset, is_rent, is_wolse):
             return f"{eok}억"
         return f"{int(val):,}만"
         
-    price_range = f"{local_format(min_amt)} ~ {local_format(max_amt)}" if min_amt != max_amt else local_format(min_amt)
     avg_price = local_format(avg_amt)
     
     avg_pyung_str = "계산 불가"
@@ -673,11 +1345,22 @@ def calculate_subset_stats(subset, is_rent, is_wolse):
         else:
             avg_pyung_str = f"평당 {avg_pyung_price:,}만"
             
+    recent_pyung_str = "-"
+    if recent_brokerage_amt and recent_brokerage_area and recent_brokerage_area > 0:
+        pyung_price = recent_brokerage_amt / (recent_brokerage_area * 0.3025)
+        p = round(pyung_price)
+        if p >= 10_000:
+            eok = p // 10_000
+            man = p % 10_000
+            recent_pyung_str = f"평당 {eok}억 {man:,}만" if man > 0 else f"평당 {eok}억"
+        else:
+            recent_pyung_str = f"평당 {p:,}만"
+            
     return {
-        "count": len(trade_amts),
-        "range": price_range,
+        "count": len(trade_list),
         "avg": avg_price,
-        "pyung_unit": avg_pyung_str
+        "pyung_unit": avg_pyung_str,
+        "recent_pyung": recent_pyung_str
     }
 def mask_address_string(addr_str):
     if not addr_str:
@@ -713,6 +1396,23 @@ def mask_address_string(addr_str):
             continue
         masked_parts.append(part)
     return " ".join(masked_parts)
+
+def format_ho_label(ho):
+    if not ho:
+        return ""
+    h = str(ho).strip()
+    return h if h.endswith("호") else f"{h}호"
+
+def mask_ho_name(ho):
+    if not ho:
+        return ""
+    ho_str = str(ho).strip()
+    digits = re.findall(r"\d+", ho_str)
+    if digits:
+        masked = ho_str.replace(digits[0], "***")
+        return masked if masked.endswith("호") else f"{masked}호"
+    return "***호"
+
 def mask_phone_number(phone):
     if not phone:
         return ""
@@ -772,14 +1472,14 @@ def filter_by_size_category(items, target_area, prop_type_name, apt_groups):
     except:
         return items
 def get_size_category_label(target_area, prop_type_name, apt_groups):
-    if target_area is not None:
+    if target_area is None:
         return "전체 면적 기준"
     try:
         t_area = float(target_area)
         if prop_type_name == "아파트" and apt_groups:
             target_group = get_group_for_item({"excluUseAr": t_area}, apt_groups)
             if target_group:
-                return f"{target_group["label"]} (유사 평형)"
+                return f"{target_group["label"]}"
             return "전체 면적 기준"
         elif t_area < 26.0:
             return "원룸/1.5룸형 (전용 26㎡ 미만)"
@@ -804,7 +1504,7 @@ def check_moatown_and_redev(address):
     req.add_header("Referer", "http://localhost")
     result = {"moatown": False, "moatown_name": "", "redev": False, "redev_name": ""}
     try:
-        with urllib.request.urlopen(req, timeout=5) as resp:
+        with urllib.request.urlopen(req, timeout=20) as resp:
             data = json.loads(resp.read().decode("utf-8"))
             items = data.get("landUses", {}).get("field", [])
             if not items:
@@ -870,7 +1570,7 @@ def get_numeric_averages(subset, is_rent=False, is_wolse=False):
     for item in subset:
         if is_wolse:
             _, dep, mon = format_price(item, is_rent=True)
-            amt = (dep or 0) + (mon or 0) * 100
+            amt = (dep or 0) + (mon or 0) * GLOBAL_WOLSE_MULTIPLIER
         else:
             _, amt, _ = format_price(item, is_rent=is_rent)
             
@@ -1004,7 +1704,8 @@ def generate_comparison_insights(trades, jeonses, wolses):
         est_up_val = b_val / 0.65
         insights.append(f"• [전세-지상층 추정] 인근 지하층 평균 전세가({local_format(b_val)}) 기준, 지상층(2층이상)의 적정 전세가는 약 {local_format(est_up_val)} 원으로 추정됩니다 (65% 보정 역산).")
     return insights
-def save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, filename_pdf, apt_groups, period_label, is_expanded, target_build_year, target_area, target_floor, desired_info, expansion_mode):
+def save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, filename_pdf, apt_groups, period_label, is_expanded, target_build_year, target_area, target_floor, desired_info, expansion_mode, target_bld_nm=None, target_bun=None, target_ji=None, sigunguCd=None, bjdongCd=None, is_complex_analysis=False):
+    update_global_wolse_multiplier(jeonses, wolses)
     if expansion_mode == "auto":
         expansion_mode = CURRENT_EXPANSION_MODE
     if is_expanded and expansion_mode == "none":
@@ -1030,21 +1731,38 @@ def save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, f
         doc = SimpleDocTemplate(filename_pdf, pagesize=A4, rightMargin=47, leftMargin=47, topMargin=40, bottomMargin=60)
         styles = getSampleStyleSheet()
         title_style = ParagraphStyle("MainTitle", parent=styles["Normal"], fontName="KoreanFont", fontSize=20, leading=24, textColor=colors.HexColor("#1A365D"), alignment=1, spaceAfter=15, bold=True)
-        h2_style = ParagraphStyle("SectionHeading", parent=styles["Normal"], fontName="KoreanFont", fontSize=11, leading=15, textColor=colors.HexColor("#2C5282"), spaceBefore=14, spaceAfter=6, bold=True)
+        h2_style = ParagraphStyle("SectionHeading", parent=styles["Normal"], fontName="KoreanFont", fontSize=11, leading=15, textColor=colors.HexColor("#2C5282"), spaceBefore=14, spaceAfter=6, bold=True, keepWithNext=True)
         label_style = ParagraphStyle("MetaLabel", parent=styles["Normal"], fontName="KoreanFont", fontSize=9, leading=13, textColor=colors.HexColor("#4A5568"), bold=True)
         value_style = ParagraphStyle("MetaValue", parent=styles["Normal"], fontName="KoreanFont", fontSize=9, leading=13, textColor=colors.HexColor("#2D3748"))
         table_hdr_style = ParagraphStyle("TableHdr", parent=styles["Normal"], fontName="KoreanFont", fontSize=9, leading=12, textColor=colors.white, alignment=1, bold=True)
         table_cell_style = ParagraphStyle("TableCell", parent=styles["Normal"], fontName="KoreanFont", fontSize=9, leading=13, textColor=colors.HexColor("#2D3748"))
         table_cell_style_center = ParagraphStyle("TableCellCenter", parent=table_cell_style, alignment=1)
         table_cell_style_right = ParagraphStyle("TableCellRight", parent=table_cell_style, alignment=2)
-        notice_title_style = ParagraphStyle("NoticeTitle", parent=styles["Normal"], fontName="KoreanFont", fontSize=9, leading=12, textColor=colors.HexColor("#718096"), bold=True, spaceBefore=15, spaceAfter=4)
+        notice_title_style = ParagraphStyle("NoticeTitle", parent=styles["Normal"], fontName="KoreanFont", fontSize=8.5, leading=11.5, textColor=colors.HexColor("#718096"), bold=True, spaceBefore=6, spaceAfter=2, keepWithNext=True)
         notice_body_style = ParagraphStyle("NoticeBody", parent=styles["Normal"], fontName="KoreanFont", fontSize=8, leading=12, textColor=colors.HexColor("#718096"))
         story = []
         accent_bar = Table([[""]], colWidths=[500], rowHeights=[4])
         accent_bar.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#1A365D")), ("BOTTOMPADDING", (0, 0), (-1, -1), 0), ("TOPPADDING", (0, 0), (-1, -1), 0)]))
         story.append(accent_bar)
         story.append(Spacer(1, 15))
-        pdf_title = "인근 유사 매물 실거래 시세 브리핑" if is_expanded else "인근 실거래 시세 브리핑"
+        
+        apt_name = clean_apartment_name(target_bld_nm or "") if prop_type_name == "아파트" else (target_bld_nm or "")
+        if prop_type_name == "아파트" and not apt_name and not is_expanded:
+            all_txs_for_title = trades + jeonses + wolses
+            for t in all_txs_for_title:
+                name = (t.get('aptNm') or t.get('mhouseNm') or '').strip()
+                if name:
+                    apt_name = clean_apartment_name(name)
+                    break
+
+        if prop_type_name == "아파트" and apt_name:
+            if is_expanded:
+                pdf_title = f"{apt_name} 인근 유사 매물 거래동향 보고서"
+            else:
+                pdf_title = f"{apt_name} 거래동향 보고서"
+        else:
+            pdf_title = "인근 유사 매물 실거래 시세 브리핑" if is_expanded else "인근 실거래 시세 브리핑"
+            
         story.append(Paragraph(pdf_title, title_style))
         story.append(Spacer(1, 10))
         meta_data = [[Paragraph("<b>조회 대상 주소</b>", label_style), Paragraph(masked_address, value_style)],
@@ -1052,9 +1770,32 @@ def save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, f
             [Paragraph("<b>부동산 유형</b>", label_style), Paragraph(prop_type_name, value_style)], [Paragraph("<b>분석 기준 기간</b>", label_style),
 
 Paragraph(f"{period_label} (국토교통부 실거래가 기준)", value_style)]]
+        ho_label = desired_info.get("ho_name") if desired_info else None
+        target_area_val = target_area or (desired_info.get("exclusive_area") if desired_info else None)
+        land_share_val = desired_info.get("land_share") if desired_info else None
+        official_price_val = desired_info.get("official_price") if desired_info else None
+        official_price_year = desired_info.get("official_price_year") if desired_info else ""
+
+        if ho_label:
+            meta_data.append([Paragraph("<b>분석 대상 호실</b>", label_style), Paragraph(mask_ho_name(ho_label), value_style)])
+        if target_area_val:
+            py = round(float(target_area_val) * 0.3025, 1)
+            meta_data.append([Paragraph("<b>호실 전용면적</b>", label_style), Paragraph(f"<b>{float(target_area_val):.2f} ㎡ (약 {py}평)</b>", value_style)])
+        if land_share_val:
+            lpy = round(float(land_share_val) * 0.3025, 1)
+            meta_data.append([Paragraph("<b>호실 대지지분</b>", label_style), Paragraph(f"<b>{float(land_share_val):.2f} ㎡ (약 {lpy}평)</b>", value_style)])
+        if official_price_val:
+            off_str = format_assessed_price(official_price_val)
+            off_126_str = format_assessed_price(int(official_price_val * 1.26))
+            yr_tag = f"({official_price_year}년) " if official_price_year else ""
+            meta_data.append([Paragraph("<b>주택 공시가격</b>", label_style), Paragraph(f"<b>{yr_tag}{off_str}</b> (126%: <b>{off_126_str}</b>)", value_style)])
+
         if desired_info and desired_info.get("room_count_label"):
             meta_data.append([Paragraph("<b>분석 대상 방 개수</b>", label_style), Paragraph(desired_info["room_count_label"], value_style)])
-        if target_floor is None:
+        if desired_info and desired_info.get("phone_number"):
+            masked_phone = mask_phone_number(desired_info["phone_number"])
+            meta_data.append([Paragraph("<b>의뢰인 연락처</b>", label_style), Paragraph(masked_phone, value_style)])
+        if target_floor is not None:
             floor_lbl = f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층"
             meta_data.append([Paragraph("<b>분석 대상 층수</b>", label_style), Paragraph(floor_lbl, value_style)])
         if is_expanded:
@@ -1064,18 +1805,37 @@ Paragraph(f"{period_label} (국토교통부 실거래가 기준)", value_style)]
                     cond_parts.append(f"준공년도 ±5년 ({target_build_year - 5}~{target_build_year + 5}년)")
                 if target_area:
                     cond_parts.append(f"전용면적 ±20% ({target_area * 0.8:.1f}~{target_area * 1.2:.1f}㎡)")
-                cond_str = cond_parts and "동일 법정동 전체"
-                cond_str += " (넓은 유사 범위)"
-            elif target_build_year:
-                cond_parts.append(f"준공년도 ±3년 ({target_build_year - 3}~{target_build_year + 3}년)")
-            if target_area:
-                cond_parts.append(f"전용면적 ±15% ({target_area * 0.85:.1f}~{target_area * 1.15:.1f}㎡)")
-            cond_str = cond_parts and "동일 법정동 전체"
-            cond_str += " (엄격한 유사 범위)"
-            meta_data.append([Paragraph("<b>유사 매물 기준</b>", label_style), Paragraph(cond_str, value_style)])
+                cond_str = ", ".join(cond_parts) if cond_parts else "법정동 전체"
+                cond_str += " (법정동 넓은 유사 범위)"
+            elif expansion_mode == "all":
+                cond_str = "조건 없는 지역 내 전체 매물 포함"
+            else:
+                if target_build_year:
+                    cond_parts.append(f"준공년도 ±3년 ({target_build_year - 3}~{target_build_year + 3}년)")
+                if target_area:
+                    cond_parts.append(f"전용면적 ±15% ({target_area * 0.85:.1f}~{target_area * 1.15:.1f}㎡)")
+                cond_str = ", ".join(cond_parts) if cond_parts else "동일 생활권 전체"
+                cond_str += " (행정동 생활권 유사 범위)"
+                
+            meta_data.append([Paragraph("<b>분석 목적 물건</b>", label_style), Paragraph(apt_name or masked_address, value_style)])
+            meta_data.append([Paragraph("<b>확장 분석 사유</b>", label_style), Paragraph("목적 물건의 실거래 데이터 부족으로, 인근 유사 매물을 포함하여 분석함.", value_style)])
+            meta_data.append([Paragraph("<b>매물 확장 기준</b>", label_style), Paragraph(cond_str, value_style)])
+            
+            if prop_type_name == "아파트":
+                all_txs_for_title = trades + jeonses + wolses
+                included_apts = {}
+                for t in all_txs_for_title:
+                    name = (t.get('aptNm') or t.get('mhouseNm') or '').strip()
+                    if name:
+                        included_apts[name] = included_apts.get(name, 0) + 1
+                if included_apts:
+                    names_str = ", ".join([f"{k}({v}건)" for k, v in included_apts.items()])
+                    meta_data.append([Paragraph("<b>거래사례 포함 단지</b>", label_style), Paragraph(names_str, value_style)])
+                    
+            meta_data.append([Paragraph("<b>분석 주의사항</b>", label_style), Paragraph("인근 단지 포함 시, 단지별 세대수/주차대수/평형구성 등 특성 차이가 있을 수 있으니 참고 요망", value_style)])
         meta_data.append([Paragraph("<b>보고서 발행일</b>", label_style),
 
-Paragraph(datetime.now().strftime("%Y년 %m월 %d일"), value_style)])
+Paragraph(datetime.now().strftime("%Y년 %m월 %d일 %H시 %M분"), value_style)])
         meta_table = Table(meta_data, colWidths=[100, 400])
         meta_table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F7FAFC")), ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8F0")),
 
@@ -1084,149 +1844,443 @@ Paragraph(datetime.now().strftime("%Y년 %m월 %d일"), value_style)])
 colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6), ("LEFTPADDING", (0, 0), (-1, -1), 12), ("RIGHTPADDING", (0, 0), (-1, -1), 12)]))
         story.append(meta_table)
         story.append(Spacer(1, 8))
+        
+        # 분석 대상 물건 토지 및 건축물 종합 개요 표 추가
+        bld_overview = get_property_comprehensive_overview(sigunguCd=sigunguCd, bjdongCd=bjdongCd, bun=target_bun, ji=target_ji, address_str=address)
+        if bld_overview and bld_overview.get("has_data"):
+            hdr_cell = ParagraphStyle("HdrCell", parent=styles["Normal"], fontName="KoreanFont", fontSize=7.5, leading=10.5, textColor=colors.HexColor("#1E293B"), bold=True)
+            val_cell = ParagraphStyle("ValCell", parent=styles["Normal"], fontName="KoreanFont", fontSize=7.5, leading=10.5, textColor=colors.HexColor("#334155"))
+            val_cell_high = ParagraphStyle("ValCellHigh", parent=styles["Normal"], fontName="KoreanFont", fontSize=7.5, leading=10.5, textColor=colors.HexColor("#0284C7"), bold=True)
+            val_cell_warn = ParagraphStyle("ValCellWarn", parent=styles["Normal"], fontName="KoreanFont", fontSize=7.5, leading=10.5, textColor=colors.HexColor("#DC2626"), bold=True)
+
+            viol_style = val_cell_warn if "위반" in bld_overview.get("viol_status_str", "") else val_cell
+            
+            bld_table_data = [
+                [
+                    Paragraph("<b>대지(토지)면적</b>", hdr_cell),
+                    Paragraph(f"<b>{bld_overview['plat_area_str']}</b>", val_cell_high),
+                    Paragraph("<b>건축 / 연면적</b>", hdr_cell),
+                    Paragraph(f"{bld_overview['arch_area_str']} / {bld_overview['tot_area_str']}", val_cell)
+                ],
+                [
+                    Paragraph("<b>건폐율 / 용적률</b>", hdr_cell),
+                    Paragraph(f"{bld_overview['bc_rat_str']} / {bld_overview['vl_rat_str']}", val_cell),
+                    Paragraph("<b>주용도 / 세대수</b>", hdr_cell),
+                    Paragraph(f"{bld_overview['detail_purpose']} ({bld_overview['households_str']})", val_cell)
+                ],
+                [
+                    Paragraph("<b>규모 / 주구조</b>", hdr_cell),
+                    Paragraph(f"{bld_overview['floors_str']} / {bld_overview['structure']}", val_cell),
+                    Paragraph("<b>주차 대수</b>", hdr_cell),
+                    Paragraph(f"<b>{bld_overview['parking_str']}</b>", val_cell)
+                ],
+                [
+                    Paragraph("<b>사용승인일(준공)</b>", hdr_cell),
+                    Paragraph(f"{bld_overview['apr_date_str']}", val_cell),
+                    Paragraph("<b>위반건축물 여부</b>", hdr_cell),
+                    Paragraph(f"<b>{bld_overview['viol_status_str']}</b>", viol_style)
+                ]
+            ]
+            
+            # [신설] 개별 호수 분석 시, 주용도 / 전용면적 / 대지지분을 첫 행에 강조 배치!
+            ho_purpose = desired_info.get("unit_purpose") if desired_info else None
+            ho_is_comm = desired_info.get("is_commercial") if desired_info else False
+            floor_lbl = f"지하 {abs(target_floor)}층" if (target_floor is not None and target_floor < 0) else f"{target_floor}층" if target_floor is not None else "정보없음"
+            if ho_purpose:
+                purp_style = val_cell_warn if ho_is_comm else val_cell_high
+                purp_tag = " ⚠️ (근린생활시설)" if ho_is_comm else " (주거용)"
+                bld_table_data.insert(0, [
+                    Paragraph("<b>분석 호실 주용도</b>", hdr_cell),
+                    Paragraph(f"<b>{ho_purpose}{purp_tag}</b>", purp_style),
+                    Paragraph("<b>분석 대상 층수</b>", hdr_cell),
+                    Paragraph(f"<b>{floor_lbl}</b>", val_cell)
+                ])
+
+            if target_area_val or land_share_val:
+                area_py = round(float(target_area_val) * 0.3025, 1) if target_area_val else 0.0
+                area_str = f"<b>{float(target_area_val):.2f} ㎡ (약 {area_py}평)</b>" if target_area_val else "정보없음"
+                if land_share_val:
+                    ls_py = round(float(land_share_val) * 0.3025, 1)
+                    ls_str = f"<b>{float(land_share_val):.2f} ㎡ (약 {ls_py}평)</b>"
+                else:
+                    ls_str = "대지권 정보 없음 (단독/다가구)"
+                
+                insert_pos = 1 if ho_purpose else 0
+                bld_table_data.insert(insert_pos, [
+                    Paragraph("<b>분석 호실 전용면적</b>", hdr_cell),
+                    Paragraph(area_str, val_cell_high),
+                    Paragraph("<b>분석 호실 대지지분</b>", hdr_cell),
+                    Paragraph(ls_str, val_cell_high)
+                ])
+
+            if official_price_val:
+                off_str = format_assessed_price(official_price_val)
+                off_126_str = format_assessed_price(int(official_price_val * 1.26))
+                yr_tag = f"({official_price_year}년) " if official_price_year else ""
+                insert_idx = 1 if (target_area_val or land_share_val) else 0
+                bld_table_data.insert(insert_idx, [
+                    Paragraph("<b>주택 공시가격</b>", hdr_cell),
+                    Paragraph(f"{yr_tag}<b>{off_str}</b>", val_cell_high),
+                    Paragraph("<b>공시가격 126% (보증한도)</b>", hdr_cell),
+                    Paragraph(f"<b>{off_126_str}</b>", val_cell_high)
+                ])
+            
+            if bld_overview.get("land_use_zone") != "-" or bld_overview.get("official_land_price_str") != "-":
+                bld_table_data.append([
+                    Paragraph("<b>용도지역 / 지목</b>", hdr_cell),
+                    Paragraph(f"{bld_overview['land_use_zone']} (지목: {bld_overview['land_category']})", val_cell),
+                    Paragraph("<b>개별공시지가</b>", hdr_cell),
+                    Paragraph(f"{bld_overview['official_land_price_str']}", val_cell)
+                ])
+                
+            has_reg_zone = bool(bld_overview.get("reg_zones_str") and bld_overview["reg_zones_str"] != "해당 없음 (일반 지역)")
+            if has_reg_zone:
+                bld_table_data.append([
+                    Paragraph("<b>정비구역 / 규제</b>", hdr_cell),
+                    Paragraph(f"{bld_overview['reg_zones_str']}", val_cell),
+                    "",
+                    ""
+                ])
+                
+            bld_table = Table(bld_table_data, colWidths=[90, 160, 90, 160])
+            t_style = [
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFFFF")),
+                ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#F1F5F9")),
+                ("BACKGROUND", (2, 0), (2, -1), colors.HexColor("#F1F5F9")),
+                ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#CBD5E1")),
+                ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E8F0")),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("TOPPADDING", (0, 0), (-1, -1), 3.5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 3.5),
+                ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6)
+            ]
+            if has_reg_zone:
+                last_idx = len(bld_table_data) - 1
+                t_style.append(("SPAN", (1, last_idx), (3, last_idx)))
+            bld_table.setStyle(TableStyle(t_style))
+            
+            story.append(Paragraph("■ [분석 대상 물건] 토지 및 건축물 종합 개요", h2_style))
+            story.append(Spacer(1, 3))
+            story.append(bld_table)
+            story.append(Spacer(1, 8))
+            
         if is_expanded:
             explain_text = "※ 본 브리핑은 인근 유사 매물의 거래 사례를 포함하여 작성되었습니다."
             story.append(Paragraph(explain_text, ParagraphStyle("ExplainStyle", parent=styles["Normal"], fontName="KoreanFont", fontSize=8, textColor=colors.HexColor("#718096"), leading=10)))
             story.append(Spacer(1, 8))
         def build_summary_table(section_title, items, is_rent=False, is_wolse=False):
-            sect_heading = Paragraph(section_title, h2_style); headers = [Paragraph("<b>면적 구분</b>", table_hdr_style), Paragraph("<b>거래 건수</b>", table_hdr_style), Paragraph("<b>실거래가 범위</b>", table_hdr_style), Paragraph("<b>평균 실거래가</b>", table_hdr_style), Paragraph("<b>전용 평단가</b>", table_hdr_style)]; table_content = [headers]; has_rows = False
-            while prop_type_name == "아파트" and apt_groups:
-                for g in apt_groups:
-                    [t for t in items if not get_group_for_item(t, apt_groups) == g]
-                    g_subset = None
-                    t = None
-                    stats = calculate_subset_stats(g_subset, is_rent, is_wolse)
-                    if not stats:
-                        continue
-                    suffix = ""
-                    table_content.append([Paragraph(g["label"], table_cell_style), Paragraph(f"{stats['count']}건", table_cell_style_center), Paragraph(stats["range"] + suffix, table_cell_style_right),
-Paragraph(stats["avg"] + suffix, table_cell_style_right), Paragraph(stats["pyung_unit"], table_cell_style_right)])
-                    has_rows = True
-                break
-            under_26 = []; between_26_43 = []; above_43 = []
-            for item in items:
-                area_val = item.get("excluUseAr") or item.get("totalFloorAr") or 0.0
-                try: area = float(area_val)
-                except: area = 0.0
-                if area < 26.0: under_26.append(item)
-                elif area < 43.0: between_26_43.append(item)
-                else: above_43.append(item)
+            sect_heading = Paragraph(section_title, h2_style)
             
-            size_categories = [("원룸/1.5룸형 (전용 26㎡ 미만)", under_26), ("투룸형 (전용 26㎡ ~ 43㎡ 미만)", between_26_43),
-                               ("쓰리룸 이상형 (전용 43㎡ 이상)", above_43)]
-            for label, subset in size_categories:
-                stats = calculate_subset_stats(subset, is_rent, is_wolse)
-                if not stats:
-                    continue
-                suffix = ""
-                table_content.append([Paragraph(label, table_cell_style),
-                                      Paragraph(f"{stats['count']}건", table_cell_style_center),
-                                      Paragraph(stats["range"] + suffix, table_cell_style_right),
-                                      Paragraph(stats["avg"] + suffix, table_cell_style_right),
-                                      Paragraph(stats["pyung_unit"], table_cell_style_right)])
-                has_rows = True
-            
-            if not has_rows:
-                table_content.append([Paragraph(f"{period_label}간 신고된 거래 사례가 없습니다.", table_cell_style_center), "", "", "", ""])
-            
-            t = Table(table_content, colWidths=[150, 50, 120, 90, 90])
-            t_style = [("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2B6CB0")),
-                       ("ALIGN", (0, 0), (-1, -1), "LEFT"),
-                       ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                       ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-                       ("TOPPADDING", (0, 0), (-1, -1), 5),
-                       ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E8F0"))]
-            if has_rows:
-                for idx in range(1, len(table_content)):
-                    bg_color = colors.HexColor("#FFFFFF") if idx % 2 == 1 else colors.HexColor("#F7FAFC")
-                    t_style.append(("BACKGROUND", (0, idx), (-1, idx), bg_color))
+            target_items = []
+            comp_items = []
+            if prop_type_name == "아파트":
+                for item in items:
+                    is_target = False
+                    apt_nm = (item.get("aptNm") or item.get("mhouseNm") or "").strip()
+                    if target_bld_nm and apt_nm:
+                        clean_target = target_bld_nm.replace('아파트', '').replace(' ', '')
+                        clean_apt = apt_nm.replace('아파트', '').replace(' ', '')
+                        if clean_apt and clean_target and (clean_apt in clean_target or clean_target in clean_apt):
+                            is_target = True
+                    if not is_target and target_bun:
+                            t_jibun = normalize_jibun(item.get("jibun", ""))
+                            t_target_jibun = str(int(target_bun))
+                            if target_ji and int(target_ji) > 0:
+                                t_target_jibun += f"-{int(target_ji)}"
+                            if t_jibun == t_target_jibun:
+                                is_target = True
+                    if is_target:
+                        target_items.append(item)
+                    else:
+                        comp_items.append(item)
             else:
-                t_style.append(("SPAN", (0, 1), (-1, 1)))
-                t_style.append(("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#FFFFFF")))
-            t.setStyle(TableStyle(t_style))
-            return (sect_heading, t)
-        h, t = build_summary_table("■ [매매] 시세 요약", trades, is_rent=False)
-        story.append(h)
+                target_items = items
+                
+            def make_table(sub_items):
+                headers = [Paragraph("<b>면적 구분</b>", table_hdr_style), Paragraph("<b>거래 건수</b>", table_hdr_style), Paragraph("<b>평균 실거래가</b>", table_hdr_style), Paragraph("<b>최근 중개실거래(평단가)</b>", table_hdr_style)]
+                table_content = [headers]
+                has_rows = False
+                
+                target_label = get_size_category_label(target_area, prop_type_name, apt_groups) if target_area else ""
+                
+                target_apt_groups = set()
+                if prop_type_name == "아파트" and apt_groups:
+                    for item in sub_items:
+                        is_target = False
+                        apt_nm = (item.get("aptNm") or item.get("mhouseNm") or "").strip()
+                        if target_bld_nm and apt_nm:
+                            clean_target = target_bld_nm.replace('아파트', '').replace(' ', '')
+                            clean_apt = apt_nm.replace('아파트', '').replace(' ', '')
+                            if clean_apt and clean_target and (clean_apt in clean_target or clean_target in clean_apt):
+                                is_target = True
+                        if not is_target and target_bun:
+                                t_jibun = normalize_jibun(item.get("jibun", ""))
+                                t_target_jibun = str(int(target_bun))
+                                if target_ji and int(target_ji) > 0:
+                                    t_target_jibun += f"-{int(target_ji)}"
+                                if t_jibun == t_target_jibun:
+                                    is_target = True
+                                
+                        if is_target:
+                            g_for_item = get_group_for_item(item, apt_groups)
+                            if g_for_item:
+                                target_apt_groups.add(g_for_item["label"])
+
+                if prop_type_name == "아파트" and apt_groups:
+                    for g in apt_groups:
+                        g_subset = [t for t in sub_items if get_group_for_item(t, apt_groups) == g]
+                        stats = calculate_subset_stats(g_subset, is_rent, is_wolse)
+                        if not stats:
+                            continue
+                        label_str = g["label"]
+                        if label_str == target_label or label_str in target_apt_groups:
+                            label_str += "<br/><font color='#D69E2E'><b>[목적 평형]</b></font>"
+                            
+                        table_content.append([Paragraph(label_str, table_cell_style), Paragraph(f"{stats['count']}건", table_cell_style_center), Paragraph(f"{stats['avg']}<br/>({stats['pyung_unit']})", table_cell_style_right), Paragraph(stats.get("recent_pyung", "-"), table_cell_style_right)])
+                        has_rows = True
+                else:
+                    under_26 = []; between_26_43 = []; above_43 = []
+                    for item in sub_items:
+                        area_val = item.get("excluUseAr") or item.get("totalFloorAr") or 0.0
+                        try: area = float(area_val)
+                        except: area = 0.0
+                        if area < 26.0: under_26.append(item)
+                        elif area < 43.0: between_26_43.append(item)
+                        else: above_43.append(item)
+                    
+                    size_categories = [("원룸/1.5룸형 (전용 26㎡ 미만)", under_26), ("투룸형 (전용 26㎡ ~ 43㎡ 미만)", between_26_43),
+                                       ("쓰리룸 이상형 (전용 43㎡ 이상)", above_43)]
+                    for label, subset in size_categories:
+                        stats = calculate_subset_stats(subset, is_rent, is_wolse)
+                        if not stats:
+                            continue
+                        label_str = label
+                        if label_str == target_label:
+                            label_str += "<br/><font color='#D69E2E'><b>[목적 평형]</b></font>"
+                            
+                        table_content.append([Paragraph(label_str, table_cell_style),
+                                              Paragraph(f"{stats['count']}건", table_cell_style_center),
+                                              Paragraph(f"{stats['avg']}<br/>({stats['pyung_unit']})", table_cell_style_right),
+                                              Paragraph(stats.get("recent_pyung", "-"), table_cell_style_right)])
+                        has_rows = True
+                
+                if not has_rows:
+                    table_content.append([Paragraph(f"{period_label}간 신고된 거래 사례가 없습니다.", table_cell_style_center), "", "", ""])
+                
+                t = Table(table_content, colWidths=[160, 60, 140, 140])
+                t_style = [("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#2B6CB0")),
+                           ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                           ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                           ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                           ("TOPPADDING", (0, 0), (-1, -1), 5),
+                           ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E8F0"))]
+                if has_rows:
+                    for idx in range(1, len(table_content)):
+                        bg_color = colors.HexColor("#FFFFFF") if idx % 2 == 1 else colors.HexColor("#F7FAFC")
+                        t_style.append(("BACKGROUND", (0, idx), (-1, idx), bg_color))
+                else:
+                    t_style.append(("SPAN", (0, 1), (-1, 1)))
+                    t_style.append(("BACKGROUND", (0, 1), (-1, 1), colors.HexColor("#FFFFFF")))
+                t.setStyle(TableStyle(t_style))
+                return t
+                
+            elements = [sect_heading, Spacer(1, 4)]
+            if prop_type_name == "아파트" and comp_items:
+                target_disp = clean_apartment_name(target_bld_nm) if target_bld_nm else '분석 대상'
+                elements.append(Paragraph(f"<b>[대상 아파트] {target_disp} 거래 사례</b>", ParagraphStyle("SubH", parent=styles["Normal"], fontName="KoreanFont", fontSize=10, textColor=colors.HexColor("#2C5282"), spaceAfter=4)))
+                elements.append(make_table(target_items))
+                elements.append(Spacer(1, 8))
+                elements.append(Paragraph("<b>[비교 아파트] 인근 유사 매물 사례</b>", ParagraphStyle("SubH", parent=styles["Normal"], fontName="KoreanFont", fontSize=10, textColor=colors.HexColor("#2C5282"), spaceAfter=4)))
+                elements.append(make_table(comp_items))
+            else:
+                elements.append(make_table(items))
+            return elements
+
+        story.extend(build_summary_table("■ [매매] 시세 요약", trades, is_rent=False))
         story.append(Spacer(1, 4))
-        story.append(t)
-        h, t = build_summary_table("■ [전세] 시세 요약", jeonses, is_rent=True)
-        story.append(h)
+        story.extend(build_summary_table("■ [전세] 시세 요약", jeonses, is_rent=True))
         story.append(Spacer(1, 4))
-        story.append(t)
-        h, t = build_summary_table("■ [월세] 시세 요약 (보증금 + 월세 * 100 환산 기준)", wolses, is_rent=True, is_wolse=True)
-        story.append(h)
+        story.extend(build_summary_table(f"■ [월세] 시세 요약 (실제 전월세전환율 연 {GLOBAL_CONVERSION_RATE}% 기준)", wolses, is_rent=True, is_wolse=True))
         story.append(Spacer(1, 4))
-        story.append(t)
-        story.append(Spacer(1, 10))
-        story.append(Paragraph("■ [층수별 & 개발구역 적정시세 분석 (CMA)]", h2_style))
-        story.append(Spacer(1, 4))
-        moa_status = check_moatown_and_redev(address)
-        if moa_status["moatown"]:
-            if moa_status["moatown_name"]:
-                pass
-        moa_display = "⚪ 미해당"
-        if moa_status["redev"]:
-            if moa_status["redev_name"]:
-                pass
-        redev_display = "⚪ 미해당"
-        dev_table_data = [[Paragraph("<b>모아타운 지정</b>", label_style), Paragraph(moa_display, value_style), Paragraph("<b>재개발 정비구역</b>", label_style), Paragraph(redev_display, value_style)]]
-        dev_table = Table(dev_table_data, colWidths=[100, 150, 100, 150])
-        dev_table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1),
+        
+        # 시세 지표 분석 기준 안내 (평균실거래가 vs 최근 중개실거래 평단가)
+        guide_style = ParagraphStyle(
+            "GuideStyle",
+            parent=styles["Normal"],
+            fontName="KoreanFont",
+            fontSize=7.5,
+            leading=11.5,
+            textColor=colors.HexColor("#475569")
+        )
+        guide_text = (
+            "<b>💡 [시세 지표 분석 기준 안내]</b><br/>"
+            "• <b>평균 실거래가 (평균 평단가)</b>: 조회 기간 내 신고된 거래 금액의 산술 평균값으로, 해당 단지/지역의 전반적인 가격 기준선(기초 체급)을 나타냅니다.<br/>"
+            "• <b>최근 중개실거래 (평단가)</b>: 가족 간 증여 등 특수 거래(직거래)를 제외하고, 공인중개사를 통해 체결된 가장 최근의 정상 거래를 3.3㎡(1평)당 단가로 환산한 실시간 체감 시세 지표입니다. (평형이 다른 매물 간 1:1 정밀 가치 비교 시 활용)"
+        )
+        guide_table = Table([[Paragraph(guide_text, guide_style)]], colWidths=[500])
+        guide_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),
+            ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E1")),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+        ]))
+        story.append(guide_table)
+        story.append(Spacer(1, 8))
+        try:
+            from market_analyser import create_scatter_plot_drawing
+            
+            # Ensure _is_target_property is set for all transactions
+            for t in trades + jeonses + wolses:
+                if "_is_target_property" not in t:
+                    if apt_name:
+                        t_apt = (t.get("aptNm") or t.get("mhouseNm") or "").strip().lower()
+                        clean_t_apt = re.sub(r'\s*(?:제\s*)?[0-9A-Za-z가-힣]{1,4}\s*동\s*$', '', t_apt).strip()
+                        clean_tgt = re.sub(r'\s*(?:제\s*)?[0-9A-Za-z가-힣]{1,4}\s*동\s*$', '', apt_name.lower()).strip()
+                        t["_is_target_property"] = bool(clean_tgt and (clean_tgt in clean_t_apt or clean_t_apt in clean_tgt))
+                    elif target_bun and target_ji:
+                        t_bun = str(t.get("bun", "")).zfill(4)
+                        t_ji = str(t.get("ji", "")).zfill(4)
+                        t["_is_target_property"] = (t_bun == str(target_bun).zfill(4) and t_ji == str(target_ji).zfill(4))
+                    else:
+                        t["_is_target_property"] = True
 
-colors.HexColor("#F7FAFC")),
-
-("BOX", (0, 0), (-1, -1),
-
-1,
-
-colors.HexColor("#E2E8F0")), ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5), ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8)]))
-        story.append(dev_table)
-        story.append(Spacer(1, 6))
-        cma_trades = filter_by_size_category(trades, target_area, prop_type_name, apt_groups)
-        cma_jeonses = filter_by_size_category(jeonses, target_area, prop_type_name, apt_groups)
-        cma_wolses = filter_by_size_category(wolses, target_area, prop_type_name, apt_groups)
-        size_label = get_size_category_label(target_area, prop_type_name, apt_groups)
-        story.append(Paragraph(f"<b>비교 기준 면적 구분</b>: {size_label}", value_style))
-        story.append(Spacer(1, 4))
-        base_trades, first_trades, upper_trades = classify_by_floor(cma_trades)
-        base_jeonses, first_jeonses, upper_jeonses = classify_by_floor(cma_jeonses)
-        base_wolses, first_wolses, upper_wolses = classify_by_floor(cma_wolses)
-        floor_table_content = [[Paragraph("<b>층 구분</b>", table_hdr_style),
-
-Paragraph("<b>매매 평균 (건수)</b>", table_hdr_style), Paragraph("<b>전세 평균 (건수)</b>", table_hdr_style), Paragraph("<b>월세 환산 평균 (건수)</b>", table_hdr_style)], [Paragraph("지하층 (반지하)", table_cell_style), Paragraph(get_avg_display(base_trades, is_rent=False), table_cell_style_center),
-
-Paragraph(get_avg_display(base_jeonses, is_rent=True), table_cell_style_center), Paragraph(get_avg_display(base_wolses, is_rent=True, is_wolse=True), table_cell_style_center)], [Paragraph("지상 1층", table_cell_style), Paragraph(get_avg_display(first_trades, is_rent=False), table_cell_style_center),
-
-Paragraph(get_avg_display(first_jeonses, is_rent=True), table_cell_style_center), Paragraph(get_avg_display(first_wolses, is_rent=True, is_wolse=True), table_cell_style_center)], [Paragraph("2층 이상 (지상층)", table_cell_style), Paragraph(get_avg_display(upper_trades, is_rent=False), table_cell_style_center),
-
-Paragraph(get_avg_display(upper_jeonses, is_rent=True), table_cell_style_center), Paragraph(get_avg_display(upper_wolses, is_rent=True, is_wolse=True), table_cell_style_center)]]
-        floor_table = Table(floor_table_content, colWidths=[110, 130, 130, 130])
-        fl_table_style = [("BACKGROUND", (0, 0), (-1, 0),
-
-colors.HexColor("#2B6CB0")), ("ALIGN", (0, 0), (-1, -1), "LEFT"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("BOTTOMPADDING", (0, 0), (-1, -1), 5), ("TOPPADDING", (0, 0), (-1, -1), 5), ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E8F0"))]
-        for idx in range(1, 4):
-            bg_color = colors.HexColor("#FFFFFF") if idx % 2 == 1 else colors.HexColor("#F7FAFC")
-            fl_table_style.append(("BACKGROUND", (0, idx), (-1, idx), bg_color))
-        f" ({moa_status["redev_name"]})" + ""
-        floor_table.setStyle(TableStyle(fl_table_style))
-        story.append(floor_table)
-        story.append(Spacer(1, 6))
-        insights_list = generate_comparison_insights(cma_trades, cma_jeonses, cma_wolses)
-        insight_p_style = ParagraphStyle("InsightP", parent=styles["Normal"], fontName="KoreanFont", fontSize=8.5, leading=12.5, textColor=colors.HexColor("#2D3748"))
-        insight_paragraphs = [Paragraph(ins, insight_p_style) for ins in insights_list]
-        if not insight_paragraphs:
-            insight_paragraphs = [Paragraph("• 충분한 비교 대상 거래 사례가 없어 자동 비율 분석을 생략합니다.", insight_p_style)]
-        insight_box_data = [[p] for p in insight_paragraphs]
-        insight_box = Table(insight_box_data, colWidths=[500])
-        insight_box.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFDF5")),
-
-("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#ECC94B")), ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6), ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8)]))
-        story.append(insight_box)
-        if desired_info:
+            if prop_type_name == "아파트" and apt_groups:
+                group_counts = []
+                for g in apt_groups:
+                    mid_area = (g["min"] + g["max"]) / 2
+                    f_trades = filter_by_size_category(trades, mid_area, prop_type_name, apt_groups)
+                    f_jeonses = filter_by_size_category(jeonses, mid_area, prop_type_name, apt_groups)
+                    f_wolses = filter_by_size_category(wolses, mid_area, prop_type_name, apt_groups)
+                    cnt = len(f_trades) + len(f_jeonses) + len(f_wolses)
+                    group_counts.append((cnt, g, f_trades, f_jeonses, f_wolses))
+                
+                group_counts.sort(key=lambda x: x[0], reverse=True)
+                top_groups = group_counts[:2]
+                
+                for idx, (cnt, g, f_trades, f_jeonses, f_wolses) in enumerate(top_groups):
+                    if cnt == 0:
+                        continue
+                    all_txs = f_trades + f_jeonses + f_wolses
+                    size_label = g["label"]
+                    title_prefix = "주력 평형" if idx == 0 else "관심 평형"
+                    scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name, dw=500, dh=120)
+                    if scatter_drawing:
+                        from reportlab.platypus import KeepTogether
+                        story.append(KeepTogether([
+                            Paragraph(f"■ [{title_prefix} 실거래가 산포도 - {size_label} (최근 24개월)]", h2_style),
+                            Spacer(1, 2),
+                            scatter_drawing,
+                            Spacer(1, 4)
+                        ]))
+            else:
+                filt_trades = filter_by_size_category(trades, target_area, prop_type_name, apt_groups)
+                filt_jeonses = filter_by_size_category(jeonses, target_area, prop_type_name, apt_groups)
+                filt_wolses = filter_by_size_category(wolses, target_area, prop_type_name, apt_groups)
+                all_txs = filt_trades + filt_jeonses + filt_wolses
+                
+                size_label = get_size_category_label(target_area, prop_type_name, apt_groups)
+                scatter_drawing = create_scatter_plot_drawing(all_txs, title=f"실거래가 산포도 ({size_label})", target_bld_nm=apt_name, dw=500, dh=120)
+                if scatter_drawing:
+                    from reportlab.platypus import KeepTogether
+                    story.append(KeepTogether([
+                        Paragraph(f"■ [실거래가 산포도 - {size_label} (최근 24개월)]", h2_style),
+                        Spacer(1, 2),
+                        scatter_drawing,
+                        Spacer(1, 4)
+                    ]))
+        except Exception as e:
+            print(f"산포도 생성 중 오류: {e}")
+        if prop_type_name in ["연립/다세대/빌라", "다세대", "빌라"]:
+            try:
+                from market_analyser import create_villa_land_scatter_plot_drawing, build_villa_land_stat_table
+                all_villa_trades = [t for t in (trades + jeonses + wolses) if t.get('_trade_type') == '매매']
+                addr_dong_label = target_bld_nm or (address.split()[1] if len(address.split()) > 1 else address)
+                land_chart = create_villa_land_scatter_plot_drawing(all_villa_trades, title=f"{addr_dong_label} 빌라 대지지분 평당가 산점도")
+                if land_chart:
+                    story.append(Spacer(1, 10))
+                    story.append(Paragraph("■ 🎯 [개발지/모아타운 핵심 지표] 대지지분 평당가 분석 및 5년 신축/구축 듀얼 곡선", h2_style))
+                    story.append(Spacer(1, 4))
+                    story.append(land_chart)
+                    story.append(Spacer(1, 6))
+                    land_table = build_villa_land_stat_table(all_villa_trades, table_cell_style_center, table_hdr_style)
+                    if land_table:
+                        story.append(land_table)
+                        story.append(Spacer(1, 8))
+            except Exception as e:
+                print(f"빌라 지분 분석 차트 생성 중 오류: {e}")
+        if prop_type_name not in ["아파트", "오피스텔"]:
+            story.append(Paragraph("■ [층수별 & 개발구역 적정시세 분석 (CMA)]", h2_style))
+            story.append(Spacer(1, 4))
+            moa_status = check_moatown_and_redev(address)
+            if moa_status["moatown"]:
+                if moa_status["moatown_name"]:
+                    pass
+            moa_display = "⚪ 미해당"
+            if moa_status["redev"]:
+                if moa_status["redev_name"]:
+                    pass
+            redev_display = "⚪ 미해당"
+            dev_table_data = [[Paragraph("<b>모아타운 지정</b>", label_style), Paragraph(moa_display, value_style), Paragraph("<b>재개발 정비구역</b>", label_style), Paragraph(redev_display, value_style)]]
+            dev_table = Table(dev_table_data, colWidths=[100, 150, 100, 150])
+            dev_table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1),
+    
+    colors.HexColor("#F7FAFC")),
+    
+    ("BOX", (0, 0), (-1, -1),
+    
+    1,
+    
+    colors.HexColor("#E2E8F0")), ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5), ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8)]))
+            story.append(dev_table)
+            story.append(Spacer(1, 6))
+            cma_trades = filter_by_size_category(trades, target_area, prop_type_name, apt_groups)
+            cma_jeonses = filter_by_size_category(jeonses, target_area, prop_type_name, apt_groups)
+            cma_wolses = filter_by_size_category(wolses, target_area, prop_type_name, apt_groups)
+            size_label = get_size_category_label(target_area, prop_type_name, apt_groups)
+            story.append(Paragraph(f"<b>비교 기준 면적 구분</b>: {size_label}", value_style))
+            story.append(Spacer(1, 4))
+            base_trades, first_trades, upper_trades = classify_by_floor(cma_trades)
+            base_jeonses, first_jeonses, upper_jeonses = classify_by_floor(cma_jeonses)
+            base_wolses, first_wolses, upper_wolses = classify_by_floor(cma_wolses)
+            floor_table_content = [[Paragraph("<b>층 구분</b>", table_hdr_style),
+    
+    Paragraph("<b>매매 평균 (건수)</b>", table_hdr_style), Paragraph("<b>전세 평균 (건수)</b>", table_hdr_style), Paragraph("<b>월세 환산 평균 (건수)</b>", table_hdr_style)], [Paragraph("지하층 (반지하)", table_cell_style), Paragraph(get_avg_display(base_trades, is_rent=False), table_cell_style_center),
+    
+    Paragraph(get_avg_display(base_jeonses, is_rent=True), table_cell_style_center), Paragraph(get_avg_display(base_wolses, is_rent=True, is_wolse=True), table_cell_style_center)], [Paragraph("지상 1층", table_cell_style), Paragraph(get_avg_display(first_trades, is_rent=False), table_cell_style_center),
+    
+    Paragraph(get_avg_display(first_jeonses, is_rent=True), table_cell_style_center), Paragraph(get_avg_display(first_wolses, is_rent=True, is_wolse=True), table_cell_style_center)], [Paragraph("2층 이상 (지상층)", table_cell_style), Paragraph(get_avg_display(upper_trades, is_rent=False), table_cell_style_center),
+    
+    Paragraph(get_avg_display(upper_jeonses, is_rent=True), table_cell_style_center), Paragraph(get_avg_display(upper_wolses, is_rent=True, is_wolse=True), table_cell_style_center)]]
+            floor_table = Table(floor_table_content, colWidths=[110, 130, 130, 130])
+            fl_table_style = [("BACKGROUND", (0, 0), (-1, 0),
+    
+    colors.HexColor("#2B6CB0")), ("ALIGN", (0, 0), (-1, -1), "LEFT"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("BOTTOMPADDING", (0, 0), (-1, -1), 5), ("TOPPADDING", (0, 0), (-1, -1), 5), ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#E2E8F0"))]
+            for idx in range(1, 4):
+                bg_color = colors.HexColor("#FFFFFF") if idx % 2 == 1 else colors.HexColor("#F7FAFC")
+                fl_table_style.append(("BACKGROUND", (0, idx), (-1, idx), bg_color))
+            f" ({moa_status['redev_name']})" + ""
+            floor_table.setStyle(TableStyle(fl_table_style))
+            story.append(floor_table)
+            story.append(Spacer(1, 6))
+            insights_list = generate_comparison_insights(cma_trades, cma_jeonses, cma_wolses)
+            insight_p_style = ParagraphStyle("InsightP", parent=styles["Normal"], fontName="KoreanFont", fontSize=8.5, leading=12.5, textColor=colors.HexColor("#2D3748"))
+            insight_paragraphs = [Paragraph(ins, insight_p_style) for ins in insights_list]
+            if not insight_paragraphs:
+                insight_paragraphs = [Paragraph("• 충분한 비교 대상 거래 사례가 없어 자동 비율 분석을 생략합니다.", insight_p_style)]
+            insight_box_data = [[p] for p in insight_paragraphs]
+            insight_box = Table(insight_box_data, colWidths=[500])
+            insight_box.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFDF5")),
+    
+    ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#ECC94B")), ("TOPPADDING", (0, 0), (-1, -1), 6), ("BOTTOMPADDING", (0, 0), (-1, -1), 6), ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8)]))
+            story.append(insight_box)
+        if desired_info and desired_info.get("trade_type") != "종합":
             trade_type = desired_info.get("trade_type", "매매")
-            d_price = desired_info.get("price", 0)
-            d_monthly = desired_info.get("monthly_rent", 0)
-            d_converted = d_price + (d_monthly * 100)
+            d_price = desired_info.get("price") or desired_info.get("target_price") or 0
+            d_monthly = desired_info.get("monthly_rent") or desired_info.get("target_monthly") or 0
+            d_converted = d_price + (d_monthly * GLOBAL_WOLSE_MULTIPLIER)
             
             def local_format_price(val):
                 if val >= 10_000:
@@ -1241,6 +2295,8 @@ colors.HexColor("#2B6CB0")), ("ALIGN", (0, 0), (-1, -1), "LEFT"), ("VALIGN", (0,
                 price_label_str = f"월세 {local_format_price(d_price)} / {local_format_price(d_monthly)}"
             else:
                 price_label_str = f"{trade_type} {local_format_price(d_price)}"
+                if desired_info and desired_info.get("pyeong_price"):
+                    price_label_str += f" (대지 평당 약 {desired_info['pyeong_price']:,}만)"
             cma_trades = filter_by_size_category(trades, target_area, prop_type_name, apt_groups)
             cma_jeonses = filter_by_size_category(jeonses, target_area, prop_type_name, apt_groups)
             cma_wolses = filter_by_size_category(wolses, target_area, prop_type_name, apt_groups)
@@ -1251,7 +2307,7 @@ colors.HexColor("#2B6CB0")), ("ALIGN", (0, 0), (-1, -1), "LEFT"), ("VALIGN", (0,
             else:
                 match_list = cma_wolses
             floor_cat = "upper"
-            if target_floor is None:
+            if target_floor is not None:
                 fl = int(target_floor)
                 if fl < 0 or "지하" in str(target_floor):
                     floor_cat = "base"
@@ -1303,6 +2359,22 @@ colors.HexColor("#2B6CB0")), ("ALIGN", (0, 0), (-1, -1), "LEFT"), ("VALIGN", (0,
                     border_color = colors.HexColor("#FEB2B2")
                     
             eval_content = f"{phone_line}<b>• 의뢰 고객 희망 조건</b>: {price_label_str}<br/><b>• 적정 시세 기준선</b>: {ref_str}<br/><b>• 거래희망가 평가 결과</b>: <font color='{eval_color}'><b>{eval_title}</b></font><br/><b>• 종합 의견</b>: {detail_desc}"
+            if official_price_val and d_price > 0 and trade_type in ("전세", "월세"):
+                dep_won = d_price * 10_000
+                dep_ratio = (dep_won / official_price_val) * 100
+                p126_won = int(official_price_val * 1.26)
+                p126_str = format_assessed_price(p126_won)
+                off_str = format_assessed_price(official_price_val)
+                yr_desc = f"({official_price_year}년) " if official_price_year else ""
+                if dep_won <= p126_won:
+                    ins_color = "#38A169"
+                    ins_status = f"<font color='{ins_color}'><b>✅ 충족 (126% 이하 - 전세보증보험 가입 적격)</b></font>"
+                else:
+                    ins_color = "#E53E3E"
+                    excess_won = dep_won - p126_won
+                    excess_str = format_assessed_price(excess_won)
+                    ins_status = f"<font color='{ins_color}'><b>⚠️ 초과 (126% 기준액 대비 약 {excess_str} 초과 - 최대 {p126_str} 이하 권장)</b></font>"
+                eval_content += f"<br/><b>• 공시가격 대비 보증금 비율</b>: <b>{dep_ratio:.1f}%</b> (주택공시가격: {yr_desc}{off_str})<br/><b>• 공시가격 126% 기준금액</b>: <b>{p126_str}</b> (HUG 보증보험 안심 가입 한도)<br/><b>• 전세보증보험 가입 진단</b>: {ins_status}"
             eval_box = Table([[Paragraph(eval_content, eval_p_body)]], colWidths=[500])
             eval_box.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), bg_color), ("BOX", (0, 0), (-1, -1), 1, border_color), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8), ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10)]))
             story.append(eval_box)
@@ -1318,7 +2390,7 @@ colors.HexColor("#2B6CB0")), ("ALIGN", (0, 0), (-1, -1), "LEFT"), ("VALIGN", (0,
 colors.HexColor("#E2E8F0")), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDING", (0, 0), (-1, -1), 8), ("LEFTPADDING", (0, 0), (-1, -1), 10), ("RIGHTPADDING", (0, 0), (-1, -1), 10)]))
         story.append(notice_box)
         def find_img_file(name):
-            for d in (".", "scratch", ".."):
+            for d in (".", "scratch", "..", "assets", "../assets"):
                 for ext in (".png", ".jpg", ".jpeg"):
                     p_path = os.path.join(d, name + ext)
                     if os.path.exists(p_path):
@@ -1327,79 +2399,185 @@ colors.HexColor("#E2E8F0")), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDIN
         center_bold_style = ParagraphStyle("FooterCenterBold", parent=styles["Normal"], fontName="KoreanFont", fontSize=11, leading=15, textColor=colors.HexColor("#1A365D"), alignment=1, bold=True)
         center_normal_style = ParagraphStyle("FooterCenterNormal", parent=styles["Normal"], fontName="KoreanFont", fontSize=9.5, leading=14, textColor=colors.HexColor("#4A5568"), alignment=1)
         italic_quote_style = ParagraphStyle("FooterItalicQuote", parent=styles["Normal"], fontName="KoreanFont", fontSize=11, leading=16, textColor=colors.HexColor("#2D3748"), alignment=1)
+        from reportlab.platypus import KeepTogether
         def get_divider():
-            t_div = Table([[""]], colWidths=[500], rowHeights=[1]); t_div.setStyle(TableStyle([("LINEABOVE", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")), ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0)]))
+            t_div = Table([[""]], colWidths=[500], rowHeights=[1])
+            t_div.setStyle(TableStyle([("LINEABOVE", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")), ("TOPPADDING", (0, 0), (-1, -1), 0), ("BOTTOMPADDING", (0, 0), (-1, -1), 0)]))
             return t_div
-        story.append(Spacer(1, 15))
-        story.append(get_divider())
-        story.append(Spacer(1, 10))
-        story.append(Paragraph("감사합니다.", center_bold_style))
-        story.append(Spacer(1, 5))
-        story.append(Paragraph("이번 분석이 도움이 되셨기를 바랍니다.", center_normal_style))
-        story.append(Spacer(1, 10))
-        story.append(get_divider())
-        story.append(Spacer(1, 12))
+
         member = load_member_info() or {}
         m_name = format_member_name(member.get("name", "관리자"))
         m_phone = member.get("phone", "")
         m_addr = member.get("office_address", "")
         m_reg = member.get("registration_number", "")
-        story.append(Paragraph(f"<b>{m_name}</b>", center_bold_style))
-        story.append(Spacer(1, 8))
-        profile_path = find_img_file("profile")
-        profile_img = None
-        if profile_path:
-            from reportlab.platypus import Image
-            profile_img = Image(profile_path, width=70, height=90)
-        if profile_img:
-            profile_row = Table([[profile_img]], colWidths=[500])
-            profile_row.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
-            story.append(profile_row)
-            story.append(Spacer(1, 10))
-        story.append(Paragraph("데이터 기반 부동산 분석<br/>매매 · 임대차 · 투자 상담", center_normal_style))
-        story.append(Spacer(1, 10))
-        story.append(Paragraph(f"📞 {m_phone}", center_bold_style))
-        story.append(Spacer(1, 10))
-        addr_text = f"📍 {m_addr}"
-        if m_reg:
-            addr_text += f"<br/>등록번호: {m_reg}"
-        story.append(Paragraph(addr_text, center_normal_style))
-        story.append(Spacer(1, 10))
-        kakao_path = find_img_file("kakao_qr")
-        naver_path = find_img_file("naver_qr")
-        kakao_img = None
-        if kakao_path:
-            from reportlab.platypus import Image
-            kakao_img = Image(kakao_path, width=70, height=70)
-        naver_img = None
-        if naver_path:
-            from reportlab.platypus import Image
-            naver_img = Image(naver_path, width=70, height=70)
-            
-        if kakao_img or naver_img:
-            cols = []
-            widths = []
-            if kakao_img:
-                cols.append(kakao_img)
-                widths.append(70)
-            if kakao_img and naver_img:
-                cols.append("")
-                widths.append(20)
-            if naver_img:
-                cols.append(naver_img)
-                widths.append(70)
-            qr_table = Table([cols], colWidths=widths)
-            qr_table.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
-            qr_row = Table([[qr_table]], colWidths=[500])
-            qr_row.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
-            story.append(qr_row)
-            story.append(Spacer(1, 12))
+        office_nm = member.get("office_name") or member.get("office") or "신대림공인중개사사무소"
+
+        is_complex = is_complex_analysis or (prop_type_name == "아파트" and target_floor is None and (not desired_info or not desired_info.get("ho_name")))
         
-        story.append(get_divider())
-        story.append(Spacer(1, 10))
-        story.append(Paragraph('"데이터로 설명하고,<br/>신뢰로 연결합니다."', italic_quote_style))
-        story.append(Spacer(1, 8))
-        story.append(Paragraph("<b>SHINDAERIM PROPERTY INTELLIGENCE</b>", center_bold_style))
+        closing_elements = []
+        if is_complex:
+            closing_elements.append(Spacer(1, 4))
+            closing_elements.append(get_divider())
+            closing_elements.append(Spacer(1, 4))
+            closing_elements.append(Paragraph("감사합니다.", center_bold_style))
+            closing_elements.append(Spacer(1, 2))
+            closing_elements.append(Paragraph("이번 분석이 도움이 되셨기를 바랍니다.", center_normal_style))
+            closing_elements.append(Spacer(1, 4))
+            closing_elements.append(get_divider())
+            closing_elements.append(Spacer(1, 6))
+
+            reg_str = f" (등록번호: {m_reg})" if m_reg else ""
+            b_info_p = f"<b>{m_name}</b> | 데이터 기반 부동산 분석 · 매매 · 임대차 · 투자 상담<br/>📞 {m_phone}  |  📍 {m_addr}{reg_str}"
+            b_card = Table([[Paragraph(b_info_p, center_normal_style)]], colWidths=[500])
+            b_card.setStyle(TableStyle([
+                ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#F8FAFC")),
+                ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")),
+                ("TOPPADDING", (0, 0), (-1, -1), 4),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ]))
+            closing_elements.append(b_card)
+            closing_elements.append(Spacer(1, 6))
+
+            try:
+                from market_analyser import find_office_map_file
+                map_path = find_office_map_file(address)
+            except Exception:
+                map_path = None
+
+            if map_path and os.path.exists(map_path):
+                map_title_style = ParagraphStyle(
+                    "BriefingMapTitle",
+                    parent=styles["Normal"],
+                    fontName="KoreanFont",
+                    fontSize=9.5,
+                    leading=13,
+                    textColor=colors.HexColor("#1A365D"),
+                    alignment=1,
+                    bold=True,
+                    spaceBefore=2,
+                    spaceAfter=2,
+                    keepWithNext=True
+                )
+                map_sub_style = ParagraphStyle(
+                    "BriefingMapSub",
+                    parent=styles["Normal"],
+                    fontName="KoreanFont",
+                    fontSize=7.5,
+                    leading=10,
+                    textColor=colors.HexColor("#4A5568"),
+                    alignment=1,
+                    spaceAfter=4,
+                    keepWithNext=True
+                )
+                m_addr_val = m_addr or "서울 마포구 모래내로 7길 52"
+                closing_elements.append(Paragraph(f"<b>■ 찾아오시는 길 ({office_nm} 약도)</b>", map_title_style))
+                closing_elements.append(Paragraph(f"📍 {m_addr_val} (중동초등학교 인근 / 성산2동주민센터 도보 3분)", map_sub_style))
+
+                try:
+                    from PIL import Image as PILImage
+                    with PILImage.open(map_path) as im:
+                        orig_w, orig_h = im.size
+                    aspect = orig_w / float(orig_h) if orig_h > 0 else 1.5538
+                except Exception:
+                    aspect = 1.5538
+
+                target_w = 400
+                target_h = int(target_w / aspect)
+                if target_h > 150:
+                    target_h = 150
+                    target_w = int(target_h * aspect)
+
+                from reportlab.platypus import Image as RLImage
+                map_img_obj = RLImage(map_path, width=target_w, height=target_h)
+                map_card = Table([[map_img_obj]], colWidths=[500])
+                map_card.setStyle(TableStyle([
+                    ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFFFF")),
+                    ("BOX", (0, 0), (-1, -1), 0.5, colors.HexColor("#CBD5E0")),
+                    ("TOPPADDING", (0, 0), (-1, -1), 2),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 2),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 2),
+                ]))
+                closing_elements.append(map_card)
+                closing_elements.append(Spacer(1, 6))
+
+            closing_elements.append(get_divider())
+            closing_elements.append(Spacer(1, 4))
+            closing_elements.append(Paragraph('"이제 중개도<br/>과학입니다."', italic_quote_style))
+            closing_elements.append(Spacer(1, 4))
+            closing_elements.append(Paragraph("<b>SHINDAERIM PROPERTY INTELLIGENCE</b>", center_bold_style))
+        else:
+            closing_elements.append(Spacer(1, 10))
+            closing_elements.append(get_divider())
+            closing_elements.append(Spacer(1, 8))
+            closing_elements.append(Paragraph("감사합니다.", center_bold_style))
+            closing_elements.append(Spacer(1, 4))
+            closing_elements.append(Paragraph("이번 분석이 도움이 되셨기를 바랍니다.", center_normal_style))
+            closing_elements.append(Spacer(1, 8))
+            closing_elements.append(get_divider())
+            closing_elements.append(Spacer(1, 10))
+            closing_elements.append(Paragraph(f"<b>{m_name}</b>", center_bold_style))
+            closing_elements.append(Spacer(1, 6))
+            profile_path = find_img_file("profile")
+            profile_img = None
+            if profile_path:
+                from reportlab.platypus import Image
+                profile_img = Image(profile_path, width=70, height=90)
+            if profile_img:
+                profile_row = Table([[profile_img]], colWidths=[500])
+                profile_row.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+                closing_elements.append(profile_row)
+                closing_elements.append(Spacer(1, 8))
+            closing_elements.append(Paragraph("데이터 기반 부동산 분석<br/>매매 · 임대차 · 투자 상담", center_normal_style))
+            closing_elements.append(Spacer(1, 8))
+            closing_elements.append(Paragraph(f"📞 {m_phone}", center_bold_style))
+            closing_elements.append(Spacer(1, 8))
+            addr_text = f"📍 {m_addr}"
+            if m_reg:
+                addr_text += f"<br/>등록번호: {m_reg}"
+            closing_elements.append(Paragraph(addr_text, center_normal_style))
+            closing_elements.append(Spacer(1, 8))
+            kakao_path = find_img_file("kakao_qr")
+            naver_path = find_img_file("naver_qr")
+            kakao_img = None
+            if kakao_path:
+                from reportlab.platypus import Image
+                kakao_img = Image(kakao_path, width=70, height=70)
+            naver_img = None
+            if naver_path:
+                from reportlab.platypus import Image
+                naver_img = Image(naver_path, width=70, height=70)
+            if kakao_img or naver_img:
+                cols = []
+                widths = []
+                if kakao_img:
+                    cols.append(kakao_img)
+                    widths.append(70)
+                if kakao_img and naver_img:
+                    cols.append("")
+                    widths.append(20)
+                if naver_img:
+                    cols.append(naver_img)
+                    widths.append(70)
+                qr_table = Table([cols], colWidths=widths)
+                qr_table.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+                qr_row = Table([[qr_table]], colWidths=[500])
+                qr_row.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+                closing_elements.append(qr_row)
+                closing_elements.append(Spacer(1, 10))
+            closing_elements.append(get_divider())
+            closing_elements.append(Spacer(1, 8))
+            closing_elements.append(Paragraph('"이제 중개도<br/>과학입니다."', italic_quote_style))
+            closing_elements.append(Spacer(1, 6))
+            closing_elements.append(Paragraph("<b>SHINDAERIM PROPERTY INTELLIGENCE</b>", center_bold_style))
+
+        story.append(KeepTogether(closing_elements))
         def draw_page_decorations(canvas, doc_obj):
             try:
                 canvas.saveState()
@@ -1448,34 +2626,121 @@ colors.HexColor("#E2E8F0")), ("TOPPADDING", (0, 0), (-1, -1), 8), ("BOTTOMPADDIN
         pass
     except Exception as e:
         print(f"\n [오류] PDF 브리핑 파일 생성 중 오류 발생: {e}")
-def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, period_label="1년", is_expanded=False, target_build_year=None, target_area=None, target_floor=None, desired_info=None, expansion_mode="none"):
+def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, period_label="1년", is_expanded=False, target_build_year=None, target_area=None, target_floor=None, desired_info=None, expansion_mode="none", target_bld_nm=None, target_bun=None, target_ji=None, sigunguCd=None, bjdongCd=None, is_complex_analysis=False):
+    update_global_wolse_multiplier(jeonses, wolses)
     try:
         if expansion_mode == "auto":
             expansion_mode = CURRENT_EXPANSION_MODE
         if is_expanded and expansion_mode == "none":
-                    expansion_mode = "strict"
+            expansion_mode = "strict"
         import os
         from datetime import datetime
-        os.makedirs("시세브리핑", exist_ok=True)
-        masked_address = mask_address_string(address)
+        ho_label = desired_info.get("ho_name") if desired_info else None
+        clean_ho = re.sub(r'[^0-9A-Za-z가-힣]', '', str(ho_label).strip()) if ho_label else ""
+        ho_suffix = f"_{clean_ho}" if clean_ho.endswith("호") else f"_{clean_ho}호" if clean_ho else ""
+        
+        raw_clean_addr = desired_info.get("clean_address", "") if desired_info else ""
+        raw_road_addr = desired_info.get("road_address", "") if desired_info else ""
+        if raw_clean_addr and raw_road_addr and raw_clean_addr != raw_road_addr:
+            full_raw_address = f"{raw_clean_addr} ({raw_road_addr})"
+        else:
+            full_raw_address = raw_clean_addr or raw_road_addr or address
+        if ho_label:
+            ho_fmt = format_ho_label(ho_label)
+            if not full_raw_address.endswith(ho_fmt):
+                full_raw_address += f" {ho_fmt}"
+
         safe_addr = "".join([c for c in address if c not in (" ", "-", "_")]).strip()
-        filename = f"시세브리핑/시세브리핑_{safe_addr.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        filename = f"시세브리핑/시세브리핑_{safe_addr.replace(' ', '_')}{ho_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
         apt_groups = []
         if prop_type_name == "아파트":
             all_items = trades + jeonses + wolses
             apt_groups = get_apartment_size_groups(all_items)
         report_lines = []
         report_lines.append("================================================================================")
-        if is_expanded:
-            report_lines.append(f"          [ {masked_address} 인근 유사 매물 실거래 시세 브리핑 ]")
+        
+        apt_name = clean_apartment_name(target_bld_nm or "") if prop_type_name == "아파트" else (target_bld_nm or "")
+        if prop_type_name == "아파트" and all_items and not apt_name and not is_expanded:
+            for t in all_items:
+                name = (t.get('aptNm') or t.get('mhouseNm') or '').strip()
+                if name:
+                    apt_name = clean_apartment_name(name)
+                    break
+
+        if prop_type_name == "아파트" and apt_name:
+            if is_expanded:
+                report_lines.append(f"          [ {apt_name} 인근 유사 매물 거래동향 보고서 ]")
+            else:
+                report_lines.append(f"               [ {apt_name} 거래동향 보고서 ]")
         else:
-            report_lines.append(f"               [ {masked_address} 인근 실거래 시세 브리핑 ]")
+            if is_expanded:
+                report_lines.append(f"          [ {full_raw_address} 인근 유사 매물 실거래 시세 브리핑 ]")
+            else:
+                report_lines.append(f"               [ {full_raw_address} 인근 실거래 시세 브리핑 ]")
         report_lines.append("================================================================================")
+        report_lines.append("※ 본 자료는 내부 보관 및 상담용 상세 분석 기록입니다. (정확한 주소 및 연락처 보존)")
+        
+        if is_expanded:
+            report_lines.append(f"※ 분석 목적 물건: {apt_name or full_raw_address}")
+            report_lines.append("※ 분석 기준 사유: 목적 물건의 실거래 데이터가 부족하여, 인근 유사 조건의 매물을 포함해 확장 분석을 진행하였습니다.")
+            
+            if expansion_mode == "strict":
+                cond_txt = "목적 단지와 유사한 연식(±3년) 및 전용면적(±15%) 기준 적용"
+            elif expansion_mode == "relaxed":
+                cond_txt = "목적 단지와 넓은 범위의 연식(±5년) 및 전용면적(±20%) 기준 적용"
+            elif expansion_mode == "all":
+                cond_txt = "사용자가 지정한 지역 내 조건 없는 전체 매물 포함"
+            else:
+                cond_txt = "인근 매물 포함"
+                
+            report_lines.append(f"※ 매물 확장 기준: {cond_txt}")
+            
+            if prop_type_name == "아파트" and all_items:
+                included_apts = {}
+                for t in all_items:
+                    name = (t.get('aptNm') or t.get('mhouseNm') or '').strip()
+                    if name:
+                        included_apts[name] = included_apts.get(name, 0) + 1
+                if included_apts:
+                    names_str = ", ".join([f"{k}({v}건)" for k, v in included_apts.items()])
+                    report_lines.append(f"※ 거래사례 포함 단지: {names_str}")
+                    
+            report_lines.append("※ [주의사항] 인근 유사 단지가 포함된 확장 분석이므로, 포함된 단지별 세대수, 주차대수, 평형 구성 등")
+            report_lines.append("             고유의 단지 특성에 차이가 있을 수 있으니 시세 판단 시 참고하시기 바랍니다.")
+            report_lines.append("--------------------------------------------------------------------------------")
         report_lines.append(f"※ 본 자료는 국토교통부 {period_label} 실거래 내역을 분석한 결과입니다.")
         report_lines.append(f"※ 부동산 유형: {prop_type_name}")
+        
+        # [신설] 분석 대상 호실, 주용도, 전용면적, 대지지분, 공시가격 표시 (TXT)
+        if ho_label:
+            report_lines.append(f"※ 분석 대상 호실: {format_ho_label(ho_label)}")
+        ho_purpose = desired_info.get("unit_purpose") if desired_info else None
+        ho_is_comm = desired_info.get("is_commercial") if desired_info else False
+        if ho_purpose:
+            comm_tag = " ⚠️ [비주거용 근린생활시설 - 전세대출/보증보험 불가 유의]" if ho_is_comm else " [주거용]"
+            report_lines.append(f"※ 호실 주용도: {ho_purpose}{comm_tag}")
+        target_area_val = target_area or (desired_info.get("exclusive_area") if desired_info else None)
+        if target_area_val:
+            py = round(float(target_area_val) * 0.3025, 1)
+            report_lines.append(f"※ 호실 전용면적: {float(target_area_val):.2f} ㎡ (약 {py}평)")
+        land_share_val = desired_info.get("land_share") if desired_info else None
+        if land_share_val:
+            lpy = round(float(land_share_val) * 0.3025, 1)
+            report_lines.append(f"※ 호실 대지지분: {float(land_share_val):.2f} ㎡ (약 {lpy}평)")
+        official_price_val = desired_info.get("official_price") if desired_info else None
+        official_price_year = desired_info.get("official_price_year") if desired_info else ""
+        if official_price_val:
+            off_str = format_assessed_price(official_price_val)
+            off_126_str = format_assessed_price(int(official_price_val * 1.26))
+            yr_desc = f"({official_price_year}년 기준) " if official_price_year else ""
+            report_lines.append(f"※ 주택 공시가격: {yr_desc}{off_str} (126%: {off_126_str})")
+            
         if desired_info and desired_info.get("room_count_label"):
-            report_lines.append(f"※ 분석 대상 방 개수: {desired_info["room_count_label"]}")
-        if target_floor is None:
+            report_lines.append(f"※ 분석 대상 방 개수: {desired_info['room_count_label']}")
+        if desired_info and desired_info.get("phone_number"):
+            raw_phone = desired_info["phone_number"]
+            report_lines.append(f"※ 의뢰인 연락처: {raw_phone}") # 원본 전화번호 기록!
+        if target_floor is not None:
             floor_lbl = f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층"
             report_lines.append(f"※ 분석 대상 층수: {floor_lbl}")
         if is_expanded:
@@ -1485,24 +2750,97 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                     cond_parts.append(f"준공년도 ±5년 ({target_build_year - 5}~{target_build_year + 5}년)")
                 if target_area:
                     cond_parts.append(f"전용면적 ±20% ({target_area * 0.8:.1f}~{target_area * 1.2:.1f}㎡)")
-                cond_str = cond_parts and "동일 법정동 전체"
-                report_lines.append("※ [확장 분석] 대상 지번 및 엄격한 조건의 실거래 데이터가 부족하여, 설득력 있는 시세 분석을 위해")
-                report_lines.append("※             비교 범위를 넓은 기준의 유사 매물 사례로 확장하여 분석을 진행하였습니다.")
-                report_lines.append(f"※ 유사 매물 기준 (넓음): {cond_str}")
-            elif target_build_year:
-                cond_parts.append(f"준공년도 ±3년 ({target_build_year - 3}~{target_build_year + 3}년)")
-            if target_area:
-                cond_parts.append(f"전용면적 ±15% ({target_area * 0.85:.1f}~{target_area * 1.15:.1f}㎡)")
-            cond_str = cond_parts and "동일 법정동 전체"
-            report_lines.append("※ [확장 분석] 대상 지번의 거래 사례 부족으로 동일 법정동 내 엄격한 기준의 유사 매물 사례를 분석하였습니다.")
-            report_lines.append(f"※ 유사 매물 기준 (엄격): {cond_str}")
+                cond_str = ", ".join(cond_parts) if cond_parts else "지역 전체 매물"
+                report_lines.append("※ [확장 분석] 대상 지번의 실거래 데이터가 부족하여, 설득력 있는 시세 분석을 위해")
+                report_lines.append("※             비교 범위를 법정동 전체/넓은 기준의 유사 매물 사례로 확장하여 분석을 진행하였습니다.")
+                report_lines.append(f"※ 유사 매물 기준 (법정동 넓음): {cond_str}")
+            elif expansion_mode == "all":
+                report_lines.append("※ [확장 분석] 해당 지역 내 전체 거래 매물을 대상으로 확장 분석을 진행하였습니다.")
+            else:
+                if target_build_year:
+                    cond_parts.append(f"준공년도 ±3년 ({target_build_year - 3}~{target_build_year + 3}년)")
+                if target_area:
+                    cond_parts.append(f"전용면적 ±15% ({target_area * 0.85:.1f}~{target_area * 1.15:.1f}㎡)")
+                cond_str = ", ".join(cond_parts) if cond_parts else "동일 생활권 전체"
+                report_lines.append("※ [확장 분석] 대상 지번의 거래 사례 부족으로 동일 행정동(생활권) 내 유사 매물 사례를 분석하였습니다.")
+                report_lines.append(f"※ 유사 매물 기준 (행정동 생활권): {cond_str}")
+            
+        # [신설] 분석 대상 호실 핵심 면적, 대지지분 및 공시가격 정보 (TXT)
+        if target_area_val or land_share_val or ho_label or official_price_val or ho_purpose:
+            ho_disp = f"[{format_ho_label(ho_label)}]" if ho_label else ""
+            report_lines.append("--------------------------------------------------------------------------------")
+            report_lines.append(f"■ [분석 대상 {ho_disp} 핵심 면적 및 공시가격]")
+            if ho_label:
+                report_lines.append(f"  • 분석 대상 호실 : {format_ho_label(ho_label)}")
+            if ho_purpose:
+                comm_tag = " ⚠️ [근린생활시설 - 주거용 불법 사용 및 보증보험 불가 주의]" if ho_is_comm else " (주거용)"
+                report_lines.append(f"  • 호실 주용도    : {ho_purpose}{comm_tag}")
+            if target_area_val:
+                py = round(float(target_area_val) * 0.3025, 1)
+                report_lines.append(f"  • 전용면적       : {float(target_area_val):.2f} ㎡ (약 {py}평)")
+            supply_val = desired_info.get("supply_area") if desired_info else None
+            if supply_val:
+                spy = round(float(supply_val) * 0.3025, 1)
+                report_lines.append(f"  • 공급면적       : {float(supply_val):.2f} ㎡ (약 {spy}평)")
+            if land_share_val:
+                lpy = round(float(land_share_val) * 0.3025, 1)
+                report_lines.append(f"  • 대지지분       : {float(land_share_val):.2f} ㎡ (약 {lpy}평)")
+            if target_floor is not None:
+                fl_desc = f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층"
+                report_lines.append(f"  • 해당 층수     : {fl_desc}")
+            if official_price_val:
+                off_str = format_assessed_price(official_price_val)
+                off_126_str = format_assessed_price(int(official_price_val * 1.26))
+                yr_desc = f"{official_price_year}년 기준 " if official_price_year else ""
+                report_lines.append(f"  • 주택 공시가격  : {yr_desc}{off_str}")
+                report_lines.append(f"  • 공시가격 126%  : {off_126_str} (HUG 전세보증보험 가입 한도)")
+
+        # 분석 대상 물건 토지 및 건축물 종합 개요 (TXT)
+        bld_overview = get_property_comprehensive_overview(bun=target_bun, ji=target_ji, address_str=address)
+        if bld_overview and bld_overview.get("has_data"):
+            report_lines.append("--------------------------------------------------------------------------------")
+            report_lines.append("■ [분석 대상 물건] 토지 및 건축물 종합 개요")
+            report_lines.append(f"  • 대지(토지)면적  : {bld_overview['plat_area_str']}")
+            report_lines.append(f"  • 건축 / 연면적   : {bld_overview['arch_area_str']} / {bld_overview['tot_area_str']} (건폐율 {bld_overview['bc_rat_str']} / 용적률 {bld_overview['vl_rat_str']})")
+            report_lines.append(f"  • 주용도 / 가구수 : {bld_overview['detail_purpose']} ({bld_overview['households_str']})")
+            report_lines.append(f"  • 규모 / 주구조   : {bld_overview['floors_str']} / {bld_overview['structure']}")
+            report_lines.append(f"  • 주차 대수       : {bld_overview['parking_str']}")
+            report_lines.append(f"  • 사용승인(준공)  : {bld_overview['apr_date_str']}")
+            report_lines.append(f"  • 위반건축물 여부 : {bld_overview['viol_status_str']}")
+            if bld_overview.get("land_use_zone") != "-" or bld_overview.get("official_land_price_str") != "-":
+                report_lines.append(f"  • 용도지역 / 지목 : {bld_overview['land_use_zone']} (지목: {bld_overview['land_category']})")
+                report_lines.append(f"  • 개별공시지가    : {bld_overview['official_land_price_str']}")
+            if bld_overview.get("reg_zones_str") and bld_overview["reg_zones_str"] != "해당 없음 (일반 지역)":
+                report_lines.append(f"  • 정비구역 / 규제 : {bld_overview['reg_zones_str']}")
+                
         report_lines.append("--------------------------------------------------------------------------------")
         def get_subset_info(subset, is_rent=False, is_wolse=False):
             stats = calculate_subset_stats(subset, is_rent, is_wolse)
             if not stats:
                 return "거래 사례 없음"
-            suffix = ""
-            return f"\n      • 거래 건수: {stats["count"]}건\n      • 가격 범위: {stats["range"]}{suffix}\n      • 평균 가격: {stats["avg"]}{suffix}\n      • 전용 평단가: {stats["pyung_unit"]}"
+            return f"\n      • 거래 건수: {stats['count']}건\n      • 평균 가격: {stats['avg']} ({stats['pyung_unit']})\n      • 최근 실거래가(중개): {stats.get('recent_pyung', '-')}"
+        target_apt_groups = set()
+        if prop_type_name == "아파트" and apt_groups:
+            all_txs_for_title = trades + jeonses + wolses
+            for item in all_txs_for_title:
+                is_target = False
+                if target_bun:
+                    t_jibun = normalize_jibun(item.get("jibun", ""))
+                    t_target_jibun = str(int(target_bun))
+                    if target_ji and int(target_ji) > 0:
+                        t_target_jibun += f"-{int(target_ji)}"
+                    if t_jibun == t_target_jibun:
+                        is_target = True
+                elif target_bld_nm:
+                    apt_nm = (item.get("aptNm") or item.get("mhouseNm") or "").strip()
+                    if apt_nm == target_bld_nm:
+                        is_target = True
+                        
+                if is_target:
+                    g_for_item = get_group_for_item(item, apt_groups)
+                    if g_for_item:
+                        target_apt_groups.add(g_for_item["label"])
+                        
         def group_items(items):
             under_26 = []; between_26_43 = []; above_43 = []
             if not items:
@@ -1519,7 +2857,10 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         if prop_type_name == "아파트" and apt_groups:
             for idx, g in enumerate(apt_groups):
                 g_trades = [t for t in trades if get_group_for_item(t, apt_groups) == g]
-                report_lines.append(f"  {idx + 1}) {g['label']}: {get_subset_info(g_trades, is_rent=False)}")
+                label_str = g['label']
+                if label_str in target_apt_groups:
+                    label_str += " [목적 아파트 평형]"
+                report_lines.append(f"  {idx + 1}) {label_str}: {get_subset_info(g_trades, is_rent=False)}")
         else:
             u26, b26_43, a43 = group_items(trades)
             report_lines.append(f"  1) 원룸/1.5룸형 (전용 26㎡ 미만): {get_subset_info(u26, is_rent=False)}")
@@ -1531,7 +2872,10 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         if prop_type_name == "아파트" and apt_groups:
             for idx, g in enumerate(apt_groups):
                 g_jeonses = [t for t in jeonses if get_group_for_item(t, apt_groups) == g]
-                report_lines.append(f"  {idx + 1}) {g['label']}: {get_subset_info(g_jeonses, is_rent=True)}")
+                label_str = g['label']
+                if label_str in target_apt_groups:
+                    label_str += " [목적 아파트 평형]"
+                report_lines.append(f"  {idx + 1}) {label_str}: {get_subset_info(g_jeonses, is_rent=True)}")
         else:
             u26_j, b26_43_j, a43_j = group_items(jeonses)
             report_lines.append(f"  1) 원룸/1.5룸형 (전용 26㎡ 미만): {get_subset_info(u26_j, is_rent=True)}")
@@ -1539,16 +2883,25 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
             report_lines.append(f"  3) 쓰리룸 이상형 (전용 43㎡ 이상): {get_subset_info(a43_j, is_rent=True)}")
             
         report_lines.append("--------------------------------------------------------------------------------")
-        report_lines.append("■ [월세] 시세 요약 (보증금 + 월세 * 100 환산 기준)")
+        report_lines.append(f"■ [월세] 시세 요약 (실제 전월세전환율 연 {GLOBAL_CONVERSION_RATE}% 기준)")
         if prop_type_name == "아파트" and apt_groups:
             for idx, g in enumerate(apt_groups):
                 g_wolses = [t for t in wolses if get_group_for_item(t, apt_groups) == g]
-                report_lines.append(f"  {idx + 1}) {g['label']}: {get_subset_info(g_wolses, is_rent=True, is_wolse=True)}")
+                label_str = g['label']
+                if label_str in target_apt_groups:
+                    label_str += " [목적 아파트 평형]"
+                report_lines.append(f"  {idx + 1}) {label_str}: {get_subset_info(g_wolses, is_rent=True, is_wolse=True)}")
         else:
             u26_w, b26_43_w, a43_w = group_items(wolses)
             report_lines.append(f"  1) 원룸/1.5룸형 (전용 26㎡ 미만): {get_subset_info(u26_w, is_rent=True, is_wolse=True)}")
             report_lines.append(f"  2) 투룸형 (전용 26㎡ ~ 43㎡ 미만): {get_subset_info(b26_43_w, is_rent=True, is_wolse=True)}")
             report_lines.append(f"  3) 쓰리룸 이상형 (전용 43㎡ 이상): {get_subset_info(a43_w, is_rent=True, is_wolse=True)}")
+            
+        report_lines.append("")
+        report_lines.append("  [💡 시세 지표 분석 기준 안내]")
+        report_lines.append("   • 평균 실거래가 (평균 평단가): 해당 기간 내 신고된 거래 금액의 산술 평균값 (전반적 기준 가격대)")
+        report_lines.append("   • 최근 중개실거래 (평단가)   : 가족 간 증여 등 이상 거래(직거래)를 제외하고, 공인중개사를 통해")
+        report_lines.append("                                  체결된 최신 정상 거래를 3.3㎡(1평)당 단가로 환산한 실시간 체감 시세 지표")
         report_lines.append("--------------------------------------------------------------------------------")
         report_lines.append("■ [층수별 & 개발구역 적정시세 분석 (CMA)]")
         moa_info = check_moatown_and_redev(address)
@@ -1587,11 +2940,11 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
             break
         report_lines.append("    - 충분한 비교 대상 거래 사례가 없어 자동 비율 분석을 생략합니다.")
         report_lines.append("--------------------------------------------------------------------------------")
-        if desired_info:
+        if desired_info and desired_info.get("trade_type") != "종합":
             trade_type = desired_info.get("trade_type", "매매")
-            d_price = desired_info.get("price", 0)
-            d_monthly = desired_info.get("monthly_rent", 0)
-            d_converted = d_price + (d_monthly * 100)
+            d_price = desired_info.get("price") or desired_info.get("target_price") or 0
+            d_monthly = desired_info.get("monthly_rent") or desired_info.get("target_monthly") or 0
+            d_converted = d_price + (d_monthly * GLOBAL_WOLSE_MULTIPLIER)
             def local_format_price(val):
                 if val >= 10_000:
                     eok = int(val // 10_000)
@@ -1609,6 +2962,8 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                 price_label_str = f"월세 {local_format_price(d_price)} / {local_format_price(d_monthly)}"
             else:
                 price_label_str = f"{trade_type} {local_format_price(d_price)}"
+                if desired_info.get("pyeong_price"):
+                    price_label_str += f" (대지 평당 약 {desired_info['pyeong_price']:,}만 원)"
                 
             if trade_type == "매매":
                 match_list = cma_trades
@@ -1633,8 +2988,7 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
             report_lines.append("■ [희망 거래가 분석 및 적정성 평가]")
             phone_no = desired_info.get("phone_number")
             if phone_no:
-                masked_phone = mask_phone_number(phone_no)
-                report_lines.append(f"  • 의뢰인 연락처  : {masked_phone}")
+                report_lines.append(f"  • 의뢰인 연락처  : {phone_no}")
                 
             if d_converted == 0:
                 report_lines.append("  • 의뢰 고객 희망 조건: 미지정 (시세 정보 브리핑)")
@@ -1644,7 +2998,7 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                 report_lines.append(f"  • 의뢰 고객 희망 조건: {price_label_str}")
                 
                 if not ref_val:
-                    report_lines.append(f"  • 적정 시세 기준선  : 판단 불가 (비교 사례 부족)")
+                    report_lines.append("  • 적정 시세 기준선  : 판단 불가 (비교 사례 부족)")
                 else:
                     report_lines.append(f"  • 적정 시세 기준선  : {local_format_price(ref_val)} ({ref_desc})")
                 
@@ -1654,20 +3008,33 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                     ref_val_str = local_format_price(ref_val)
                     diff_val_str = local_format_price(abs(diff))
                     if abs(pct) <= 5.0:
-                        eval_title = "적절함 (인근 시세 수준)"
-                        detail_desc = f"희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준) 대비 약 {abs(pct):.1f}% 차이로, 현재 시장 가격대 범위 내에서 매우 적정하게 책정된 상태입니다."
-                    elif diff < 0:
-                        eval_title = "저렴함 (시세 대비 가격경쟁력 우수)"
-                        detail_desc = f"희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준) 대비 약 {diff_val_str} ({abs(pct):.1f}%) 저렴하게 책정되어 있습니다. 시장 진입 시 빠른 거래 성사가 예상되어 가격 경쟁력이 높습니다."
+                        report_lines.append("  • 거래희망가 평가 결과: 매우 적정 (시세 수준)")
+                        report_lines.append(f"  • 종합 의견: 희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준)와 거의 일치하여 시장에서 매우 경쟁력이 높고 합리적인 가격대입니다.")
+                    elif pct < -5.0:
+                        report_lines.append("  • 거래희망가 평가 결과: 저렴함 (시세 대비 가격경쟁력 우수)")
+                        report_lines.append(f"  • 종합 의견: 희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준) 대비 약 {diff_val_str} ({abs(pct):.1f}%) 저렴하게 책정되어 있습니다. 시장 진입 시 빠른 거래 성사가 예상되어 가격 경쟁력이 높습니다.")
                     else:
-                        eval_title = "높음 (가격 조정 권장)"
-                        detail_desc = f"희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준) 대비 약 {diff_val_str} ({pct:.1f}%) 높게 책정되어 있습니다. 거래 성사 및 빠른 중개를 위해 의뢰인과의 상의를 통한 가격 조정을 권장합니다."
-                else:
-                    eval_title = "보류 (비교 사례 부족)"
-                    detail_desc = "인근 지역 내 유사한 거래 사례(동일 면적대 및 층수별 사례)가 부족하여 자동 적정성 평가가 제한적입니다. 주변 법정동 및 대체 매물 시세를 추가로 고려하시기 바랍니다."
-                report_lines.append(f"  • 거래희망가 평가 결과: {eval_title}")
-                report_lines.append(f"  • 종합 의견: {detail_desc}")
-            report_lines.append("--------------------------------------------------------------------------------")
+                        report_lines.append("  • 거래희망가 평가 결과: 다소 높음 (시세 대비 상향 조정 검토 필요)")
+                        report_lines.append(f"  • 종합 의견: 희망 하시는 거래 조건은 인근 적정 시세({ref_val_str}, {ref_desc} 기준) 대비 약 {diff_val_str} ({abs(pct):.1f}%) 높게 책정되어 있습니다. 최근 시장의 매물 적체 상황 및 매수/임차인의 가격 민감도를 고려할 때 거래 성사까지 다소 시일이 소요될 수 있으므로, 적정선으로의 가격 조정을 권장합니다.")
+                
+                if official_price_val and d_price > 0 and trade_type in ("전세", "월세"):
+                    dep_won = d_price * 10_000
+                    dep_ratio = (dep_won / official_price_val) * 100
+                    p126_won = int(official_price_val * 1.26)
+                    p126_str = format_assessed_price(p126_won)
+                    off_str = format_assessed_price(official_price_val)
+                    yr_desc = f"({official_price_year}년 기준) " if official_price_year else ""
+                    report_lines.append(f"  • 공시가격 대비 보증금 비율: {dep_ratio:.1f}% (주택공시가격: {yr_desc}{off_str} / 126% 기준한도: {p126_str})")
+                    if dep_won <= p126_won:
+                        diff_won = p126_won - dep_won
+                        diff_str = format_assessed_price(diff_won)
+                        report_lines.append(f"  • 전세보증보험(HUG) 진단: ✅ [가입 적격] 보증금이 공시가격의 126% 이하로 HUG/SGI 보증보험 안심 가입 요건을 충족합니다. (여유 한도: 약 {diff_str})")
+                    else:
+                        excess_won = dep_won - p126_won
+                        excess_str = format_assessed_price(excess_won)
+                        report_lines.append(f"  • 전세보증보험(HUG) 진단: ⚠️ [126% 초과 주의] 보증금이 공시가격 126% 기준선({p126_str})을 약 {excess_str} 초과하여 보증보험 가입이 불가할 수 있습니다. (안전 가입을 위해 최대 {p126_str} 이하로 조정 권장)")
+        
+        report_lines.append("--------------------------------------------------------------------------------")
         report_lines.append("■ [안내] 시세 데이터 수집 및 분석 기준 안내")
         report_lines.append("  • 아파트/다세대빌라/오피스텔: 입력 주소와 100% 동일 지번(단지/건물)의 실거래가 기준입니다.")
         report_lines.append("  • 단독/다가구 주택:")
@@ -1676,22 +3043,18 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         report_lines.append("             인근 유사 주택의 거래 사례를 기준으로 자동 산출한 시세입니다.")
         report_lines.append("================================================================================")
         report_lines.append("※ 본 브리핑 자료는 중개업무 참고용으로 법적 효력을 가지지 않습니다.")
-        report_lines.append("================================================================================")
-        console_content = "\n".join(report_lines)
+        m_name = "조항준 공인중개사"
+        phone_line = "📞 02-375-4489 / 010-9128-0586"
+        addr_lines = ["📍 서울 마포구 모래내로 7길 52"]
         member = load_member_info()
         if member:
-            m_name = format_member_name(member.get("name", ""))
+            m_name = format_member_name(member.get("name", "")) or m_name
             m_phone = member.get("phone", "")
+            if m_phone:
+                phone_line = f"📞 {m_phone}"
             m_addr = member.get("office_address", "")
-            m_reg = member.get("registration_number", "")
-            phone_line = f"📞 {m_phone}"
-            addr_lines = [f"📍 {m_addr}"]
-            if m_reg:
-                addr_lines.append(f"등록번호: {m_reg}")
-        else:
-            m_name = "조항준 공인중개사"
-            phone_line = "📞 010-9128-0586\n☎ 02-375-4489"
-            addr_lines = ["📍 서울 마포구 모래내로 7길 52"]
+            if m_addr:
+                addr_lines = [f"📍 {m_addr}"]
         report_lines.append("──────────────────────────────")
         report_lines.append("")
         report_lines.append("        감사합니다.")
@@ -1712,8 +3075,8 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         report_lines.append("")
         report_lines.append("──────────────────────────────")
         report_lines.append("")
-        report_lines.append('"데이터로 설명하고,')
-        report_lines.append('신뢰로 연결합니다."')
+        report_lines.append('"이제 중개도')
+        report_lines.append('과학입니다."')
         report_lines.append("")
         report_lines.append("SHINDAERIM PROPERTY INTELLIGENCE")
         report_content = "\n".join(report_lines)
@@ -1722,21 +3085,139 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
         print("\n [알림] 시세 브리핑 자료가 성공적으로 저장되었습니다!")
         print(f"       -> 텍스트 파일 위치: {os.path.abspath(filename)}")
         pdf_filename = filename.replace(".txt", ".pdf")
-        save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, pdf_filename, apt_groups, period_label, is_expanded, target_build_year, target_area, target_floor=target_floor, desired_info=desired_info, expansion_mode=expansion_mode)
+        save_briefing_report_pdf(address, trades, jeonses, wolses, prop_type_name, pdf_filename, apt_groups, period_label, is_expanded, target_build_year, target_area, target_floor=target_floor, desired_info=desired_info, expansion_mode=expansion_mode, target_bld_nm=target_bld_nm, target_bun=target_bun, target_ji=target_ji, sigunguCd=sigunguCd, bjdongCd=bjdongCd, is_complex_analysis=is_complex_analysis)
         import shutil
         unified_dir = "종합분석보고서"
         os.makedirs(unified_dir, exist_ok=True)
         time_str = datetime.now().strftime('%Y%m%d_%H%M%S')
         unified_txt = os.path.join(unified_dir, f"시세브리핑_{safe_addr.replace(' ', '_')}_{time_str}.txt")
         unified_pdf = os.path.join(unified_dir, f"시세브리핑_{safe_addr.replace(' ', '_')}_{time_str}.pdf")
-        shutil.copy2(filename, unified_txt)
-        if os.path.exists(pdf_filename):
-            shutil.copy2(pdf_filename, unified_pdf)
-        print("       -> 종합분석보고서 통합 폴더에도 복사본이 저장되었습니다.")
+        
+        safe_addr_for_open = "".join([c for c in address if c not in (" ", "-", "_")]).strip()
+        latest_txt = os.path.join(unified_dir, f"시세브리핑_{safe_addr_for_open}.txt")
+        latest_pdf = os.path.join(unified_dir, f"시세브리핑_{safe_addr_for_open}.pdf")
+        
+        final_pdf_for_open = os.path.abspath(unified_pdf)
+        try:
+            shutil.copy2(filename, unified_txt)
+            try:
+                shutil.copy2(filename, latest_txt)
+            except Exception:
+                pass
+            if ho_suffix:
+                unified_ho_txt = os.path.join(unified_dir, f"시세브리핑_{safe_addr.replace(' ', '_')}{ho_suffix}_{time_str}.txt")
+                latest_ho_txt = os.path.join(unified_dir, f"시세브리핑_{safe_addr_for_open}{ho_suffix}.txt")
+                try:
+                    shutil.copy2(filename, unified_ho_txt)
+                    shutil.copy2(filename, latest_ho_txt)
+                except Exception:
+                    pass
+            if os.path.exists(pdf_filename):
+                shutil.copy2(pdf_filename, unified_pdf)
+                try:
+                    shutil.copy2(pdf_filename, latest_pdf)
+                    final_pdf_for_open = os.path.abspath(latest_pdf)
+                except PermissionError:
+                    print(f"\n [알림] 기존 열려있는 PDF 파일({os.path.basename(latest_pdf)})이 있어, 방금 생성된 최신 보고서({os.path.basename(unified_pdf)})로 안전하게 연결합니다.")
+                    final_pdf_for_open = os.path.abspath(unified_pdf)
+            print("       -> 종합분석보고서 통합 폴더에도 복사본이 저장되었습니다.")
+        except Exception as e:
+            print(f"       -> 파일 복사 중 예외 발생: {e}")
+            
+        return (unified_txt, final_pdf_for_open)
     except Exception as e:
         import traceback; traceback.print_exc()
         print(f"\n [오류] 브리핑 파일 저장 중 오류 발생: {e}")
-def print_comparison_table(transactions, prop_type, target_floor, target_area, address_name, sigunguCd, bun, ji, bjdong_nm, target_build_year, target_house_type, save_report, desired_info):
+        return (None, None)
+
+def filter_expanded_apartments(expanded_txs, bun, ji):
+    target_txs = []
+    other_txs = []
+    
+    target_jibun = ""
+    target_bun_clean = re.sub("\\D", "", str(bun))
+    target_ji_clean = re.sub("\\D", "", str(ji))
+    if target_bun_clean:
+        bun_int = int(target_bun_clean)
+        if target_ji_clean and int(target_ji_clean) > 0:
+            target_jibun = f"{bun_int}-{int(target_ji_clean)}"
+        else:
+            target_jibun = f"{bun_int}"
+            
+    for t in expanded_txs:
+        t_bun = str(t.get("bun", "")).zfill(4)
+        t_ji = str(t.get("ji", "")).zfill(4)
+        t_jibun = str(t.get("jibun", ""))
+        
+        is_target = False
+        if t_bun != "0000" and t_bun == str(bun).zfill(4) and t_ji == str(ji).zfill(4):
+            is_target = True
+        elif target_jibun and (normalize_jibun(t_jibun) == target_jibun or match_masked_jibun(t_jibun, target_jibun)):
+            is_target = True
+            
+        if is_target:
+            t["_is_target_property"] = True
+            target_txs.append(t)
+        else:
+            t["_is_target_property"] = False
+            other_txs.append(t)
+            
+    if not other_txs:
+        for t in expanded_txs:
+            t["_is_target_property"] = True
+        return expanded_txs
+        
+    apt_counts = {}
+    for t in other_txs:
+        name = (t.get("aptNm") or t.get("mhouseNm") or "알수없음").strip()
+        apt_counts[name] = apt_counts.get(name, 0) + 1
+        
+    print("\n [선택] 다음 호환 가능한 인근 아파트 거래가 발견되었습니다.")
+    print("        분석에 포함할 아파트를 선택하세요 (번호 입력, 쉼표로 다중 선택, 엔터 시 전체 포함)")
+    apt_names = sorted(apt_counts.keys())
+    for i, name in enumerate(apt_names, 1):
+        print(f"    {i}. {name} ({apt_counts[name]}건)")
+    
+    choice = input(" -> 번호 입력 (예: 1,3) [기본값: 전체 포함]: ").strip()
+        
+    if not choice:
+        for t in target_txs:
+            t["_is_target_property"] = True
+        for t in other_txs:
+            t["_is_target_property"] = False
+        return expanded_txs
+        
+    selected_indices = []
+    for p in choice.split(","):
+        try:
+            selected_indices.append(int(p.strip()) - 1)
+        except:
+            pass
+            
+    selected_names = set()
+    for i in selected_indices:
+        if 0 <= i < len(apt_names):
+            selected_names.add(apt_names[i])
+            
+    if not selected_names:
+        print(" -> 유효하지 않은 선택입니다. 전체를 포함합니다.")
+        for t in target_txs:
+            t["_is_target_property"] = True
+        for t in other_txs:
+            t["_is_target_property"] = False
+        return expanded_txs
+        
+    filtered_others = []
+    for t in other_txs:
+        name = (t.get("aptNm") or t.get("mhouseNm") or "알수없음").strip()
+        if name in selected_names:
+            t["_is_target_property"] = False
+            filtered_others.append(t)
+            
+    print(f" -> 선택하신 {len(selected_names)}개 아파트의 {len(filtered_others)}건을 추가합니다.")
+    return target_txs + filtered_others
+
+def print_comparison_table(transactions, prop_type, target_floor, target_area, address_name, sigunguCd, bun, ji, bjdong_nm, target_build_year, target_house_type, save_report, desired_info=None, target_bld_nm=None, is_dev_zone=False, admin_dong_nm=None, full_region_name=""):
     global CURRENT_EXPANSION_MODE
     is_expanded = False; expansion_mode = "none"; CURRENT_EXPANSION_MODE = "none"
     try:
@@ -1746,731 +3227,965 @@ def print_comparison_table(transactions, prop_type, target_floor, target_area, a
         t_24_initial = len(trades_initial)
         tot_24_initial = len(transactions)
         
+        # 행정동 명칭 자동 확보
+        admin_dong = admin_dong_nm
+        if not admin_dong and address_name:
+            try:
+                ainfo = get_kakao_address_info(address_name)
+                if ainfo:
+                    admin_dong = ainfo.get("adminDongNm")
+                    if not full_region_name:
+                        sido = ainfo.get("sidoNm", "")
+                        sgg = ainfo.get("sigunguNm", "")
+                        full_region_name = f"{sido} {sgg}".strip()
+            except Exception:
+                pass
+        if not admin_dong:
+            admin_dong = bjdong_nm
+            
         if sigunguCd and bjdong_nm:
             if tot_24_initial < 3 or t_24_initial <= 1:
                 print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 print(f" ⚠️ 조회하신 지번의 실거래 데이터가 부족합니다 (최근 24개월 매매 {t_24_initial}건 / 전체 {tot_24_initial}건).")
-                print("    동일 법정동 내 유사 조건의 인근 매물 실거래 사례로 범위를 확장할 수 있습니다.")
+                if admin_dong and admin_dong != bjdong_nm:
+                    print(f"    동일 행정동(생활권: {admin_dong}) 내 유사 조건의 인근 매물 실거래 사례로 범위를 확장할 수 있습니다.")
+                else:
+                    print(f"    동일 지역({admin_dong or bjdong_nm}) 내 유사 조건의 인근 매물 실거래 사례로 범위를 확장할 수 있습니다.")
                 print("    [선택안내]")
-                print("    1. 엄격한 유사 기준 (권장 - 준공년도 ±3년, 전용면적 ±15%이내)")
-                print("    2. 넓은 유사 기준 (비교 사례 부족 시 - 준공년도 ±5년, 전용면적 ±20%이내)")
+                print(f"    1. 행정동 생활권 유사 기준 (권장 - {admin_dong or bjdong_nm} 관할, 준공 ±3년, 면적 ±15%이내)")
+                print(f"    2. 법정동 전체 유사 기준 (비교 사례 부족 시 - {bjdong_nm} 전체, 준공 ±5년, 면적 ±20%이내)")
                 print("    3. 확장하지 않음 (해당 지번의 거래만 표시)")
+                print("    4. 맞춤형 동네 확장 (예: 성산동, 중동 등 쉼표로 구분하여 여러 동 입력)")
                 print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 if True:
-                    expand_choice = input("[입력] 분석 범위를 선택하세요 (1: 엄격한 기준 | 2: 넓은 기준 | 3: 미확장) [기본값: 1]: ").strip()
+                    expand_choice = input(f"[입력] 분석 범위를 선택하세요 (1: 행정동 생활권({admin_dong}) | 2: 법정동 전체({bjdong_nm}) | 3: 미확장 | 4: 맞춤형 확장) [기본값: 1]: ").strip()
                     if not expand_choice:
                         expand_choice = "1"
+                        
+                    target_bjdongs = bjdong_nm
+                    if expand_choice == "4":
+                        custom_dongs = input("[입력] 포함할 법정동 이름을 쉼표로 구분해 입력하세요 (예: 성산동, 중동): ").strip()
+                        if custom_dongs:
+                            target_bjdongs = custom_dongs
+                        
+                        margin_choice = input("[입력] 필터 조건을 선택하세요 (1: 엄격(±3년, ±15%) | 2: 넓게(±5년, ±20%) | 3: 조건 없음(전체)) [기본값: 1]: ").strip()
+                        if margin_choice == "2":
+                            expand_choice = "2"
+                        elif margin_choice == "3":
+                            expand_choice = "5"
+                        else:
+                            expand_choice = "1"
+                        
                     if expand_choice == "1":
-                        print(" -> 인근 유사 매물 데이터 수집 중 (엄격한 기준: 준공년도 ±3년, 전용면적 ±15%)...")
-                        expanded_txs = get_recent_transactions(sigunguCd, bun, ji, prop_type, bjdong_nm, target_build_year=target_build_year, target_house_type=target_house_type, expand_similar=True, target_area=target_area, build_year_margin=3, area_margin=0.15)
-                    if expand_choice == "2":
-                        print(" -> 인근 유사 매물 데이터 수집 중 (넓은 기준: 준공년도 ±5년, 전용면적 ±20%)...")
-                        expanded_txs = get_recent_transactions(sigunguCd, bun, ji, prop_type, bjdong_nm, target_build_year=target_build_year, target_house_type=target_house_type, expand_similar=True, target_area=target_area, build_year_margin=5, area_margin=0.2)
+                        dong_guide = f"{admin_dong} 생활권" if admin_dong else f"{target_bjdongs}"
+                        print(f" -> 인근 유사 매물 데이터 수집 중 (행정동 생활권 기준, 대상 동네: {dong_guide})...")
+
+                        expanded_txs = get_recent_transactions(sigunguCd, bun, ji, prop_type, target_bjdongs, target_build_year=target_build_year, target_house_type=target_house_type, expand_similar=True, target_area=target_area, build_year_margin=3, area_margin=0.15, target_admin_dong=admin_dong, full_region_name=full_region_name)
+
+                        # 만약 행정동 관할 필터링 후 유사 매물 표본이 없으면 법정동 전체로 유연하게 fallback
+                        if not expanded_txs or len(expanded_txs) <= len([t for t in (expanded_txs or []) if t.get("_is_target_property")]):
+                            print(f" -> {admin_dong} 관할 유사 매물 표본이 부족하여 동일 법정동({bjdong_nm}) 전체로 범위를 보완합니다...")
+                            expanded_txs = get_recent_transactions(sigunguCd, bun, ji, prop_type, target_bjdongs, target_build_year=target_build_year, target_house_type=target_house_type, expand_similar=True, target_area=target_area, build_year_margin=3, area_margin=0.15)
+
                         if expanded_txs:
+                            if prop_type_name == "아파트":
+                                expanded_txs = filter_expanded_apartments(expanded_txs, bun, ji)
+                            transactions = expanded_txs
+                            is_expanded = True
+                            expansion_mode = "strict"
+                            print(f" -> 유사 매물 {len(transactions)}건을 발견하여 분석을 진행합니다.")
+                        else:
+                            print(" -> 부합하는 인근 유사 매물이 없어 해당 지번의 데이터로만 분석합니다.")
+
+                    if expand_choice == "2":
+                        print(f" -> 인근 유사 매물 데이터 수집 중 (법정동 전체/넓은 기준, 대상 동네: {target_bjdongs})...")
+                        expanded_txs = get_recent_transactions(sigunguCd, bun, ji, prop_type, target_bjdongs, target_build_year=target_build_year, target_house_type=target_house_type, expand_similar=True, target_area=target_area, build_year_margin=5, area_margin=0.2)
+                        if expanded_txs:
+                            if prop_type_name == "아파트":
+                                expanded_txs = filter_expanded_apartments(expanded_txs, bun, ji)
                             transactions = expanded_txs
                             is_expanded = True
                             expansion_mode = "relaxed"
                             print(f" -> 넓은 기준의 유사 매물 {len(transactions)}건을 발견하여 분석을 진행합니다.")
                         else:
                             print(" -> 넓은 기준 조건의 유사 매물도 존재하지 않아 확장을 생략합니다.")
-                    CURRENT_EXPANSION_MODE = expansion_mode
-                    if not transactions:
-                        print_empty_transactions_explanation(prop_type)
-                        type_names = {"1": "아파트", "2": "연립/다세대/빌라", "3": "오피스텔", "4": "단독/다가구"}
-                        prop_type_name = type_names.get(prop_type, "일반 부동산")
-                        if save_report:
-                            display_addr = address_name and "조회 대상 주소"
-                            save_briefing_report(display_addr, [], [], [], prop_type_name, "최근 24개월", is_expanded=is_expanded, target_build_year=target_build_year, target_area=target_area, target_floor=target_floor, desired_info=desired_info, expansion_mode=expansion_mode)
-                        return ([], [], [],
-                            prop_type_name, "최근 24개월", is_expanded)
-                    trades_full = [t for t in transactions if t.get("_trade_type") == "매매"]
-                    jeonses_full = [t for t in transactions if t.get("_trade_type") == "전세"]
-                    wolses_full = [t for t in transactions if t.get("_trade_type") == "월세"]
-                    def count_in_months(items, limit):
-                        try:
-                            now = datetime.now()
-                            cnt = 0
-                            for item in items:
-                                yr = int(item.get("dealYear", 0))
-                                mo = int(item.get("dealMonth", 0))
-                                if ((now.year) - yr) * 12 + (now.month) - mo < limit:
-                                    cnt += 1
-                                    continue
-                            return cnt
-                        except:
-                            pass
-                    t_6 = count_in_months(trades_full, 6)
-                    j_6 = count_in_months(jeonses_full, 6)
-                    w_6 = count_in_months(wolses_full, 6)
-                    tot_6 = t_6 + j_6 + w_6
-                    t_12 = count_in_months(trades_full, 12)
-                    j_12 = count_in_months(jeonses_full, 12)
-                    w_12 = count_in_months(wolses_full, 12)
-                    tot_12 = t_12 + j_12 + w_12
-                    t_24 = len(trades_full)
-                    j_24 = len(jeonses_full)
-                    w_24 = len(wolses_full)
-                    tot_24 = t_24 + j_24 + w_24
-                    print("\n======================================================================")
-                    if is_expanded:
-                        print(" [인근 유사 매물 실거래 수집 건수 요약 (최근 24개월)]")
-                    else:
-                        print(" [실거래 수집 건수 요약 (최근 24개월)]")
-                    print("----------------------------------------------------------------------")
-                    print(f" - 최근  6개월: 매매 {t_6}건 / 전세 {j_6}건 / 월세 {w_6}건 (총 {tot_6}건)")
-                    print(f" - 최근 12개월: 매매 {t_12}건 / 전세 {j_12}건 / 월세 {w_12}건 (총 {tot_12}건)")
-                    print(f" - 최근 24개월: 매매 {t_24}건 / 전세 {j_24}건 / 월세 {w_24}건 (총 {tot_24}건)")
-                    if desired_info and desired_info.get("room_count_label"):
-                        print(f" * 분석 대상 방 개수: {desired_info["room_count_label"]}")
-                    if target_floor is None:
-                        floor_lbl = f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층"
-                        print(f" * 분석 대상 층수  : {floor_lbl}")
-                    print("======================================================================")
-                    default_opt = "3"
-                    print(" * 기본 분석 기간: 최근 2년 (24개월) [기본값: 3]")
-                    user_choice = input("[입력] 분석에 사용할 기간을 선택하세요 (1: 6개월 | 2: 1년 | 3: 2년): ").strip()
-                    if not user_choice:
-                        user_choice = default_opt
-                    if user_choice == "1":
-                        selected_limit = 6
-                        selected_label = "최근 6개월"
-                    elif user_choice == "3":
-                        selected_limit = 24
-                        selected_label = "최근 24개월"
-                    else:
-                        selected_limit = 12
-                        selected_label = "최근 12개월(1년)"
-                    print(f" -> [{selected_label}] 기준으로 분석 및 브리핑 보고서를 생성합니다.")
-                    def filter_by_months(items, limit):
-                        try:
-                            now = datetime.now()
-                            filtered = []
-                            for item in items:
-                                yr = int(item.get("dealYear", 0))
-                                mo = int(item.get("dealMonth", 0))
-                                if ((now.year) - yr) * 12 + (now.month) - mo < limit:
-                                    filtered.append(item)
-                                    continue
-                            return filtered
-                        except:
-                            pass
-                    transactions = filter_by_months(transactions, selected_limit)
-                    if not transactions:
-                        print_empty_transactions_explanation(prop_type)
-                        type_names = {"1": "아파트", "2": "연립/다세대/빌라", "3": "오피스텔", "4": "단독/다가구"}
-                        prop_type_name = type_names.get(prop_type, "일반 부동산")
-                        if save_report:
-                            display_addr = address_name and "조회 대상 주소"
-                            save_briefing_report(display_addr, [], [], [], prop_type_name, selected_label, is_expanded=is_expanded, target_build_year=target_build_year, target_area=target_area, target_floor=target_floor, desired_info=desired_info, expansion_mode=expansion_mode)
-                        return ([], [], [],
-                            prop_type_name, selected_label, is_expanded)
-                    apt_groups = []
-                    if prop_type == "1":
-                        apt_groups = get_apartment_size_groups(transactions)
-                    def format_single_price(val):
-                        if val >= 10_000:
-                            eok = int(val // 10_000)
-                            man = int(val % 10_000)
-                            if man > 0:
-                                return f"{eok}억 {man:,}만"
-                            return f"{eok}억"
-                        
-                        return f"{int(val):,}만"
-                    def format_pyung_price(val):
-                        val = round(val)
-                        if val >= 10_000:
-                            eok = val // 10_000
-                            man = val % 10_000
-                            if man > 0:
-                                return f"평당 {eok}억 {man:,}만"
-                            return f"평당 {eok}억"
-                        
-                        return f"평당 {val:,}만"
-                    def print_grouped_stats(items, label_prefix, is_rent, is_wolse):
-                        if not items:
-                            return
-                        under_26 = []; between_26_43 = []; above_43 = []
-                        for item in items:
-                            area_val = item.get("excluUseAr") or item.get("totalFloorAr") or 0.0
-                            try: area = float(area_val)
-                            except: area = 0.0
-                            if area < 26.0: under_26.append(item)
-                            elif area < 43.0: between_26_43.append(item)
-                            else: above_43.append(item)
-                        print(divider_line)
-                        print(f" [평균 및 가격 범위 요약] 전체 {len(items)}건 중:")
-                        def print_subset_stats(subset, group_name):
-                            if not subset:
-                                print(f"   • {group_name}: 거래 사례 없음")
-                                return
-                            sum_price_for_area = 0; sum_area_pyung = 0.0; count_area = 0; sum_price_for_land = 0; sum_land_pyung = 0.0; count_land = 0; area_unit_prices = []; land_unit_prices = []; trade_amts = []
-                            for item in subset:
-                                _, amt, _ = format_price(item, is_rent=is_rent)
-                                if not amt:
-                                    continue
-                                trade_amts.append(amt)
-                                area_val = item.get("excluUseAr") or item.get("totalFloorAr") or 0.0
-                                try: area = float(area_val)
-                                except: area = 0.0
-                                if area > 0:
-                                    sum_price_for_area += amt
-                                    sum_area_pyung += area * 0.3025
-                                    count_area += 1
-                                    area_unit_prices.append(amt / (area * 0.3025))
-                                    
-                                land_val = item.get("landAr") or 0.0
-                                try: land_area = float(land_val)
-                                except: land_area = 0.0
-                                if land_area > 0:
-                                    sum_price_for_land += amt
-                                    sum_land_pyung += land_area * 0.3025
-                                    count_land += 1
-                                    land_unit_prices.append(amt / (land_area * 0.3025))
-                                    
-                            price_range_str = ""
-                            if trade_amts:
-                                min_amt = min(trade_amts)
-                                max_amt = max(trade_amts)
-                                if min_amt == max_amt:
-                                    price_range_str = format_single_price(min_amt)
-                                else:
-                                    price_range_str = f"{format_single_price(min_amt)} ~ {format_single_price(max_amt)}"
-                            avg_area_str = "계산 불가"
-                            if count_area > 0 and sum_area_pyung > 0:
-                                avg_area_price = round(sum_price_for_area / sum_area_pyung)
-                                avg_area_str = format_pyung_price(avg_area_price)
-                                if area_unit_prices:
-                                    min_u = min(area_unit_prices)
-                                    max_u = max(area_unit_prices)
-                                    if round(min_u) != round(max_u):
-                                        avg_area_str += f" (최저 {format_pyung_price(min_u)} ~ 최고 {format_pyung_price(max_u)})"
-                            avg_land_str = "계산 불가"
-                            if count_land > 0 and sum_land_pyung > 0:
-                                avg_land_price = round(sum_price_for_land / sum_land_pyung)
-                                avg_land_str = format_pyung_price(avg_land_price)
-                                if land_unit_prices:
-                                    min_u = min(land_unit_prices)
-                                    max_u = max(land_unit_prices)
-                                    if round(min_u) != round(max_u):
-                                        avg_land_str += f" (최저 {format_pyung_price(min_u)} ~ 최고 {format_pyung_price(max_u)})"
-                            print(f"   • {group_name} - 총 {len(subset)}건:")
-                            if price_range_str:
-                                suffix = ""
-                                print(f"     - {label_prefix} 범위: {price_range_str}{suffix}")
-                            print(f"     - 전용 평단가: {avg_area_str}")
-                            if count_land > 0:
-                                print(f"     - 지분 평단가: {avg_land_str}")
-                                return
-                        if prop_type == "1" and apt_groups:
-                            for g in apt_groups:
-                                g_items = [t for t in items if get_group_for_item(t, apt_groups) == g]
-                                print_subset_stats(g_items, g["label"])
+
+                    if expand_choice == "5":
+                        print(f" -> 인근 매물 데이터 수집 중 (조건 없음, 대상 동네: {target_bjdongs})...")
+                        expanded_txs = get_recent_transactions(sigunguCd, bun, ji, prop_type, target_bjdongs, target_build_year=target_build_year, target_house_type=target_house_type, expand_similar=True, target_area=target_area, build_year_margin=100, area_margin=1.0)
+                        if expanded_txs:
+                            if prop_type_name == "아파트":
+                                expanded_txs = filter_expanded_apartments(expanded_txs, bun, ji)
+                            transactions = expanded_txs
+                            is_expanded = True
+                            expansion_mode = "all"
+                            print(f" -> 조건 없는 기준의 매물 {len(transactions)}건을 발견하여 분석을 진행합니다.")
                         else:
-                            print_subset_stats(under_26, "전용 26㎡ 미만 (원룸/1.5룸형)")
-                            print_subset_stats(between_26_43, "전용 26㎡ 이상 ~ 43㎡ 미만 (투룸형)")
-                            print_subset_stats(above_43, "전용 43㎡ 이상 (쓰리룸 이상형)")
-                        print("═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
-                    if prop_type == "4":
-                        print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                        print(" [안내] 단독/다가구 임대차(전월세) 실거래 정보 안내")
-                        print(" 1. 단독/다가구 임대차 API는 국토교통부 보안 정책상 상세 지번(번지수) 정보를 제공하지 않습니다.")
-                        print(" 2. 따라서, 본 시스템은 입력하신 주소와 동일한 법정동 내에서 '유사한 건축년도 및 주택유형'의 모든 거래 사례를")
-                        print("    대안으로 수집하여 보여줍니다. (특정 단독 주택 단 한 곳만의 전월세 거래 내역이 아닙니다.)")
-                        print(" 3. 매매 실거래 정보는 상세 지번 매칭이 적용되나, 마스킹 범위(예: 2**)에 따라 인근 거래가 포함될 수 있습니다.")
-                        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                    [t for t in transactions if not t.get("_trade_type") == "매매"]
-                    trades = address_name
-                    t = None
-                    [t for t in transactions if not t.get("_trade_type") == "전세"]
-                    jeonses = None
-                    t = None
-                    [t for t in transactions if not t.get("_trade_type") == "월세"]
-                    wolses = None
-                    t = None
-                    def get_sort_key(item):
-                        area_val = item.get("excluUseAr") or item.get("totalFloorAr") or 0.0
-                        try:
-                            area = float(area_val)
-                        except:
-                            area = 0.0
-                        try:
-                            y = int(item.get("dealYear", 0))
-                            m = int(item.get("dealMonth", 0))
-                            d = int(item.get("dealDay", 0))
-                        except:
-                            y, m, d = 0, 0, 0
-                        return (area, -y, -m, -d)
-                    trades.sort(key=get_sort_key)
-                    jeonses.sort(key=get_sort_key)
-                    wolses.sort(key=get_sort_key)
-                    target_str = []
-                    if target_floor is None:
-                        target_str.append(f"{target_floor}층")
-                    if target_area is None:
-                        pyung = round(target_area * 0.3025, 1)
-                        target_str.append(f"{target_area:.2f}㎡({pyung}평)")
-                    target_desc = target_str and ""
-                    def get_terminal_width(text):
-                        w = 0
-                        for c in text:
-                            if ord(c) > 127:
-                                w += 2
-                                continue
-                            w += 1
-                        return w
-                    def pad_double_width(text, width, align):
-                        text = str(text); w = get_terminal_width(text)
-                        if w >= width:
-                            return text
-                        pad_len = width - w
-                        if align == "right":
-                            return " " * pad_len + text
-                        elif align == "left":
-                            return text + " " * pad_len
-                        left_pad = pad_len // 2; right_pad = pad_len - left_pad
-                        return " " * left_pad + text + " " * right_pad
-                    def get_pyung_price_str(amt_val, rent_val, area):
-                        if area or area <= 0:
-                            return ""
-                        try:
-                            r_val = rent_val and 0
-                            converted = amt_val + r_val * 100
-                            pyung_area = area * 0.3025
-                            pyung_price = round(converted / pyung_area)
-                            if pyung_price >= 10_000:
-                                eok = pyung_price // 10_000
-                                man = pyung_price % 10_000
-                                if man > 0:
-                                    return f"평당 {eok}억 {man:,}만"
-                                return f"평당 {eok}억"
-                            return f"평당 {pyung_price:,}만"
-                        except:
-                            pass
+                            print(" -> 해당 동네의 매물 거래 내역이 없어 확장을 생략합니다.")
+        CURRENT_EXPANSION_MODE = expansion_mode
+        if not transactions:
+            print_empty_transactions_explanation(prop_type)
+            type_names = {"1": "아파트", "2": "연립/다세대/빌라", "3": "오피스텔", "4": "단독/다가구"}
+            prop_type_name = type_names.get(prop_type, "일반 부동산")
+            if save_report:
+                display_addr = address_name or "조회 대상 주소"
+                save_briefing_report(display_addr, [], [], [], prop_type_name, "최근 24개월", is_expanded=is_expanded, target_build_year=target_build_year, target_area=target_area, target_floor=target_floor, desired_info=desired_info, expansion_mode=expansion_mode, target_bld_nm=target_bld_nm, target_bun=bun, target_ji=ji, sigunguCd=sigunguCd)
+            return ([], [], [],
+                prop_type_name, "최근 24개월", is_expanded)
+        trades_full = [t for t in transactions if t.get("_trade_type") == "매매"]
+        jeonses_full = [t for t in transactions if t.get("_trade_type") == "전세"]
+        wolses_full = [t for t in transactions if t.get("_trade_type") == "월세"]
+        def count_in_months(items, limit):
+            try:
+                now = datetime.now()
+                cnt = 0
+                for item in items:
+                    yr = int(item.get("dealYear", 0))
+                    mo = int(item.get("dealMonth", 0))
+                    if ((now.year) - yr) * 12 + (now.month) - mo < limit:
+                        cnt += 1
+                        continue
+                return cnt
+            except:
+                pass
+        t_6 = count_in_months(trades_full, 6)
+        j_6 = count_in_months(jeonses_full, 6)
+        w_6 = count_in_months(wolses_full, 6)
+        tot_6 = t_6 + j_6 + w_6
+        t_12 = count_in_months(trades_full, 12)
+        j_12 = count_in_months(jeonses_full, 12)
+        w_12 = count_in_months(wolses_full, 12)
+        tot_12 = t_12 + j_12 + w_12
+        t_24 = len(trades_full)
+        j_24 = len(jeonses_full)
+        w_24 = len(wolses_full)
+        tot_24 = t_24 + j_24 + w_24
+        print("\n======================================================================")
+        if is_expanded:
+            print(" [인근 유사 매물 실거래 수집 건수 요약 (최근 24개월)]")
+        else:
+            print(" [실거래 수집 건수 요약 (최근 24개월)]")
+        print("----------------------------------------------------------------------")
+        print(f" - 최근  6개월: 매매 {t_6}건 / 전세 {j_6}건 / 월세 {w_6}건 (총 {tot_6}건)")
+        print(f" - 최근 12개월: 매매 {t_12}건 / 전세 {j_12}건 / 월세 {w_12}건 (총 {tot_12}건)")
+        print(f" - 최근 24개월: 매매 {t_24}건 / 전세 {j_24}건 / 월세 {w_24}건 (총 {tot_24}건)")
+        if desired_info and desired_info.get("room_count_label"):
+            print(f" * 분석 대상 방 개수: {desired_info["room_count_label"]}")
+        if target_floor is not None:
+            floor_lbl = f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층"
+            print(f" * 분석 대상 층수  : {floor_lbl}")
+        print("======================================================================")
+        default_opt = "3"
+        print(" * 기본 분석 기간: 최근 2년 (24개월) [기본값: 3]")
+        user_choice = "2" if len(sys.argv) > 1 else input("[입력] 분석에 사용할 기간을 선택하세요 (1: 6개월 | 2: 1년 | 3: 2년): ").strip()
+        if not user_choice:
+            user_choice = default_opt
+        if user_choice == "1":
+            selected_limit = 6
+            selected_label = "최근 6개월"
+        elif user_choice == "3":
+            selected_limit = 24
+            selected_label = "최근 24개월"
+        else:
+            selected_limit = 12
+            selected_label = "최근 12개월(1년)"
+        print(f" -> [{selected_label}] 기준으로 분석 및 브리핑 보고서를 생성합니다.")
+        def filter_by_months(items, limit):
+            try:
+                now = datetime.now()
+                filtered = []
+                for item in items:
+                    yr = int(item.get("dealYear", 0))
+                    mo = int(item.get("dealMonth", 0))
+                    if ((now.year) - yr) * 12 + (now.month) - mo < limit:
+                        filtered.append(item)
+                        continue
+                return filtered
+            except:
+                pass
+        transactions = filter_by_months(transactions, selected_limit)
+        if not transactions:
+            print_empty_transactions_explanation(prop_type)
+            type_names = {"1": "아파트", "2": "연립/다세대/빌라", "3": "오피스텔", "4": "단독/다가구"}
+            prop_type_name = type_names.get(prop_type, "일반 부동산")
+            if save_report:
+                display_addr = address_name or "조회 대상 주소"
+                save_briefing_report(display_addr, [], [], [], prop_type_name, selected_label, is_expanded=is_expanded, target_build_year=target_build_year, target_area=target_area, target_floor=target_floor, desired_info=desired_info, expansion_mode=expansion_mode, target_bld_nm=target_bld_nm, target_bun=bun, target_ji=ji, sigunguCd=sigunguCd)
+            return ([], [], [],
+                prop_type_name, selected_label, is_expanded)
+        apt_groups = []
+        if prop_type == "1":
+            apt_groups = get_apartment_size_groups(transactions)
+        def format_single_price(val):
+            if val >= 10_000:
+                eok = int(val // 10_000)
+                man = int(val % 10_000)
+                if man > 0:
+                    return f"{eok}억 {man:,}만"
+                return f"{eok}억"
+            
+            return f"{int(val):,}만"
+        def format_pyung_price(val):
+            val = round(val)
+            if val >= 10_000:
+                eok = val // 10_000
+                man = val % 10_000
+                if man > 0:
+                    return f"평당 {eok}억 {man:,}만"
+                return f"평당 {eok}억"
+            
+            return f"평당 {val:,}만"
+        def print_grouped_stats(items, label_prefix, is_rent, is_wolse):
+            if not items:
+                return
+            under_1 = []; under_2 = []; under_3 = []; above_3 = []
+            
+            for item in items:
+                if is_dev_zone:
+                    land_val = item.get("landAr") or 0.0
+                    try: val = float(land_val)
+                    except: val = 0.0
+                    if val < 13.2: under_1.append(item)
+                    elif val < 26.4: under_2.append(item)
+                    elif val < 39.6: under_3.append(item)
+                    else: above_3.append(item)
+                else:
+                    area_val = item.get("excluUseAr") or item.get("totalFloorAr") or 0.0
+                    try: val = float(area_val)
+                    except: val = 0.0
+                    if val < 26.0: under_1.append(item)
+                    elif val < 43.0: under_2.append(item)
+                    else: above_3.append(item)
+            print(divider_line)
+            print(f" [평균 및 가격 범위 요약] 전체 {len(items)}건 중:")
+            def print_subset_stats(subset, group_name):
+                if not subset:
+                    print(f"   • {group_name}: 거래 사례 없음")
+                    return
+                sum_price_for_area = 0; sum_area_pyung = 0.0; count_area = 0; sum_price_for_land = 0; sum_land_pyung = 0.0; count_land = 0; area_unit_prices = []; land_unit_prices = []; trade_amts = []
+                recent_brokerage_amt = None
+                recent_brokerage_area = None
+                
+                for item in subset:
+                    _, amt, _ = format_price(item, is_rent=is_rent)
+                    if not amt:
+                        continue
+                    trade_amts.append(amt)
+                    area_val = item.get("excluUseAr") or item.get("totalFloorAr") or 0.0
+                    try: area = float(area_val)
+                    except: area = 0.0
+                    if area > 0:
+                        sum_price_for_area += amt
+                        sum_area_pyung += area * 0.3025
+                        count_area += 1
+                        area_unit_prices.append(amt / (area * 0.3025))
+                        if recent_brokerage_amt is None:
+                            req_gbn = item.get("reqGbn", "")
+                            if req_gbn != "직거래":
+                                recent_brokerage_amt = amt
+                                recent_brokerage_area = area
                         
-                        return ""
-                    col_seq = pad_double_width("순번", 4, "center")
-                    col_date = pad_double_width("계약일", 10, "center")
-                    col_type = pad_double_width("유형", 4, "center")
-                    col_price = pad_double_width("거래금액", 26, "center")
-                    col_area = pad_double_width("전용면적(평)", 18, "center")
-                    col_land = pad_double_width("토지지분(평)", 18, "center")
-                    col_floor = pad_double_width("동/층", 11, "center")
-                    col_comp = "비교 (기준 대비 차이)"
-                    header_line = f" {col_seq} | {col_date} | {col_type} | {col_price} | {col_area} | {col_land} | {col_floor} | {col_comp}"
-                    divider_line = "-------------------------------------------------------------------------------------------------------------------------------------"
-                    if trades:
-                        print("\n═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
-                        title_text = f"[ 해당 지번/인근 최근 실거래 매매 내역{target_desc} ]" if prop_type == "4" else f"[ 해당 지번 최근 실거래 매매 내역{target_desc} ]"
-                        print(pad_double_width(title_text, 133, "center"))
-                        print("═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
-                        print(header_line)
-                        print(divider_line)
-                        printed_under_26_header = False
-                        printed_26_43_header = False
-                        printed_above_43_header = False
-                        printed_groups = set()
-                        for idx, item in enumerate(trades):
-                            price_display, amt_val, _ = format_price(item, is_rent=False)
-                            if not item.get("excluUseAr"):
-                                item.get("excluUseAr")
-                            area_val = item.get("totalFloorAr")
-                            area = None
-                            if area_val is None:
-                                area = float(area_val)
-                                pyung = round(area * 0.3025, 1)
-                                area_display = f"{area:.2f}㎡ ({pyung}평)"
+                    land_val = item.get("landAr") or 0.0
+                    try: land_area = float(land_val)
+                    except: land_area = 0.0
+                    if land_area > 0:
+                        sum_price_for_land += amt
+                        sum_land_pyung += land_area * 0.3025
+                        count_land += 1
+                        land_unit_prices.append(amt / (land_area * 0.3025))
+                        
+                avg_area_str = "계산 불가"
+                if count_area > 0 and sum_area_pyung > 0:
+                    avg_area_price = round(sum_price_for_area / sum_area_pyung)
+                    avg_area_str = format_pyung_price(avg_area_price)
+                avg_land_str = "계산 불가"
+                if count_land > 0 and sum_land_pyung > 0:
+                    avg_land_price = round(sum_price_for_land / sum_land_pyung)
+                    avg_land_str = format_pyung_price(avg_land_price)
+                recent_pyung_str = "-"
+                if recent_brokerage_amt and recent_brokerage_area and recent_brokerage_area > 0:
+                    pyung_price = recent_brokerage_amt / (recent_brokerage_area * 0.3025)
+                    recent_pyung_str = format_pyung_price(pyung_price)
+                
+                print(f"   • {group_name} - 총 {len(subset)}건:")
+                
+                avg_total = "계산 불가"
+                if trade_amts:
+                    avg_total = format_single_price(sum(trade_amts)/len(trade_amts))
+                    
+                print(f"     - 평균 실거래가: {avg_total} (평균 전용 평단가: {avg_area_str})")
+                print(f"     - 최근 중개실거래 전용 평단가: {recent_pyung_str}")
+                if count_land > 0:
+                    print(f"     - 평균 지분 평단가: {avg_land_str}")
+            if prop_type == "1" and apt_groups:
+                for g in apt_groups:
+                    g_items = [t for t in items if get_group_for_item(t, apt_groups) == g]
+                    print_subset_stats(g_items, g["label"])
+            else:
+                if is_dev_zone:
+                    print_subset_stats(under_1, "대지지분 4평 미만 (초소형/뚜껑)")
+                    print_subset_stats(under_2, "대지지분 4평~8평 (소형 빌라)")
+                    print_subset_stats(under_3, "대지지분 8평~12평 (다세대 중형)")
+                    print_subset_stats(above_3, "대지지분 12평 이상 (단독/대형)")
+                else:
+                    print_subset_stats(under_1, "전용 26㎡ 미만 (원룸/1.5룸형)")
+                    print_subset_stats(under_2, "전용 26㎡ 이상 ~ 43㎡ 미만 (투룸형)")
+                    print_subset_stats(above_3, "전용 43㎡ 이상 (쓰리룸 이상형)")
+            print("═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
+        if prop_type == "2":
+            try:
+                from market_analyser import calculate_villa_land_bracket_stats
+                l_stats = calculate_villa_land_bracket_stats(transactions)
+                if l_stats and l_stats.get('brackets'):
+                    print("\n 🎯 [개발지/모아타운 지분가 분석] 대지지분 구간별 평당가 비교 (최근 24개월)")
+                    print("  ※ 5년 기준 구분: 모아타운 노후도 및 권리산정 기준 반영 (신축 프리미엄 vs 구축 적정선)")
+                    print(" " + "─" * 78)
+                    print(f"  {'대지지분 구간':<15} | {'총건수':<6} | {'구축(>5년) 평당가':<15} | {'신축(≤5년) 평당가':<15} | {'신축 프리미엄':<10}")
+                    print(" " + "─" * 78)
+                    for b in l_stats['brackets']:
+                        tot_c = b['old_cnt'] + b['new_cnt']
+                        c_str = f"{tot_c}건"
+                        o_str = b['old_str'] if b['old_cnt'] > 0 else "-"
+                        n_str = b['new_str'] if b['new_cnt'] > 0 else "-"
+                        diff_s = b['gap_str'] if b['gap_str'] != "-" else "-"
+                        print(f"  {b['label']:<15} | {c_str:<6} | {o_str:<15} | {n_str:<15} | {diff_s:<10}")
+                    print(" " + "─" * 78)
+            except Exception as e:
+                pass
+        if prop_type == "4":
+            print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            print(" [안내] 단독/다가구 임대차(전월세) 실거래 정보 안내")
+            print(" 1. 단독/다가구 임대차 API는 국토교통부 보안 정책상 상세 지번(번지수) 정보를 제공하지 않습니다.")
+            print(" 2. 따라서, 본 시스템은 입력하신 주소와 동일한 법정동 내에서 '유사한 건축년도 및 주택유형'의 모든 거래 사례를")
+            print("    대안으로 수집하여 보여줍니다. (특정 단독 주택 단 한 곳만의 전월세 거래 내역이 아닙니다.)")
+            print(" 3. 매매 실거래 정보는 상세 지번 매칭이 적용되나, 마스킹 범위(예: 2**)에 따라 인근 거래가 포함될 수 있습니다.")
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        trades = [t for t in transactions if t.get("_trade_type") == "매매"]
+        jeonses = [t for t in transactions if t.get("_trade_type") == "전세"]
+        wolses = [t for t in transactions if t.get("_trade_type") == "월세"]
+        def get_sort_key(item):
+            area_val = item.get("excluUseAr") or item.get("totalFloorAr") or 0.0
+            try:
+                area = float(area_val)
+            except:
+                area = 0.0
+            try:
+                y = int(item.get("dealYear", 0))
+                m = int(item.get("dealMonth", 0))
+                d = int(item.get("dealDay", 0))
+            except:
+                y, m, d = 0, 0, 0
+            return (area, -y, -m, -d)
+        trades.sort(key=get_sort_key)
+        jeonses.sort(key=get_sort_key)
+        wolses.sort(key=get_sort_key)
+        target_str = []
+        if target_floor is not None:
+            target_str.append(f"{target_floor}층")
+        if target_area is not None:
+            pyung = round(target_area * 0.3025, 1)
+            target_str.append(f"{target_area:.2f}㎡({pyung}평)")
+        target_desc = " / ".join(target_str) if target_str else ""
+        def get_terminal_width(text):
+            w = 0
+            for c in text:
+                if ord(c) > 127:
+                    w += 2
+                    continue
+                w += 1
+            return w
+        def pad_double_width(text, width, align):
+            text = str(text); w = get_terminal_width(text)
+            if w >= width:
+                return text
+            pad_len = width - w
+            if align == "right":
+                return " " * pad_len + text
+            elif align == "left":
+                return text + " " * pad_len
+            left_pad = pad_len // 2; right_pad = pad_len - left_pad
+            return " " * left_pad + text + " " * right_pad
+        def get_pyung_price_str(amt_val, rent_val, area):
+            if area or area <= 0:
+                return ""
+            try:
+                r_val = rent_val and 0
+                converted = amt_val + r_val * GLOBAL_WOLSE_MULTIPLIER
+                pyung_area = area * 0.3025
+                pyung_price = round(converted / pyung_area)
+                if pyung_price >= 10_000:
+                    eok = pyung_price // 10_000
+                    man = pyung_price % 10_000
+                    if man > 0:
+                        return f"평당 {eok}억 {man:,}만"
+                    return f"평당 {eok}억"
+                return f"평당 {pyung_price:,}만"
+            except:
+                pass
+            
+            return ""
+        col_seq = pad_double_width("순번", 4, "center")
+        col_date = pad_double_width("계약일", 10, "center")
+        col_type = pad_double_width("유형", 4, "center")
+        col_price = pad_double_width("거래금액", 26, "center")
+        col_area = pad_double_width("전용면적(평)", 18, "center")
+        col_land = pad_double_width("토지지분(평)", 18, "center")
+        col_bld = pad_double_width("단지(동/층)", 24, "center")
+        col_comp = "비교 (기준 대비 차이)"
+        header_line = f" {col_seq} | {col_date} | {col_type} | {col_price} | {col_area} | {col_land} | {col_bld} | {col_comp}"
+        divider_line = "--------------------------------------------------------------------------------------------------------------------------------------------------"
+        if trades:
+            print("\n══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
+            title_text = f"[ 해당 지번/인근 최근 실거래 매매 내역{target_desc} ]" if prop_type == "4" else f"[ 해당 지번 최근 실거래 매매 내역{target_desc} ]"
+            print(pad_double_width(title_text, 146, "center"))
+            print("══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
+            print(header_line)
+            print(divider_line)
+            printed_under_26_header = False
+            printed_26_43_header = False
+            printed_above_43_header = False
+            printed_groups = set()
+            base_price = None
+
+            base_floor = target_floor
+
+            base_area = target_area
+
+            for idx, item in enumerate(trades):
+                price_display, amt_val, _ = format_price(item, is_rent=False)
+                area_val = item.get("excluUseAr") or item.get("totalFloorAr")
+
+                area = None
+
+                if area_val is not None:
+
+                    try:
+
+                        area = float(area_val)
+
+                        pyung = round(area * 0.3025, 1)
+
+                        area_display = f"{area:.2f}㎡ ({pyung}평)"
+
+                    except:
+
+                        area_display = "-"
+
+                else:
+
+                    area_display = "-"
+                if prop_type == "1" and apt_groups:
+                    g = get_group_for_item(item, apt_groups)
+                    if g and g["label"] not in printed_groups:
+                        print("-------------------------------------------------------------------------------------------------------------------------------------")
+                        print(pad_double_width(f"▼ {g["label"]} ▼", 133, "center"))
+                        print("-------------------------------------------------------------------------------------------------------------------------------------")
+                        printed_groups.add(g["label"])
+                    elif area is None:
+                        if not area < 26.0 and printed_under_26_header:
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            print(pad_double_width("▼ 전용 26㎡ 미만 (원룸/1.5룸형) ▼", 133, "center"))
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            printed_under_26_header = True
+                        elif not 26.0 <= area < 43.0 and printed_26_43_header:
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            print(pad_double_width("▼ 전용 26㎡ 이상 ~ 43㎡ 미만 (투룸형) ▼", 133, "center"))
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            printed_26_43_header = True
+                        elif not area >= 43.0 and printed_above_43_header:
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            print(pad_double_width("▼ 전용 43㎡ 이상 (쓰리룸 이상형) ▼", 133, "center"))
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            printed_above_43_header = True
+                land_val = item.get("landAr")
+                land_display = "-"
+                if land_val is not None:
+
+                    try:
+
+                        land_area = float(land_val)
+
+                        if land_area > 0:
+
+                            land_pyung = round(land_area * 0.3025, 1)
+
+                            land_display = f"{land_area:.2f}㎡ ({land_pyung}평)"
+
+                    except:
+
+                        pass
+                price_display_with_pyung = price_display
+                floor_str = str(item.get("floor", "")).strip()
+                dong_info = str(item.get("aptDong", "")).strip()
+                if dong_info:
+                    if not dong_info.endswith("동"):
+                        dong_info = dong_info + "동"
+                
+                apt_nm = (item.get("aptNm") or item.get("mhouseNm") or "").strip()
+                mark = "[목적]" if apt_nm and target_bld_nm and apt_nm == target_bld_nm else ""
+                
+                bld_info_parts = []
+                if apt_nm:
+                    bld_info_parts.append(f"{apt_nm}{mark}")
+                if dong_info:
+                    bld_info_parts.append(dong_info)
+                
+                dong_prefix = " ".join(bld_info_parts) + " " if bld_info_parts else ""
+                
+                floor = None
+
+                try:
+
+                    floor = int(floor_str)
+
+                    floor_display = f"{dong_prefix}{floor}층"
+
+                except:
+
+                    floor_display = f"{dong_prefix}{floor_str}층" if floor_str else dong_prefix.strip()
+                year = item.get("dealYear", "")
+                month = str(item.get("dealMonth", "")).zfill(2)
+                day = str(item.get("dealDay", "")).zfill(2)
+                date_str = f"{year}-{month}-{day}"
+                diff_parts = []
+
+                base_floor = target_floor
+                if target_floor is not None or target_area is None:
+                    if target_floor is None and floor is None:
+                        floor_diff = floor - target_floor
+                        if floor_diff > 0:
+                            diff_parts.append(f"+{floor_diff}층")
+                        elif floor_diff < 0:
+                            diff_parts.append(f"{floor_diff}층")
+                        else:
+                            diff_parts.append("층동일")
+                    if target_area is None and area is None:
+                        area_diff = area - target_area
+                        if abs(area_diff) > 0.01:
+                            if area_diff > 0:
+                                pass
+                            diff_parts.append(f"+{area_diff:.2f}㎡")
+                        else:
+                            diff_parts.append("면적동일")
+                    if diff_parts:
+                        pass
+                    comparison = "층/면적 동일"
+                elif idx == 0:
+                    base_price = amt_val
+                    base_floor = floor
+                    base_area = area
+                    comparison = "★ 기준 (가장 최근 거래)"
+                elif base_price is not None and amt_val is not None:
+                    price_diff = base_price - amt_val
+                    if price_diff > 0:
+                        diff_parts.append(f"매매가 +{price_diff:,}만")
+                    elif price_diff < 0:
+                        diff_parts.append(f"매매가 {price_diff:,}만")
+                    else:
+                        diff_parts.append("매매가동일")
+                if base_floor is not None and floor is not None:
+                    floor_diff = base_floor - floor
+                    if floor_diff > 0:
+                        diff_parts.append(f"+{floor_diff}층")
+                    elif floor_diff < 0:
+                        diff_parts.append(f"{floor_diff}층")
+                    else:
+                        diff_parts.append("층동일")
+                if base_area is not None and area is not None:
+                    area_diff = base_area - area
+                    if abs(area_diff) > 0.01:
+                        if area_diff > 0:
+                            pass
+                        diff_parts.append(f"+{area_diff:.2f}㎡")
+                    else:
+                        diff_parts.append("면적동일")
+                comparison = ", ".join(diff_parts)
+                seq_display = pad_double_width(idx + 1, 4, "center")
+                date_display = pad_double_width(date_str, 10, "center")
+                type_display = pad_double_width("매매", 4, "center")
+                price_display_padded = pad_double_width(price_display_with_pyung, 26, "right")
+                area_display_padded = pad_double_width(area_display, 18, "right")
+                land_display_padded = pad_double_width(land_display, 18, "right")
+                floor_display_padded = pad_double_width(floor_display, 11, "right")
+                print(f" {seq_display} | {date_display} | {type_display} | {price_display_padded} | {area_display_padded} | {land_display_padded} | {floor_display_padded} | {comparison}")
+            ", ".join(diff_parts)
+            print_grouped_stats(trades, "실거래가", is_rent=False, is_wolse=False)
+        elif getattr(transactions, "trade_permission_error", False):
+            print("\n [!] 실거래 매매 API 권한 오류(403 Forbidden)로 인해 매매 내역을 가져오지 못했습니다.")
+            print("     (공공데이터포털에서 해당 매매 API 활용신청 상태를 확인해 주세요.)")
+        else:
+            print("\n [참고] 최근 12개월 동안 해당 지번의 신고된 매매 거래 내역이 없습니다.")
+        if jeonses:
+            print("\n═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
+            title_text = f"[ 동일 법정동 내 유사 단독/다가구 전세 내역{target_desc} ]" if prop_type == "4" else f"[ 해당 지번 최근 실거래 전세 내역{target_desc} ]"
+            print(pad_double_width(title_text, 133, "center"))
+            print("═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
+            print(header_line)
+            print(divider_line)
+            printed_under_26_header = False
+            printed_26_43_header = False
+            printed_above_43_header = False
+            printed_groups = set()
+            base_price = None
+
+            base_floor = target_floor
+
+            base_area = target_area
+
+            for idx, item in enumerate(jeonses):
+                price_display, amt_val, _ = format_price(item, is_rent=True)
+                area_val = item.get("excluUseAr") or item.get("totalFloorAr")
+
+                area = None
+
+                if area_val is not None:
+
+                    try:
+
+                        area = float(area_val)
+
+                        pyung = round(area * 0.3025, 1)
+
+                        area_display = f"{area:.2f}㎡ ({pyung}평)"
+
+                    except:
+
+                        area_display = "-"
+
+                else:
+
+                    area_display = "-"
+                if prop_type == "1" and apt_groups:
+                    g = get_group_for_item(item, apt_groups)
+                    if g and g["label"] not in printed_groups:
+                        print("-------------------------------------------------------------------------------------------------------------------------------------")
+                        print(pad_double_width(f"▼ {g["label"]} ▼", 133, "center"))
+                        print("-------------------------------------------------------------------------------------------------------------------------------------")
+                        printed_groups.add(g["label"])
+                    elif area is None:
+                        if not area < 26.0 and printed_under_26_header:
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            print(pad_double_width("▼ 전용 26㎡ 미만 (원룸/1.5룸형) ▼", 133, "center"))
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            printed_under_26_header = True
+                        elif not 26.0 <= area < 43.0 and printed_26_43_header:
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            print(pad_double_width("▼ 전용 26㎡ 이상 ~ 43㎡ 미만 (투룸형) ▼", 133, "center"))
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            printed_26_43_header = True
+                        elif not area >= 43.0 and printed_above_43_header:
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            print(pad_double_width("▼ 전용 43㎡ 이상 (쓰리룸 이상형) ▼", 133, "center"))
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            printed_above_43_header = True
+                land_val = item.get("landAr")
+                land_display = "-"
+                if land_val is not None:
+
+                    try:
+
+                        land_area = float(land_val)
+
+                        if land_area > 0:
+
+                            land_pyung = round(land_area * 0.3025, 1)
+
+                            land_display = f"{land_area:.2f}㎡ ({land_pyung}평)"
+
+                    except:
+
+                        pass
+                price_display_with_pyung = price_display
+                floor_str = str(item.get("floor", "")).strip()
+                dong_info = str(item.get("aptDong", "")).strip()
+                if dong_info:
+                    if not dong_info.endswith("동"):
+                        dong_info = dong_info + "동"
+                
+                apt_nm = (item.get("aptNm") or item.get("mhouseNm") or "").strip()
+                mark = "[목적]" if apt_nm and target_bld_nm and apt_nm == target_bld_nm else ""
+                
+                bld_info_parts = []
+                if apt_nm:
+                    bld_info_parts.append(f"{apt_nm}{mark}")
+                if dong_info:
+                    bld_info_parts.append(dong_info)
+                
+                dong_prefix = " ".join(bld_info_parts) + " " if bld_info_parts else ""
+                floor = None
+
+                try:
+
+                    floor = int(floor_str)
+
+                    floor_display = f"{dong_prefix}{floor}층"
+
+                except:
+
+                    floor_display = f"{dong_prefix}{floor_str}층" if floor_str else dong_prefix.strip()
+                year = item.get("dealYear", "")
+                month = str(item.get("dealMonth", "")).zfill(2)
+                day = str(item.get("dealDay", "")).zfill(2)
+                date_str = f"{year}-{month}-{day}"
+                diff_parts = []
+
+                base_floor = target_floor
+                if target_floor is not None or target_area is None:
+                    if target_floor is None and floor is None:
+                        floor_diff = floor - target_floor
+                        if floor_diff > 0:
+                            diff_parts.append(f"+{floor_diff}층")
+                        elif floor_diff < 0:
+                            diff_parts.append(f"{floor_diff}층")
+                        else:
+                            diff_parts.append("층동일")
+                    if target_area is None and area is None:
+                        area_diff = area - target_area
+                        if abs(area_diff) > 0.01:
+                            if area_diff > 0:
+                                pass
+                            diff_parts.append(f"+{area_diff:.2f}㎡")
+                        else:
+                            diff_parts.append("면적동일")
+                    if diff_parts:
+                        pass
+                    comparison = "층/면적 동일"
+                elif idx == 0:
+                    base_price = amt_val
+                    base_floor = floor
+                    base_area = area
+                    comparison = "★ 기준 (가장 최근 거래)"
+                elif base_price is not None and amt_val is not None:
+                    p_diff = base_price - amt_val
+                    if p_diff > 0:
+                        diff_parts.append(f"보증금 +{p_diff:,}만")
+                    elif p_diff < 0:
+                        diff_parts.append(f"보증금 {p_diff:,}만")
+                    else:
+                        diff_parts.append("보증금동일")
+                if base_floor is not None and floor is not None:
+                    floor_diff = base_floor - floor
+                    if floor_diff > 0:
+                        diff_parts.append(f"+{floor_diff}층")
+                    elif floor_diff < 0:
+                        diff_parts.append(f"{floor_diff}층")
+                    else:
+                        diff_parts.append("층동일")
+                if base_area is not None and area is not None:
+                    area_diff = base_area - area
+                    if abs(area_diff) > 0.01:
+                        if area_diff > 0:
+                            pass
+                        diff_parts.append(f"+{area_diff:.2f}㎡")
+                    else:
+                        diff_parts.append("면적동일")
+                comparison = ", ".join(diff_parts)
+                seq_display = pad_double_width(idx + 1, 4, "center")
+                date_display = pad_double_width(date_str, 10, "center")
+                type_display = pad_double_width("전세", 4, "center")
+                price_display_padded = pad_double_width(price_display_with_pyung, 26, "right")
+                area_display_padded = pad_double_width(area_display, 18, "right")
+                land_display_padded = pad_double_width(land_display, 18, "right")
+                bld_display_padded = pad_double_width(floor_display, 24, "right")
+                print(f" {seq_display} | {date_display} | {type_display} | {price_display_padded} | {area_display_padded} | {land_display_padded} | {bld_display_padded} | {comparison}")
+            ", ".join(diff_parts)
+            print_grouped_stats(jeonses, "전세보증금", is_rent=True, is_wolse=False)
+        elif getattr(transactions, "rent_permission_error", False):
+            print("\n [!] 실거래 임대차 API 권한 오류(403 Forbidden)로 인해 전세 내역을 가져오지 못했습니다.")
+            print("     (공공데이터포털에서 해당 전월세 API 활용신청 상태를 확인해 주세요.)")
+        else:
+            print("\n [참고] 최근 12개월 동안 해당 지번의 신고된 전세 거래 내역이 없습니다.")
+        if wolses:
+            print("\n═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
+            title_text = f"[ 동일 법정동 내 유사 단독/다가구 월세 내역{target_desc} ]" if prop_type == "4" else f"[ 해당 지번 최근 실거래 월세 내역{target_desc} ]"
+            print(pad_double_width(title_text, 133, "center"))
+            print("═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
+            print(header_line)
+            print(divider_line)
+            printed_under_26_header = False
+            printed_26_43_header = False
+            printed_above_43_header = False
+            printed_groups = set()
+            base_price = None
+
+            base_floor = target_floor
+
+            base_area = target_area
+
+            for idx, item in enumerate(wolses):
+                price_display, amt_val, rent_val = format_price(item, is_rent=True)
+                area_val = item.get("excluUseAr") or item.get("totalFloorAr")
+
+                area = None
+
+                if area_val is not None:
+
+                    try:
+
+                        area = float(area_val)
+
+                        pyung = round(area * 0.3025, 1)
+
+                        area_display = f"{area:.2f}㎡ ({pyung}평)"
+
+                    except:
+
+                        area_display = "-"
+
+                else:
+
+                    area_display = "-"
+                if prop_type == "1" and apt_groups:
+                    g = get_group_for_item(item, apt_groups)
+                    if g and g["label"] not in printed_groups:
+                        print("-------------------------------------------------------------------------------------------------------------------------------------")
+                        print(pad_double_width(f"▼ {g["label"]} ▼", 133, "center"))
+                        print("-------------------------------------------------------------------------------------------------------------------------------------")
+                        printed_groups.add(g["label"])
+                    elif area is None:
+                        if not area < 26.0 and printed_under_26_header:
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            print(pad_double_width("▼ 전용 26㎡ 미만 (원룸/1.5룸형) ▼", 133, "center"))
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            printed_under_26_header = True
+                        elif not 26.0 <= area < 43.0 and printed_26_43_header:
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            print(pad_double_width("▼ 전용 26㎡ 이상 ~ 43㎡ 미만 (투룸형) ▼", 133, "center"))
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            printed_26_43_header = True
+                        elif not area >= 43.0 and printed_above_43_header:
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            print(pad_double_width("▼ 전용 43㎡ 이상 (쓰리룸 이상형) ▼", 133, "center"))
+                            print("-------------------------------------------------------------------------------------------------------------------------------------")
+                            printed_above_43_header = True
+                land_val = item.get("landAr")
+                land_display = "-"
+                if land_val is not None:
+
+                    try:
+
+                        land_area = float(land_val)
+
+                        if land_area > 0:
+
+                            land_pyung = round(land_area * 0.3025, 1)
+
+                            land_display = f"{land_area:.2f}㎡ ({land_pyung}평)"
+
+                    except:
+
+                        pass
+                price_display_with_pyung = price_display
+                floor_str = str(item.get("floor", "")).strip()
+                dong_info = str(item.get("aptDong", "")).strip()
+                if dong_info:
+                    if not dong_info.endswith("동"):
+                        dong_info = dong_info + "동"
+                
+                apt_nm = (item.get("aptNm") or item.get("mhouseNm") or "").strip()
+                mark = "[목적]" if apt_nm and target_bld_nm and apt_nm == target_bld_nm else ""
+                
+                bld_info_parts = []
+                if apt_nm:
+                    bld_info_parts.append(f"{apt_nm}{mark}")
+                if dong_info:
+                    bld_info_parts.append(dong_info)
+                
+                dong_prefix = " ".join(bld_info_parts) + " " if bld_info_parts else ""
+                floor = None
+
+                try:
+
+                    floor = int(floor_str)
+
+                    floor_display = f"{dong_prefix}{floor}층"
+
+                except:
+
+                    floor_display = f"{dong_prefix}{floor_str}층" if floor_str else dong_prefix.strip()
+                if True:
+                    year = item.get("dealYear", "")
+                    month = str(item.get("dealMonth", "")).zfill(2)
+                    day = str(item.get("dealDay", "")).zfill(2)
+                    date_str = f"{year}-{month}-{day}"
+                    diff_parts = []
+
+                    base_floor = target_floor
+                    if target_floor is not None or target_area is None:
+                        if target_floor is None and floor is None:
+                            floor_diff = floor - target_floor
+                            if floor_diff > 0:
+                                diff_parts.append(f"+{floor_diff}층")
+                            elif floor_diff < 0:
+                                diff_parts.append(f"{floor_diff}층")
                             else:
-                                area_display = "-"
-                            if prop_type == "1" and apt_groups:
-                                g = get_group_for_item(item, apt_groups)
-                                if g and g["label"] not in printed_groups:
-                                    print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                    print(pad_double_width(f"▼ {g["label"]} ▼", 133, "center"))
-                                    print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                    printed_groups.add(g["label"])
-                                elif area is None:
-                                    if not area < 26.0 and printed_under_26_header:
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        print(pad_double_width("▼ 전용 26㎡ 미만 (원룸/1.5룸형) ▼", 133, "center"))
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        printed_under_26_header = True
-                                    elif not 26.0 <= area < 43.0 and printed_26_43_header:
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        print(pad_double_width("▼ 전용 26㎡ 이상 ~ 43㎡ 미만 (투룸형) ▼", 133, "center"))
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        printed_26_43_header = True
-                                    elif not area >= 43.0 and printed_above_43_header:
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        print(pad_double_width("▼ 전용 43㎡ 이상 (쓰리룸 이상형) ▼", 133, "center"))
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        printed_above_43_header = True
-                            land_val = item.get("landAr")
-                            land_display = "-"
-                            if land_val is None:
-                                land_area = float(land_val)
-                                if land_area > 0:
-                                    land_pyung = round(land_area * 0.3025, 1)
-                                    land_display = f"{land_area:.2f}㎡ ({land_pyung}평)"
-                            price_display_with_pyung = price_display
-                            floor_str = str(item.get("floor", "")).strip()
-                            dong_info = str(item.get("aptDong", "")).strip()
-                            if dong_info:
-                                if not dong_info.endswith("동"):
-                                    dong_info = dong_info + "동"
-                                dong_prefix = f"{dong_info} "
-                            else:
-                                dong_prefix = ""
-                            floor = int(floor_str)
-                            floor_display = f"{dong_prefix}{floor}층"
-                            year = item.get("dealYear", "")
-                            month = str(item.get("dealMonth", "")).zfill(2)
-                            day = str(item.get("dealDay", "")).zfill(2)
-                            date_str = f"{year}-{month}-{day}"
-                            diff_parts = []
-                            if target_floor is not None or target_area is None:
-                                if target_floor is None and floor is None:
-                                    floor_diff = floor - target_floor
-                                    if floor_diff > 0:
-                                        diff_parts.append(f"+{floor_diff}층")
-                                    elif floor_diff < 0:
-                                        diff_parts.append(f"{floor_diff}층")
-                                    else:
-                                        diff_parts.append("층동일")
-                                if target_area is None and area is None:
-                                    area_diff = area - target_area
-                                    if abs(area_diff) > 0.01:
-                                        if area_diff > 0:
-                                            pass
-                                        diff_parts.append("+", f"{""}{area_diff:.2f}㎡")
-                                    else:
-                                        diff_parts.append("면적동일")
-                                if diff_parts:
+                                diff_parts.append("층동일")
+                        if target_area is None and area is None:
+                            area_diff = area - target_area
+                            if abs(area_diff) > 0.01:
+                                if area_diff > 0:
                                     pass
-                                comparison = "층/면적 동일"
-                            elif idx == 0:
-                                base_price = amt_val
-                                base_floor = floor
-                                base_area = area
-                                comparison = "★ 기준 (가장 최근 거래)"
-                            elif base_price is None and amt_val is None:
-                                price_diff = base_price - amt_val
-                                if price_diff > 0:
-                                    diff_parts.append(f"매매가 +{price_diff:,}만")
-                                elif price_diff < 0:
-                                    diff_parts.append(f"매매가 {price_diff:,}만")
-                                else:
-                                    diff_parts.append("매매가동일")
-                            if base_floor is None and floor is None:
-                                floor_diff = base_floor - floor
-                                if floor_diff > 0:
-                                    diff_parts.append(f"+{floor_diff}층")
-                                elif floor_diff < 0:
-                                    diff_parts.append(f"{floor_diff}층")
-                                else:
-                                    diff_parts.append("층동일")
-                            if base_area is None and area is None:
-                                area_diff = base_area - area
-                                if abs(area_diff) > 0.01:
-                                    if area_diff > 0:
-                                        pass
-                                    diff_parts.append("+", f"{""}{area_diff:.2f}㎡")
-                                else:
-                                    diff_parts.append("면적동일")
-                            comparison = ", ".join(diff_parts)
-                            seq_display = pad_double_width(idx + 1, 4, "center")
-                            date_display = pad_double_width(date_str, 10, "center")
-                            type_display = pad_double_width("매매", 4, "center")
-                            price_display_padded = pad_double_width(price_display_with_pyung, 26, "right")
-                            area_display_padded = pad_double_width(area_display, 18, "right")
-                            land_display_padded = pad_double_width(land_display, 18, "right")
-                            floor_display_padded = pad_double_width(floor_display, 11, "right")
-                            print(f" {seq_display} | {date_display} | {type_display} | {price_display_padded} | {area_display_padded} | {land_display_padded} | {floor_display_padded} | {comparison}")
-                        ", ".join(diff_parts)
-                        print_grouped_stats(trades, "실거래가", is_rent=False, is_wolse=False)
-                    elif getattr(transactions, "trade_permission_error", False):
-                        print("\n [!] 실거래 매매 API 권한 오류(403 Forbidden)로 인해 매매 내역을 가져오지 못했습니다.")
-                        print("     (공공데이터포털에서 해당 매매 API 활용신청 상태를 확인해 주세요.)")
-                    else:
-                        print("\n [참고] 최근 12개월 동안 해당 지번의 신고된 매매 거래 내역이 없습니다.")
-                    if jeonses:
-                        print("\n═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
-                        title_text = f"[ 동일 법정동 내 유사 단독/다가구 전세 내역{target_desc} ]" if prop_type == "4" else f"[ 해당 지번 최근 실거래 전세 내역{target_desc} ]"
-                        print(pad_double_width(title_text, 133, "center"))
-                        print("═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
-                        print(header_line)
-                        print(divider_line)
-                        printed_under_26_header = False
-                        printed_26_43_header = False
-                        printed_above_43_header = False
-                        printed_groups = set()
-                        for idx, item in enumerate(jeonses):
-                            price_display, amt_val, _ = format_price(item, is_rent=True)
-                            if not item.get("excluUseAr"):
-                                item.get("excluUseAr")
-                            area_val = item.get("totalFloorAr")
-                            area = None
-                            if area_val is None:
-                                area = float(area_val)
-                                pyung = round(area * 0.3025, 1)
-                                area_display = f"{area:.2f}㎡ ({pyung}평)"
+                                diff_parts.append(f"+{area_diff:.2f}㎡")
                             else:
-                                area_display = "-"
-                            if prop_type == "1" and apt_groups:
-                                g = get_group_for_item(item, apt_groups)
-                                if g and g["label"] not in printed_groups:
-                                    print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                    print(pad_double_width(f"▼ {g["label"]} ▼", 133, "center"))
-                                    print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                    printed_groups.add(g["label"])
-                                elif area is None:
-                                    if not area < 26.0 and printed_under_26_header:
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        print(pad_double_width("▼ 전용 26㎡ 미만 (원룸/1.5룸형) ▼", 133, "center"))
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        printed_under_26_header = True
-                                    elif not 26.0 <= area < 43.0 and printed_26_43_header:
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        print(pad_double_width("▼ 전용 26㎡ 이상 ~ 43㎡ 미만 (투룸형) ▼", 133, "center"))
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        printed_26_43_header = True
-                                    elif not area >= 43.0 and printed_above_43_header:
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        print(pad_double_width("▼ 전용 43㎡ 이상 (쓰리룸 이상형) ▼", 133, "center"))
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        printed_above_43_header = True
-                            land_val = item.get("landAr")
-                            land_display = "-"
-                            if land_val is None:
-                                land_area = float(land_val)
-                                if land_area > 0:
-                                    land_pyung = round(land_area * 0.3025, 1)
-                                    land_display = f"{land_area:.2f}㎡ ({land_pyung}평)"
-                            price_display_with_pyung = price_display
-                            floor_str = str(item.get("floor", "")).strip()
-                            dong_info = str(item.get("aptDong", "")).strip()
-                            if dong_info:
-                                if not dong_info.endswith("동"):
-                                    dong_info = dong_info + "동"
-                                dong_prefix = f"{dong_info} "
-                            else:
-                                dong_prefix = ""
-                            floor = int(floor_str)
-                            floor_display = f"{dong_prefix}{floor}층"
-                            year = item.get("dealYear", "")
-                            month = str(item.get("dealMonth", "")).zfill(2)
-                            day = str(item.get("dealDay", "")).zfill(2)
-                            date_str = f"{year}-{month}-{day}"
-                            diff_parts = []
-                            if target_floor is not None or target_area is None:
-                                if target_floor is None and floor is None:
-                                    floor_diff = floor - target_floor
-                                    if floor_diff > 0:
-                                        diff_parts.append(f"+{floor_diff}층")
-                                    elif floor_diff < 0:
-                                        diff_parts.append(f"{floor_diff}층")
-                                    else:
-                                        diff_parts.append("층동일")
-                                if target_area is None and area is None:
-                                    area_diff = area - target_area
-                                    if abs(area_diff) > 0.01:
-                                        if area_diff > 0:
-                                            pass
-                                        diff_parts.append("+", f"{""}{area_diff:.2f}㎡")
-                                    else:
-                                        diff_parts.append("면적동일")
-                                if diff_parts:
-                                    pass
-                                comparison = "층/면적 동일"
-                            elif idx == 0:
-                                base_price = amt_val
-                                base_floor = floor
-                                base_area = area
-                                comparison = "★ 기준 (가장 최근 거래)"
-                            elif base_price is None and amt_val is None:
-                                p_diff = base_price - amt_val
-                                if p_diff > 0:
-                                    diff_parts.append(f"보증금 +{p_diff:,}만")
-                                elif p_diff < 0:
-                                    diff_parts.append(f"보증금 {p_diff:,}만")
-                                else:
-                                    diff_parts.append("보증금동일")
-                            if base_floor is None and floor is None:
-                                floor_diff = base_floor - floor
-                                if floor_diff > 0:
-                                    diff_parts.append(f"+{floor_diff}층")
-                                elif floor_diff < 0:
-                                    diff_parts.append(f"{floor_diff}층")
-                                else:
-                                    diff_parts.append("층동일")
-                            if base_area is None and area is None:
-                                area_diff = base_area - area
-                                if abs(area_diff) > 0.01:
-                                    if area_diff > 0:
-                                        pass
-                                    diff_parts.append("+", f"{""}{area_diff:.2f}㎡")
-                                else:
-                                    diff_parts.append("면적동일")
-                            comparison = ", ".join(diff_parts)
-                            seq_display = pad_double_width(idx + 1, 4, "center")
-                            date_display = pad_double_width(date_str, 10, "center")
-                            type_display = pad_double_width("전세", 4, "center")
-                            price_display_padded = pad_double_width(price_display_with_pyung, 26, "right")
-                            area_display_padded = pad_double_width(area_display, 18, "right")
-                            land_display_padded = pad_double_width(land_display, 18, "right")
-                            floor_display_padded = pad_double_width(floor_display, 11, "right")
-                            print(f" {seq_display} | {date_display} | {type_display} | {price_display_padded} | {area_display_padded} | {land_display_padded} | {floor_display_padded} | {comparison}")
-                        ", ".join(diff_parts)
-                        print_grouped_stats(jeonses, "전세보증금", is_rent=True, is_wolse=False)
-                    elif getattr(transactions, "rent_permission_error", False):
-                        print("\n [!] 실거래 임대차 API 권한 오류(403 Forbidden)로 인해 전세 내역을 가져오지 못했습니다.")
-                        print("     (공공데이터포털에서 해당 전월세 API 활용신청 상태를 확인해 주세요.)")
-                    else:
-                        print("\n [참고] 최근 12개월 동안 해당 지번의 신고된 전세 거래 내역이 없습니다.")
-                    if wolses:
-                        print("\n═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
-                        title_text = f"[ 동일 법정동 내 유사 단독/다가구 월세 내역{target_desc} ]" if prop_type == "4" else f"[ 해당 지번 최근 실거래 월세 내역{target_desc} ]"
-                        print(pad_double_width(title_text, 133, "center"))
-                        print("═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════")
-                        print(header_line)
-                        print(divider_line)
-                        printed_under_26_header = False
-                        printed_26_43_header = False
-                        printed_above_43_header = False
-                        printed_groups = set()
-                        for idx, item in enumerate(wolses):
-                            price_display, amt_val, rent_val = format_price(item, is_rent=True)
-                            if not item.get("excluUseAr"):
-                                item.get("excluUseAr")
-                            area_val = item.get("totalFloorAr")
-                            area = None
-                            if area_val is None:
-                                area = float(area_val)
-                                pyung = round(area * 0.3025, 1)
-                                area_display = f"{area:.2f}㎡ ({pyung}평)"
-                            else:
-                                area_display = "-"
-                            if prop_type == "1" and apt_groups:
-                                g = get_group_for_item(item, apt_groups)
-                                if g and g["label"] not in printed_groups:
-                                    print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                    print(pad_double_width(f"▼ {g["label"]} ▼", 133, "center"))
-                                    print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                    printed_groups.add(g["label"])
-                                elif area is None:
-                                    if not area < 26.0 and printed_under_26_header:
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        print(pad_double_width("▼ 전용 26㎡ 미만 (원룸/1.5룸형) ▼", 133, "center"))
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        printed_under_26_header = True
-                                    elif not 26.0 <= area < 43.0 and printed_26_43_header:
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        print(pad_double_width("▼ 전용 26㎡ 이상 ~ 43㎡ 미만 (투룸형) ▼", 133, "center"))
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        printed_26_43_header = True
-                                    elif not area >= 43.0 and printed_above_43_header:
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        print(pad_double_width("▼ 전용 43㎡ 이상 (쓰리룸 이상형) ▼", 133, "center"))
-                                        print("-------------------------------------------------------------------------------------------------------------------------------------")
-                                        printed_above_43_header = True
-                            land_val = item.get("landAr")
-                            land_display = "-"
-                            if land_val is None:
-                                land_area = float(land_val)
-                                if land_area > 0:
-                                    land_pyung = round(land_area * 0.3025, 1)
-                                    land_display = f"{land_area:.2f}㎡ ({land_pyung}평)"
-                            price_display_with_pyung = price_display
-                            floor_str = str(item.get("floor", "")).strip()
-                            dong_info = str(item.get("aptDong", "")).strip()
-                            if dong_info:
-                                if not dong_info.endswith("동"):
-                                    dong_info = dong_info + "동"
-                                dong_prefix = f"{dong_info} "
-                            else:
-                                dong_prefix = ""
-                            floor = int(floor_str)
-                            floor_display = f"{dong_prefix}{floor}층"
-                            if True:
-                                year = item.get("dealYear", "")
-                                month = str(item.get("dealMonth", "")).zfill(2)
-                                day = str(item.get("dealDay", "")).zfill(2)
-                                date_str = f"{year}-{month}-{day}"
-                                diff_parts = []
-                                if target_floor is not None or target_area is None:
-                                    if target_floor is None and floor is None:
-                                        floor_diff = floor - target_floor
-                                        if floor_diff > 0:
-                                            diff_parts.append(f"+{floor_diff}층")
-                                        elif floor_diff < 0:
-                                            diff_parts.append(f"{floor_diff}층")
-                                        else:
-                                            diff_parts.append("층동일")
-                                    if target_area is None and area is None:
-                                        area_diff = area - target_area
-                                        if abs(area_diff) > 0.01:
-                                            if area_diff > 0:
-                                                pass
-                                            diff_parts.append("+", f"{""}{area_diff:.2f}㎡")
-                                        else:
-                                            diff_parts.append("면적동일")
-                                    comparison = diff_parts and "층/면적 동일"
-                                elif idx == 0:
-                                    base_price = amt_val
-                                    base_rent = rent_val
-                                    base_floor = floor
-                                    base_area = area
-                                    comparison = "★ 기준 (가장 최근 거래)"
-                                elif base_price is None and amt_val is None:
-                                    p_diff = base_price - amt_val
-                                    r_diff = base_rent - rent_val
-                                    if p_diff > 0:
-                                        diff_parts.append(f"보증금 +{p_diff:,}만")
-                                    elif p_diff < 0:
-                                        diff_parts.append(f"보증금 {p_diff:,}만")
-                                    if r_diff > 0:
-                                        diff_parts.append(f"월세 +{r_diff}만")
-                                    elif r_diff < 0:
-                                        diff_parts.append(f"월세 {r_diff}만")
-                                    if p_diff == 0 and r_diff == 0:
-                                        diff_parts.append("조건동일")
-                                if base_floor is None and floor is None:
-                                    floor_diff = base_floor - floor
-                                    if floor_diff > 0:
-                                        diff_parts.append(f"+{floor_diff}층")
-                                    elif floor_diff < 0:
-                                        diff_parts.append(f"{floor_diff}층")
-                                    else:
-                                        diff_parts.append("층동일")
-                                if base_area is None and area is None:
-                                    area_diff = base_area - area
-                                    if abs(area_diff) > 0.01:
-                                        if area_diff > 0:
-                                            pass
-                                        diff_parts.append("+", f"{""}{area_diff:.2f}㎡")
-                                    else:
-                                        diff_parts.append("면적동일")
-                                comparison = ", ".join(diff_parts)
-                                seq_display = pad_double_width(idx + 1, 4, "center")
-                                date_display = pad_double_width(date_str, 10, "center")
-                                type_display = pad_double_width("월세", 4, "center")
-                                price_display_padded = pad_double_width(price_display_with_pyung, 26, "right")
-                                area_display_padded = pad_double_width(area_display, 18, "right")
-                                land_display_padded = pad_double_width(land_display, 18, "right")
-                                floor_display_padded = pad_double_width(floor_display, 11, "right")
-                                print(f" {seq_display} | {date_display} | {type_display} | {price_display_padded} | {area_display_padded} | {land_display_padded} | {floor_display_padded} | {comparison}")
-                                ", ".join(diff_parts)
-                                print_grouped_stats(wolses, "환산보증금", is_rent=True, is_wolse=True)
-                    elif getattr(transactions, "rent_permission_error", False):
-                        print("\n [!] 실거래 임대차 API 권한 오류(403 Forbidden)로 인해 월세 내역을 가져오지 못했습니다.")
-                        print("     (공공데이터포털에서 해당 전월세 API 활용신청 상태를 확인해 주세요.)")
-                    else:
-                        print("\n [참고] 최근 12개월 동안 해당 지번의 신고된 월세 거래 내역이 없습니다.")
-                    if save_report:
-                        type_names = {"1": "아파트", "2": "연립/다세대/빌라", "3": "오피스텔", "4": "단독/다가구"}
-                        prop_type_name = type_names.get(prop_type, "일반 부동산")
-                        display_addr = address_name and "조회 대상 주소"
-                        save_briefing_report(display_addr, trades, jeonses, wolses, prop_type_name, selected_label, is_expanded, target_build_year, target_area, target_floor=target_floor, desired_info=desired_info, expansion_mode=expansion_mode)
-                    return (trades, jeonses, wolses, prop_type_name, selected_label, is_expanded)
+                                diff_parts.append("면적동일")
+                        comparison = diff_parts and "층/면적 동일"
+                    elif idx == 0:
+                        base_price = amt_val
+                        base_rent = rent_val
+                        base_floor = floor
+                        base_area = area
+                        comparison = "★ 기준 (가장 최근 거래)"
+                    elif base_price is not None and amt_val is not None:
+                        p_diff = base_price - amt_val
+                        r_diff = base_rent - rent_val
+                        if p_diff > 0:
+                            diff_parts.append(f"보증금 +{p_diff:,}만")
+                        elif p_diff < 0:
+                            diff_parts.append(f"보증금 {p_diff:,}만")
+                        if r_diff > 0:
+                            diff_parts.append(f"월세 +{r_diff}만")
+                        elif r_diff < 0:
+                            diff_parts.append(f"월세 {r_diff}만")
+                        if p_diff == 0 and r_diff == 0:
+                            diff_parts.append("조건동일")
+                    if base_floor is not None and floor is not None:
+                        floor_diff = base_floor - floor
+                        if floor_diff > 0:
+                            diff_parts.append(f"+{floor_diff}층")
+                        elif floor_diff < 0:
+                            diff_parts.append(f"{floor_diff}층")
+                        else:
+                            diff_parts.append("층동일")
+                    if base_area is not None and area is not None:
+                        area_diff = base_area - area
+                        if abs(area_diff) > 0.01:
+                            if area_diff > 0:
+                                pass
+                            diff_parts.append(f"+{area_diff:.2f}㎡")
+                        else:
+                            diff_parts.append("면적동일")
+                    comparison = ", ".join(diff_parts)
+                    seq_display = pad_double_width(idx + 1, 4, "center")
+                    date_display = pad_double_width(date_str, 10, "center")
+                    type_display = pad_double_width("월세", 4, "center")
+                    price_display_padded = pad_double_width(price_display_with_pyung, 26, "right")
+                    area_display_padded = pad_double_width(area_display, 18, "right")
+                    land_display_padded = pad_double_width(land_display, 18, "right")
+                    bld_display_padded = pad_double_width(floor_display, 24, "right")
+                    print(f" {seq_display} | {date_display} | {type_display} | {price_display_padded} | {area_display_padded} | {land_display_padded} | {bld_display_padded} | {comparison}")
+                    ", ".join(diff_parts)
+                    print_grouped_stats(wolses, "환산보증금", is_rent=True, is_wolse=True)
+        elif getattr(transactions, "rent_permission_error", False):
+            print("\n [!] 실거래 임대차 API 권한 오류(403 Forbidden)로 인해 월세 내역을 가져오지 못했습니다.")
+            print("     (공공데이터포털에서 해당 전월세 API 활용신청 상태를 확인해 주세요.)")
+        else:
+            print("\n [참고] 최근 12개월 동안 해당 지번의 신고된 월세 거래 내역이 없습니다.")
+        if save_report:
+            type_names = {"1": "아파트", "2": "연립/다세대/빌라", "3": "오피스텔", "4": "단독/다가구"}
+            prop_type_name = type_names.get(prop_type, "일반 부동산")
+            display_addr = address_name or "조회 대상 주소"
+            save_briefing_report(display_addr, trades, jeonses, wolses, prop_type_name, selected_label, is_expanded, target_build_year, target_area, target_floor=target_floor, desired_info=desired_info, expansion_mode=expansion_mode, target_bld_nm=target_bld_nm, target_bun=bun, target_ji=ji, sigunguCd=sigunguCd)
+        return (trades, jeonses, wolses, prop_type_name, selected_label, is_expanded)
     except Exception as e:
         import traceback; traceback.print_exc()
         print(f"       [!] 런타임 에러 발생: {e}")
@@ -2491,9 +4206,15 @@ def run_trade_viewer(pre_address_info, pre_prop_type, target_floor, target_area)
         print("  최근 12개월 실거래가 내역과 차이를 비교해 줍니다.")
         print("  (메뉴로 돌아가려면 'q' 또는 엔터를 입력하세요)")
         print("--------------------------------------------------")
-        address = input("\n[입력] 조회할 주소: ").strip()
+        address = sys.argv[1] if len(sys.argv) > 1 else input("\n[입력] 조회할 주소: ").strip()
         if not address or address.lower() == "q":
             return
+            
+        is_dev_zone = False
+        if len(sys.argv) <= 1 and not pre_address_info:
+            dev_zone_input = input(" [선택] 해당 지역이 정비사업 구역(개발지)입니까? (y/n, 기본: n): ").strip().lower()
+            if dev_zone_input == 'y':
+                is_dev_zone = True
         clean_address, dong_name, ho_name = parse_address_and_ho(address)
         print(" -> 주소 변환 중...")
         addr_info = get_kakao_address_info(clean_address)
@@ -2507,6 +4228,7 @@ def run_trade_viewer(pre_address_info, pre_prop_type, target_floor, target_area)
         bld_name = ""
         etc_purp = ""
         main_purp = ""
+        hhld_cnt = 0
         try:
             bun_str = str(addr_info["bun"]).zfill(4) if addr_info.get("bun") else "0000"
             ji_str = str(addr_info["ji"]).zfill(4) if addr_info.get("ji") else "0000"
@@ -2514,7 +4236,7 @@ def run_trade_viewer(pre_address_info, pre_prop_type, target_floor, target_area)
             title_query = f"?serviceKey={GOV_API_KEY}&sigunguCd={addr_info['sigunguCd']}&bjdongCd={addr_info['bjdongCd']}&platGbCd=0&bun={bun_str}&ji={ji_str}&numOfRows=100&pageNo=1&_type=json"
             req_title = urllib.request.Request(title_url + title_query)
             req_title.add_header("User-Agent", "Mozilla/5.0")
-            with urllib.request.urlopen(req_title, timeout=5) as resp_title:
+            with urllib.request.urlopen(req_title, timeout=20) as resp_title:
                 title_res = resp_title.read().decode("utf-8")
             if title_res.strip():
                 title_data = json.loads(title_res)
@@ -2522,19 +4244,91 @@ def run_trade_viewer(pre_address_info, pre_prop_type, target_floor, target_area)
                 if items:
                     if isinstance(items, dict):
                         items = [items]
-                    selected_title = items[0]
                     if dong_name:
+                        selected_title = items[0]
                         for t in items:
-                            if match_dong(dong_name, t.get("dongNm", "")):
+                            if match_dong(dong_name, t.get("dongNm", "")) or match_dong(dong_name, t.get("bldNm", "")):
                                 selected_title = t
                                 break
+                    else:
+                        if len(items) > 1 and len(sys.argv) <= 1:
+                            print("\n [!] 해당 지번에 여러 개의 건물이 확인되었습니다.")
+                            
+                            # Filter for residential buildings
+                            residential_items = []
+                            other_items = []
+                            for t in items:
+                                b_nm = str(t.get("bldNm", ""))
+                                d_nm = str(t.get("dongNm", ""))
+                                purp = str(t.get("mainPurpsCdNm", ""))
+                                try: h = int(t.get("hhldCnt", 0) or 0)
+                                except: h = 0
+                                
+                                is_residential = h > 0 or "아파트" in b_nm or "아파트" in d_nm or "주택" in purp or "오피스텔" in purp
+                                if h == 0 and ("근린" in purp or "상가" in b_nm or "상가" in d_nm or "주차" in purp or "영업" in purp):
+                                    is_residential = False
+                                    
+                                if is_residential:
+                                    residential_items.append(t)
+                                else:
+                                    other_items.append(t)
+                                    
+                            # If there are residential buildings, prefer them
+                            display_items = residential_items if residential_items else other_items
+                            if residential_items and other_items:
+                                print("     (주거용 건물만 필터링하여 보여줍니다.)")
+                                
+                            for idx, t in enumerate(display_items):
+                                b_nm = str(t.get("bldNm", "")).strip() or "건물명 없음"
+                                d_nm = str(t.get("dongNm", "")).strip() or "동 없음"
+                                purp = str(t.get("mainPurpsCdNm", "")).strip() or "용도 불명"
+                                h = t.get("hhldCnt", 0)
+                                print(f"  {idx+1}: {b_nm} ({d_nm}) - {purp} (세대수: {h})")
+                            
+                            while True:
+                                sel = input(f"\n[입력] 분석할 주거용 건물 번호를 선택해 주세요 (1~{len(display_items)}, 자동선택 시 엔터): ").strip()
+                                if not sel:
+                                    best_t = display_items[0]
+                                    max_h = 0
+                                    for t in display_items:
+                                        try: h = int(t.get("hhldCnt", 0) or 0)
+                                        except: h = 0
+                                        if h > max_h:
+                                            max_h = h
+                                            best_t = t
+                                    selected_title = best_t
+                                    break
+                                if sel.isdigit() and 1 <= int(sel) <= len(display_items):
+                                    selected_title = display_items[int(sel)-1]
+                                    break
+                                print(" [!] 올바른 번호를 입력해 주세요.")
+                        else:
+                            best_t = items[0]
+                            max_h = 0
+                            for t in items:
+                                try: h = int(t.get("hhldCnt", 0) or 0)
+                                except: h = 0
+                                if h > max_h:
+                                    max_h = h
+                                    best_t = t
+                            if max_h == 0:
+                                for t in items:
+                                    b_nm = str(t.get("bldNm", ""))
+                                    d_nm = str(t.get("dongNm", ""))
+                                    if "아파트" in b_nm or "아파트" in d_nm:
+                                        best_t = t
+                                        break
+                            selected_title = best_t
                     main_purp = selected_title.get("mainPurpsCdNm", "")
-                    bld_name = selected_title.get("bldNm", "")
+                    bld_name = selected_title.get("bldNm", "").strip() or selected_title.get("dongNm", "").strip()
                     etc_purp = selected_title.get("etcPurps", "")
+                    hhld_cnt = int(selected_title.get("hhldCnt", 0) or 0)
                     apr = str(selected_title.get("useAprDay", "")).strip()
                     if apr and len(apr) >= 4:
                         target_build_year = int(apr[:4])
-            prop_type = classify_property_type(main_purp, bld_name, etc_purp)
+            prop_type = classify_property_type(main_purp, bld_name, etc_purp, hhld_cnt)
+            if prop_type == "1":
+                bld_name = clean_apartment_name(bld_name)
             type_names = {"1": "아파트", "2": "연립/다세대/빌라", "3": "오피스텔", "4": "단독/다가구"}
             print(f" -> 부동산 유형 자동 판별 완료: [{type_names.get(prop_type, '일반 부동산')}]")
             if prop_type == "4":
@@ -2544,25 +4338,63 @@ def run_trade_viewer(pre_address_info, pre_prop_type, target_floor, target_area)
                 elif "단독" in combined:
                     target_house_type = "단독"
             if ho_name:
-                print(f" -> [{ho_name}호] 전유부 면적 및 층수 조회 중...")
+                print(f" -> [{ho_name}] 전유부 면적 및 층수 조회 중...")
                 unit_details = get_expos_unit_details(addr_info["sigunguCd"], addr_info["bjdongCd"], addr_info["bun"], addr_info["ji"], ho_name, dong_name)
-                if unit_details:
-                    try:
-                        target_floor = int(re.sub('\\D', '', str(unit_details.get("flrNo", "0"))))
-                    except:
-                        target_floor = 0
+                target_floor = extract_floor_from_string(ho_name, unit_details)
+                if unit_details and unit_details.get("area"):
                     target_area = unit_details.get("area", 0.0)
-                    print(f"    [자동 입력 완료] {ho_name}호 기준 층: {target_floor}층 / 전용면적: {target_area:.2f}㎡")
+                fl_desc = f"지하 {abs(target_floor)}층" if (target_floor is not None and target_floor < 0) else (f"{target_floor}층" if target_floor is not None else "층수 미지정")
+                ar_desc = f"{target_area:.2f}㎡" if target_area else "면적 미지정"
+                print(f"    [자동 입력 완료] {ho_name} 기준 층: {fl_desc} / 전용면적: {ar_desc}")
         except Exception as e:
             print(f" [!] 부동산 유형/대장 조회 중 오류 발생: {e}")
     transactions = get_recent_transactions(addr_info["sigunguCd"], addr_info["bun"], addr_info["ji"], prop_type, addr_info.get("bjdongNm"), target_build_year, target_house_type)
     if transactions:
         address_name = clean_address
-        print_comparison_table(transactions, prop_type, target_floor, target_area, address_name, sigunguCd=addr_info["sigunguCd"], bun=addr_info["bun"], ji=addr_info["ji"], bjdong_nm=addr_info.get("bjdongNm"), target_build_year=target_build_year, target_house_type=target_house_type, save_report=pre_address_info is None)
+        if dong_name:
+            address_name += f" {dong_name}" if dong_name.endswith("동") else f" {dong_name}동"
+        if ho_name:
+            address_name += f" {ho_name}" if ho_name.endswith("호") else f" {ho_name}호"
+        full_reg = f"{addr_info.get('sidoNm', '')} {addr_info.get('sigunguNm', '')}".strip()
+        print_comparison_table(transactions, prop_type, target_floor, target_area, address_name, sigunguCd=addr_info["sigunguCd"], bun=addr_info["bun"], ji=addr_info["ji"], bjdong_nm=addr_info.get("bjdongNm"), target_build_year=target_build_year, target_house_type=target_house_type, save_report=pre_address_info is None, target_bld_nm=bld_name, is_dev_zone=is_dev_zone, admin_dong_nm=addr_info.get("adminDongNm"), full_region_name=full_reg)
     else:
         print(" [!] 최근 실거래 내역이 존재하지 않거나 가져오는데 실패했습니다.")
     if not pre_address_info:
-        input("\n메뉴로 돌아가려면 엔터를 누르세요...")
+        if len(sys.argv) <= 1: input("\n메뉴로 돌아가려면 엔터를 누르세요...")
+
+
+import json
+from datetime import datetime
+
+def save_learned_comps(address_name, bjdong_nm, transactions, prop_type, is_dev_zone):
+    db_path = "learned_cma_db.json"
+    if os.path.exists(db_path):
+        try:
+            with open(db_path, "r", encoding="utf-8") as f:
+                db = json.load(f)
+        except:
+            db = []
+    else:
+        db = []
+        
+    record = {
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "target_address": address_name,
+        "bjdong_nm": bjdong_nm,
+        "prop_type": prop_type,
+        "is_dev_zone": is_dev_zone,
+        "transaction_count": len(transactions),
+        "transactions": transactions
+    }
+    db.append(record)
+    
+    try:
+        with open(db_path, "w", encoding="utf-8") as f:
+            json.dump(db, f, ensure_ascii=False, indent=2)
+        print(f"\n [DB 저장 완료] 나만의 중개 DB(learned_cma_db.json)에 거래 사례 {len(transactions)}건이 학습(저장)되었습니다.")
+    except Exception as e:
+        print(f"\n [!] DB 저장 실패: {e}")
+
 
 if __name__ == "__main__":
     if sys.platform == "win32":
@@ -2571,6 +4403,7 @@ if __name__ == "__main__":
         while True:
             try:
                 run_trade_viewer(None, None, None, None)
+                if len(sys.argv) > 1: break
             except KeyboardInterrupt:
                 break
             except Exception as e:

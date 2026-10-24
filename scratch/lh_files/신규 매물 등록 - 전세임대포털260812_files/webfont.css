@@ -1,0 +1,205 @@
+@charset "utf-8";
+
+/* 본고딕 */
+@font-face {
+    font-family: 'NotoT';
+    src: url(/font/NotoSansKR/NotoSansKR-Thin.eot);
+    src: url(/font/NotoSansKR/NotoSansKR-Thin.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSansKR/NotoSansKR-Thin.woff2) format('woff2'),
+    url(/font/NotoSansKR/NotoSansKR-Thin.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'NotoL';
+    src: url(/font/NotoSansKR/NotoSansKR-Light.eot);
+    src: url(/font/NotoSansKR/NotoSansKR-Light.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSansKR/NotoSansKR-Light.woff2) format('woff2'),
+    url(/font/NotoSansKR/NotoSansKR-Light.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'NotoDL';
+    src: url(/font/NotoSansKR/NotoSansKR-DemiLight.eot);
+    src: url(/font/NotoSansKR/NotoSansKR-DemiLight.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSansKR/NotoSansKR-DemiLight.woff2) format('woff2'),
+    url(/font/NotoSansKR/NotoSansKR-DemiLight.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'NotoR';
+    src: url(/font/NotoSansKR/NotoSansKR-Regular.eot);
+    src: url(/font/NotoSansKR/NotoSansKR-Regular.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSansKR/NotoSansKR-Regular.woff2) format('woff2'),
+    url(/font/NotoSansKR/NotoSansKR-Regular.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'NotoM';
+    src: url(/font/NotoSansKR/NotoSansKR-Medium.eot);
+    src: url(/font/NotoSansKR/NotoSansKR-Medium.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSansKR/NotoSansKR-Medium.woff2) format('woff2'),
+    url(/font/NotoSansKR/NotoSansKR-Medium.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'NotoB';
+    src: url(/font/NotoSansKR/NotoSansKR-Bold.eot);
+    src: url(/font/NotoSansKR/NotoSansKR-Bold.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSansKR/NotoSansKR-Bold.woff2) format('woff2'),
+    url(/font/NotoSansKR/NotoSansKR-Bold.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'NotoBK';
+    src: url(/font/NotoSansKR/NotoSansKR-Black.eot);
+    src: url(/font/NotoSansKR/NotoSansKR-Black.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSansKR/NotoSansKR-Black.woff2) format('woff2'),
+    url(/font/NotoSansKR/NotoSansKR-Black.woff) format('woff');
+}
+
+/* 본명조 190930 */
+@font-face {
+    font-family: 'NotoSerifEL';
+    src: url(/font/NotoSerifKR/NotoSerifKR-ExtraLight.eot);
+    src: url(/font/NotoSerifKR/NotoSerifKR-ExtraLight.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSerifKR/NotoSerifKR-ExtraLight.woff2) format('woff2'),
+    url(/font/NotoSerifKR/NotoSerifKR-ExtraLight.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'NotoSerifL';
+    src: url(/font/NotoSerifKR/NotoSerifKR-Light.eot);
+    src: url(/font/NotoSerifKR/NotoSerifKR-Light.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSerifKR/NotoSerifKR-Light.woff2) format('woff2'),
+    url(/font/NotoSerifKR/NotoSerifKR-Light.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'NotoSerifR';
+    src: url(/font/NotoSerifKR/NotoSerifKR-Regular.eot);
+    src: url(/font/NotoSerifKR/NotoSerifKR-Regular.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSerifKR/NotoSerifKR-Regular.woff2) format('woff2'),
+    url(/font/NotoSerifKR/NotoSerifKR-Regular.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'NotoSerifM';
+    src: url(/font/NotoSerifKR/NotoSerifKR-Medium.eot);
+    src: url(/font/NotoSerifKR/NotoSerifKR-Medium.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSerifKR/NotoSerifKR-Medium.woff2) format('woff2'),
+    url(/font/NotoSerifKR/NotoSerifKR-Medium.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'NotoSerifSB';
+    src: url(/font/NotoSerifKR/NotoSerifKR-SemiBold.eot);
+    src: url(/font/NotoSerifKR/NotoSerifKR-SemiBold.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSerifKR/NotoSerifKR-SemiBold.woff2) format('woff2'),
+    url(/font/NotoSerifKR/NotoSerifKR-SemiBold.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'NotoSerifB';
+    src: url(/font/NotoSerifKR/NotoSerifKR-Bold.eot);
+    src: url(/font/NotoSerifKR/NotoSerifKR-Bold.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSerifKR/NotoSerifKR-Bold.woff2) format('woff2'),
+    url(/font/NotoSerifKR/NotoSerifKR-Bold.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'NotoSerifBK';
+    src: url(/font/NotoSerifKR/NotoSerifKR-Black.eot);
+    src: url(/font/NotoSerifKR/NotoSerifKR-Black.eot?#iefix) format('embedded-opentype'),
+    url(/font/NotoSerifKR/NotoSerifKR-Black.woff2) format('woff2'),
+    url(/font/NotoSerifKR/NotoSerifKR-Black.woff) format('woff');
+}
+
+/* Pretendard */
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 300;
+    src: url(/font/Pretendard/Pretendard-Light.woff2) format('woff2'),
+    url(/font/Pretendard/Pretendard-Light.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 400;
+    src: url(/font/Pretendard/Pretendard-Regular.woff2) format('woff2'),
+    url(/font/Pretendard/Pretendard-Regular.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 500;
+    src: url(/font/Pretendard/Pretendard-Medium.woff2) format('woff2'),
+    url(/font/Pretendard/Pretendard-Medium.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 600;
+    src: url(/font/Pretendard/Pretendard-SemiBold.woff2) format('woff2'),
+    url(/font/Pretendard/Pretendard-SemiBold.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'Pretendard';
+    font-weight: 700;
+    src: url(/font/Pretendard/Pretendard-Bold.woff2) format('woff2'),
+    url(/font/Pretendard/Pretendard-Bold.woff) format('woff');
+}
+
+/* Montserrat */
+@font-face {
+    font-family: 'Montserrat';
+    font-weight: 500;
+    src: url(/font/Montserrat/Montserrat-Medium.woff2) format('woff2'),
+    url(/font/Montserrat/Montserrat-Medium.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-weight: 600;
+    src: url(/font/Montserrat/Montserrat-SemiBold.woff2) format('woff2'),
+    url(/font/Montserrat/Montserrat-SemiBold.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'Montserrat';
+    font-weight: 700;
+    src: url(/font/Montserrat/Montserrat-Bold.woff2) format('woff2'),
+    url(/font/Montserrat/Montserrat-Bold.woff) format('woff');
+}
+
+/*
+@font-face {
+    font-family: 'EliceBaeum';
+    font-weight: 400;
+    src: url(/font/EliceDigitalBaeum/EliceDigitalBaeum-Regular.woff2) format('woff2'),
+    url(/font/EliceDigitalBaeum/EliceDigitalBaeum-Regular.woff) format('woff');
+}
+
+@font-face {
+    font-family: 'EliceBaeum';
+    font-weight: 700;
+    src: url(/font/EliceDigitalBaeum/EliceDigitalBaeum-Bold.woff2) format('woff2'),
+    url(/font/EliceDigitalBaeum/EliceDigitalBaeum-Bold.woff) format('woff');
+}
+*/
+
+/* 맑은 고딕*/
+.malgun {font-family: "맑은 고딕", Malgun Gothic !important;}
+
+/* 돋움 */
+.dotum {font-family: "돋움", Dotum !important;}
+
+/* 본고딕 */
+.NotoT {font-family:"NotoT" !important;}
+.NotoL {font-family:"NotoL" !important;}
+.NotoDL {font-family:"NotoDL" !important;}
+.NotoR {font-family:"NotoR" !important;}
+.NotoM {font-family:"NotoM" !important;}
+.NotoB {font-family:"NotoB" !important;}
+.NotoBK {font-family:"NotoBK" !important;}
+

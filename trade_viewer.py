@@ -357,7 +357,7 @@ def extract_floor_from_string(text, unit_info=None):
             return int(flr_raw)
         except ValueError:
             pass
-        if "지하" in flr_raw or "B" in flr_raw.upper() or "-" in flr_raw:
+        if any(k in flr_raw for k in ("지하", "반지하", "지층", "반지층", "-")) or "B" in flr_raw.upper():
             digits = re.findall(r"\d+", flr_raw)
             return -int(digits[0]) if digits else -1
         else:
@@ -370,7 +370,14 @@ def extract_floor_from_string(text, unit_info=None):
         return None
         
     s_upper = s.upper().replace(" ", "")
-    if any(k in s_upper for k in ("지하", "반지하", "B")):
+    
+    # 1. 음수 표기 (-1, -1층, -2 등)
+    m_neg = re.match(r"^-(\d+)", s_upper)
+    if m_neg:
+        return -int(m_neg.group(1))
+
+    # 2. 지하 / 반지하 / 지층 / 반지층 / B 표기
+    if any(k in s_upper for k in ("지하", "반지하", "지층", "반지층", "B")):
         digits = re.findall(r"\d+", s_upper)
         if digits:
             num = int(digits[0])
@@ -382,11 +389,13 @@ def extract_floor_from_string(text, unit_info=None):
             return -1
         return -1
         
+    # 3. '층' 표기 (예: 2층, 3층)
     if "층" in s_upper:
         digits = re.findall(r"\d+", s_upper)
         if digits:
             return int(digits[0])
             
+    # 4. 일반 숫자 및 호실 번호 (예: 1, 2, 201호, 1001호)
     digits = re.findall(r"\d+", s_upper)
     if digits:
         num = int(digits[0])
@@ -1896,7 +1905,8 @@ Paragraph(f"{period_label} (국토교통부 실거래가 기준)", value_style)]
             off_str = format_assessed_price(official_price_val)
             off_126_str = format_assessed_price(int(official_price_val * 1.26))
             yr_tag = f"({official_price_year}년) " if official_price_year else ""
-            meta_data.append([Paragraph("<b>주택 공시가격</b>", label_style), Paragraph(f"<b>{yr_tag}{off_str}</b> (126%: <b>{off_126_str}</b>)", value_style)])
+            off_lbl = "<b>호실 안분 공시가격</b>" if (desired_info and desired_info.get("is_multi_family_unit")) else "<b>주택 공시가격</b>"
+            meta_data.append([Paragraph(off_lbl, label_style), Paragraph(f"<b>{yr_tag}{off_str}</b> (126%: <b>{off_126_str}</b>)", value_style)])
 
         if desired_info and desired_info.get("room_count_label"):
             meta_data.append([Paragraph("<b>분석 대상 방 개수</b>", label_style), Paragraph(desired_info["room_count_label"], value_style)])
@@ -1904,7 +1914,7 @@ Paragraph(f"{period_label} (국토교통부 실거래가 기준)", value_style)]
             masked_phone = mask_phone_number(desired_info["phone_number"])
             meta_data.append([Paragraph("<b>의뢰인 연락처</b>", label_style), Paragraph(masked_phone, value_style)])
         if target_floor is not None:
-            floor_lbl = f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층"
+            floor_lbl = f"지하 {abs(target_floor)}층 (반지하)" if target_floor == -1 else (f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층")
             meta_data.append([Paragraph("<b>분석 대상 층수</b>", label_style), Paragraph(floor_lbl, value_style)])
         if is_expanded:
             cond_parts = []
@@ -1993,7 +2003,7 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
             # [신설] 개별 호수 분석 시, 주용도 / 전용면적 / 대지지분을 첫 행에 강조 배치!
             ho_purpose = desired_info.get("unit_purpose") if desired_info else None
             ho_is_comm = desired_info.get("is_commercial") if desired_info else False
-            floor_lbl = f"지하 {abs(target_floor)}층" if (target_floor is not None and target_floor < 0) else f"{target_floor}층" if target_floor is not None else "정보없음"
+            floor_lbl = f"지하 {abs(target_floor)}층 (반지하)" if target_floor == -1 else (f"지하 {abs(target_floor)}층" if (target_floor is not None and target_floor < 0) else f"{target_floor}층" if target_floor is not None else "정보없음")
             if ho_purpose:
                 purp_style = val_cell_warn if ho_is_comm else val_cell_high
                 purp_tag = " ⚠️ (근린생활시설)" if ho_is_comm else " (주거용)"
@@ -2496,7 +2506,8 @@ colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDIN
                     p126_str = format_assessed_price(p126_won)
                     off_str = format_assessed_price(official_price_val)
                     yr_desc = f"({official_price_year}년 기준) " if official_price_year else ""
-                    p126_desc = f"<b>{p126_str}</b> (주택공시가: {yr_desc}{off_str}) <font color='#4A5568'>[은행 전세대출 · LH 전세대출 · HUG 보증보험 기준선]</font>"
+                    p126_lbl = "호실 안분 공시가" if (desired_info and desired_info.get("is_multi_family_unit")) else "주택공시가"
+                    p126_desc = f"<b>{p126_str}</b> ({p126_lbl}: {yr_desc}{off_str}) <font color='#4A5568'>[은행 전세대출 · LH 전세대출 · HUG 보증보험 기준선]</font>"
                     
                     if trade_type in ("전세", "월세"):
                         dep_won = d_price * 10_000
@@ -3037,7 +3048,7 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
             raw_phone = desired_info["phone_number"]
             report_lines.append(f"※ 의뢰인 연락처: {raw_phone}") # 원본 전화번호 기록!
         if target_floor is not None:
-            floor_lbl = f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층"
+            floor_lbl = f"지하 {abs(target_floor)}층 (반지하)" if target_floor == -1 else (f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층")
             report_lines.append(f"※ 분석 대상 층수: {floor_lbl}")
         if is_expanded:
             cond_parts = []
@@ -3082,13 +3093,14 @@ def save_briefing_report(address, trades, jeonses, wolses, prop_type_name, perio
                 lpy = round(float(land_share_val) * 0.3025, 1)
                 report_lines.append(f"  • 대지지분       : {float(land_share_val):.2f} ㎡ (약 {lpy}평)")
             if target_floor is not None:
-                fl_desc = f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층"
+                fl_desc = f"지하 {abs(target_floor)}층 (반지하)" if target_floor == -1 else (f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층")
                 report_lines.append(f"  • 해당 층수     : {fl_desc}")
             if official_price_val:
                 off_str = format_assessed_price(official_price_val)
                 off_126_str = format_assessed_price(int(official_price_val * 1.26))
                 yr_desc = f"{official_price_year}년 기준 " if official_price_year else ""
-                report_lines.append(f"  • 주택 공시가격  : {yr_desc}{off_str}")
+                off_lbl = "호실 안분 공시가격" if (desired_info and desired_info.get("is_multi_family_unit")) else "주택 공시가격"
+                report_lines.append(f"  • {off_lbl:<13}: {yr_desc}{off_str}")
                 report_lines.append(f"  • 공시가격 126%  : {off_126_str} (시중은행 전세대출 / LH / HUG 보증보험 기준선)")
 
         # 분석 대상 물건 토지 및 건축물 종합 개요 (TXT)

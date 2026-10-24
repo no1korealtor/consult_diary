@@ -4234,14 +4234,6 @@ input:checked + .toggle-slider:before {
           <button id="btnIntroYeondoQuick" class="icon-btn yeondo-quick-header-btn" aria-label="연도 및 조문 예절" title="연도 및 조문 예절">
             <span style="font-size: 1.05rem;">🕯️</span>
           </button>
-          <button id="btnIntroInstall" class="icon-btn highlight-btn" aria-label="바탕화면에 바로가기" title="바탕화면에 바로가기 추가">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
-              <line x1="12" y1="18" x2="12.01" y2="18"></line>
-              <path d="M12 6v6"></path>
-              <path d="M9 9l3 3 3-3"></path>
-            </svg>
-          </button>
           <button id="btnIntroTracker" class="icon-btn" aria-label="주간 기도 기록" title="주간 기도 기록">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -4764,125 +4756,7 @@ input:checked + .toggle-slider:before {
           <!-- 스크립트에서 자동 생성 -->
         </div>
 
-        <div class="setting-row" style="margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
-          <div style="display:flex; flex-direction:column; gap:2px;">
-            <span class="setting-label">구원송 (구원의 기도) 포함</span>
-            <span style="font-size:0.75rem; color:var(--text-secondary);">각 단 끝에 구원의 기도 바치기</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="modalFatimaToggle" checked>
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-
-    <!-- 8. 설정 모달 바텀시트 -->
-    <div id="settingsModal" class="modal-backdrop">
-      <div class="bottom-sheet">
-        <div class="sheet-handle"></div>
-        <div class="sheet-title">기도 환경 설정</div>
         
-        <div class="setting-row">
-          <span class="setting-label">기도문 글자 크기</span>
-          <div class="font-size-controls">
-            <button id="fontSmallerBtn" class="font-btn">A-</button>
-            <span id="fontSizeDisplay" style="font-weight: 700; min-width: 45px; text-align: center;">18px</span>
-            <button id="fontBiggerBtn" class="font-btn">A+</button>
-          </div>
-        </div>
-
-        <div class="setting-row">
-          <div style="display:flex; flex-direction:column; gap:2px;">
-            <span class="setting-label">구원송 (구원의 기도) 포함</span>
-            <span style="font-size:0.75rem; color:var(--text-secondary);">각 단 끝에 구원의 기도 포함</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="settingsFatimaToggle" checked>
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-row">
-          <span class="setting-label">기도 언어 (Language)</span>
-          <div class="option-toggle-group" style="width: 160px;">
-            <button type="button" class="opt-btn active" id="btnLangKo">한국어</button>
-            <button type="button" class="opt-btn" id="btnLangEn">English</button>
-          </div>
-        </div>
-
-        <div class="setting-row">
-          <span class="setting-label">묵주알 모양</span>
-          <div class="option-toggle-group" style="width: 200px;">
-            <button type="button" class="opt-btn active" id="btnStyleWood">🪵 원목</button>
-            <button type="button" class="opt-btn" id="btnStyleRose">🌹 장미</button>
-            <button type="button" class="opt-btn" id="btnStyleClassic">⚪ 심플</button>
-          </div>
-        </div>
-
-        <div class="setting-row">
-          <span class="setting-label">알 넘김 햅틱 진동</span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="hapticToggle" checked>
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-row">
-          <div style="display:flex; flex-direction:column; gap:2px;">
-            <span class="setting-label">알 넘김 은은한 종소리</span>
-            <span style="font-size:0.75rem; color:var(--text-secondary);">묵주알 및 성모송 장미 피어남 시 맑은 차임벨 울림</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="soundToggle">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-row">
-          <div style="display:flex; flex-direction:column; gap:2px;">
-            <span class="setting-label">성모송 장미 꽃피움 연출</span>
-            <span style="font-size:0.75rem; color:var(--text-secondary);">성모송마다 한 송이 장미가 피어나 봉헌됨</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="roseBloomToggle" checked>
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-
-        <div class="setting-row" style="background: rgba(255, 255, 255, 0.04); padding: 12px; border-radius: var(--radius-sm); border: 1px solid rgba(255, 255, 255, 0.12); margin-top: 8px;">
-          <div style="display:flex; flex-direction:column; gap:2px;">
-            <span id="settingHistoryLabel" class="setting-label" style="color:var(--text-primary); font-weight:700;">📖 기도의 유래와 은총</span>
-            <span id="settingHistorySub" style="font-size:0.75rem; color:var(--text-secondary);">묵주기도 및 자비의 기도 역사와 약속된 은총</span>
-          </div>
-          <button type="button" id="btnSettingsOpenHistory" class="action-pill-btn" style="flex:0 0 76px; height:34px; font-size:0.82rem;">읽어보기</button>
-        </div>
-
-        <div class="setting-row" style="background: rgba(243, 198, 105, 0.08); padding: 12px; border-radius: var(--radius-sm); border: 1px solid rgba(243, 198, 105, 0.28); margin-top: 8px;">
-          <div style="display:flex; flex-direction:column; gap:2px;">
-            <span class="setting-label" style="color:var(--gold-primary); font-weight:700;">📲 바탕화면 바로가기</span>
-            <span style="font-size:0.75rem; color:var(--text-secondary);">스마트폰 홈 화면에 앱으로 추가하기</span>
-          </div>
-          <button type="button" id="btnSettingsInstall" class="action-pill-btn gold" style="flex:0 0 88px; height:34px; font-size:0.82rem;">바로가기</button>
-        </div>
-
-        <!-- [NEW] 기도 기록 안전 백업 & 복원 -->
-        <div class="setting-row" style="background: rgba(56, 189, 248, 0.06); padding: 12px; border-radius: var(--radius-sm); border: 1px solid rgba(56, 189, 248, 0.28); margin-top: 8px;">
-          <div style="display:flex; flex-direction:column; gap:2px;">
-            <span class="setting-label" style="color:#7DD3FC; font-weight:700;">💾 내 기도 기록 백업 · 복원</span>
-            <span style="font-size:0.75rem; color:var(--text-secondary);">폰 교체/청소 대비 소중한 묵주기도 기록 안전 보관</span>
-          </div>
-          <button type="button" id="btnSettingsOpenBackup" class="action-pill-btn" style="flex:0 0 76px; height:34px; font-size:0.82rem; border-color: rgba(56, 189, 248, 0.4); color: #BAE6FD;">관리하기</button>
-        </div>
-
-        <div class="setting-row" style="background: rgba(243, 198, 105, 0.05); padding: 12px; border-radius: var(--radius-sm); border: 1px solid rgba(243, 198, 105, 0.2); margin-top: 8px;">
-          <div style="display:flex; flex-direction:column; gap:2px;">
-            <span id="settingDonationLabel" class="setting-label" style="color:var(--text-primary); font-weight:700;">☕ 따뜻한 차 한 잔 후원하기</span>
-            <span id="settingDonationSub" style="font-size:0.75rem; color:var(--text-secondary);">광고 없는 무료 기도 앱 개발자 응원하기</span>
-          </div>
-          <button type="button" id="btnSettingsOpenDonation" class="action-pill-btn gold" style="flex:0 0 76px; height:34px; font-size:0.82rem;">응원하기</button>
-        </div>
-      </div>
     </div>
 
     <!-- 9. 주간 기도 기록 모달 바텀시트 -->

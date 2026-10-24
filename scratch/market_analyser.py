@@ -120,10 +120,8 @@ def get_villa_group(area):
         return "원룸형 (전용 20㎡ 미만)"
     elif area < 40:
         return "투룸형 (전용 20~40㎡)"
-    elif area < 60:
-        return "쓰리룸형 (전용 40~60㎡)"
     else:
-        return "대형 (전용 60㎡ 이상)"
+        return "쓰리룸 이상형 (전용 40㎡ 이상)"
 
 
 def is_basement_transaction(t):
@@ -167,33 +165,40 @@ def get_kakao_admin_dong(address_str):
 
 _cache_loaded = False
 
+import threading
+_cache_lock = threading.Lock()
+
 def load_admin_dong_cache():
     global _admin_dong_cache, _cache_loaded
     if _cache_loaded:
         return
     base_dir = os.path.dirname(os.path.abspath(__file__))
     cache_path = os.path.join(base_dir, "admin_dong_cache.json")
-    if os.path.exists(cache_path):
-        try:
-            with open(cache_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                for k, v in data.items():
-                    parts = k.split("|")
-                    if len(parts) == 3:
-                        _admin_dong_cache[tuple(parts)] = v
-        except Exception as e:
-            print(f"Error loading admin dong cache: {e}")
-    _cache_loaded = True
+    with _cache_lock:
+        if _cache_loaded:
+            return
+        if os.path.exists(cache_path):
+            try:
+                with open(cache_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    for k, v in data.items():
+                        parts = k.split("|")
+                        if len(parts) == 3:
+                            _admin_dong_cache[tuple(parts)] = v
+            except Exception as e:
+                print(f"Error loading admin dong cache: {e}")
+        _cache_loaded = True
 
 def save_admin_dong_cache():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     cache_path = os.path.join(base_dir, "admin_dong_cache.json")
     try:
         data = {}
-        for k, v in _admin_dong_cache.items():
-            data["|".join(k)] = v
-        with open(cache_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        with _cache_lock:
+            for k, v in _admin_dong_cache.items():
+                data["|".join(k)] = v
+            with open(cache_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
     except Exception as e:
         print(f"Error saving admin dong cache: {e}")
 
@@ -404,6 +409,428 @@ def analyze_conversion_rate_segments(transactions, prop_type):
         'g3_rate': sum(rates_g3)/len(rates_g3) if rates_g3 else None,
         'g3_count': len(rates_g3)
     }
+
+def create_group_scatter_plot_drawing(transactions, title="평형별 단지 비교 산포도", target_type="매매"):
+    from collections import defaultdict
+    points_by_apt = defaultdict(list)
+    min_date = None
+    max_date = None
+    
+    PALETTE = ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#14B8A6', '#EC4899']
+    
+    for t in transactions:
+        if t.get("_trade_type") != target_type:
+            continue
+            
+        try:
+            dy = t.get("dealYear")
+            dm = t.get("dealMonth")
+            dd = t.get("dealDay", 1)
+            if dy is None or dm is None: continue
+                
+            dt = datetime(int(dy), int(dm), int(dd))
+            
+            if target_type == "매매":
+                price_str = str(t.get("dealAmount", "0")).replace(",", "").strip()
+            else:
+                price_str = str(t.get("deposit", "0") or t.get("guaranteeAmt", "0")).replace(",", "").strip()
+                
+            price = int(price_str)
+            if price <= 0: continue
+            
+            if not min_date or dt < min_date: min_date = dt
+            if not max_date or dt > max_date: max_date = dt
+            
+            apt_name = (t.get('aptNm') or t.get('mhouseNm') or '알수없음').strip()
+            points_by_apt[apt_name].append((dt, price))
+        except Exception as e:
+            pass
+            
+    all_prices = []
+    for pts in points_by_apt.values():
+        all_prices.extend([p for _, p in pts])
+        
+    if not all_prices:
+        return None
+        
+    min_p = min(all_prices)
+    max_p = max(all_prices)
+    diff = max_p - min_p
+    if diff == 0: diff = 10000
+    min_p = max(0, min_p - diff * 0.1)
+    max_p = max_p + diff * 0.25
+    
+    dw = 515
+    dh = 200
+    d = Drawing(dw, dh)
+    
+    d.add(Rect(0, 0, dw, dh, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=1, rx=5, ry=5))
+    d.add(String(15, dh - 20, f"🎯 {title} [{target_type}]", fontName='KoreanFont', fontSize=9, fillColor=colors.HexColor('#0F172A'), textAnchor='start'))
+    
+    cx = 50
+    cy = 30
+    cw = dw - 70
+    ch = dh - 60
+    
+    for i in range(5):
+        y_val = cy + i * (ch / 4)
+        price_val = min_p + i * ((max_p - min_p) / 4)
+        d.add(Line(cx, y_val, cx + cw, y_val, strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=0.5))
+        if price_val >= 10000:
+            lbl = f"{price_val/10000:.1f}억"
+        else:
+            lbl = f"{int(price_val):,}만"
+        d.add(String(cx - 5, y_val - 3, lbl, fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='end'))
+        
+    if min_date and max_date and min_date != max_date:
+        total_days = (max_date - min_date).days
+        if total_days == 0: total_days = 1
+        
+        apt_names = sorted(points_by_apt.keys())
+        legend_x = dw - 15
+        
+        for i, name in enumerate(apt_names):
+            color = PALETTE[i % len(PALETTE)]
+            pts = points_by_apt[name]
+            
+            max_pt_price = -1
+            max_pt_dt = None
+            
+            for dt, p in pts:
+                if p > max_pt_price:
+                    max_pt_price = p
+                    max_pt_dt = dt
+                    
+                x = cx + ((dt - min_date).days / total_days) * cw
+                y = cy + ((p - min_p) / (max_p - min_p)) * ch
+                
+                if target_type == "전세":
+                    d.add(Rect(x-2.5, y-2.5, 5, 5, fillColor=colors.HexColor(color), strokeColor=colors.HexColor('#ffffff'), strokeWidth=0.5))
+                else:
+                    d.add(Circle(x, y, 3, fillColor=colors.HexColor(color), strokeColor=colors.HexColor('#ffffff'), strokeWidth=0.5))
+                    
+            N = len(pts)
+            if N > 1:
+                sum_x = sum((dt - min_date).days for dt, p in pts)
+                sum_y = sum(p for dt, p in pts)
+                sum_x2 = sum(((dt - min_date).days)**2 for dt, p in pts)
+                sum_xy = sum(((dt - min_date).days) * p for dt, p in pts)
+                denom = (N * sum_x2 - sum_x**2)
+                if denom != 0:
+                    m = (N * sum_xy - sum_x * sum_y) / denom
+                    c = (sum_y - m * sum_x) / N
+                    y1_val = c
+                    y2_val = m * total_days + c
+                    plot_y1 = cy + ((y1_val - min_p) / (max_p - min_p)) * ch
+                    plot_y2 = cy + ((y2_val - min_p) / (max_p - min_p)) * ch
+                    
+                    # Clip to plot area roughly if needed, but reportlab Line can go outside if we don't clip precisely.
+                    # Simple clipping:
+                    if plot_y1 < cy and plot_y2 > cy:
+                        x_cross = cx + cw * ((cy - plot_y1) / (plot_y2 - plot_y1))
+                        plot_y1 = cy
+                        cx_start = x_cross
+                    else:
+                        cx_start = cx
+                        
+                    if plot_y1 > cy + ch and plot_y2 < cy + ch:
+                        x_cross = cx + cw * ((plot_y1 - (cy + ch)) / (plot_y1 - plot_y2))
+                        plot_y1 = cy + ch
+                        cx_start = x_cross
+                        
+                    if plot_y2 < cy and plot_y1 > cy:
+                        x_cross = cx + cw * ((plot_y1 - cy) / (plot_y1 - plot_y2))
+                        plot_y2 = cy
+                        cw_end = x_cross
+                    else:
+                        cw_end = cx + cw
+                        
+                    if plot_y2 > cy + ch and plot_y1 < cy + ch:
+                        x_cross = cx + cw * (((cy + ch) - plot_y1) / (plot_y2 - plot_y1))
+                        plot_y2 = cy + ch
+                        cw_end = x_cross
+                        
+                    plot_y1 = max(cy, min(cy + ch, plot_y1))
+                    plot_y2 = max(cy, min(cy + ch, plot_y2))
+                    
+                    d.add(Line(cx_start, plot_y1, cw_end, plot_y2, strokeColor=colors.HexColor(color), strokeWidth=1.2, strokeDashArray=[3, 3]))
+
+            if max_pt_dt:
+                x = cx + ((max_pt_dt - min_date).days / total_days) * cw
+                y = cy + ((max_pt_price - min_p) / (max_p - min_p)) * ch
+                lbl = f"최고 {max_pt_price/10000:.1f}억" if max_pt_price >= 10000 else f"최고 {max_pt_price:,}만"
+                d.add(String(x, y + 5, lbl, fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor(color), textAnchor='middle'))
+                
+            str_w = len(name) * 8 + 15
+            legend_x -= str_w
+            d.add(Circle(legend_x + 5, dh - 17, 3, fillColor=colors.HexColor(color), strokeColor=None))
+            d.add(String(legend_x + 12, dh - 20, name, fontName='KoreanFont', fontSize=8, fillColor=colors.HexColor('#475569')))
+            
+        d.add(String(cx, cy - 15, min_date.strftime("%Y.%m.%d"), fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='middle'))
+        d.add(String(cx + cw, cy - 15, max_date.strftime("%Y.%m.%d"), fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='middle'))
+        
+        curr_y, curr_m = min_date.year, min_date.month
+        curr_m += 1
+        if curr_m > 12: curr_m = 1; curr_y += 1
+        curr_dt = datetime(curr_y, curr_m, 1)
+        while curr_dt < max_date:
+            x_tick = cx + ((curr_dt - min_date).days / total_days) * cw
+            d.add(Line(x_tick, cy, x_tick, cy - 3, strokeColor=colors.HexColor('#CBD5E1'), strokeWidth=0.5))
+            d.add(Line(x_tick, cy, x_tick, cy + ch, strokeColor=colors.HexColor('#F1F5F9'), strokeWidth=0.5))
+            total_months = (max_date.year - min_date.year) * 12 + max_date.month - min_date.month
+            if total_months <= 12 or (curr_dt.month % 3 == 1):
+                lbl = f"{str(curr_y)[2:]}.{str(curr_m).zfill(2)}"
+                d.add(String(x_tick, cy - 10, lbl, fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#94A3B8'), textAnchor='middle'))
+            curr_m += 1
+            if curr_m > 12: curr_m = 1; curr_y += 1
+            curr_dt = datetime(curr_y, curr_m, 1)
+        
+    return d
+
+def create_scatter_plot_drawing(transactions, title="실거래 산포도", draw_dots=True):
+    trades = []
+    jeonses = []
+    min_date = None
+    max_date = None
+    
+    for t in transactions:
+        try:
+            dy = t.get("dealYear")
+            dm = t.get("dealMonth")
+            dd = t.get("dealDay", 1)
+            
+            if dy is None or dm is None:
+                continue
+                
+            dt = datetime(int(dy), int(dm), int(dd))
+            
+            # Check price
+            if t.get("_trade_type") == "매매":
+                price_str = str(t.get("dealAmount", "0")).replace(",", "").strip()
+            else:
+                price_str = str(t.get("deposit", "0") or t.get("guaranteeAmt", "0")).replace(",", "").strip()
+                
+            price = int(price_str)
+            if price <= 0: continue
+            
+            if not min_date or dt < min_date: min_date = dt
+            if not max_date or dt > max_date: max_date = dt
+            
+            if t.get("_trade_type") == "매매":
+                trades.append((dt, price))
+            elif t.get("_trade_type") == "전세":
+                jeonses.append((dt, price))
+        except Exception as e:
+            pass
+                
+    all_prices = [p for _, p in trades + jeonses]
+    if not all_prices:
+        d = Drawing(515, 100)
+        d.add(Rect(0, 0, 515, 100, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0')))
+        d.add(String(257, 50, "산포도를 그릴 데이터가 없습니다.", textAnchor='middle', fontName='KoreanFont', fontSize=10, fillColor=colors.HexColor('#718096')))
+        return d
+        
+    min_p = min(all_prices)
+    max_p = max(all_prices)
+    diff = max_p - min_p
+    if diff == 0: diff = 10000
+    min_p = max(0, min_p - diff * 0.1)
+    max_p = max_p + diff * 0.1
+    
+    dw = 515
+    dh = 200
+    d = Drawing(dw, dh)
+    
+    d.add(Rect(0, 0, dw, dh, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=1, rx=5, ry=5))
+    d.add(String(15, dh - 20, f"🎯 {title} (최근 거래)", fontName='KoreanFont', fontSize=9, fillColor=colors.HexColor('#0F172A'), textAnchor='start'))
+    
+    # Legends
+    d.add(Circle(dw - 100, dh - 17, 3, fillColor=colors.HexColor('#EF4444'), strokeColor=None))
+    d.add(String(dw - 90, dh - 20, "매매", fontName='KoreanFont', fontSize=8, fillColor=colors.HexColor('#475569')))
+    
+    d.add(Rect(dw - 53, dh - 20, 6, 6, fillColor=colors.HexColor('#3B82F6'), strokeColor=None))
+    d.add(String(dw - 40, dh - 20, "전세", fontName='KoreanFont', fontSize=8, fillColor=colors.HexColor('#475569')))
+    
+    cx = 50
+    cy = 30
+    cw = dw - 70
+    ch = dh - 60
+    
+    for i in range(5):
+        y_val = cy + i * (ch / 4)
+        price_val = min_p + i * ((max_p - min_p) / 4)
+        d.add(Line(cx, y_val, cx + cw, y_val, strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=0.5))
+        if price_val >= 10000:
+            lbl = f"{price_val/10000:.1f}억"
+        else:
+            lbl = f"{int(price_val):,}만"
+        d.add(String(cx - 5, y_val - 3, lbl, fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='end'))
+        
+    if min_date and max_date and min_date != max_date:
+        total_days = (max_date - min_date).days
+        if total_days == 0: total_days = 1
+        
+        def draw_trend_line(data_points, line_color):
+            if len(data_points) < 2: return
+            N = len(data_points)
+            sum_x = sum((dt - min_date).days for dt, p in data_points)
+            sum_y = sum(p for dt, p in data_points)
+            sum_x2 = sum(((dt - min_date).days)**2 for dt, p in data_points)
+            sum_xy = sum(((dt - min_date).days) * p for dt, p in data_points)
+            
+            denom = (N * sum_x2 - sum_x**2)
+            if denom == 0: return
+            
+            m = (N * sum_xy - sum_x * sum_y) / denom
+            c = (sum_y - m * sum_x) / N
+            
+            min_x_days = min((dt - min_date).days for dt, p in data_points)
+            max_x_days = max((dt - min_date).days for dt, p in data_points)
+            
+            p1 = m * min_x_days + c
+            p2 = m * max_x_days + c
+            
+            x1 = cx + (min_x_days / total_days) * cw
+            y1 = cy + ((p1 - min_p) / (max_p - min_p)) * ch
+            
+            x2 = cx + (max_x_days / total_days) * cw
+            y2 = cy + ((p2 - min_p) / (max_p - min_p)) * ch
+            
+            d.add(Line(x1, y1, x2, y2, strokeColor=colors.HexColor(line_color), strokeWidth=1, strokeDashArray=[4, 3]))
+
+        draw_trend_line(trades, '#B91C1C')
+        draw_trend_line(jeonses, '#1D4ED8')
+
+        if draw_dots:
+            for dt, p in trades:
+                x = cx + ((dt - min_date).days / total_days) * cw
+                y = cy + ((p - min_p) / (max_p - min_p)) * ch
+                d.add(Circle(x, y, 2.5, fillColor=colors.HexColor('#EF4444'), strokeColor=colors.HexColor('#B91C1C'), strokeWidth=0.5))
+                
+            for dt, p in jeonses:
+                x = cx + ((dt - min_date).days / total_days) * cw
+                y = cy + ((p - min_p) / (max_p - min_p)) * ch
+                d.add(Rect(x - 2.5, y - 2.5, 5, 5, fillColor=colors.HexColor('#3B82F6'), strokeColor=colors.HexColor('#1D4ED8'), strokeWidth=0.5))
+            
+        d.add(String(cx, cy - 15, min_date.strftime("%Y.%m.%d"), fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='middle'))
+        d.add(String(cx + cw, cy - 15, max_date.strftime("%Y.%m.%d"), fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='middle'))
+        
+        curr_y, curr_m = min_date.year, min_date.month
+        curr_m += 1
+        if curr_m > 12: curr_m = 1; curr_y += 1
+        curr_dt = datetime(curr_y, curr_m, 1)
+        while curr_dt < max_date:
+            x_tick = cx + ((curr_dt - min_date).days / total_days) * cw
+            d.add(Line(x_tick, cy, x_tick, cy - 3, strokeColor=colors.HexColor('#CBD5E1'), strokeWidth=0.5))
+            d.add(Line(x_tick, cy, x_tick, cy + ch, strokeColor=colors.HexColor('#F1F5F9'), strokeWidth=0.5))
+            total_months = (max_date.year - min_date.year) * 12 + max_date.month - min_date.month
+            if total_months <= 12 or (curr_dt.month % 3 == 1):
+                lbl = f"{str(curr_y)[2:]}.{str(curr_m).zfill(2)}"
+                d.add(String(x_tick, cy - 10, lbl, fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#94A3B8'), textAnchor='middle'))
+            curr_m += 1
+            if curr_m > 12: curr_m = 1; curr_y += 1
+            curr_dt = datetime(curr_y, curr_m, 1)
+        
+    return d
+
+def create_jeonse_ratio_trend_drawing(transactions, title="📈 전세가율 추세 (추세선 기반)"):
+    trades = []
+    jeonses = []
+    min_date = None
+    max_date = None
+    
+    for t in transactions:
+        try:
+            dy, dm, dd = t.get("dealYear"), t.get("dealMonth"), t.get("dealDay", 1)
+            if not dy or not dm: continue
+            dt = datetime(int(dy), int(dm), int(dd))
+            
+            is_trade = t.get("_trade_type") == "매매"
+            is_jeonse = t.get("_trade_type") == "전세"
+            if not is_trade and not is_jeonse: continue
+            
+            p_str = str(t.get("dealAmount", "0") if is_trade else t.get("deposit", "0") or t.get("guaranteeAmt", "0")).replace(",", "").strip()
+            price = int(p_str)
+            if price <= 0: continue
+            
+            if not min_date or dt < min_date: min_date = dt
+            if not max_date or dt > max_date: max_date = dt
+            
+            if is_trade: trades.append((dt, price))
+            elif is_jeonse: jeonses.append((dt, price))
+        except: pass
+        
+    if len(trades) < 2 or len(jeonses) < 2 or min_date == max_date:
+        return None
+        
+    total_days = (max_date - min_date).days
+    if total_days == 0: total_days = 1
+    
+    def get_trend_params(data_points):
+        N = len(data_points)
+        sum_x = sum((dt - min_date).days for dt, p in data_points)
+        sum_y = sum(p for dt, p in data_points)
+        sum_x2 = sum(((dt - min_date).days)**2 for dt, p in data_points)
+        sum_xy = sum(((dt - min_date).days) * p for dt, p in data_points)
+        denom = (N * sum_x2 - sum_x**2)
+        if denom == 0: return None
+        m = (N * sum_xy - sum_x * sum_y) / denom
+        c = (sum_y - m * sum_x) / N
+        return m, c
+
+    trade_trend = get_trend_params(trades)
+    jeonse_trend = get_trend_params(jeonses)
+    if not trade_trend or not jeonse_trend: return None
+    
+    m_t, c_t = trade_trend
+    m_j, c_j = jeonse_trend
+    
+    ratios = []
+    for d_val in range(0, total_days + 1, max(1, total_days // 20)):
+        t_price = m_t * d_val + c_t
+        j_price = m_j * d_val + c_j
+        if t_price > 0 and j_price > 0:
+            ratios.append((d_val, (j_price / t_price) * 100))
+            
+    if not ratios: return None
+    
+    min_r = min(r for _, r in ratios)
+    max_r = max(r for _, r in ratios)
+    diff = max_r - min_r
+    if diff == 0: diff = 10
+    min_r = max(0, min_r - diff * 0.2)
+    max_r = min(100, max_r + diff * 0.2)
+    if max_r - min_r < 5: max_r = min_r + 5
+
+    dw, dh = 515, 120
+    d = Drawing(dw, dh)
+    d.add(Rect(0, 0, dw, dh, fillColor=colors.HexColor('#F8FAFC'), strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=1, rx=5, ry=5))
+    d.add(String(15, dh - 20, title, fontName='KoreanFont', fontSize=9, fillColor=colors.HexColor('#0F172A'), textAnchor='start'))
+    
+    cx, cy = 50, 25
+    cw, ch = dw - 70, dh - 45
+    
+    for i in range(4):
+        y_val = cy + i * (ch / 3)
+        r_val = min_r + i * ((max_r - min_r) / 3)
+        d.add(Line(cx, y_val, cx + cw, y_val, strokeColor=colors.HexColor('#E2E8F0'), strokeWidth=0.5))
+        d.add(String(cx - 5, y_val - 3, f"{r_val:.1f}%", fontName='KoreanFont', fontSize=7, fillColor=colors.HexColor('#718096'), textAnchor='end'))
+
+    from reportlab.graphics.shapes import PolyLine
+    points = []
+    for days, ratio in ratios:
+        x = cx + (days / total_days) * cw
+        y = cy + ((ratio - min_r) / (max_r - min_r)) * ch
+        points.extend([x, y])
+        
+    if len(points) >= 4:
+        d.add(PolyLine(points, strokeColor=colors.HexColor('#8B5CF6'), strokeWidth=2))
+        
+    d.add(String(cx, cy - 12, min_date.strftime("%Y.%m"), fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#718096'), textAnchor='middle'))
+    d.add(String(cx + cw, cy - 12, max_date.strftime("%Y.%m"), fontName='KoreanFont', fontSize=6, fillColor=colors.HexColor('#718096'), textAnchor='middle'))
+
+    return d
+
 
 def create_trend_chart_drawing(trend_data, apt_name, pyung_label="30평대"):
     prices = []
@@ -708,6 +1135,10 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
     
     story = []
     
+    office_name = ""
+    broker_name = ""
+    formatted_phone = ""
+    
     # Top Header Office Info (Above Accent Bar)
     if member_info:
         header_left_style = ParagraphStyle(
@@ -718,18 +1149,9 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
             leading=11,
             textColor=colors.HexColor('#4A5568')
         )
-        header_right_style = ParagraphStyle(
-            'HeaderRight',
-            parent=styles['Normal'],
-            fontName=font_name,
-            fontSize=8,
-            leading=11,
-            textColor=colors.HexColor('#718096'),
-            alignment=2 # Right
-        )
         
         office_name = member_info.get("office_name") or member_info.get("office") or ""
-        office_address = member_info.get("office_address") or ""
+        broker_name = member_info.get("name") or "대표"
         phone = member_info.get("phone") or ""
         
         if phone == "01091280586" or "010-9128-0586" in phone or "신대림" in office_name:
@@ -745,20 +1167,10 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
                 elif len(digits) == 9:
                     formatted_phone = f"{digits[:2]}-{digits[2:5]}-{digits[5:]}"
                 
-        header_left_text = f"<b>{office_name}</b>" if office_name else ""
+        slogan_text = f"※ 본 보고서는 성공적인 부동산 투자를 위해 <b>{office_name}</b>에서 제공하는 VIP 자산 분석 리포트입니다." if office_name else "※ 본 보고서는 성공적인 부동산 투자를 위해 제공되는 VIP 자산 분석 리포트입니다."
         
-        right_parts = []
-        if office_address:
-            right_parts.append(f"주소: {office_address}")
-        if formatted_phone:
-            right_parts.append(f"연락처: {formatted_phone}")
-        header_right_text = "  |  ".join(right_parts)
-        
-        header_table_data = [[
-            Paragraph(header_left_text, header_left_style),
-            Paragraph(header_right_text, header_right_style)
-        ]]
-        header_table = Table(header_table_data, colWidths=[180, 335])
+        header_table_data = [[Paragraph(slogan_text, header_left_style)]]
+        header_table = Table(header_table_data, colWidths=[515])
         header_table.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'BOTTOM'),
             ('LEFTPADDING', (0,0), (-1,-1), 0),
@@ -779,12 +1191,32 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
     story.append(Spacer(1, 15))
     
     # Title
-    story.append(Paragraph(f"📊 {region_prefix} {bjdong_nm} 부동산 동향 보고서", title_style))
+    if office_name:
+        main_title = f"📊 [{office_name}] {bjdong_nm} 프리미엄 부동산 동향 리포트"
+    else:
+        main_title = f"📊 {region_prefix} {bjdong_nm} 부동산 동향 리포트"
+    story.append(Paragraph(main_title, title_style))
     
     # Metadata Box
+    phone_style = ParagraphStyle(
+        'PhoneStyle',
+        parent=styles['Normal'],
+        fontName=font_name,
+        fontSize=12,
+        leading=15,
+        textColor=colors.HexColor('#B45309'),
+        bold=True
+    )
+    
+    if office_name:
+        publisher_text = f"{office_name} (담당: {broker_name})"
+    else:
+        publisher_text = "전문 공인중개사사무소"
+
     meta_data = [
-        [Paragraph("<b>분석 기준 지역</b>", body_style), Paragraph(f"{region_prefix} {bjdong_nm}", body_style)],
-        [Paragraph("<b>분석 기준 기간</b>", body_style), Paragraph(f"아파트: 최근 24개월 ({period_str})<br/>연립/빌라: 최근 6개월 ({period_str_6})", body_style)],
+        [Paragraph("<b>발행 및 분석</b>", body_style), Paragraph(publisher_text, body_style)],
+        [Paragraph("<b>상담 직통번호</b>", body_style), Paragraph(f"📞 {formatted_phone}", phone_style)],
+        [Paragraph("<b>분석 대상 지역</b>", body_style), Paragraph(f"{region_prefix} {bjdong_nm} (최근 6~24개월 실거래 기준)", body_style)],
         [Paragraph("<b>보고서 발행일</b>", body_style), Paragraph(datetime.now().strftime("%Y년 %m월 %d일"), body_style)]
     ]
     meta_table = Table(meta_data, colWidths=[100, 415])
@@ -793,8 +1225,8 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
         ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#475569')),
         ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#E2E8F0')),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('TOPPADDING', (0,0), (-1,-1), 5),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+        ('TOPPADDING', (0,0), (-1,-1), 6),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 6),
         ('LEFTPADDING', (0,0), (-1,-1), 10),
         ('RIGHTPADDING', (0,0), (-1,-1), 10),
     ]))
@@ -815,7 +1247,7 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
         wolses = [t for t in txs if t.get('_trade_type') == '월세']
         overall_rate = calculate_market_conversion_rate(txs)
         
-        def get_avg_price(subset):
+        def get_price_range(subset):
             prices = []
             for item in subset:
                 val = str(item.get('dealAmount', '') or item.get('rowPrice', '') or item.get('deposit', '') or item.get('guaranteeAmt', '')).strip().replace(',', '')
@@ -824,15 +1256,19 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
                         prices.append(float(val))
                     except:
                         pass
-            return sum(prices)/len(prices) if prices else None
+            if not prices: return None
+            min_p = min(prices)
+            max_p = max(prices)
+            if min_p == max_p:
+                return local_format_price(min_p)
+            return f"{local_format_price(min_p)} ~ {local_format_price(max_p)}"
             
         if prop_type == '2':
             # Villa specific grouped table
             groups = {
                 "원룸형 (전용 20㎡ 미만)": [],
                 "투룸형 (전용 20~40㎡)": [],
-                "쓰리룸형 (전용 40~60㎡)": [],
-                "대형 (전용 60㎡ 이상)": [],
+                "쓰리룸 이상형 (전용 40㎡ 이상)": [],
                 "지하층 (반지하 전체)": []
             }
             for t in txs:
@@ -851,32 +1287,23 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
                 [
                     Paragraph("<b>구분 (방수 추정)</b>", table_hdr_style), 
                     Paragraph("<b>총 거래 건수</b>", table_hdr_style), 
-                    Paragraph("<b>평균 매매가</b>", table_hdr_style), 
-                    Paragraph("<b>평균 전세금<br/>(전세가율)</b>", table_hdr_style), 
+                    Paragraph("<b>매매가 (최저~최고)</b>", table_hdr_style), 
+                    Paragraph("<b>전세금 (최저~최고)</b>", table_hdr_style), 
                     Paragraph("<b>평균 전환율</b>", table_hdr_style)
                 ]
             ]
             
-            for grp_name in ["원룸형 (전용 20㎡ 미만)", "투룸형 (전용 20~40㎡)", "쓰리룸형 (전용 40~60㎡)", "대형 (전용 60㎡ 이상)", "지하층 (반지하 전체)"]:
+            main_groups = ["원룸형 (전용 20㎡ 미만)", "투룸형 (전용 20~40㎡)", "쓰리룸 이상형 (전용 40㎡ 이상)"]
+            for grp_name in main_groups:
                 g_txs = groups[grp_name]
                 g_trades = [t for t in g_txs if t.get('_trade_type') == '매매']
                 g_jeonses = [t for t in g_txs if t.get('_trade_type') == '전세']
                 g_wolses = [t for t in g_txs if t.get('_trade_type') == '월세']
                 
-                g_avg_trade = get_avg_price(g_trades)
-                g_avg_jeonse = get_avg_price(g_jeonses)
-                g_overall_rate = calculate_market_conversion_rate(g_txs)
+                g_trade_str = get_price_range(g_trades) or "-"
+                g_jeonse_str = get_price_range(g_jeonses) or "-"
                 
-                g_trade_str = local_format_price(g_avg_trade) if g_avg_trade else "-"
-                if g_avg_jeonse:
-                    if g_avg_trade:
-                        g_j_rate = int(round(g_avg_jeonse / g_avg_trade * 100))
-                        g_jeonse_str = f"{local_format_price(g_avg_jeonse)}<br/>({g_j_rate}%)"
-                    else:
-                        g_jeonse_str = local_format_price(g_avg_jeonse)
-                else:
-                    g_jeonse_str = "-"
-                    
+                g_overall_rate = calculate_market_conversion_rate(g_txs)
                 g_rate_str = f"{g_overall_rate:.2f}%" if g_overall_rate else "-"
                 
                 count_p = Paragraph(
@@ -907,25 +1334,80 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
             for idx in range(1, len(stat_data)):
                 bg_color = colors.HexColor('#FFFFFF') if idx % 2 == 1 else colors.HexColor('#F7FAFC')
                 stat_table.setStyle(TableStyle([('BACKGROUND', (0, idx), (-1, idx), bg_color)]))
+                
+            sect_story.append(stat_table)
+            
+            # Basement specific table
+            sect_story.append(Spacer(1, 15))
+            sect_story.append(Paragraph("■ [참고] 지하층(반지하) 시장 분석 동향", h2_style))
+            
+            b_txs = groups["지하층 (반지하 전체)"]
+            b_trades = [t for t in b_txs if t.get('_trade_type') == '매매']
+            b_jeonses = [t for t in b_txs if t.get('_trade_type') == '전세']
+            b_wolses = [t for t in b_txs if t.get('_trade_type') == '월세']
+            
+            b_trade_str = get_price_range(b_trades) or "-"
+            b_jeonse_str = get_price_range(b_jeonses) or "-"
+            b_overall_rate = calculate_market_conversion_rate(b_txs)
+            b_rate_str = f"{b_overall_rate:.2f}%" if b_overall_rate else "-"
+            
+            b_count_p = Paragraph(
+                f"총 {len(b_txs)}건<br/><font size=6.5 color='#718096'>(매{len(b_trades)}/전{len(b_jeonses)}/월{len(b_wolses)})</font>", 
+                table_cell_center
+            )
+            
+            b_stat_data = [
+                [
+                    Paragraph("<b>구분 (특수매물)</b>", table_hdr_style), 
+                    Paragraph("<b>총 거래 건수</b>", table_hdr_style), 
+                    Paragraph("<b>매매가 (최저~최고)</b>", table_hdr_style), 
+                    Paragraph("<b>전세금 (최저~최고)</b>", table_hdr_style), 
+                    Paragraph("<b>평균 전환율</b>", table_hdr_style)
+                ],
+                [
+                    Paragraph("지하층 (반지하 전체)", table_cell_center),
+                    b_count_p,
+                    Paragraph(b_trade_str, table_cell_center),
+                    Paragraph(b_jeonse_str, table_cell_center),
+                    Paragraph(b_rate_str, table_cell_center)
+                ]
+            ]
+            
+            b_stat_table = Table(b_stat_data, colWidths=[140, 95, 90, 100, 90])
+            b_stat_table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#475569')),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                ('LINEABOVE', (0,0), (-1,0), 1, colors.HexColor('#334155')),
+                ('LINEBELOW', (0,0), (-1,0), 1, colors.HexColor('#334155')),
+                ('LINEBELOW', (0,1), (-1,-1), 1, colors.HexColor('#334155')),
+                ('TOPPADDING', (0,0), (-1,-1), 5),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+                ('BACKGROUND', (0,1), (-1,1), colors.HexColor('#FDFBF7'))
+            ]))
+            sect_story.append(b_stat_table)
+            
+            # Explanation for basement
+            b_expl_style = ParagraphStyle(
+                'BasementExpl',
+                parent=styles['Normal'],
+                fontName=font_name,
+                fontSize=7.5,
+                leading=11,
+                textColor=colors.HexColor('#B45309')
+            )
+            sect_story.append(Spacer(1, 4))
+            sect_story.append(Paragraph("※ 지하층(반지하)은 전세보증금 규모가 작아 전월세 전환율이 지상층 대비 높게 산출되는 특징이 있으나, 환금성 및 채광/습기 등 특수성을 고려해야 합니다.", b_expl_style))
+
         else:
             # Apartment specific table
-            avg_trade = get_avg_price(trades)
-            avg_jeonse = get_avg_price(jeonses)
-            
-            trade_str = local_format_price(avg_trade) if avg_trade else "거래 사례 없음"
-            if avg_jeonse:
-                if avg_trade:
-                    j_rate = int(round(avg_jeonse / avg_trade * 100))
-                    jeonse_str = f"{local_format_price(avg_jeonse)}<br/>(매매가 대비 {j_rate}%)"
-                else:
-                    jeonse_str = local_format_price(avg_jeonse)
-            else:
-                jeonse_str = "거래 사례 없음"
+            trade_str = get_price_range(trades) or "거래 사례 없음"
+            jeonse_str = get_price_range(jeonses) or "거래 사례 없음"
                 
             rate_str = f"{overall_rate:.2f}%" if overall_rate else "산출 불가"
             
             stat_data = [
-                [Paragraph("<b>구분</b>", table_hdr_style), Paragraph("<b>총 거래 건수</b>", table_hdr_style), Paragraph("<b>평균 매매가</b>", table_hdr_style), Paragraph("<b>평균 전세금 (전세가율)</b>", table_hdr_style), Paragraph("<b>평균 전월세전환율</b>", table_hdr_style)],
+                [Paragraph("<b>구분</b>", table_hdr_style), Paragraph("<b>총 거래 건수</b>", table_hdr_style), Paragraph("<b>매매가 (최저~최고)</b>", table_hdr_style), Paragraph("<b>전세금 (최저~최고)</b>", table_hdr_style), Paragraph("<b>평균 전월세전환율</b>", table_hdr_style)],
                 [
                     Paragraph(label.split()[1], table_cell_center),
                     Paragraph(f"{len(txs)}건<br/>(매매 {len(trades)} / 전세 {len(jeonses)} / 월세 {len(wolses)})", table_cell_center),
@@ -946,8 +1428,7 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
                 ('TOPPADDING', (0,0), (-1,-1), 6),
                 ('BOTTOMPADDING', (0,0), (-1,-1), 6),
             ]))
-            
-        sect_story.append(stat_table)
+            sect_story.append(stat_table)
         
         # Add room-count estimation footnote if it is Villa (prop_type == '2')
         if prop_type == '2':
@@ -1042,11 +1523,19 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
             story.append(Paragraph(f"■ 대표 지표 아파트 단지 상세 분석: <b>{rep_apt_name}</b>", h2_style))
             story.append(Spacer(1, 5))
             
-            # Draw chart if trend_data is provided
-            if trend_data:
-                chart_drawing = create_trend_chart_drawing(trend_data, rep_apt_name)
-                story.append(chart_drawing)
-                story.append(Spacer(1, 10))
+            rep_txs = [t for t in apt_txs if t.get('aptNm') == rep_apt_name]
+            
+            # Draw chart if rep_txs is provided
+            if rep_txs:
+                chart_drawing = create_scatter_plot_drawing(rep_txs, title=f"📈 {rep_apt_name} 실거래 점분포")
+                if chart_drawing:
+                    story.append(chart_drawing)
+                    story.append(Spacer(1, 10))
+                    
+                ratio_drawing = create_jeonse_ratio_trend_drawing(rep_txs, title=f"📊 {rep_apt_name} 매매가 대비 전세가율 추세 (추세선 기반)")
+                if ratio_drawing:
+                    story.append(ratio_drawing)
+                    story.append(Spacer(1, 10))
                 
             if rep_count > 0:
                 story.append(Paragraph(f"• 최근 24개월 ({period_str}) 실거래 건수: 총 {rep_count}건", body_style))
@@ -1054,12 +1543,13 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
                 story.append(Paragraph(f"• 지정된 지표 아파트 단지 분석 정보입니다.", body_style))
             story.append(Spacer(1, 5))
             
-            rep_txs = [t for t in apt_txs if t.get('aptNm') == rep_apt_name]
             groups = {}
             for t in rep_txs:
                 try:
                     ar = float(t.get('excluUseAr'))
                     pyung = estimate_supply_pyung(ar)
+                    if pyung >= 40:
+                        pyung = 40
                     groups.setdefault(pyung, []).append(t)
                 except:
                     pass
@@ -1067,9 +1557,9 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
             apt_headers = [
                 Paragraph("<b>평형</b>", table_hdr_style),
                 Paragraph("<b>전용면적</b>", table_hdr_style),
-                Paragraph("<b>평균 매매가</b>", table_hdr_style),
-                Paragraph("<b>평균 전세금<br/>(전세가율)</b>", table_hdr_style),
-                Paragraph("<b>평균 월세 (보증금/월세)</b>", table_hdr_style),
+                Paragraph("<b>매매가 (최저~최고)</b>", table_hdr_style),
+                Paragraph("<b>전세금 (최저~최고)</b>", table_hdr_style),
+                Paragraph("<b>월세 (최저~최고)</b>", table_hdr_style),
                 Paragraph("<b>거래 건수</b>", table_hdr_style)
             ]
             apt_table_rows = [apt_headers]
@@ -1080,43 +1570,47 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
                 jeonses = [t for t in g_txs if t.get('_trade_type') == '전세']
                 wolses = [t for t in g_txs if t.get('_trade_type') == '월세']
                 
-                def get_avg(subset):
+                def get_price_range(subset, is_rent=False):
                     prices = []
+                    rents = []
                     for item in subset:
                         val = str(item.get('dealAmount', '') or item.get('deposit', '') or item.get('guaranteeAmt', '')).strip().replace(',', '')
                         if val:
                             try: prices.append(float(val))
                             except: pass
-                    return sum(prices)/len(prices) if prices else None
+                        if is_rent:
+                            rent_val = str(item.get('monthlyRent', '') or item.get('monthly', '')).strip().replace(',', '')
+                            if rent_val:
+                                try: rents.append(float(rent_val))
+                                except: pass
+                    if not prices: return None
+                    min_p = min(prices)
+                    max_p = max(prices)
                     
-                avg_t = get_avg(trades)
-                avg_j = get_avg(jeonses)
-                avg_w_dep = get_avg(wolses)
-                
-                w_rents = []
-                for w in wolses:
-                    val = str(w.get('monthlyRent', '') or w.get('monthly', '')).strip().replace(',', '')
-                    if val:
-                        try: w_rents.append(float(val))
-                        except: pass
-                avg_w_rent = sum(w_rents)/len(w_rents) if w_rents else None
-                
-                t_str = local_format_price(avg_t) if avg_t else '-'
-                if avg_j:
-                    if avg_t:
-                        j_rate = int(round(avg_j / avg_t * 100))
-                        j_str = f"{local_format_price(avg_j)}<br/>({j_rate}%)"
+                    if is_rent and rents:
+                        min_r = min(rents)
+                        max_r = max(rents)
+                        if min_p == max_p and min_r == max_r:
+                            return f"{local_format_price(min_p)}/{int(min_r)}만"
+                        else:
+                            return f"보증금: {local_format_price(min_p)}~{local_format_price(max_p)}<br/>월세: {int(min_r)}~{int(max_r)}만"
                     else:
-                        j_str = local_format_price(avg_j)
-                else:
-                    j_str = '-'
-                w_str = f"{local_format_price(avg_w_dep)}/{int(avg_w_rent)}만" if (avg_w_dep and avg_w_rent) else '-'
+                        if min_p == max_p:
+                            return local_format_price(min_p)
+                        return f"{local_format_price(min_p)} ~ {local_format_price(max_p)}"
+                        
+                t_str = get_price_range(trades) or '-'
+                j_str = get_price_range(jeonses) or '-'
+                w_str = get_price_range(wolses, is_rent=True) or '-'
                 
                 avg_area = sum([float(t.get('excluUseAr')) for t in g_txs]) / len(g_txs)
                 
+                pyung_label = "40평 이상<br/>(대형)" if pyung == 40 else f"{pyung}평형"
+                area_label = f"전용 {avg_area:.1f}㎡ 평균" if pyung == 40 else f"전용 {avg_area:.1f}㎡"
+                
                 apt_table_rows.append([
-                    Paragraph(f"{pyung}평형", table_cell_center),
-                    Paragraph(f"전용 {avg_area:.1f}㎡", table_cell_center),
+                    Paragraph(pyung_label, table_cell_center),
+                    Paragraph(area_label, table_cell_center),
                     Paragraph(t_str, table_cell_center),
                     Paragraph(j_str, table_cell_center),
                     Paragraph(w_str, table_cell_center),
@@ -1144,7 +1638,7 @@ def generate_market_report_pdf(pdf_filename, bjdong_nm, apt_txs, villa_txs, memb
             story.append(Spacer(1, 10))
             
     # Add Villa sections
-    story.extend(build_prop_section("🏡 연립/다세대/빌라 (최근 6개월 기준)", filtered_villa_txs, '2'))
+    story.extend(build_prop_section("🏡 연립/다세대/빌라 (지상층·최근 6개월 기준)", filtered_villa_txs, '2'))
     
     # 정밀 시세 분석(CMA) 및 상담 안내 (CTA)
     if member_info:
@@ -1498,54 +1992,140 @@ def run_market_analysis():
             for idx, (name, count) in enumerate(sorted_apts):
                 print(f" [{idx+1}] {name} (총 {count}건)")
             print("="*50)
-            print(" * 입력 방법:")
-            print("   - 엔터(Enter): 모든 아파트 포함 (기본값)")
-            print("   - 1,2,3 : 1번, 2번, 3번 아파트만 '포함' (나머지 제외)")
-            print("   - -1,-2 : 1번, 2번 아파트만 '제외' (나머지 포함)")
-            print("-" * 50)
-            
-            filter_input = input(" 선택할 번호를 입력하세요: ").strip()
-            
-            excluded_names = set()
-            included_names = set()
-            
-            if filter_input:
+            import json
+            import os
+            preset_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'apt_presets.json')
+            presets = {}
+            if os.path.exists(preset_file):
                 try:
-                    parts = [p.strip() for p in filter_input.split(',')]
-                    is_exclude = all(p.startswith('-') for p in parts if p)
+                    with open(preset_file, 'r', encoding='utf-8') as f:
+                        presets = json.load(f)
+                except:
+                    pass
+            
+            while True:
+                print("\n [저장된 단지 세트]")
+                if presets:
+                    for pname, pdata in presets.items():
+                        ptype = "포함" if pdata.get("type") == "include" else "제외"
+                        print(f"  - {pname} : {len(pdata.get('names', []))}개 단지 {ptype}")
+                else:
+                    print("  - 현재 저장된 단지 세트가 없습니다.")
+                        
+                print("\n * 입력 방법:")
+                print("   - 엔터(Enter): 모든 아파트 포함 (기본값)")
+                print("   - 1,2,3 : 1번, 2번, 3번 아파트만 '포함' (나머지 제외)")
+                print("   - -1,-2 : 1번, 2번 아파트만 '제외' (나머지 포함)")
+                print("   - 저장 [이름] [번호]: (예: 저장 재건축 1,2,3) 단지 묶음을 세트로 저장")
+                print("   - 삭제 [이름]: 저장된 세트 삭제")
+                print("   - [이름]: 저장된 세트 이름 입력시 바로 적용")
+                print("-" * 50)
+                
+                filter_input = input(" 선택/명령을 입력하세요: ").strip()
+                
+                if not filter_input:
+                    break
                     
+                parts = filter_input.split()
+                cmd = parts[0]
+                
+                if cmd == "저장" and len(parts) >= 3:
+                    pname = parts[1]
+                    nums_str = "".join(parts[2:])
+                    num_parts = [x.strip() for x in nums_str.split(',') if x.strip()]
+                    is_exclude = all(x.startswith('-') for x in num_parts if x)
+                    
+                    target_names = []
+                    for x in num_parts:
+                        try:
+                            val = int(x.replace('-', '').strip()) - 1
+                            if 0 <= val < len(sorted_apts):
+                                target_names.append(sorted_apts[val][0])
+                        except: pass
+                    
+                    if target_names:
+                        presets[pname] = {
+                            "type": "exclude" if is_exclude else "include",
+                            "names": target_names
+                        }
+                        try:
+                            with open(preset_file, 'w', encoding='utf-8') as f:
+                                json.dump(presets, f, ensure_ascii=False, indent=2)
+                            print(f" -> '{pname}' 세트가 저장되었습니다! (적용하려면 세트 이름을 입력하세요)")
+                        except Exception as e:
+                            print(f" -> 세트 저장 실패: {e}")
+                    else:
+                        print(" -> 유효한 번호가 없습니다.")
+                    continue
+                    
+                if cmd == "삭제" and len(parts) >= 2:
+                    pname = parts[1]
+                    if pname in presets:
+                        del presets[pname]
+                        try:
+                            with open(preset_file, 'w', encoding='utf-8') as f:
+                                json.dump(presets, f, ensure_ascii=False, indent=2)
+                            print(f" -> '{pname}' 세트가 삭제되었습니다.")
+                        except: pass
+                    else:
+                        print(f" -> '{pname}' 세트를 찾을 수 없습니다.")
+                    continue
+                    
+                if filter_input in presets:
+                    pdata = presets[filter_input]
+                    if pdata.get("type") == "exclude":
+                        excluded_names = set(pdata.get("names", []))
+                        if excluded_names:
+                            candidate_txs = [t for t in apt_txs if t.get('aptNm') not in excluded_names]
+                            if candidate_txs:
+                                filtered_apt_txs = candidate_txs
+                                print(f" -> 제외 세트 '{filter_input}' 적용 완료: {', '.join(excluded_names)}")
+                                break
+                    else:
+                        included_names = set(pdata.get("names", []))
+                        if included_names:
+                            candidate_txs = [t for t in apt_txs if t.get('aptNm') in included_names]
+                            if candidate_txs:
+                                filtered_apt_txs = candidate_txs
+                                print(f" -> 포함 세트 '{filter_input}' 적용 완료: {', '.join(included_names)}")
+                                break
+                                
+                    print(" -> [주의] 해당 세트의 단지 데이터가 현재 데이터에 없어 필터를 적용하지 않습니다.")
+                    break
+                    
+                excluded_names = set()
+                included_names = set()
+                try:
+                    num_parts = [p.strip() for p in filter_input.split(',')]
+                    is_exclude = all(p.startswith('-') for p in num_parts if p)
                     if is_exclude:
-                        for p in parts:
-                            if not p:
-                                continue
+                        for p in num_parts:
+                            if not p: continue
                             val = int(p.replace('-', '').strip()) - 1
                             if 0 <= val < len(sorted_apts):
                                 excluded_names.add(sorted_apts[val][0])
-                        
                         if excluded_names:
                             candidate_txs = [t for t in apt_txs if t.get('aptNm') not in excluded_names]
-                            if not candidate_txs:
-                                print(" -> [주의] 선택하신 단지를 제외하면 아파트 데이터가 전혀 남지 않습니다. 필터를 적용하지 않습니다.")
-                            else:
+                            if candidate_txs:
                                 filtered_apt_txs = candidate_txs
                                 print(f" -> 제외 단지: {', '.join(excluded_names)}")
+                            break
                     else:
-                        for p in parts:
-                            if not p:
-                                continue
+                        for p in num_parts:
+                            if not p: continue
                             val = int(p.strip()) - 1
                             if 0 <= val < len(sorted_apts):
                                 included_names.add(sorted_apts[val][0])
-                        
                         if included_names:
                             candidate_txs = [t for t in apt_txs if t.get('aptNm') in included_names]
-                            if not candidate_txs:
-                                print(" -> [주의] 선택하신 단지에 데이터가 없습니다. 필터를 적용하지 않습니다.")
-                            else:
+                            if candidate_txs:
                                 filtered_apt_txs = candidate_txs
                                 print(f" -> 포함 단지: {', '.join(included_names)}")
+                            break
+                except ValueError:
+                    print(f" -> '{filter_input}'(은)는 알 수 없는 명령어이거나 저장되지 않은 세트 이름입니다. (새로 저장하려면 '저장 [이름] [번호]' 형식을 사용하세요)")
                 except Exception as e:
-                    print(f" -> 입력 파싱 중 오류가 발생하여 모든 단지를 포함합니다: {e}")
+                    print(f" -> 입력 파싱 오류 ({e}). 다시 입력하세요.")
                     
     report_lines = []
     
@@ -1600,7 +2180,7 @@ def run_market_analysis():
         jeonses = [t for t in txs if t.get('_trade_type') == '전세']
         wolses = [t for t in txs if t.get('_trade_type') == '월세']
         
-        def get_avg_price(subset):
+        def get_price_range(subset):
             prices = []
             for item in subset:
                 val = str(item.get('dealAmount', '') or item.get('rowPrice', '') or item.get('deposit', '') or item.get('guaranteeAmt', '')).strip().replace(',', '')
@@ -1609,21 +2189,21 @@ def run_market_analysis():
                         prices.append(float(val))
                     except:
                         pass
-            return sum(prices)/len(prices) if prices else None
+            if not prices: return None
+            min_p = min(prices)
+            max_p = max(prices)
+            if min_p == max_p: return local_format_price(min_p)
+            return f"{local_format_price(min_p)} ~ {local_format_price(max_p)}"
             
-        avg_trade = get_avg_price(trades)
-        avg_jeonse = get_avg_price(jeonses)
+        trade_str = get_price_range(trades)
+        jeonse_str = get_price_range(jeonses)
         
         add_line(f"\n[{label} 시장 동향]")
         add_line(f" • 총 실거래 건수: {len(txs):,}건 (매매 {len(trades):,}건 / 전세 {len(jeonses):,}건 / 월세 {len(wolses):,}건)")
-        if avg_trade:
-            add_line(f" • 평균 매매 거래가: {local_format_price(avg_trade)}")
-        if avg_jeonse:
-            if avg_trade:
-                j_rate = int(round(avg_jeonse / avg_trade * 100))
-                add_line(f" • 평균 전세 보증금: {local_format_price(avg_jeonse)} (매매가 대비 {j_rate}%)")
-            else:
-                add_line(f" • 평균 전세 보증금: {local_format_price(avg_jeonse)}")
+        if trade_str:
+            add_line(f" • 매매가 (최저~최고): {trade_str}")
+        if jeonse_str:
+            add_line(f" • 전세금 (최저~최고): {jeonse_str}")
             
         overall_rate = calculate_market_conversion_rate(txs)
         if overall_rate:
@@ -1899,8 +2479,7 @@ def run_market_analysis():
         groups = {
             "원룸형 (전용 20㎡ 미만)": [],
             "투룸형 (전용 20~40㎡)": [],
-            "쓰리룸형 (전용 40~60㎡)": [],
-            "대형 (전용 60㎡ 이상)": [],
+            "쓰리룸 이상형 (전용 40㎡ 이상)": [],
             "지하층 (반지하 전체)": []
         }
         for t in txs:
@@ -1915,31 +2494,21 @@ def run_market_analysis():
             except:
                 pass
                 
-        for grp_name in ["원룸형 (전용 20㎡ 미만)", "투룸형 (전용 20~40㎡)", "쓰리룸형 (전용 40~60㎡)", "대형 (전용 60㎡ 이상)", "지하층 (반지하 전체)"]:
+        for grp_name in ["원룸형 (전용 20㎡ 미만)", "투룸형 (전용 20~40㎡)", "쓰리룸 이상형 (전용 40㎡ 이상)", "지하층 (반지하 전체)"]:
             g_txs = groups[grp_name]
             g_trades = [t for t in g_txs if t.get('_trade_type') == '매매']
             g_jeonses = [t for t in g_txs if t.get('_trade_type') == '전세']
             g_wolses = [t for t in g_txs if t.get('_trade_type') == '월세']
             
-            g_avg_trade = get_avg_price(g_trades)
-            g_avg_jeonse = get_avg_price(g_jeonses)
+            g_trade_str = get_price_range(g_trades) or "-"
+            g_jeonse_str = get_price_range(g_jeonses) or "-"
             g_overall_rate = calculate_market_conversion_rate(g_txs)
             
-            g_trade_str = local_format_price(g_avg_trade) if g_avg_trade else "-"
-            if g_avg_jeonse:
-                if g_avg_trade:
-                    g_j_rate = int(round(g_avg_jeonse / g_avg_trade * 100))
-                    g_jeonse_str = f"{local_format_price(g_avg_jeonse)} (전세가율 {g_j_rate}%)"
-                else:
-                    g_jeonse_str = local_format_price(g_avg_jeonse)
-            else:
-                g_jeonse_str = "-"
-                
             g_rate_str = f"{g_overall_rate:.2f}%" if g_overall_rate else "-"
             
             add_line(f" • {grp_name}:")
             add_line(f"   - 거래 건수: 총 {len(g_txs)}건 (매매 {len(g_trades)} / 전세 {len(g_jeonses)} / 월세 {len(g_wolses)})")
-            add_line(f"   - 평균 매매가: {g_trade_str} | 평균 전세금: {g_jeonse_str} | 전환율: {g_rate_str}")
+            add_line(f"   - 매매가 (최저~최고): {g_trade_str} | 전세금 (최저~최고): {g_jeonse_str} | 전환율: {g_rate_str}")
             
         add_line(" ※ 안내: 위 방수(원룸/투룸 등) 분류는 실제 대장상 방수가 아닌, 실거래 전용면적 기준의 추정치입니다. 지하층(반지하)은 지상층 분류에서 제외 후 독립된 항목으로 분리 통계 처리되었습니다.")
             

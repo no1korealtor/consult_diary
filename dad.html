@@ -29,6 +29,10 @@
             border-radius: 20px;
             padding: 24px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+        .dashboard-container.wide-container {
+            max-width: 780px;
         }
         .stats-box {
             display: flex;
@@ -102,6 +106,7 @@
         }
         .badge-math { background: #ff758c; }
         .badge-eng { background: #84fab0; color: #2d3436; }
+        .badge-purple { background: #a29bfe; color: white; }
         .empty-state {
             text-align: center;
             color: #95a5a6;
@@ -209,6 +214,369 @@
             background: #ff758c;
             color: white;
         }
+
+        /* Puzzle Controls & Generator Styles */
+        .puzzle-controls {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .control-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+            min-width: 130px;
+        }
+        .control-label {
+            font-size: 13px;
+            font-weight: bold;
+            color: #475569;
+            font-family: 'Jua', sans-serif;
+        }
+        .puzzle-select {
+            padding: 8px 12px;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Nunito', sans-serif;
+            outline: none;
+            background: white;
+            transition: border-color 0.2s;
+        }
+        .puzzle-select:focus {
+            border-color: #ff758c;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 6px;
+        }
+        .btn-puzzle {
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'Jua', sans-serif;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 117, 140, 0.3);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-puzzle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 117, 140, 0.4);
+        }
+        .btn-puzzle-secondary {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            color: #2c3e50;
+            box-shadow: 0 4px 12px rgba(161, 196, 253, 0.3);
+        }
+        .btn-puzzle-print {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            color: #1e272e;
+            box-shadow: 0 4px 12px rgba(132, 250, 176, 0.4);
+            margin-left: auto;
+        }
+        .puzzle-checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #475569;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* Worksheet Preview & Printable Card */
+        .worksheet-preview-container {
+            background: white;
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            box-sizing: border-box;
+        }
+        .worksheet-page {
+            width: 100%;
+            box-sizing: border-box;
+            font-family: 'Nunito', 'Jua', sans-serif;
+            color: #1e272e;
+        }
+        .ws-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 2px solid #2d3436;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+        }
+        .ws-title-group h2 {
+            font-family: 'Jua', sans-serif;
+            margin: 4px 0 0 0;
+            font-size: 22px;
+            color: #2d3436;
+        }
+        .ws-badge {
+            display: inline-block;
+            background: #ff758c;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 8px;
+        }
+        .ws-info-box {
+            font-size: 13px;
+            line-height: 1.6;
+            text-align: right;
+            font-weight: 600;
+        }
+
+        /* Crossword Table */
+        .crossword-grid-wrap {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0 20px 0;
+            overflow-x: auto;
+        }
+        .cw-table {
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+        .cw-cell {
+            width: 34px;
+            height: 34px;
+            box-sizing: border-box;
+            text-align: center;
+            vertical-align: middle;
+            position: relative;
+            padding: 0;
+            font-size: 17px;
+            font-weight: bold;
+            font-family: 'Nunito', sans-serif;
+        }
+        .cw-cell.empty {
+            background: #2d3436;
+            border: 1px solid #2d3436;
+        }
+        .cw-cell.letter {
+            background: #ffffff;
+            border: 1.5px solid #2d3436;
+            color: #2d3436;
+        }
+        .cw-cell.answer {
+            background: #f0f7ff;
+            color: #0984e3;
+        }
+        .cw-number {
+            position: absolute;
+            top: 2px;
+            left: 3px;
+            font-size: 9px;
+            font-weight: 800;
+            color: #2d3436;
+            line-height: 1;
+        }
+        .cw-letter {
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        /* Clues Layout */
+        .ws-clues-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 15px;
+            font-size: 12.5px;
+        }
+        .ws-clue-col {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .ws-clue-col h4 {
+            margin: 0 0 8px 0;
+            font-family: 'Jua', sans-serif;
+            font-size: 14px;
+            color: #2c3e50;
+            border-bottom: 1.5px solid #e2e8f0;
+            padding-bottom: 4px;
+        }
+        .ws-clue-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .ws-clue-item {
+            line-height: 1.4;
+            word-break: keep-all;
+        }
+        .ws-clue-item b {
+            color: #ff758c;
+            margin-right: 4px;
+        }
+
+        /* Word Search Styles */
+        .ws-wordsearch-grid {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .ws-table {
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+        .ws-cell {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #b2bec3;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 15px;
+            font-weight: bold;
+            color: #2d3436;
+            background: white;
+            font-family: 'Nunito', sans-serif;
+        }
+        .ws-cell.highlight {
+            background: #fff3bf;
+            color: #d9480f;
+            border: 1.5px solid #fcc419;
+        }
+        .ws-words-to-find {
+            margin-top: 15px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .ws-words-to-find h4 {
+            margin: 0 0 8px 0;
+            font-family: 'Jua', sans-serif;
+            font-size: 14px;
+            color: #2c3e50;
+        }
+        .ws-word-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .ws-word-chip {
+            background: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #2d3436;
+        }
+
+        /* Print CSS for A4 */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 10mm 10mm 10mm 10mm;
+            }
+            body {
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            h1, 
+            .dashboard-container:not(#puzzle-dashboard-container), 
+            .puzzle-controls,
+            .site-footer, 
+            .modal-overlay,
+            .no-print {
+                display: none !important;
+            }
+            #puzzle-dashboard-container {
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                border: none !important;
+                background: transparent !important;
+            }
+            #puzzle-dashboard-container > div:first-child {
+                display: none !important;
+            }
+            .worksheet-preview-container {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .page-break {
+                page-break-before: always !important;
+                break-before: page !important;
+                padding-top: 15px;
+            }
+            .cw-cell.empty {
+                background: #2d3436 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .cw-cell.letter {
+                background: #ffffff !important;
+                border: 1.5px solid #2d3436 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .cw-cell.answer {
+                background: #f0f7ff !important;
+                color: #0984e3 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .ws-cell.highlight {
+                background: #fff3bf !important;
+                color: #d9480f !important;
+                border: 1.5px solid #fcc419 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .ws-clue-col, .ws-words-to-find {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .ws-badge {
+                background: #ff758c !important;
+                color: white !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -235,6 +603,69 @@
         <ul class="log-list" id="log-list">
             <div class="empty-state">데이터를 불러오는 중입니다...</div>
         </ul>
+    </div>
+    
+    <!-- 2. 맞춤 낱말퍼즐 & 단어찾기 학습지 생성기 -->
+    <div class="dashboard-container wide-container" id="puzzle-dashboard-container" style="margin-top: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="font-family: 'Jua', sans-serif; color: #2c3e50; margin: 0;">🧩 아람이 복습 낱말퍼즐 & 단어찾기 인쇄</h3>
+            <span class="badge badge-purple" id="memorized-stat-badge">단어 확인 중...</span>
+        </div>
+
+        <!-- 설정 컨트롤 패널 -->
+        <div class="puzzle-controls no-print">
+            <div class="control-row">
+                <div class="control-group">
+                    <label class="control-label">🎮 퍼즐 종류</label>
+                    <select id="puzzle-type-select" class="puzzle-select" onchange="generateCurrentPuzzle()">
+                        <option value="crossword" selected>🧩 가로세로 낱말퍼즐 (Crossword)</option>
+                        <option value="wordsearch">🔍 숨은 단어 찾기 (Word Search)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">📚 단어 출제 범위</label>
+                    <select id="word-source-select" class="puzzle-select" onchange="generateCurrentPuzzle()">
+                        <option value="memorized" selected>💖 아람이가 암기 완료한 단어 (추천)</option>
+                        <option value="all">📖 전체 등록 단어</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">🏷️ 과목 선택</label>
+                    <select id="subject-filter-select" class="puzzle-select" onchange="generateCurrentPuzzle()">
+                        <option value="all" selected>전체 과목</option>
+                    </select>
+                </div>
+
+                <div class="control-group" style="max-width: 140px;">
+                    <label class="control-label">🔢 출제 단어 수</label>
+                    <select id="word-count-select" class="puzzle-select" onchange="generateCurrentPuzzle()">
+                        <option value="6">6개 (가볍게)</option>
+                        <option value="9" selected>9개 (적당함)</option>
+                        <option value="12">12개 (도전)</option>
+                        <option value="16">16개 (풍성하게)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-puzzle" onclick="generateCurrentPuzzle()">🎲 퍼즐 생성하기</button>
+                <button class="btn-puzzle btn-puzzle-secondary" onclick="generateCurrentPuzzle()">🔄 다른 모양으로 섞기</button>
+                
+                <label class="puzzle-checkbox-label" style="margin-left: 10px;">
+                    <input type="checkbox" id="include-answers-check" checked onchange="generateCurrentPuzzle()">
+                    <span>📄 정답지(Answer Key) 함께 인쇄 (2페이지)</span>
+                </label>
+
+                <button class="btn-puzzle btn-puzzle-print" onclick="printPuzzle()">🖨️ A4 프린트하기</button>
+            </div>
+        </div>
+
+        <!-- A4 인쇄 미리보기 영역 -->
+        <div class="worksheet-preview-container" id="print-area">
+            <div class="empty-state">단어 데이터를 불러와 퍼즐을 생성하고 있습니다... ⏳</div>
+        </div>
     </div>
     
     <div class="dashboard-container" style="margin-top: 24px;">
@@ -266,8 +697,12 @@
         const supabaseKey = 'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k'
         const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey)
 
+        const CURRENT_STUDENT = '아람';
+        let allStudyWords = [];
+        let memorizedWordsCount = 0;
+
+        // 1. 학습 로그 로드
         async function loadTodayLogs() {
-            // 일주일(7일) 전 자정 구하기
             const targetDate = new Date();
             targetDate.setDate(targetDate.getDate() - 6);
             targetDate.setHours(0, 0, 0, 0);
@@ -276,7 +711,7 @@
             const { data, error } = await supabaseClient
                 .from('study_logs')
                 .select('*')
-                .eq('creator', '아람')
+                .eq('creator', CURRENT_STUDENT)
                 .gte('created_at', targetIso)
                 .order('created_at', { ascending: false });
 
@@ -327,7 +762,6 @@
                     badgeClass = 'badge-eng';
                     badgeText = '영어';
                 } else {
-                    // 기타 과목도 영어 뱃지 색상을 사용하지만 텍스트는 실제 과목명으로 표시
                     badgeClass = 'badge-eng';
                 }
 
@@ -348,6 +782,620 @@
             document.getElementById('eng-count').innerText = engCount;
         }
 
+        // 2. 단어 데이터 로드 & 전처리
+        async function loadStudyWords() {
+            const { data, error } = await supabaseClient
+                .from('study_words')
+                .select('*')
+                .neq('subject', 'YOUTUBE_LINK')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("단어 로드 에러:", error);
+                document.getElementById('print-area').innerHTML = `<div class="empty-state">단어 데이터를 불러오지 못했습니다.</div>`;
+                return;
+            }
+
+            allStudyWords = data.map(item => extractCleanData(item)).filter(item => item.cleanWord.length >= 2);
+            
+            // 암기된 단어 수 집계
+            const memorized = allStudyWords.filter(w => w.isMemorized);
+            memorizedWordsCount = memorized.length;
+
+            const badgeEl = document.getElementById('memorized-stat-badge');
+            if (badgeEl) {
+                badgeEl.innerText = `암기 완료 단어 ${memorizedWordsCount}개 / 전체 ${allStudyWords.length}개`;
+            }
+
+            // 과목 셀렉트 박스 채우기
+            const subjectSelect = document.getElementById('subject-filter-select');
+            const subjects = [...new Set(allStudyWords.map(w => w.subject).filter(Boolean))];
+            
+            let currentVal = subjectSelect.value;
+            subjectSelect.innerHTML = `<option value="all">전체 과목 (${allStudyWords.length}개)</option>`;
+            subjects.forEach(subj => {
+                const count = allStudyWords.filter(w => w.subject === subj).length;
+                subjectSelect.innerHTML += `<option value="${subj}">${subj} (${count}개)</option>`;
+            });
+            if (subjects.includes(currentVal)) {
+                subjectSelect.value = currentVal;
+            }
+
+            // 첫 퍼즐 생성
+            generateCurrentPuzzle();
+        }
+
+        // 단어 및 설명 HTML 텍스트 정제
+        function extractCleanData(item) {
+            let rawWord = item.word || '';
+            // 괄호, 단위, 이모지 제거 (예: "전류 (A)" -> "전류")
+            let baseWord = rawWord.replace(/\s*\([^)]*\)/g, '').replace(/[\u{1F300}-\u{1FAFF}]/gu, '').trim();
+            let cleanWord = baseWord.replace(/[^a-zA-Z0-9가-힣]/g, '').toUpperCase();
+            
+            // 설명(Meaning)에서 HTML 태그 제거하여 텍스트만 추출
+            let tempEl = document.createElement('div');
+            tempEl.innerHTML = item.meaning || '';
+            let clueText = tempEl.textContent || tempEl.innerText || '';
+            clueText = clueText.replace(/\s+/g, ' ').trim();
+            
+            if (!clueText || clueText.length < 2) {
+                tempEl.innerHTML = item.example || '';
+                clueText = (tempEl.textContent || tempEl.innerText || '').replace(/\s+/g, ' ').trim();
+            }
+            
+            if (!clueText) {
+                clueText = '뜻 설명이 등록되어 있지 않습니다.';
+            }
+            
+            if (clueText.length > 100) {
+                clueText = clueText.substring(0, 97) + '...';
+            }
+
+            const isMemorized = item.memorized_users && Array.isArray(item.memorized_users) && item.memorized_users.includes(CURRENT_STUDENT);
+            
+            return {
+                id: item.id,
+                rawWord: item.word,
+                baseWord: baseWord || item.word,
+                cleanWord: cleanWord,
+                clue: clueText,
+                subject: item.subject || '기타',
+                category: item.category || '',
+                isMemorized: isMemorized
+            };
+        }
+
+        // 3. 퍼즐 생성 엔진
+        function generateCurrentPuzzle() {
+            const pType = document.getElementById('puzzle-type-select').value;
+            const wSource = document.getElementById('word-source-select').value;
+            const sFilter = document.getElementById('subject-filter-select').value;
+            const wCount = parseInt(document.getElementById('word-count-select').value, 10) || 9;
+            const includeAnswers = document.getElementById('include-answers-check').checked;
+
+            if (allStudyWords.length === 0) {
+                document.getElementById('print-area').innerHTML = `<div class="empty-state">출제 가능한 단어가 없습니다.</div>`;
+                return;
+            }
+
+            // 조건에 맞는 단어 필터링
+            let candidateList = allStudyWords;
+
+            if (sFilter !== 'all') {
+                candidateList = candidateList.filter(w => w.subject === sFilter);
+            }
+
+            if (wSource === 'memorized') {
+                const memorizedList = candidateList.filter(w => w.isMemorized);
+                if (memorizedList.length >= 3) {
+                    candidateList = memorizedList;
+                } else if (candidateList.length >= 3) {
+                    console.log("암기 단어 부족으로 전체 단어 사용");
+                }
+            }
+
+            // 너무 길거나 특이한 단어 필터링 (2글자~10글자)
+            candidateList = candidateList.filter(w => w.cleanWord.length >= 2 && w.cleanWord.length <= 10);
+
+            if (candidateList.length < 2) {
+                document.getElementById('print-area').innerHTML = `<div class="empty-state">선택한 조건의 단어가 부족합니다. (최소 2단어 이상 필요)</div>`;
+                return;
+            }
+
+            // 무작위로 n개 추출
+            let shuffled = [...candidateList].sort(() => Math.random() - 0.5);
+            let selectedWords = shuffled.slice(0, Math.min(wCount, shuffled.length));
+
+            if (pType === 'crossword') {
+                renderCrossword(selectedWords, includeAnswers);
+            } else {
+                renderWordSearch(selectedWords, includeAnswers);
+            }
+        }
+
+        // --- Crossword Engine ---
+        class CrosswordEngine {
+            constructor(words) {
+                this.words = words;
+            }
+
+            generate(maxAttempts = 50) {
+                let bestGrid = null;
+                let bestScore = -999999;
+
+                for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                    let shuffled = [...this.words].sort(() => Math.random() - 0.5);
+                    shuffled.sort((a, b) => b.cleanWord.length - a.cleanWord.length);
+
+                    const grid = this.tryBuild(shuffled);
+                    if (!grid) continue;
+
+                    const score = grid.placedWords.length * 1000 - (grid.width * grid.height * 2);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestGrid = grid;
+                        if (grid.placedWords.length === this.words.length) {
+                            break;
+                        }
+                    }
+                }
+                return bestGrid;
+            }
+
+            tryBuild(words) {
+                const SIZE = 35;
+                const matrix = Array(SIZE).fill(null).map(() => Array(SIZE).fill(null));
+                const placedWords = [];
+
+                if (words.length === 0) return null;
+
+                const first = words[0];
+                const startR = Math.floor(SIZE / 2);
+                const startC = Math.floor((SIZE - first.cleanWord.length) / 2);
+
+                for (let i = 0; i < first.cleanWord.length; i++) {
+                    matrix[startR][startC + i] = first.cleanWord[i];
+                }
+                placedWords.push({
+                    ...first,
+                    row: startR,
+                    col: startC,
+                    dir: 'across'
+                });
+
+                for (let w = 1; w < words.length; w++) {
+                    const item = words[w];
+                    const word = item.cleanWord;
+                    const validPlacements = [];
+
+                    for (const placed of placedWords) {
+                        const targetDir = placed.dir === 'across' ? 'down' : 'across';
+
+                        for (let i = 0; i < word.length; i++) {
+                            const char = word[i];
+                            for (let j = 0; j < placed.cleanWord.length; j++) {
+                                if (placed.cleanWord[j] === char) {
+                                    let r, c;
+                                    if (placed.dir === 'across') {
+                                        r = placed.row - i;
+                                        c = placed.col + j;
+                                    } else {
+                                        r = placed.row + j;
+                                        c = placed.col - i;
+                                    }
+
+                                    if (this.isValid(matrix, word, r, c, targetDir, SIZE)) {
+                                        validPlacements.push({ row: r, col: c, dir: targetDir });
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (validPlacements.length > 0) {
+                        const chosen = validPlacements[Math.floor(Math.random() * validPlacements.length)];
+                        for (let k = 0; k < word.length; k++) {
+                            const cr = chosen.dir === 'across' ? chosen.row : chosen.row + k;
+                            const cc = chosen.dir === 'across' ? chosen.col + k : chosen.col;
+                            matrix[cr][cc] = word[k];
+                        }
+                        placedWords.push({
+                            ...item,
+                            row: chosen.row,
+                            col: chosen.col,
+                            dir: chosen.dir
+                        });
+                    }
+                }
+
+                if (placedWords.length < 2) return null;
+
+                let minR = SIZE, maxR = 0, minC = SIZE, maxC = 0;
+                for (let r = 0; r < SIZE; r++) {
+                    for (let c = 0; c < SIZE; c++) {
+                        if (matrix[r][c] !== null) {
+                            if (r < minR) minR = r;
+                            if (r > maxR) maxR = r;
+                            if (c < minC) minC = c;
+                            if (c > maxC) maxC = c;
+                        }
+                    }
+                }
+
+                const width = maxC - minC + 1;
+                const height = maxR - minR + 1;
+
+                const cropped = Array(height).fill(null).map(() => Array(width).fill(null));
+                for (let r = minR; r <= maxR; r++) {
+                    for (let c = minC; c <= maxC; c++) {
+                        cropped[r - minR][c - minC] = matrix[r][c];
+                    }
+                }
+
+                const finalPlaced = placedWords.map(p => ({
+                    ...p,
+                    row: p.row - minR,
+                    col: p.col - minC
+                }));
+
+                return {
+                    matrix: cropped,
+                    width,
+                    height,
+                    placedWords: finalPlaced
+                };
+            }
+
+            isValid(matrix, word, row, col, dir, size) {
+                if (dir === 'across') {
+                    if (row < 0 || row >= size || col < 0 || col + word.length > size) return false;
+                    if (col > 0 && matrix[row][col - 1] !== null) return false;
+                    if (col + word.length < size && matrix[row][col + word.length] !== null) return false;
+
+                    for (let i = 0; i < word.length; i++) {
+                        const cur = matrix[row][col + i];
+                        if (cur !== null && cur !== word[i]) return false;
+                        if (cur === null) {
+                            if (row > 0 && matrix[row - 1][col + i] !== null) return false;
+                            if (row < size - 1 && matrix[row + 1][col + i] !== null) return false;
+                        }
+                    }
+                } else {
+                    if (col < 0 || col >= size || row < 0 || row + word.length > size) return false;
+                    if (row > 0 && matrix[row - 1][col] !== null) return false;
+                    if (row + word.length < size && matrix[row + word.length][col] !== null) return false;
+
+                    for (let i = 0; i < word.length; i++) {
+                        const cur = matrix[row + i][col];
+                        if (cur !== null && cur !== word[i]) return false;
+                        if (cur === null) {
+                            if (col > 0 && matrix[row + i][col - 1] !== null) return false;
+                            if (col < size - 1 && matrix[row + i][col + 1] !== null) return false;
+                        }
+                    }
+                }
+                return true;
+            }
+        }
+
+        function renderCrossword(words, includeAnswers) {
+            const engine = new CrosswordEngine(words);
+            const result = engine.generate(60);
+
+            if (!result || result.placedWords.length < 2) {
+                document.getElementById('print-area').innerHTML = `<div class="empty-state">퍼즐 교차 배치에 실패했습니다. 단어 수를 늘리거나 [다시 섞기]를 눌러보세요. 🔄</div>`;
+                return;
+            }
+
+            const { matrix, width, height, placedWords } = result;
+
+            // 번호 매기기
+            const cellNumbers = Array(height).fill(null).map(() => Array(width).fill(null));
+            let clueCounter = 1;
+
+            for (let r = 0; r < height; r++) {
+                for (let c = 0; c < width; c++) {
+                    const startsAcross = placedWords.find(p => p.row === r && p.col === c && p.dir === 'across');
+                    const startsDown = placedWords.find(p => p.row === r && p.col === c && p.dir === 'down');
+
+                    if (startsAcross || startsDown) {
+                        cellNumbers[r][c] = clueCounter;
+                        if (startsAcross) startsAcross.clueNum = clueCounter;
+                        if (startsDown) startsDown.clueNum = clueCounter;
+                        clueCounter++;
+                    }
+                }
+            }
+
+            const acrossClues = placedWords.filter(p => p.dir === 'across').sort((a, b) => a.clueNum - b.clueNum);
+            const downClues = placedWords.filter(p => p.dir === 'down').sort((a, b) => a.clueNum - b.clueNum);
+
+            // 문제지 렌더링
+            let html = `
+                <div class="worksheet-page">
+                    <div class="ws-header">
+                        <div class="ws-title-group">
+                            <div class="ws-badge">🌟 두뇌 팡팡 복습 학습지</div>
+                            <h2 class="ws-title">아람이의 가로세로 낱말퍼즐 🧩</h2>
+                        </div>
+                        <div class="ws-info-box">
+                            <div>날짜: ________년 ___월 ___일</div>
+                            <div>이름: <b>조아람</b> 👧</div>
+                            <div>점수: ______ / 100 점</div>
+                        </div>
+                    </div>
+
+                    <div class="crossword-grid-wrap">
+                        <table class="cw-table">
+                            <tbody>
+            `;
+
+            for (let r = 0; r < height; r++) {
+                html += `<tr>`;
+                for (let c = 0; c < width; c++) {
+                    if (matrix[r][c] === null) {
+                        html += `<td class="cw-cell empty"></td>`;
+                    } else {
+                        const num = cellNumbers[r][c];
+                        html += `
+                            <td class="cw-cell letter">
+                                ${num ? `<span class="cw-number">${num}</span>` : ''}
+                            </td>
+                        `;
+                    }
+                }
+                html += `</tr>`;
+            }
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="ws-clues-container">
+                        <div class="ws-clue-col">
+                            <h4>➡️ 가로 열쇠 (Across)</h4>
+                            <ul class="ws-clue-list">
+                                ${acrossClues.map(c => `<li class="ws-clue-item"><b>${c.clueNum}.</b> [${c.cleanWord.length}글자] ${c.clue}</li>`).join('')}
+                                ${acrossClues.length === 0 ? '<li class="ws-clue-item">- 없음 -</li>' : ''}
+                            </ul>
+                        </div>
+                        <div class="ws-clue-col">
+                            <h4>⬇️ 세로 열쇠 (Down)</h4>
+                            <ul class="ws-clue-list">
+                                ${downClues.map(c => `<li class="ws-clue-item"><b>${c.clueNum}.</b> [${c.cleanWord.length}글자] ${c.clue}</li>`).join('')}
+                                ${downClues.length === 0 ? '<li class="ws-clue-item">- 없음 -</li>' : ''}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 정답지 (2페이지)
+            if (includeAnswers) {
+                html += `
+                    <div class="worksheet-page page-break" id="answer-sheet">
+                        <div class="ws-header">
+                            <div class="ws-title-group">
+                                <div class="ws-badge" style="background:#4a69bd;">🎯 채점 & 복습용</div>
+                                <h2 class="ws-title">[정답지] 가로세로 낱말퍼즐 💯</h2>
+                            </div>
+                            <div class="ws-info-box">
+                                <div><b>조아람</b> 학습 완료 정답표</div>
+                            </div>
+                        </div>
+
+                        <div class="crossword-grid-wrap">
+                            <table class="cw-table">
+                                <tbody>
+                `;
+
+                for (let r = 0; r < height; r++) {
+                    html += `<tr>`;
+                    for (let c = 0; c < width; c++) {
+                        if (matrix[r][c] === null) {
+                            html += `<td class="cw-cell empty"></td>`;
+                        } else {
+                            const num = cellNumbers[r][c];
+                            html += `
+                                <td class="cw-cell letter answer">
+                                    ${num ? `<span class="cw-number">${num}</span>` : ''}
+                                    <span class="cw-letter">${matrix[r][c]}</span>
+                                </td>
+                            `;
+                        }
+                    }
+                    html += `</tr>`;
+                }
+
+                html += `
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="ws-clues-container">
+                            <div class="ws-clue-col">
+                                <h4>➡️ 가로 정답</h4>
+                                <ul class="ws-clue-list">
+                                    ${acrossClues.map(c => `<li class="ws-clue-item"><b>${c.clueNum}. ${c.baseWord}</b>: ${c.clue}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="ws-clue-col">
+                                <h4>⬇️ 세로 정답</h4>
+                                <ul class="ws-clue-list">
+                                    ${downClues.map(c => `<li class="ws-clue-item"><b>${c.clueNum}. ${c.baseWord}</b>: ${c.clue}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('print-area').innerHTML = html;
+        }
+
+        // --- Word Search Engine ---
+        function renderWordSearch(words, includeAnswers) {
+            const gridSize = words.length > 10 ? 12 : 10;
+            const matrix = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null));
+            const answerMask = Array(gridSize).fill(false).map(() => Array(gridSize).fill(false));
+
+            const directions = [
+                [0, 1],   // 가로 우
+                [1, 0],   // 세로 하
+                [1, 1],   // 대각선 우하
+                [-1, 1],  // 대각선 우상
+                [0, -1],  // 가로 좌
+                [-1, 0]   // 세로 상
+            ];
+
+            const placed = [];
+            const sorted = [...words].sort((a, b) => b.cleanWord.length - a.cleanWord.length);
+
+            for (const item of sorted) {
+                const word = item.cleanWord;
+                if (word.length > gridSize) continue;
+
+                let attempts = 100;
+                let wasPlaced = false;
+
+                while (attempts-- > 0 && !wasPlaced) {
+                    const [dr, dc] = directions[Math.floor(Math.random() * directions.length)];
+                    const startR = dr >= 0 ? Math.floor(Math.random() * (gridSize - (word.length - 1) * dr)) : Math.floor(Math.random() * (gridSize - (word.length - 1) * Math.abs(dr))) + (word.length - 1);
+                    const startC = dc >= 0 ? Math.floor(Math.random() * (gridSize - (word.length - 1) * dc)) : Math.floor(Math.random() * (gridSize - (word.length - 1) * Math.abs(dc))) + (word.length - 1);
+
+                    let canPlace = true;
+                    for (let i = 0; i < word.length; i++) {
+                        const r = startR + i * dr;
+                        const c = startC + i * dc;
+                        if (r < 0 || r >= gridSize || c < 0 || c >= gridSize) { canPlace = false; break; }
+                        if (matrix[r][c] !== null && matrix[r][c] !== word[i]) { canPlace = false; break; }
+                    }
+
+                    if (canPlace) {
+                        for (let i = 0; i < word.length; i++) {
+                            const r = startR + i * dr;
+                            const c = startC + i * dc;
+                            matrix[r][c] = word[i];
+                            answerMask[r][c] = true;
+                        }
+                        placed.push(item);
+                        wasPlaced = true;
+                    }
+                }
+            }
+
+            // 빈칸 채우기
+            const isAllEnglish = placed.every(p => /^[A-Z0-9]+$/.test(p.cleanWord));
+            const alphabetSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            const hangulSet = "가나다라마바사아자차카타파하감강개거건검결경고공과관광교구국군권귀규근금기길김나남녀노농눈능단달담대덕도독동두득등라람락란래량력련령로록론뢰료류육리림립마만말망매명목무문물미민밀박반발방배백변별병보복본봉부북분불비사산살삼상새색생서석선설성세소속손송수순술숨승시식신실심아악안알암압앙애야약양어언얼엄업에여역연열염영예오옥온올옹와완왕외요용우운울웅원월위유육윤율은을음응의이익인일임입자작잔잠장재저적전절점접정제조족존종좌주죽준줄중즉증지직진집질차착찬참창채책처천철청체초총추축춘출충치칙친칠탁탄탈탐탑탕태택토통퇴투특파판팔패편평포표풍학한할합항해핵행향현형혜호혹혼홍화확환황회획효후훈휴흥희";
+
+            for (let r = 0; r < gridSize; r++) {
+                for (let c = 0; c < gridSize; c++) {
+                    if (matrix[r][c] === null) {
+                        if (isAllEnglish) {
+                            matrix[r][c] = alphabetSet[Math.floor(Math.random() * alphabetSet.length)];
+                        } else {
+                            matrix[r][c] = hangulSet[Math.floor(Math.random() * hangulSet.length)];
+                        }
+                    }
+                }
+            }
+
+            // 문제지 렌더링
+            let html = `
+                <div class="worksheet-page">
+                    <div class="ws-header">
+                        <div class="ws-title-group">
+                            <div class="ws-badge" style="background: #20bf6b;">🔍 집중력 쑥쑥 단어 게임</div>
+                            <h2 class="ws-title">아람이의 숨은 단어 찾기 🕵️‍♀️</h2>
+                        </div>
+                        <div class="ws-info-box">
+                            <div>날짜: ________년 ___월 ___일</div>
+                            <div>이름: <b>조아람</b> 👧</div>
+                            <div>찾은 개수: ______ / ${placed.length} 개</div>
+                        </div>
+                    </div>
+
+                    <div class="ws-wordsearch-grid">
+                        <table class="ws-table">
+                            <tbody>
+            `;
+
+            for (let r = 0; r < gridSize; r++) {
+                html += `<tr>`;
+                for (let c = 0; c < gridSize; c++) {
+                    html += `<td class="ws-cell">${matrix[r][c]}</td>`;
+                }
+                html += `</tr>`;
+            }
+
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="ws-words-to-find">
+                        <h4>🔍 아래 숨겨진 단어를 모두 찾아 동그라미 쳐보세요! (총 ${placed.length}개)</h4>
+                        <div class="ws-word-chips">
+                            ${placed.map(p => `<div class="ws-word-chip">✨ <b>${p.baseWord}</b> (${p.cleanWord})</div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 정답지
+            if (includeAnswers) {
+                html += `
+                    <div class="worksheet-page page-break">
+                        <div class="ws-header">
+                            <div class="ws-title-group">
+                                <div class="ws-badge" style="background:#4a69bd;">🎯 채점 & 정답 확인</div>
+                                <h2 class="ws-title">[정답지] 숨은 단어 찾기 💯</h2>
+                            </div>
+                            <div class="ws-info-box">
+                                <div><b>조아람</b> 단어 위치 정답표</div>
+                            </div>
+                        </div>
+
+                        <div class="ws-wordsearch-grid">
+                            <table class="ws-table">
+                                <tbody>
+                `;
+
+                for (let r = 0; r < gridSize; r++) {
+                    html += `<tr>`;
+                    for (let c = 0; c < gridSize; c++) {
+                        const isHit = answerMask[r][c];
+                        html += `<td class="ws-cell ${isHit ? 'highlight' : ''}">${matrix[r][c]}</td>`;
+                    }
+                    html += `</tr>`;
+                }
+
+                html += `
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="ws-words-to-find">
+                            <h4>📖 포함된 단어 및 뜻 정리</h4>
+                            <ul class="ws-clue-list">
+                                ${placed.map(p => `<li class="ws-clue-item"><b>${p.baseWord}</b> (${p.cleanWord}): ${p.clue}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('print-area').innerHTML = html;
+        }
+
+        // 인쇄 트리거
+        function printPuzzle() {
+            window.print();
+        }
+
+        // 4. 추천 유튜브 채널 로드 및 관리
         async function loadYoutubeLinks() {
             const { data, error } = await supabaseClient
                 .from('study_words')
@@ -437,7 +1485,9 @@
             }
         }
 
+        // 초기 구동
         loadTodayLogs();
+        loadStudyWords();
         loadYoutubeLinks();
         
         // 1분마다 새로고침

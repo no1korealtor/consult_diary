@@ -1,0 +1,216 @@
+@charset "utf-8";
+
+
+/*로그인*/
+.LoginBox{ position:relative;  background:#fff url("/images/co/lo/ipin.png") no-repeat 25px 25px; padding:50px 2%; width:94%; border:1px solid #1e7bcb; font-family:NGNormal; border-radius: 12px;}
+.LoginBox h2{ font-size:28px; font-family:NGNormal; position:absolute; top:40px; left:30px;}
+.LoginBox h2 span{ font-weight:normal; color:#00326f;}
+.LoginBox .box_ml{ margin-left:230px;}
+.LoginBox .Log_txt{ margin:20px 0 10px; font-size:14px; line-height:1.4;}
+.LoginBox .Log_txt span{ color:#e12a48;}
+.LoginBox .area_btn02{ margin:10px 0 0;}
+.LoginBox .login_form{ position:relative;}
+.LoginBox .login_form p{ width:311px; height:33px; background:url('/images/co/lo/input_bg01.gif') no-repeat 0 0; margin-top:10px; overflow:hidden; border:1px solid #ccc; border-radius:5px; }
+.LoginBox .login_form p input{ margin:5px 0 0 5px; width:290px; border:0; background:transparent; font-size:14px; font-family:NGNormal; }
+.btn_Login{  position:absolute; top:0px; left:320px; }
+
+.btn_st1{display:inline-block; margin:0; padding:10px; overflow:visible; vertical-align:middle; color:#fff !important; white-space:nowrap; border:0; text-decoration:none !important; background:#0068a6;}
+
+/* 로그인 */
+.login_box {position:relative;}
+.login_top {height:85px; padding:15px 0 30px 120px; background:url("/images/co/lo/img_login.png") no-repeat left top;}
+.login_top h3 {font-size:34px; color:#0b4d93;}
+.login_top p {margin-top:5px; font-size:15px;}
+.login_box .tab_st {position:absolute; right:0; top:40px; width:50%;}
+.login_box .loginSecL {font-family:"NanumSquareR";}
+.login_box .loginFrm {position:relative;}
+.login_box .loginFrm h4 {height:40px;}
+
+.login_box .login_ty1 {position:relative; width:41%; padding:20px 4% 30px; float:left; border:1px solid #b2b7c7; border-top:2px solid #0b4d93; font-size:14px; overflow:hidden;}
+.login_box .login_ty1 dl {width:70%; overflow:hidden;}
+.login_box .login_ty1 dl dd {padding-left:40px; margin-top:5px; border:1px solid #b2b7c7; }
+.login_box .login_ty1 dl dd.login_id {background:url("/images/co/lo/ico_login_id.gif") no-repeat 10px center; }
+.login_box .login_ty1 dl dd.login_pw {background:url("/images/co/lo/ico_login_pw.gif") no-repeat 10px center; }
+.login_box .login_ty1 dl dd input {width:96%; height:45px; border:none; font-family:"Dotum"; line-height:45px; vertical-align:middle;}
+.login_box .login_ty1 input.btn_login {position:absolute; right:8%; top:65px; width:24%; height:102px; color:#fff; font-family:"NanumSquareR"; font-size:20px; border:none; background:#394b61;}
+.login_box .login_ty1 .idpw_search {margin-top:10px; overflow:hidden;}
+.login_box .login_ty1 .idpw_search li.id_search {width:49%; float:left;}
+.login_box .login_ty1 .idpw_search li.pw_search {width:49%; float:right;}
+.login_box .login_ty1 .idpw_search li a {display:block; height:35px; line-height:35px; text-align:center; color:#333; border:1px solid #b2b7c7; background:#f5f7f8;}
+
+.login_box .login_ty2 {position:relative; width:41%; padding:20px 4% 30px; float:right; border:1px solid #b2b7c7; border-top:2px solid #0b4d93; font-size:14px; overflow:hidden;}
+.login_box .login_ty2 dl {height:85px; padding:15px 20px 0 80px; overflow:hidden; border-top:1px solid #b2b7c7; border-bottom:1px solid #b2b7c7; background:url("/images/co/lo/img_login2.png") no-repeat left center;}
+.login_box .login_ty2 dl dt {margin-bottom:5px; font-size:18px; color:#042f5d; font-family:"NanumSquareB";}
+.login_box .login_ty2 dl dd {color:#555; font-size:13px;}
+.login_box .login_ty2 a {display:block; height:35px; margin-top:15px; line-height:35px; text-align:center; color:#fff; background:#394b61;}
+
+/* 회원가입 */
+/* 회원가입단계 */
+.joinCont .memjoin_steps {width:100%; height:70px; margin-bottom:40px; overflow:hidden; font-family:'NanumSquareR'; font-size:18px;}
+.joinCont .memjoin_steps ul li {position:relative; width:24%; height:70px; margin-left:1%; float:left; }
+.joinCont .memjoin_steps ul li:first-child {width:25%; margin-left:0; }
+.joinCont .memjoin_steps ul li.step1 { background:url('/images/co/lo/icon_join1_off.png') no-repeat 20px 50%;}
+.joinCont .memjoin_steps ul li.step2 { background:url('/images/co/lo/icon_join2_off.png') no-repeat 20px 50%;}
+.joinCont .memjoin_steps ul li.step3 { background:url('/images/co/lo/icon_join3_off.png') no-repeat 20px 50%;}
+.joinCont .memjoin_steps ul li.step4 { background:url('/images/co/lo/icon_join4_off.png') no-repeat 20px 50%;}
+.joinCont .memjoin_steps ul li.step1.on { background:url('/images/co/lo/icon_join1_on.png') no-repeat 20px 50% #2f8ff4;}
+.joinCont .memjoin_steps ul li.step2.on { background:url('/images/co/lo/icon_join2_on.png') no-repeat 20px 50% #2f8ff4;}
+.joinCont .memjoin_steps ul li.step3.on { background:url('/images/co/lo/icon_join3_on.png') no-repeat 20px 50% #2f8ff4;}
+.joinCont .memjoin_steps ul li.step4.on { background:url('/images/co/lo/icon_join4_on.png') no-repeat 20px 50% #2f8ff4;}
+/* .joinCont .memjoin_steps ul li span {display:block; height:53px; padding:15px 0 0 70px; border:1px solid #9298af; } */
+.joinCont .memjoin_steps ul li span {display:block;height:53px;padding: 15px 0 0 20px;border:1px solid #9298af;}
+.joinCont .memjoin_steps ul li span em { display:block; opacity:0.7; font-size:12px; font-family:"돋움",Dotum; font-style:normal;}
+.joinCont .memjoin_steps ul li.on span {color:#fff; border:1px solid #2f8ff4;}
+
+/* 1:약관동의 */
+.joinCont .box_agree {padding:15px; background:#f5f6f7; margin-top:10px;  border:1px solid #b2b7c7;}
+.joinCont .box_agree .agrScroll {height:300px; margin-bottom:10px; padding:15px 20px; border:1px solid #b2b7c7; background:#fff; overflow-y:auto;  font-size:12px; font-family:"돋움",Dotum;}
+.joinCont .box_agree .agrScroll .ruleTit{ color:#000; letter-spacing:-1px; line-height:20px; font-size:14px; font-weight:bold; font-family:"돋움",Dotum;}
+.joinCont .box_agree .agrScroll ul {width:100%; padding:0 0 20px; color:#555; letter-spacing:-1px; line-height:20px;}
+.joinCont .box_agree .agrScroll ul li { padding-top:10px; font-weight:600; }
+.joinCont .box_agree .agrScroll ul li span{ display:block; font-weight:normal; padding-top:3px; }
+.joinCont .box_agree .agrScroll ul li ol li,
+.joinCont .box_agree .agrScroll ul li ul li {font-weight:normal; padding-top:0; padding-bottom:0;}
+.joinCont .box_agree .agrScroll ul.fw_normal li { padding-top:5px; font-weight:normal; }
+.joinCont .box_agree .agrInput{ position:relative; padding-left:22px; }
+.joinCont .box_agree .agrInput label{color:#666; font-size:12px; font-family:"돋움",Dotum;}
+
+/* 2:본인확인 */
+.join2 {font-size:14px; text-align:center; overflow:hidden;}
+.join2 .user_iden1 {width:45%; padding:150px 2% 30px; float:left; border:1px solid #b2b7c7; border-top:2px solid #0b4d93; background:url("/images/co/lo/icon_join2_1.png") no-repeat center 30px;}
+.join2 .user_iden2 {width:45%; padding:150px 2% 30px; float:right; border:1px solid #b2b7c7; border-top:2px solid #0b4d93; background:url("/images/co/lo/icon_join2_2.png") no-repeat center 30px;}
+.join2 div h3 {font-family:'NanumSquareR'; font-size:24px;}
+.join2 div p.txt {margin-top:10px; font-size:15px; line-height:1.4; padding-bottom:10px; border-bottom:1px dashed #b2b7c7;}
+.join2 div dl {margin-top:10px;}
+.join2 div dl dt {display:inline-block; padding-left:20px; font-size:16px; background:url("/images/co/lo/bu_atte.png") no-repeat left 3px;}
+.join2 div dl dd {font-family:'NanumSquareB'; font-size:26px; color:#0b4d93; margin-top:10px;}
+.join2 div .btn_join2 a {display:block; height:40px; margin-top:15px; line-height:40px; font-size:16px; text-align:center; color:#fff; background:#394b61;}
+
+/* 3:정보입력 */
+.tbl_frm {position:relative;}
+.join_frm_info {position:absolute; right:0; top:35px;}
+.tbl_frm .join_table {position:relative; margin-top:5px; font-family:"NanumSquareR"; border-top:2px solid #0b4d93; font-size:14px; overflow:hidden;}
+.tbl_frm .join_table table {position:relative; width:100%; border-collapse:collapse; margin-left:-1px;}
+.tbl_frm .join_table {position:relative; width:100%; border-collapse:collapse; margin-left:-1px;}
+.tbl_frm .join_table caption span {position:absolute; top:-9999px; overflow:hidden; height:0px; width:0px; }
+.tbl_frm .join_table th {padding:13px 10px; color:#0b4d93; font-family:"NanumSquareB"; font-size:15px; border-bottom:1px solid #9298af; border-left:1px solid #9298af; background:#f7f8fc;}
+.tbl_frm .join_table td {padding:10px; color:#444; border-left:1px solid #9298af; border-bottom:1px solid #9298af;}
+.tbl_frm .join_table th label {display:block;}
+/* .tbl_frm .join_table td .frm_input {height:25px; margin:1px 5px 1px 0; font-family:"Gulim"; border:1px solid #b2b7c7; vertical-align:middle; color:#444; margin-left:0; font-size:13px; } */
+.tbl_frm .join_table td .frm_input {height:25px; margin:1px 0 1px 0; font-family:"Gulim"; border:1px solid #b2b7c7; vertical-align:middle; color:#444; margin-left:0; font-size:13px; }
+.tbl_frm .join_table td select {height:30px; padding:2px; margin:1px 5px 1px 0; font-family:"Gulim"; border:1px solid #b2b7c7; vertical-align:middle; color:#444; margin-left:0; font-size:13px; }
+.tbl_frm .join_table td a.btn_frm {line-height:20px; padding:6px 10px; color:#1e5ebc; border:1px solid #1e5ebc; background:#f7f8fc;}
+.tbl_frm .join_table td a.btn_cal {padding:14px; line-height:0; vertical-align:middle; font-size:0; text-indent:-10000em; border:1px solid #1e5ebc; background:url("/images/co/lo/btn_cal.png") no-repeat center #f7f8fc;}
+
+/* 4:가입완료 */
+.joinCont .lastBox {padding:25px; border:1px solid #b2b7c7; border-top:2px solid #0b4d93;}
+.joinCont .lastBox dl {padding-top:130px; text-align:center; background:url("/images/co/lo/icon_join3.png") no-repeat center top;}
+.joinCont .lastBox dl dt {font-family:'NanumSquareB'; font-size:24px; color:#0b4d93;}
+
+/* 아이디/패스워드찾기 */
+.idpw_find {padding:25px; text-align:center; border:1px solid #b2b7c7; border-top:2px solid #0b4d93;}
+.idpw_find h3.id_find {padding-top:120px; font-family:'NanumSquareB'; font-size:24px; color:#0b4d93; background:url("/images/co/lo/id_find.png") no-repeat center top;}
+.idpw_find h3.pw_find {padding-top:120px; font-family:'NanumSquareB'; font-size:24px; color:#0b4d93; background:url("/images/co/lo/pw_find.png") no-repeat center top;}
+.idpw_find p.find_choice {margin-top:20px; padding:15px; font-size:17px; line-height:24px; border-top:1px solid #b2b7c7; border-bottom:1px solid #b2b7c7; background:#f7f7f7;}
+.idpw_find p.find_choice span {margin-left:10px;}
+.idpw_find p.find_choice span label {margin-right:10px;}
+.idpw_find p.find_choice input {width:17px; height:17px; line-height:24px; vertical-align:middle;}
+.idpw_find p.find_result {margin-top:20px; padding:15px; font-size:17px; line-height:24px; border-top:1px solid #b2b7c7; border-bottom:1px solid #b2b7c7; background:#f7f7f7;}
+
+/*사이트맵*/
+.sitemap{ width:100%; overflow:hidden; }
+.sitemap .sm_menu{ float:left; width:30.1%; margin:0 1.5% 20px 1.5%; }
+.sitemap .sm_menu h3{padding:15px; color:#1b2d8f; font-size:16px; border-top:3px solid #0b4d93; border-bottom:1px solid #0b4d93;}
+.sitemap .sm_menu ul{ padding:10px 0; }
+.sitemap .sm_menu ul > li a {display:block; padding:12px 15px 12px 20px; color:#222; font-size:14px; border-bottom:1px dashed #e5e5e5; background:url("/images/co/lo/bu_list2.png") no-repeat 10px 18px;}
+.sitemap .sm_menu ul > li a:hover{ text-decoration:underline; }
+.sitemap .sm_menu ul > li > ul {padding:0; background:#f7f7f7;}
+.sitemap .sm_menu ul > li > ul > li a {display:block; padding:10px 15px 10px 30px; color:#222; font-size:14px; border-bottom:1px dashed #e5e5e5; background:url("/images/co/lo/bu_list4.png") no-repeat 20px 18px;}
+.sitemap .sm_menu ul > li > ul > li a:hover{ text-decoration:underline; }
+.sitemap .sm_menu.clear_b {clear:both;}
+
+/* 탭 180529 - 학급홈페이지 탭 */
+.tab_st1 {margin-bottom:20px; overflow:hidden;}
+.tab_st1 li {width:33.33%; float:left;}
+.tab_st1 li a {display:block; color:#555; font-size:14px; text-align:center; line-height:40px; border:1px solid #b2b7c7; background:#f7f7f7;}
+.tab_st1 li.on a {color:#fff; border:1px solid #213048; background:#213048;}
+
+@media screen and (max-width : 1019px) {	
+
+	/* 로그인 */
+	.login_box .tab_st {display:none; }
+	.login_box .login_ty1 {width:90%; padding:20px 5% 30px; float:none;}
+	.login_box .login_ty2 {display:none; }
+	.login_box .login_ty1 input.btn_login {right:5%;}
+
+	/* 회원가입 */
+	/* 회원가입단계 */
+	.joinCont .memjoin_steps {height:auto; margin-bottom:20px;}
+	.joinCont .memjoin_steps ul li {width:49%; margin:0 0 2px 1%;}
+	.joinCont .memjoin_steps ul li:nth-child(odd) {width:50%; margin-left:0;}
+
+	/*사이트맵*/
+	.sitemap .sm_menu{ float:left; width:47%; margin:20px 0 0 6%; }
+	.sitemap .sm_menu.clear_b {clear:none;}
+	.sitemap .sm_menu:nth-child(odd) {margin:20px 0 0 0; clear:both;}
+
+}
+
+@media screen and (max-width : 750px) {	
+
+ 
+.LoginBox{ background:none; }
+.LoginBox h2{position:relative; top:0; left:0;}
+.LoginBox .box_ml{ margin:25px 0 0 0;}
+ 
+}
+
+@media screen and (max-width : 650px) {
+
+	/* 회원가입 */
+	/* 2:본인확인 */
+	.join2 {font-size:14px; text-align:center; overflow:hidden;}
+	.join2 .user_iden1 {width:80%; padding:150px 10% 30px; float:none; }
+	.join2 .user_iden2 {width:80%; margin-top:20px; padding:150px 10% 30px; float:none;}
+
+	/* 3:정보입력 */
+	.join_frm_info {position:relative; right:auto; top:auto; margin-top:5px;}
+	.tbl_frm .join_table td .w20 {width:20%;}	
+	
+}
+
+@media screen and (max-width : 580px) {
+
+	/* 로그인 */
+	.login_top {height:90px; padding:10px 0 30px 120px;}
+	.login_box .login_ty1 dl {width:100%;}
+	.login_box .login_ty1 dl dd input {width:90%;}
+	.login_box .login_ty1 input.btn_login {position:relative; right:auto; top:auto; width:100%; height:40px; margin-top:5px; font-size:18px;}
+
+}
+
+@media screen and (max-width : 480px) {	
+
+
+	.LoginBox .area_btn01 a{ margin:0 0 4px; display:inline-block;}
+	.LoginBox .area_btn02 a{ margin:0 0 4px; display:inline-block;}
+	.LoginBox .login_form p{ width:170px; }
+	.LoginBox .login_form p input{ width:160px; }
+	.btn_Login{ left:180px; }
+	
+	/* 회원가입 */
+	/* 회원가입단계 */
+	.joinCont .memjoin_steps ul li.step1, .joinCont .memjoin_steps ul li.step2, .joinCont .memjoin_steps ul li.step3, .joinCont .memjoin_steps ul li.step4 {background:none;}
+	.joinCont .memjoin_steps ul li.step1.on, .joinCont .memjoin_steps ul li.step2.on, .joinCont .memjoin_steps ul li.step3.on, .joinCont .memjoin_steps ul li.step4.on {background-image:none;}
+	.joinCont .memjoin_steps ul li span {padding:15px 0 0 0; text-align:center;}
+
+	/* 3:정보입력 */
+	.join_frm_info {position:relative; right:auto; top:auto; margin-top:5px;}
+	.tbl_frm .join_table td .frm_input {width:95%;}
+	.tbl_frm .join_table td .w20 {width:20%;}
+	.tbl_frm .join_table td .w50 {width:50%;}
+	.tbl_frm .join_table td a.btn_frm {display:inline-block; }
+	.tbl_frm .join_table td a.btn_cal {display:inline-block; }
+
+ 
+}

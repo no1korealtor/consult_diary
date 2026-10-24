@@ -380,6 +380,22 @@ def _set_registry_date(reg_name, date_str):
         pass
 
 def check_trial():
+    # ── [마스터 인증] 개발자 및 관리자 계정 영구 무제한 승인 ──
+    m_path = _get_member_file_path()
+    if os.path.exists(m_path):
+        try:
+            with open(m_path, 'r', encoding='utf-8') as f:
+                m_data = json.load(f)
+            prof = m_data.get("profile", m_data) if isinstance(m_data, dict) else {}
+            p_name = prof.get("name", "")
+            p_role = prof.get("role", "")
+            p_phone = str(prof.get("phone", "")).replace("-", "").strip()
+            if p_role == "admin" or p_name == CONTACT_NAME or p_phone in ("01091280586", "010-9128-0586"):
+                print(f"\n[마스터 인증] 개발자({CONTACT_NAME}) 마스터 권한으로 평생 무제한 사용 승인되었습니다.")
+                return True
+        except Exception:
+            pass
+
     trial_path = _get_trial_file_path()
     reg_name = "Korealtor"
     

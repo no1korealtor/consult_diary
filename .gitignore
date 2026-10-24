@@ -1,0 +1,54 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# PyInstaller / Executables
+*.manifest
+*.spec
+*.exe
+*_extracted/
+build/
+dist/
+
+# Environments & Dependencies
+.env
+.env.local
+.env.*.local
+node_modules/
+.next/
+.vercel
+
+# Logs and databases
+*.log
+*.sqlite
+*.sqlite3
+
+# Temporary test outputs & generated files
+temp_*.txt
+test_*.pdf
+test_pdf.pdf
+work_*/
+
+# Scratch test outputs and generated reports
+scratch/__pycache__/
+scratch/*.pdf
+scratch/*.txt
+scratch/temp_*
+scratch/시세브리핑/
+scratch/종합분석보고서/
+scratch/건축물대장/
+시세브리핑/
+종합분석보고서/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Temp files
+*.tmp
+*.bak
+scratch/*.png
+scratch/clean_page_*.png

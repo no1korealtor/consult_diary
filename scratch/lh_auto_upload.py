@@ -9,7 +9,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
-from get_building_info import get_building_data, get_expos_data
+from get_building_info import get_building_data, get_expos_data, get_floor_data
 
 def run_lh_auto_upload():
     print("==================================================")
@@ -80,43 +80,84 @@ def run_lh_auto_upload():
             
             dong_name = ""
             ho_name = ""
-            dong_match = re.search(r'([0-9가-힣]+)동', detail_val)
+            dong_match = re.search(r'([0-9A-Za-z]+|[가-하])동', detail_val)
+            if dong_match:
+                dong_name = dong_match.group(1).strip()
             ho_match = re.search(r'([0-9]+)호', detail_val)
             if not ho_match:
-                nums = re.findall(r'([0-9]+)', detail_val)
+                nums = re.findall(r'(\d+)(?!층)', detail_val)
                 if nums: ho_name = nums[-1]
             else:
                 ho_name = ho_match.group(1)
-            if dong_match: dong_name = dong_match.group(1)
-            
-            query = urllib.parse.quote(address_query.split('동 ')[0] if '동 ' in address_query else address_query.split('호')[0])
-            vworld_url = f"http://api.vworld.kr/req/search?service=search&request=search&version=2.0&crs=EPSG:900913&size=1&page=1&query={query}&type=address&category=parcel&format=json&errorformat=json&key=80194C85-0EE3-3220-A3C1-3268AD8756B9"
+
+            is_underground = any(k in str(detail_val) for k in ["제지하", "지하", "반지하", "B", "b", "지층"]) or any(k in str(ho_name) for k in ["지하", "B", "b", "지층"])
             
             print("\n[3/3] VWorld 및 정부 건축물대장 API 연동을 시작합니다...")
-            req = urllib.request.Request(vworld_url)
-            req.add_header('Referer', 'http://localhost')
-            res = urllib.request.urlopen(req)
-            vworld_data = json.loads(res.read().decode('utf-8'))
+            clean_addr = re.sub(r'\(.*?\)', '', addr_val).strip()
             
-            items = vworld_data.get('response', {}).get('result', {}).get('items', [])
-            if not items:
+            pnu = ""
+            # 1차 시도: addr_val 원본 및 정제주소로 지번/도로명 검색
+            for q_cand in [clean_addr, addr_val.strip()]:
+                if not q_cand or pnu: break
+                for cat in ['parcel', 'road']:
+                    try:
+                        q_enc = urllib.parse.quote(q_cand)
+                        vworld_url = f"http://api.vworld.kr/req/search?service=search&request=search&version=2.0&crs=EPSG:900913&size=1&page=1&query={q_enc}&type=address&category={cat}&format=json&errorformat=json&key=80194C85-0EE3-3220-A3C1-3268AD8756B9"
+                        req = urllib.request.Request(vworld_url, headers={'Referer': 'http://localhost'})
+                        with urllib.request.urlopen(req, timeout=5) as res:
+                            vworld_data = json.loads(res.read().decode('utf-8'))
+                            items = vworld_data.get('response', {}).get('result', {}).get('items', [])
+                            if items:
+                                pnu = items[0].get('id', '')
+                                print(f"✅ VWorld 주소 검색 성공 ({cat}): {items[0].get('address', {}).get('parcel', '')}")
+                                break
+                    except Exception:
+                        pass
+
+            # 2차 시도: 만약 PNU를 못 찾았고 동+번지 패턴이 있다면 추출하여 검색
+            if not pnu:
+                m = re.search(r'([가-힣]+동)\s*(\d+(?:-\d+)?)', addr_val)
+                if m:
+                    short_q = f"{m.group(1)} {m.group(2)}"
+                    try:
+                        q_enc = urllib.parse.quote(short_q)
+                        vworld_url = f"http://api.vworld.kr/req/search?service=search&request=search&version=2.0&crs=EPSG:900913&size=1&page=1&query={q_enc}&type=address&category=parcel&format=json&errorformat=json&key=80194C85-0EE3-3220-A3C1-3268AD8756B9"
+                        req = urllib.request.Request(vworld_url, headers={'Referer': 'http://localhost'})
+                        with urllib.request.urlopen(req, timeout=5) as res:
+                            vworld_data = json.loads(res.read().decode('utf-8'))
+                            items = vworld_data.get('response', {}).get('result', {}).get('items', [])
+                            if items:
+                                pnu = items[0].get('id', '')
+                                print(f"✅ VWorld 번지 추출 검색 성공: {items[0].get('address', {}).get('parcel', '')}")
+                    except Exception:
+                        pass
+            
+            if not pnu:
                 print("❌ VWorld에서 주소를 찾을 수 없습니다.")
                 continue
                 
-            pnu = items[0].get('id', '')
             sigunguCd = pnu[0:5]
             bjdongCd = pnu[5:10]
             bun = pnu[11:15]
             ji = pnu[15:19]
+            plat_code = '1' if len(pnu) >= 11 and pnu[10] == '2' else '0'
             
-            print(f"✅ VWorld PNU 추출 완료: {pnu}")
+            print(f"✅ VWorld PNU 추출 완료: {pnu} (시군구:{sigunguCd}, 법정동:{bjdongCd}, 번지:{bun}-{ji})")
             
-            bldg_data = get_building_data(sigunguCd, bjdongCd, bun, ji)
-            expos_data = get_expos_data(sigunguCd, bjdongCd, bun, ji, dong_name, ho_name) if ho_name else None
+            bldg_data = get_building_data(sigunguCd, bjdongCd, bun, ji, plat_code=plat_code)
+            expos_data = get_expos_data(sigunguCd, bjdongCd, bun, ji, dong_name, ho_name, is_underground=is_underground, plat_code=plat_code) if ho_name else None
             
             if not bldg_data:
                 print("❌ 건축물대장에서 데이터를 찾을 수 없습니다.")
                 continue
+                
+            if not expos_data and bldg_data.get('regstrGbCd') == '1' and (ho_name or detail_val):
+                from serve_auto_upload import estimate_floor_from_address
+                flr_est = estimate_floor_from_address(detail_val, ho_name)
+                if flr_est:
+                    floor_str = f"지하{flr_est.replace('-', '')}" if flr_est.startswith('-') else f"{flr_est}층"
+                    print(f"[*] 다가구/단독 주택 감지됨. 층별개요 조회 시도 (추정 층: {floor_str})")
+                    expos_data = get_floor_data(sigunguCd, bjdongCd, bun, ji, floor_str)
                 
             useAprDay = bldg_data.get('useAprDay', '')
             if not useAprDay and bldg_data.get('aprYear'):
@@ -182,9 +223,13 @@ def run_lh_auto_upload():
                     print(f"  - 전용면적 입력 실패: {e}")
                     
                 # 4. 층수 입력
-                if flrNo:
-                    flrNo_clean = str(flrNo).strip()
-                    if flrNo_clean.startswith('-'):
+                target_flr = flrNo
+                if not target_flr and is_underground:
+                    target_flr = "-1"
+                    
+                if target_flr:
+                    flrNo_clean = str(target_flr).strip()
+                    if flrNo_clean.startswith('-') or is_underground:
                         try:
                             Select(driver.find_element(By.ID, "floorKind")).select_by_value("-")
                         except:

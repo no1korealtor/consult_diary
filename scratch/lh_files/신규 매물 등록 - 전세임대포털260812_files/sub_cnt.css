@@ -1,0 +1,1386 @@
+@charset "utf-8";
+
+/**
+ver 1.1.0 ; 센터소개 관련 내역 추가
+*/
+
+/********************************************************************************** 공통 ***************************************************************************************/
+img{vertical-align: middle;}
+select{ height:30px; line-height:30px; border:1px solid #ccc;}
+input[type=text],
+input[type=password]{height:25px; line-height:25px; font-size:15px; border:1px solid #ccc; padding:0 5px;}
+input.w20px, select.w20px{width:20px !important;}
+input.w30px, select.w30px{width:30px !important;}
+input.w50px, select.w50px{width:46px !important; padding:0 3px;}
+input.w100px, select.w100px{width:100px !important; }
+input.w20pct, select.w20pct{width:20% !important; }
+input.w30pct, select.w30pct{width:30% !important; }
+input.w50pct, select.w50pct{width:50% !important; }
+input.w70pct, select.w70pct{width:70% !important; }
+input.w100pct, select.w100pct{width:90% !important; }
+td.vertiTop{vertical-align: top;}
+.w100{width:100% !important;}
+input.err{border:2px solid red !important;}
+select.err{border:2px solid red !important;}
+label.err{border:2px solid red !important;}
+.diID{display:inline-block;}
+/******************************************************************************* 전월세정보 ************************************************************************************/
+
+/* 타이틀(블릿 타입) */
+.tit1Alt {margin-bottom:10px; padding-top:10px; font-size:24px; line-height:1.3; font-family:'NotoM'; color:#222; letter-spacing:-1px; background:url("/images/co/li/con_com/bu_tit1.png") no-repeat left top;}
+.tit2Alt {margin-bottom:10px; padding-left:24px; font-size:20px; line-height:1.3; font-family:'NotoM'; color:#222; letter-spacing:-1px; background:url("/images/co/li/con_com/bu_tit2.png") no-repeat left 4px;}
+.tit3Alt {margin-bottom:10px; padding-left:20px; font-size:18px; line-height:1.3; font-family:'NotoM'; color:#333; letter-spacing:-1px; background:url("/images/co/li/con_com/bu_tit3.png") no-repeat left 4px;}
+
+/*센터소개*/ /* 200220 추가 */
+.introduce { width:100%; overflow:hidden; box-sizing:border-box;}
+.introduce .photo{ float:left; margin-right:20px;}
+.introduce .txt_detail { float:left;}
+.establish_bg {position:relative; background:#fff; text-align:center; border:1px solid #ddd; padding:40px 30px 185px; box-sizing:border-box; margin-top:20px;}
+.establish_bg:before { content:''; display:block; position:absolute; left:30px; top:100px; width:90px; height:90px; background:url(/images/web/jw/sub_cnt/establish_bg1.png) no-repeat 0 0;}
+.establish_bg:after { content:''; display:block; position:absolute; right:30px; bottom:50px; width:90px; height:90px; background:url(/images/web/jw/sub_cnt/establish_bg2.png) no-repeat 0 0;}
+.establish_bg p {font-size:18px; font-family:'notoR';  line-height:1.7; color:#222; word-break:keep-all;}
+.establish_bg .txt {font-size:20px; font-family:'notoM'; letter-spacing:-1.5px; line-height:1.3; color:#111; margin:0 0 20px;}
+.establish_bg .img {position:absolute; bottom:0; left:50%; margin-left:-252px; width:504px; height:155px;}
+.establish_bg .img img {width:100%; height:100%;}
+.pt_info { background:#f6f6f6; padding:40px;}
+.work { width:100%; overflow:hidden; margin-top:20px;}
+.work li {position:relative; width:31.3%; height:280px; margin:0 1%; float:left; padding:15px; border:solid 1px #d1d1d1; box-sizing:border-box; background:#fff;}
+.work li .ico {position:absolute; right:20px; bottom:30px;}
+.work li .ico img {width:70px; height:70px;}
+.work li .tit {font-size:20px; font-family:'notoM';  color:#111; padding:20px 0; text-align:center;}
+.work li .txt {font-size:17px; font-family:'notoR';  color:#333;}
+.work li ul li {width:100%; height:auto; border:none; text-align:left; font-size:17px; color:#333; padding-top:5px; padding-bottom:0;}
+.work li ul li {background:none;}
+.work.w50 > li {width:48%;}
+.box_st6 .box_st_photo {position:relative; min-height:134px; padding-left:220px;}
+.box_st6 .box_st_photo .photo_boxImg {position:absolute; left:0; top:10px;}
+
+/*전월세길라잡이*/
+.jense_guide{ width:100%; overflow:hidden;}
+.jense_guide .step1 { position:relative; height:290px; display:block;}
+.jense_guide .step2 { position:relative; height:385px; display:block;}
+.jense_guide .step3 { position:relative; height:100px; display:block;}
+.jense_guide .step4 { position:relative; height:135px; display:block;}
+.jense_guide .step5 { position:relative; height:auto; display:block;}
+.jense_guide h3 { width:20%; float:left; overflow:hidden; padding:15px 10px 10px; height:30px; line-height:21px; border-radius:10px; font-family:"NotoM"; text-align:center;  font-size:16px; color:#fff; border:1px solid #006b48; background:#209a72;}
+.jense_guide .arrow1{ position:absolute; left:23%; top:0; z-index:2;}
+.jense_guide  ol.visible, .jense_guide  ol.visible2 {  width:70%; height:auto; float:right; }
+.jense_guide  ol.visible li { position:relative; width:100%; height:50px; padding-top:15px;  margin-bottom:45px; line-height:21px; display:block; border-radius:10px; font-family:"NotoM"; text-align:center;  font-size:15px; color:#222; border:1px solid #aed4e5; background:#f4fbff; box-sizing:border-box;}
+.jense_guide  ol.visible li .arrow2, .jense_guide  ol.visible2 li .arrow2 { position:absolute; width:35px; height:35px; left:50%; bottom:0; margin-left:-17px; margin-bottom:-40px; z-index:2; background:url(/images/co/li/sub_cnt/arrow_2.png) no-repeat 0 0;}
+.jense_guide  ol.visible li a { width:100%;  border-radius:10px; color:#222; display:block; box-sizing:border-box;}
+.jense_guide  ol.visible li a:hover { height:50px; margin-top:-15px; padding-top:15px;  background-color:#2464ce; color:#fff; display:block;  box-sizing:border-box; }
+.jense_guide  ol.visible2 li { position:relative; height:auto; padding:15px 10px 10px; margin-bottom:30px; line-height:21px; display:block; border-radius:10px; font-family:"NotoM"; text-align:left;  font-size:14px; color:#222; border:1px solid #aed4e5; background:#f4fbff;}
+.jense_guide  ol.visible2 li ul li { background:none; height:1.4; margin-bottom:0; padding:5px 10px; border-radius:0; border:none;}
+.jense_guide li a span.link { padding-right:30px; background:url(/images/co/li/sub_cnt/btn_glanG.png) no-repeat right 2px;}
+.jense_guide li a:hover span.link { padding-right:30px; background:url(/images/co/li/sub_cnt/btn_glanW.png) no-repeat right 2px;}
+
+/* 00_submain : 191028 */
+.cmmnty_list { position:relative; overflow:hidden; margin-top:30px}
+.cmmnty_list ul {margin-left:-1%}
+.cmmnty_list li { width:24%; height:348px; float:left; margin:0 0 1% 1%; border:1px solid #e0e0e0; box-sizing:border-box;}/* 191025 */
+.cmmnty_list li a { display:block; width:100%; height:100%; box-sizing:border-box; overflow:hidden;}
+.cmmnty_list li a span.img { display:block; width:100%; height:269px; overflow:hidden; background:#f1f1f1;}/* 191025 */
+.cmmnty_list li a span.img img { position:relative; top:50%; width:100%; height:auto; transform:translateY(-50%); -webkit-transform:translateY(-50%); -webkit-transition:all 0.3s ease; transition:all 0.3s ease;}/* 191025 */
+.cmmnty_list li a:hover span.img img{transform: translateY(-50%) scale(1.1); -webkit-transform:translateY(-50%)  scale(1.1);}
+.cmmnty_list li a .txt { height:28px; font-size:15px; color:#111; line-height:22px; padding:18px; overflow:hidden;}
+.cmmnty_list li:hover { border:1px solid #1f65c4; -webkit-transition:all 0.3s ease; -moz-transition:all 0.3s ease; -ms-transition:all 0.3s ease; transition:all 0.3s ease;}
+.cmmnty_list a.btn_more {position:absolute; right:0; top:5px; width:30px; height:30px; text-indent:-10000%; overflow:hidden; background:url('/images/web/jw/sub_cnt/btn_more_cm.png') no-repeat;}
+/*중개업소검색200204*/
+.prptyForSale {position: absolute; right: 0px; top: 0px; padding:5px; background:#1f65c4; display: none;}
+.prptyForSale span.prptyCount {color:#fff; }
+
+/*주택검색*//*191106*/
+.serch_home {position:relative; padding:15px 25px; border-top:1px solid #bfbfbf; border-bottom:1px solid #bfbfbf; background:#f1f1f1; }
+.serch_home .serch_slct{display: inline;}
+.serch_home select{ height:36px; line-height:36px; vertical-align:top; font-size:17px; }
+.serch_home input[type=text]{height:34px; line-height:34px; border:1px solid #bbb; font-size:17px; font-family:"NotoR"; vertical-align: top;}
+.serch_home input.addr { width:25%; padding:0 1%;}
+.serch_home .dropdown {position: relative; display: inline-block; height:32px; vertical-align:middle;}
+.serch_home .dropdown .btn_grL{background:#fff; padding:7px 34px 7px 9px;}
+.serch_home .addr_div {padding:15px 25px; left: 25px; top:44px; width:26%; height:140px; position:absolute; z-index:5;  border:1px solid #bfbfbf; box-sizing:border-box;  overflow-y:scroll;  background:#fff;}
+.serch_home .addr_div ul li {cursor: pointer;}
+.serch_home .addr_div ul li:hover{color:#0072c2; text-decoration: underline;}
+.serch_home p.tit { position:relative; width:100%;  padding:5px 0 0 7px; overflow:hidden; color:#333; font-family:"NotoM"}
+.serch_home p.tit::before { content:''; width:3px; height:3px; position:absolute; left:0; top:11px; background:#555;}
+.serch_home a.btnSearch{ width:70px; height:36px; line-height:36px; font-size:15px; padding:0 5px; border:none; color:#fff; background:#394b61; cursor:pointer; text-align:center;}
+.serch_home a.btnSearch:hover { cursor:pointer; text-decoration:underline; }
+
+.dropdown-content {display:none; position: absolute; min-width:450px;  padding:15px;  border:1px solid #bfbfbf; box-shadow: 0px 2px 8px 0px rgba(0, 0, 0, 0.2);z-index: 2; background:#f9f9f9; box-sizing:border-box;}
+.dropdown-content div.drop_box {padding-top:10px; display:flex; flex-direction:row; justify-content:center; align-items:center;}
+.dropdown-content div.drop_box  button.minus { position:relative; width:22px; height:22px; border:1px solid #bfbfbf; border-radius:4px; background:#fff;  text-indent:-9999px; margin-right:7px;}
+.dropdown-content div.drop_box  button.minus::before {content:''; width:9px; height:1px; position:absolute; left:6px; top:11px; background:#888;}
+.dropdown-content div.drop_box  button:hover.minus { background-color:#f9f9f9;}
+.dropdown-content div.drop_box  button:hover.minus::before { background:#000; }
+.dropdown-content div.drop_box  button.plus { position:relative;  width:22px; height:22px; border:1px solid #bfbfbf; border-radius:4px; background:#fff;  text-indent:-9999px; margin-left:7px;}
+.dropdown-content div.drop_box  button.plus::before {content:''; width:9px; height:1px; position:absolute; left:6px; top:11px; background:#888;}
+.dropdown-content div.drop_box  button.plus::after {content:''; width:1px; height:10px; position:absolute; left:10px; top:6px; background:#888;}
+.dropdown-content div.drop_box  button:hover.plus { background-color:#f9f9f9;}
+.dropdown-content div.drop_box  button:hover.plus::after { background:#000;}
+.dropdown-content div.drop_box  button:hover.plus::before { background:#000; }
+.dropdown-content div.drop_box .txt_dash { padding: 0 10px;}
+.dropdown-content div.confmde_box{padding-top:10px; justify-content:center; align-items:center;}
+.drop_box input {width:80px; text-align: center;}
+.dropdown-content div.btn_st_number { margin-top:10px;}
+.dropdown-content div.btn_st_number button{ display:inline-block; padding:2px; margin:2px; border:1px solid #bfbfbf; border-radius:4px; background:#fff; font-size:16px;}
+.dropdown-content div.btn_st_number button:hover { border:1px solid #444; color:#000;}
+.dropdown-content div.btn_st_number button.confmdeBtn{width:20%;font-size:15px;}
+.dropdown-content div.room_box { width:45%; margin: 0 2.5%; float:left;  margin-bottom:10px; box-sizing:border-box;}
+.dropdown-content div.room_box ul { margin-top:5px;}
+.dropdown-content div.room_box ul li { line-height:24px;}
+.dropdown-content .resetBtn{width:20px;height:20px;position:absolute;top:20px;right:18px;background: url(/images/web/jw/con_com/ico_reset.png) no-repeat;background-size:20px;cursor: pointer;}
+.dropdown-content .confmde_box .confmdeRangeSlider{width:300px;height:10px;margin:0 20px 50px 20px;}
+.serch_home .btnSearch {float: right; display: inline;}
+#confmDe_drop{min-width:250px;right:0;}
+
+/*주택검색 결과*//*191106*/
+.result_area { width:100%; position:relative; padding:15px 25px; margin-top:20px; border:1px solid #bfbfbf; background:#fff; box-sizing:border-box;}
+.result_list { width:270px; float:left; margin-right:10px;}
+.result_list .tab_sty { overflow:hidden; margin:0 0 10px;}
+/* .result_list .tab_sty li {width:50%; float:left; margin:1px 0;}
+.result_list .tab_sty li a {display:block; margin-right:2px; padding:11px 10px; line-height:19px; font-size:15px; color:#444; text-align:center; border:2px solid #d3d3d3; -webkit-transition:all 0.3s ease; -moz-transition:all 0.3s ease; -ms-transition:all 0.3s ease; transition:all 0.3s ease;}
+.result_list .tab_sty li.on a, .result_list .tab_sty li.on a:hover, .result_list .tab_sty li a:hover {font-family:"NotoM"; color:#fff; background-color:#209a72; border:2px solid #209a72;} */
+.result_list .tab_sty li {width:33.3%; float:left; margin:1px 0;}
+.result_list .tab_sty li a {display:block; margin-right:2px; padding:11px 10px; line-height:19px; font-size:15px; color:#444; text-align:center; border:2px solid #209a72; -webkit-transition:all 0.3s ease; -moz-transition:all 0.3s ease; -ms-transition:all 0.3s ease; transition:all 0.3s ease;}
+.result_list .tab_sty li.on a, .result_list .tab_sty li.on a:hover, .result_list .tab_sty li a:hover {font-family:"NotoM"; color:#fff; background-color:#209a72; border:2px solid #209a72;}
+.result_list .tab_sty li.bg_cmpare a{background-color:#f58220; border:2px solid #f58220; color:#fff; font-family:"NotoM";}
+.result_list .tab_sty li.bg_cmpare a:hover, .result_list .tab_sty li.bg_cmpare a:hover {background-color:#eb6d02; border:2px solid #eb6d02;}
+.result_box { height:500px; overflow-y: scroll; position:relative; }
+.result_wrap{width:100%; overflow:hidden;}
+.result_detail { margin-right:10px; padding:10px 0; }
+.result_detail .box_st1,
+.result_detail .box_st2{padding:5px;}
+.result_detail > a,
+.result_detail > div {dipslay:block; cursor: pointer; position:relative; }
+.result_detail ul { padding:3px 5px; }
+.result_detail ul li ul { border:none;}
+.result_detail ul li { font-size:15px; line-height:18px;}
+.result_detail ul li:before{top:10px;}
+.result_detail p.titT3 { margin-bottom:0;}
+.result_detail label.badge {color: #fff; background-color:#0072c2; display:block; height:30px; line-height:30px; font-size:15px; padding:0 5px; margin-right:50px; text-align: center; border-radius:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.result_detail button.btn-intrst {cursor: pointer; position:absolute; right:0; top:0;}
+.result_detail input.intrst_check {position:absolute; right:22px; top:5px; width: 20px; height: 20px;}
+
+.dropbtn {background-color: #3498DB;color: white; width: 140px; font-size: 14px; border: none; cursor: pointer;}
+.dropbtn:hover, .dropbtn:focus {background-color: #2980B9;}
+.dropdown-content a {color: black;padding:12px 16px; display: block;}
+.dropdown a:hover {background-color: #ddd;}
+.show {display: block;}
+.badge>span {visibility: hidden;}
+.badge:hover span {visibility: visible;}
+.text-info {font-size: small;margin: 5px;}
+.balloon {display: inline-block;position: relative;background: #ccc;height: 50px;width: 120px;margin: 0 auto 10px;}
+.btn-yellow {background-color: #f58220;color: white;}
+.intrst-notify {width: 20px;height: 18px;padding-left: 3px; position: relative; margin-top: -5px;/*  animation: shake .20s infinite; */}
+@keyframes shake{ from{left:-2px;}to{left:2px;};}
+
+/* 팝업창 매물 비교 보기*//*200611*/
+.popupBg{width:100%; height:auto; float:left;  background:#ececec;}
+.popupBg::before { content:''; position:absolute; width:100%; height:40px; background:#209a72;}
+.popupWrap{position:relative; width:100%; max-width:1200px; margin:0 auto;}
+.popupWrap h2{ line-height:40px; padding-left:30px; font-size:18px; font-family:'NotoM'; color:#fff; }
+.popupWrap .content_box{padding:10px 10px; overflow:hidden; background:#fff; box-sizing:border-box; overflow:hidden;}
+.popupWrap a.popupClose{position: absolute; width:40px; height:40px; right:10px; top:0; background:url('/images/web/jw/sub_cnt/btn_close_wh.png') no-repeat center; text-indent:-99999%; overflow:hidden;}
+.campare_list { width:100%;  overflow:hidden;}
+.campare_list div.box_st2{float:left;  width:48%; height:400px; margin:0 1% 10px 1%;  box-sizing:border-box;  overflow:auto;}
+.infor_box {position:relative; height:300px; margin-top:10px; padding:5px 10px; border:1px solid #bfbfbf; background:#fff; box-sizing:border-box; overflow-y:scroll;}
+.infor_box  table td, .campare_list .infor_box  table th{ font-size:13px !important;}
+.infor_box .map_area { margin-top:5px; padding:10px; border:1px solid #dfe6ee; }
+.infor_box .opt_box{height:70px; overflow-y:scroll; }
+.opt_box { position:relative; padding:0 10px; border:1px solid #bfbfbf; background:#fbfbfb; font-size:13px; overflow:hidden;}
+.cost_area { float:right;}
+.opt_area{ float:left; height:60px;  width: 20%; margin: 10px 0; text-align: center;}
+.opt_area p{ font-size: 12px; line-height:1.2; margin:0 0 2px;}
+.opt_area img{display: block; margin: 0px auto;}
+
+/* 팝업창 매물 상세보기 */
+.huBox{position:relative; padding:15px 25px; border:1px solid #bfbfbf; overflow:hidden;}
+.huBox .huInfo{width:70%; float:left;}
+.huBox .huInfoBtn{width:30%; float:right; text-align:right;}
+.huBox .huInfoBtn p{display:inline-block;}
+.huBox .huDate{font-size:16px; }
+
+/******************************************************************************** 권리분석 *************************************************************************************/
+
+/* 버튼추가 */
+.btn_wrap{width:100%; float:left; margin:20px 0 0; text-align:center; overflow:hidden;}
+.btn_wide{width:100px;}
+.btn_darkbl, .btn_lightgr{display:inline-block; line-height:35px; font-size:13px; padding:0 10px; margin:5px;}
+.btn_darkbl{background:#1b4f9c; color:#fff;}
+.btn_lightgr{background:#ccc; color:#333;}
+
+/* 온라인 권리 분석 시스템(신청화면) */
+.formTy01{width:100%; border-top:2px solid #254fa4; border-bottom:1px solid #ccc; margin:20px 0 0; word-break: keep-all; font-size:17px;}/* 190110 */
+.formTy01 input[type=text]{width:60%; /*padding:0 3%;*/ margin:0 5px;}
+.formTy01 label, .formTy01 input{vertical-align: middle;}
+.formTy01 select{width:100%;}
+.formTy01 .borL{border-left:1px solid #ccc;}
+.formTy01 .borR{border-right:1px solid #ccc;}
+.formTy01 > tbody > tr > th{padding:5px 10px; font-size:17px; background:#f8f9fb; border-top:1px solid #ccc; font-family:'NotoM'; color:#111; vertical-align: middle;}/* 190110 */
+.formTy01 > tbody > tr > td{border-top:1px solid #ccc;/* border-left:1px solid #ccc; */}
+.formTy01 > tbody > tr > td .contBox{padding:10px; border-left:1px solid #ccc; text-align:left;}
+.formTy01 > tbody > tr > td .contBox p{display:inline-block; margin-right:5px;}
+.formTy01 .inner{position:relative;}
+.formTy01 .inner > tbody > tr:first-child > th,
+.formTy01 .inner > tbody > tr:first-child > td{border-top:0;}
+.formTy01 .inner > tbody > tr > th{ padding:5px 10px; vertical-align:middle; background:#f9f9f9; border-left:1px solid #ccc; border-top:1px solid #ccc; font-family: 'NotoM'; font-size:17px;}/* 200122 */
+.formTy01 .inner > tbody > tr > td{ font-size:17px; padding:8px 10px; border-top:1px solid #ccc; border-left:1px solid #ccc; }
+.formTy01 .inner > tbody > tr > td p{width:100%; display:inline-block;} /* 200122 */
+.formTy01 .inner > tbody > tr > td p span{display:inline-block;}
+.formTy01 .inner > tbody > tr > td p span + span{margin:5px 0 0;}/* 190110 */
+.formTy01 .inner > tbody > tr > td p input[type=text]{width:50%;}/* 190110 */
+.formTy01 .inner > tbody > tr > td.callNumBox input[type=text]{width:50px; padding:0 5px;}
+.formTy01 .inner > tbody > tr > td.midTh{text-align:center;}
+.formBtn{margin:40px 0 0; text-align:center;}
+
+/* 온라인 권리분석 작성 화면 */
+.formTy02{position:relative; width:100%; border-top:2px solid #86b1ca; margin:10px 0 0; word-break: keep-all; font-size:14px;}
+.formTy02::after{content:""; position: absolute; left:0; top:0; width:1px; height:100%; background:#fff;}
+.formTy02 input[type=text],
+.formTy02 input[type=password]{width:90%; padding:0 3%;}/* 190113 */
+.formTy02 label, .formTy01 input{vertical-align: middle;}
+.formTy02 > tbody > tr > th{padding:5px 10px; font-size:14px; background:#f8f9fb; border-bottom:1px solid #ccc; border-left:1px solid #ccc; font-family:'NotoM'; color:#111; vertical-align: middle;}/* 190110 */
+.formTy02 > tbody > tr > td{border-bottom:1px solid #ccc; padding:8px 10px; border-left:1px solid #ccc; }/* 190110 */
+
+/* 법무사 지역 배분 */
+.jcfSer .selectBox{width:30%; margin:25px 0 0; float:left; background:#fff; border:1px solid #ccc; text-align:center; }
+.jcfSer .selectBox h3{font-size:15px; font-family: 'NotoM'; color:#fff; padding:10px 5px; background:#0b8680;}
+.jcfSer .selectBox select{width:100%; height:50px; line-height:50px; border:0; border-bottom:2px solid #333;}
+.jcfSer .selectBox .cont{padding:20px;}
+.jcfSer .selectBox .cont .inputBox{border:1px solid #ccc; margin:15px 0; padding-left:40px; background:url('/images/co/te/sub/ico_user.png') no-repeat 10px center;}
+.jcfSer .selectBox .cont .inputBox input{width:100%; height:30px; line-height:30px; border:0; padding:0; }
+.jcfSer .selectBox .cont a.btn_search{display:block; color:#fff; padding:10px 5px; background:#4e5563;}
+.jcfSer .selectBox .cont a.btn_search img{vertical-align:text-bottom; padding-right:10px;}
+.jcfSer .areaBox{width:66%; float:right; }
+.jcfSer .areaBox .searchInfo{color:#111; line-height:15px; font-size:13px; }
+.jcfSer .areaBox .searchInfo span{color:#0b8680; font-family: 'NotoM';}
+.jcfSer .areaBox .jcfAreaBox{position:relative; margin:10px 0 0; padding:30px; border:1px solid #ccc; border-top:2px solid #333; overflow: hidden; background:#fff;}
+.jcfSer .areaBox .jcfAreaBox .info{margin:0 0 20px; font-size:13px; font-family:'NotoM';}
+.jcfSer .areaBox .jcfAreaBox dl{width:45%; float:left; word-break:keep-all;}
+.jcfSer .areaBox .jcfAreaBox dt{color:#fff; font-family:'NotoM'; text-align:center; margin:0 0 15px; padding:15px 5px;}
+.jcfSer .areaBox .jcfAreaBox .jurangArea dt{background:#1b4f9c;}
+.jcfSer .areaBox .jcfAreaBox .allArea {float:right;}
+.jcfSer .areaBox .jcfAreaBox .allArea dt{background:#415573;}
+.jcfSer .areaBox .jcfAreaBox dd{border:1px solid #ccc; overflow:hidden; font-size:14px;}
+.jcfSer .areaBox .jcfAreaBox dd ul{margin:20px; overflow:hidden;}
+.jcfSer .areaBox .jcfAreaBox dd ul li{width:50%; margin:5px 0; float:left;}
+.jcfSer .areaBox .jcfAreaBox dd ul li label{margin-left:5px; vertical-align: middle;}
+.jcfSer .areaBox .jcfAreaBox a.moveArea{position: absolute; left:50%; top:50%; width:30px; height:30px; margin-left:-15px; border-radius:30px; border:1px solid #ccc; overflow:hidden; text-indent: -99999%}
+.jcfSer .areaBox .jcfAreaBox a.moveRight{margin-top:20px; background:#fff url('/images/co/te/sub/btn_prev.png') no-repeat center;}
+.jcfSer .areaBox .jcfAreaBox a.moveLeft{margin-top:-20px; background:#1b4f9c url('/images/co/te/sub/btn_next.png') no-repeat center;}
+
+/* SMS발송 */
+.smsSendpop{background:url('/images/co/te/sub/bg_smsSend.gif') repeat-x top;}
+.smsSendpop h2{ height:60px; background:url('/images/co/te/sub/bg_smsSend_img.png') no-repeat right top;}
+.smsSendpop .smsSend{margin:-30px 30px 0; padding:30px 20px; border:1px solid #ccc; background:#fff;}
+.smsSendpop .smsSend li{position:relative; width:100%; float:left; margin:0 0 20px;}
+.smsSendpop .smsSend li p.tit{position: absolute; width:60px; left:0; top:0; line-height:30px; font-family: 'NotoM'; color:#111; padding-left:10px; background:url('/images/co/te/sub/bu_dot.gif') no-repeat left center;}
+.smsSendpop .smsSend li p.cont{margin-left:70px;}
+.smsSendpop .smsSend li p.cont input[type=text]{width:50%;}
+.smsSendpop .smsSend li p.cont textarea{width:100%; height:200px;}
+
+/* 파일첨부하기 버튼 */
+.file_upload{display:inline-block; line-height:30px; padding-right:10px; border:1px solid #2a3954; color:#2a3954; font-size:13px; transition: all .3s ease; -moz-transition: all .3s ease; -ms-transition: all .3s ease; -webkit-transition: all .3s ease;}
+.file_upload:hover{background:#f1f1f1;}
+.file_upload .ico{display:inline-block; width:40px; height:30px; margin-right:10px; background:#2a3954 url('/images/web/jw/board/ico_fileupload.png') no-repeat center; vertical-align: top;}
+.file_box{margin:10px 0 0; border:1px solid #ccc; padding:20px;}
+
+/*만족도조사 200131*/
+.star_rating {width:79px;height:14px;margin-left:auto;margin-right:auto;}
+.star_rating tr{width:79px;vertical-align:middle;overflow:hidden;height:14px;background:transparent url(/images/web/jw/sub_cnt/ico_star.gif) no-repeat}
+.star_rating td{width:7.9px;height:14px;}
+.onStar1 {background:transparent url(/images/web/jw/sub_cnt/ico_star.gif) no-repeat;background-position:0 -14px;}
+.onStar2 {background:transparent url(/images/web/jw/sub_cnt/ico_star.gif) no-repeat;background-position:-7.9px -14px;}
+.selStar1 {background:transparent url(/images/web/jw/sub_cnt/ico_star.gif) no-repeat;background-position:0 -14px;}
+.selStar2 {background:transparent url(/images/web/jw/sub_cnt/ico_star.gif) no-repeat;background-position:-7.9px -14px;}
+
+
+/*든든임대인 소개 진행절차 250414 */
+.cnckrInfo2 .ordrList{overflow:hidden; margin:20px 0 0;}
+.cnckrInfo2 .ordrList > ul > li{position:relative; width:16.66%; float:left; text-align:center;}
+.cnckrInfo2 .ordrList > ul > li::before{content:"";position:absolute;width:30px;height:30px;left: 7.5%;top: -3px;margin-top:-15px;margin-left:-15px;border-radius:50%;background:#ccc url('/images/web/jw/sub_cnt/ico_arrL_wh.png') no-repeat center;transform: rotate(90deg);}
+.cnckrInfo2 .ordrList > ul > li:first-child::before{display:none;}
+.cnckrInfo2 .ordrList > ul > li .box{position:relative; font-size:16px; font-family: 'NotoM'; color:#fff; margin:0 auto; word-break:keep-all; background:#63b711 url('/images/web/jw/sub_cnt/bg_cnckrInfo2_circle.png') no-repeat center; border-radius:50%; background-size:cover;}
+
+.cnckrInfo2 .ordrList.listTy01 li .box{display:table; width:125px; height:125px; vertical-align:middle;}
+.cnckrInfo2 .ordrList.listTy01 li .box p{display:table-cell; vertical-align: middle; padding:0 20px;}
+
+.cnckrInfo2 .ordrList.listTy02 .box{width:140px; height:140px; display:block; overflow:hidden; font-size:15px;}
+.cnckrInfo2 .ordrList.listTy02 .box p{display:table; width:100%; height:70px; padding:10px 0 0;}
+.cnckrInfo2 .ordrList.listTy02 .box .txt{position:relative; height:50px; font-size:14px; line-height:16px; background:#178e0e; padding:0 0 10px; border-radius:0 0 50% 50%;}
+.cnckrInfo2 .ordrList.listTy02 .box .txt::before{content:""; width:70%; height:1px; position: absolute; left:15%; top:0; background:#ff0;}
+.cnckrInfo2 .ordrList.listTy02 .box p span{display:table-cell; vertical-align: middle; padding:0 20px;}
+
+.cnckrInfo2 .ordrList.listTy03 > ul{padding-left:15px; font-size:0; line-height:0;  display:flex; display:-ms-flexbox; -ms-flex-wrap:wrap; flex-wrap:wrap;}
+.cnckrInfo2 .ordrList.listTy03 > ul > li{float:none;display: inline-block;vertical-align: top;width: 100%;/* height: auto; */margin: 10px 0 10px 0;}
+.cnckrInfo2 .ordrList.listTy03 > ul > li:first-child .box{margin-top:0;}
+.cnckrInfo2 .ordrList.listTy03 .box{width: 100%;background:none;margin: 20px 0;}
+.cnckrInfo2 .ordrList.listTy03 .box p{float: left;width: 15%;padding:10px 2%;border-radius:10px;background:#1f59be;margin:0 0 5px;height: 77px;font-size:1.4rem;/* vertical-align: middle; */}
+.cnckrInfo2 .ordrList.listTy03 .box .box_p2{float: left;width: 15%;padding:40px 2%;border-radius:10px;background:#1f59be;margin:0 0 5px;height: 135px;/* vertical-align: middle; */}
+.cnckrInfo2 .ordrList.listTy03 .box .txt{position:relative;min-height: 65px;font-size:14px;line-height:16px;padding:20px 10px;background:#ececec;border-radius:10px;border:1px solid #004081;color:#111;float: right;width: 73%;}
+.cnckrInfo2 .ordrList.listTy03 .box .txt2{position:relative;min-height: 65px;font-size:14px;line-height:16px;padding:15px 10px;background:#ececec;border-radius:10px;border:1px solid #004081;color:#111;float: right;width: 73%;}
+.cnckrInfo2 .ordrList.listTy03 ul[class^='list_st'] > li{width:auto; text-align:left;}
+
+/* 0501_센터소개(200317 : 추가) */
+.box_st6_2{margin:0 1%; border:solid 1px #d1d1d1;}
+.box_st6_2:before{display:none;}
+.box_st6_2 .box_st_photo{min-height:auto;}
+
+/* 찾아오시는길 */ /* 20020324 추가 */
+.directions{position:relative; }
+.directions dl{position:relative; overflow:hidden; margin:30px 0; padding:0 2% 30px; border-bottom:1px dotted #d2d2d2; }
+.directions dl.b_none{border-bottom:none; }
+.directions dt{float:left; width:15%; margin-right:2%; }
+.directions dt img{max-width:100%; }
+.directions dd{float:left; width:83%; margin-top:20px; font-size:18px;}
+/* 전세임대사업안내 : 지원방법 절차 */
+	.cnckrInfo .ordrList{overflow:hidden; margin:20px 0 0;}
+	.cnckrInfo .ordrList > ul > li{position:relative; width:16.66%; float:left; text-align:center;}
+	.cnckrInfo .ordrList > ul > li::before{content:""; position:absolute; width:30px; height:30px; left:0; top:50%; margin-top:-15px; margin-left:-15px; border-radius:50%; background:#ccc url('/images/web/jw/sub_cnt/ico_arrL_wh.png') no-repeat center;}
+	.cnckrInfo .ordrList > ul > li:first-child::before{display:none;}
+	.cnckrInfo .ordrList > ul > li .box{position:relative; font-size:16px; font-family: 'NotoM'; color:#fff; margin:0 auto; word-break:keep-all; background:#63b711 url('/images/web/jw/sub_cnt/bg_cnckrInfo_circle.png') no-repeat center; border-radius:50%; background-size:cover;}
+
+	.cnckrInfo .ordrList.listTy01 li .box{display:table; width:125px; height:125px; vertical-align:middle;}
+	.cnckrInfo .ordrList.listTy01 li .box p{display:table-cell; vertical-align: middle; padding:0 20px;}
+
+	.cnckrInfo .ordrList.listTy02 .box{width:140px; height:140px; display:block; overflow:hidden; font-size:15px;}
+	.cnckrInfo .ordrList.listTy02 .box p{display:table; width:100%; height:70px; padding:10px 0 0;}
+	.cnckrInfo .ordrList.listTy02 .box .txt{position:relative; height:50px; font-size:14px; line-height:16px; background:#178e0e; padding:0 0 10px; border-radius:0 0 50% 50%;}
+	.cnckrInfo .ordrList.listTy02 .box .txt::before{content:""; width:70%; height:1px; position: absolute; left:15%; top:0; background:#ff0;}
+	.cnckrInfo .ordrList.listTy02 .box p span{display:table-cell; vertical-align: middle; padding:0 20px;}
+
+	.cnckrInfo .ordrList.listTy03 > ul{padding-left:15px; font-size:0; line-height:0;  display:flex; display:-ms-flexbox; -ms-flex-wrap:wrap; flex-wrap:wrap;}
+	.cnckrInfo .ordrList.listTy03 > ul > li{float:none; display:inline-block; vertical-align: top;}
+	.cnckrInfo .ordrList.listTy03 > ul > li:first-child .box{margin-top:0;}
+	.cnckrInfo .ordrList.listTy03 .box{width:80%; background:none; margin:0px auto 10px;}
+	.cnckrInfo .ordrList.listTy03 .box p{width:96%; padding:10px 2%; border-radius:10px; background:#1f59be; margin:0 0 5px;}
+	.cnckrInfo .ordrList.listTy03 .box .txt{position:relative; min-height:150px; font-size:14px; line-height:16px; padding:15px 10px; background:#ececec; border-radius:10px; border:1px solid #004081; color:#111;}
+	.cnckrInfo .ordrList.listTy03 ul[class^='list_st'] > li{width:auto; text-align:left;}
+
+	.cnckrInfo .ordrList.dbline ul{padding-left:15px;}
+	.cnckrInfo .ordrList.dbline li .box{margin:5px auto;}
+
+	.cnckrInfo .ordrList > ul > li .box p.h100{height:100%; padding:0;}
+
+	.cnckrInfo .ordrList.wStep3 > ul > li{width:33.33%;}
+	.cnckrInfo .ordrList.wStep4 > ul > li{width:25%;}
+	.cnckrInfo .ordrList.wStep5 > ul > li{width:20%;}
+
+/* 200325_권리분석절차안내 */
+.procssBox { position:relative; overflow:hidden; margin-top:40px}
+.procssBox > li {position:relative; padding-bottom:50px}
+.procssBox > li span.line { position:absolute; bottom:0; left:100px; width:20px; height:59px}
+.procssBox > li dl { min-height:200px; font-size:17px; color:#333; line-height:30px; background:url('/images/web/jw/sub_cnt/bg_0202_box2.png') no-repeat 99% 0; border:1px solid #c9c9c9; border-top:3px solid #2c8ce4; margin-left:50px}
+.procssBox > li dl dt { position:absolute; top:25px; left:0; width:235px; height:150px; background:#63b711 url('/images/web/jw/sub_cnt/bg_0202_box.png') no-repeat 100% 100%; border-radius:30px 0}
+.procssBox > li dl dt img { position:absolute; top:42px; left:9px; width:70px; height:70px}
+.procssBox > li dl dt span { display:inline-block; font-family:'NotoM'; font-size:20px; color:#fff; letter-spacing:-1px; padding:50px 0 0 90px}
+.procssBox > li dl dd {display:block; position:absolute; left:265px; top:0; width:auto; height:200px;  }
+.procssBox > li dl dd div {display:table; height:100%; width:100%}
+.procssBox > li dl dd div p {font-family:'NotoM'; display:table-cell; vertical-align:middle}
+.procssBox > li dl dd.Tbox1 div p span.arr {margin:0 10px; vertical-align:text-top}
+.procssBox > li dl dd.Tbox1 .lh {min-width:4px; height:30px; padding-left:50px; line-height:30px; display:inline-block; background:url('/images/web/jw/sub_cnt/img_right_lh.png') no-repeat left center; }
+.procssBox > li dl dd.Tbox2 { left:550px; font-size:18px; color:#444; background:url('/images/web/jw/sub_cnt/ico_0202_arrow.png') no-repeat 5px 50%; padding-left:60px}
+.procssBox > li dl dd.Tbox2 div p { font-family:inherit}
+.procssBox > li dl dd.Tbox2 div.li2 { display: block; margin:25px 0 0}
+.procssBox > li dl dd.Tbox2 div ul { display:block}
+.procssBox > li dl dd.Tbox2 div ul > li {font-size:16px; color:#666; }
+.procssBox > li dl dd.Tbox1 div.li3 { padding-top:60px; box-sizing:border-box}
+.procssBox > li dl dd.Tbox1 div.li3 p { display:block; padding-left:50px}
+.procssBox > li dl dd.Tbox2 div.li4 { display: block; margin:65px 0 0}
+.procssBox > li dl dd.Tbox1 div.li4 p { padding-left:60px}
+
+/*0401_전세임대 사업안내 (200402 : 추가)*/
+.li_st_fm,  .li_st_fm25{ overflow:hidden;}
+.li_st_fm > li{ float:left; width:18%; box-size:border-box;}
+.li_st_fm25 > li{ float:left; width:23%; box-size:border-box;}
+
+
+/* 사이트맵 *//*200106*/
+#sitemap .sitemap { margin:0 auto; width:100%; height:auto; background:#fff;}
+#sitemap .sitemap ul.group { overflow:hidden}
+#sitemap .sitemap ul.group > li { width:31.3%; min-height:175px; float:left; padding:0 1%; margin:10px 0}
+#sitemap .sitemap ul.group > li a span { display:block; font-family:'NotoM'; font-size:15px; color:#333; line-height:40px; text-align:center; border-top:2px solid #163e78; border-bottom:1px solid #163e78}
+#sitemap .sitemap ul.group > li > ul.depth_ul > li { margin:5px 0}
+#sitemap .sitemap ul.group > li > ul.depth_ul > li a { display:block; position:relative; padding-left:10px; font-size:14px; line-height:1.4; color:#333;}
+#sitemap .sitemap ul.group > li > ul.depth_ul > li a:before {content:''; position:absolute; top:9px; left:0; width:4px; height:4px; background:#004081; border-radius:2px;}
+#sitemap .sitemap ul.group > li > ul.depth_ul > li a:hover {color:#004081; text-decoration:underline}
+#sitemap .sitemap a.close { position:absolute; bottom:-20px; left:50%; margin-left:-80px; width:145px; height:40px; line-height:40px; font-family:'NotoM'; font-size:15px; color:#fff; text-align:center; padding-left:15px; background:#004081 url('/images/web/jw/layout/btn_menu_close.png') no-repeat 20px 50%}
+
+/*찾아오시는길 지도*//*200106*/
+.map .root_daum_roughmap {width:100%!important; box-sizing:border-box; }
+.bg_yellow{padding:2px 5px; border-radius:4px; color:#fff; background:#fbc02d;}
+.bg_redish {padding:2px 5px; border-radius:4px; color:#fff; background:#dd2c00;}
+span.num_station{ padding:0 9px; height:20px; line-height:30px;  border-radius:10px; border: solid 1px #bbb; }
+ul.dotted_line li { padding:10px 0; border-top:1px dotted #d2d2d2;  font-size:15px; line-height:1.4; color:#444;}
+ul.dotted_line li:first-child { border:none; }
+ul.dotted_line li ul li { border:none;}
+ul.busNum li {letter-spacing:normal; padding-left:0;}
+ul.busNum li:before { display:none;}
+ul.busNum li span {border-radius:4px;}
+
+/* 안내문 모식도 : 기본 *//* 200120 */
+.gdccStep{overflow:hidden;}
+.gdccStep li{ position:relative; width:15%; min-height:90px; display:table; float:left; margin:5px 0 5px 2%; border:1px solid #777; box-sizing:border-box; -moz-box-sizing:border-box; -ms-box-sizing:border-box; -webkit-box-sizing:border-box;}
+.gdccStep li::before{content:url('/images/web/jw/sub_cnt/ico_arrL.png'); position: absolute; left:-11%; top:50%; margin-top:-9px;}
+.gdccStep li:first-child{margin-left:0;}
+.gdccStep li:first-child::before{display:none;}
+.gdccStep li p{display:table-cell; vertical-align:middle; word-break:keep-all; text-align:center; padding:5px; color:#222; }
+.gdccStep li p span{display:block;}
+
+/* 슬라이드 리스트 *//* 200116 */
+.slideList{position:relative; margin:80px 0 0;}
+.slideList a.allShow{position:absolute; right:0; top:-45px; padding-right:45px; font-size:17px; font-family: 'NotoM'; line-height:40px;}
+.slideList a.allShow::before{content:""; position:absolute; right:0; top:2px; width:36px; height:36px; background:url('/images/web/jw/sub_cnt/arrow_2.png') no-repeat center;}
+.slideList a.allShow.show::before{ top:3px; transform:rotate(180deg); -ms-transform:rotate(180deg); -webkit-transform:rotate(180deg); -moz-transform:rotate(180deg);}
+.slideList > dl{border-bottom:1px solid #ccc;}
+.slideList > dl:first-child{border-top:2px solid #28649c; }
+.slideList > dl > dt{position:relative; padding:20px 15px 20px 65px; font-size:20px; font-family: 'NotoM'; line-height:30px; cursor: pointer;}
+.slideList > dl > dt span{position:absolute; left:15px; top:15px; width:40px; height:40px; line-height:40px; text-align:center; font-family:'NotoM'; border-radius:50%; background:#7b8184; color:#fff;}
+.slideList > dl > dt::before{content:"내용보기"; position:absolute; right:40px; top:50%; line-height:20px; margin-top:-10px; color:#888; font-size:16px; }
+.slideList > dl > dt::after{content:""; position:absolute; right:15px; top:50%; width:14px; height:14px; margin-top:-7px; background:url('/images/web/jw/sub_cnt/ico_arrL02.png') no-repeat center;}
+.slideList > dl.open > dt::before{content:"내용닫기"; color:#fff;}
+.slideList > dl.open > dt::after{background:url('/images/web/jw/sub_cnt/ico_arrL02_wh.png') no-repeat center; transform:rotate(180deg); -ms-transform:rotate(180deg); -webkit-transform:rotate(180deg); -moz-transform:rotate(180deg);}
+.slideList > dl > dd{display:none; padding:20px 20px 30px; line-height:20px;}
+.slideList > dl.open > dt{background:#163e78; color:#fff;}
+.slideList > dl.open > dt span{background:#fff; color:#0a3f7f;}
+.slideList > dl > dt:hover{background:#eef4fd; color:#0a3f7f;}
+.slideList > dl.open > dt:hover{background:#163e78; color:#fff;}
+.slideList > dl > dt, .slideList span, .slideList ::before, .slideList ::after{transition:all .3s ease; -ms-transition:all .3s ease; -moz-transition:all .3s ease; -webkit-transition:all .3s ease;;}
+
+/* 전세임대사업안내 *//* 200116 */
+.cnckrInfo .titL{position:relative; text-align:center; font-size:17px; font-family: 'NotoM'; color:#fff; margin:0 0 30px; word-break:keep-all;}
+.cnckrInfo .titL::before{content:""; position:absolute; left:0; top:50%; margin-top:-1px; width:100%; height:2px; background:#1f59be;}
+.cnckrInfo .titL span{position:relative; display:inline-block; border-radius:20px; background:#1f59be; padding:10px 30px;}
+
+	/* 전세임대사업안내 : 지원방법 절차 */
+	.cnckrInfo .ordrList{overflow:hidden; margin:20px 0 0;}
+	.cnckrInfo .ordrList > ul > li{position:relative; width:16.66%; float:left; text-align:center;}
+	.cnckrInfo .ordrList > ul > li::before{content:""; position:absolute; width:30px; height:30px; left:0; top:50%; margin-top:-15px; margin-left:-15px; border-radius:50%; background:#ccc url('/images/web/jw/sub_cnt/ico_arrL_wh.png') no-repeat center;}
+	.cnckrInfo .ordrList > ul > li:first-child::before{display:none;}
+	.cnckrInfo .ordrList > ul > li .box{position:relative; font-size:16px; font-family: 'NotoM'; color:#fff; margin:0 auto; word-break:keep-all; background:#63b711 url('/images/web/jw/sub_cnt/bg_cnckrInfo_circle.png') no-repeat center; border-radius:50%; background-size:cover;}
+
+	.cnckrInfo .ordrList.listTy01 li .box{display:table; width:125px; height:125px; vertical-align:middle;}
+	.cnckrInfo .ordrList.listTy01 li .box p{display:table-cell; vertical-align: middle; padding:0 20px;}
+
+	.cnckrInfo .ordrList.listTy02 .box{width:140px; height:140px; display:block; overflow:hidden; font-size:15px;}
+	.cnckrInfo .ordrList.listTy02 .box p{display:table; width:100%; height:70px; padding:10px 0 0;}
+	.cnckrInfo .ordrList.listTy02 .box .txt{position:relative; height:50px; font-size:14px; line-height:16px; background:#178e0e; padding:0 0 10px; border-radius:0 0 50% 50%;}
+	.cnckrInfo .ordrList.listTy02 .box .txt::before{content:""; width:70%; height:1px; position: absolute; left:15%; top:0; background:#ff0;}
+	.cnckrInfo .ordrList.listTy02 .box p span{display:table-cell; vertical-align: middle; padding:0 20px;}
+
+	.cnckrInfo .ordrList.listTy03 > ul{padding-left:15px; font-size:0; line-height:0;  display:flex; display:-ms-flexbox; -ms-flex-wrap:wrap; flex-wrap:wrap;}
+	.cnckrInfo .ordrList.listTy03 > ul > li{float:none; display:inline-block; vertical-align: top;}
+	.cnckrInfo .ordrList.listTy03 > ul > li:first-child .box{margin-top:0;}
+	.cnckrInfo .ordrList.listTy03 .box{width:80%; background:none; margin:0px auto 10px;}
+	.cnckrInfo .ordrList.listTy03 .box p{width:96%; padding:10px 2%; border-radius:10px; background:#1f59be; margin:0 0 5px;}
+	.cnckrInfo .ordrList.listTy03 .box .txt{position:relative; min-height:150px; font-size:14px; line-height:16px; padding:15px 10px; background:#ececec; border-radius:10px; border:1px solid #004081; color:#111;}
+	.cnckrInfo .ordrList.listTy03 ul[class^='list_st'] > li{width:auto; text-align:left;}
+
+	.cnckrInfo .ordrList.dbline ul{padding-left:15px;}
+	.cnckrInfo .ordrList.dbline li .box{margin:5px auto;}
+
+	.cnckrInfo .ordrList > ul > li .box p.h100{height:100%; padding:0;}
+
+	.cnckrInfo .ordrList.wStep3 > ul > li{width:33.33%;}
+	.cnckrInfo .ordrList.wStep4 > ul > li{width:25%;}
+	.cnckrInfo .ordrList.wStep5 > ul > li{width:20%;}
+
+	/* 전세임대사업안내 : 보유자산기준 */
+	.astStdr{margin:20px 0 15px; overflow:hidden;}
+	.astStdr dl{position:relative; width:48%; float:left;}
+	.astStdr dl:first-child{margin-right:4%;}
+	.astStdr dt{position:absolute; left:0; top:0; width:100px; height:100px; display:table; text-align:center; color:#fff; font-family: 'NotoM'; font-size:17px; border-radius:50%; background:url('/images/web/jw/sub_cnt/bg_cnckrInfo_circle.png') no-repeat center;}
+	.astStdr dt::before{ position:absolute; right:-10px; bottom:-15px;}
+	.astStdr dt span{display:table-cell; vertical-align: middle;}
+	.astStdr dd{min-height:115px; margin-left:120px; line-height:20px; color:#444;}
+	.astStdr dd p.num{ position:relative; line-height:1.1; font-size:16px;  padding:10px 0; margin:0 0 10px; font-family: 'NotoM';}
+	.astStdr dd p.num::before{content:""; position:absolute; left:0; bottom:0; width:70%; height:1px; background:#ccc; }
+	.astStdr dd p.num::after{content:""; position:absolute; left:70%; bottom:-3px; width:7px; height:7px; border-radius:50%;}
+	.astStdr dd p.num span{font-size:24px; padding-right:5px; letter-spacing: -1px;}
+	.astStdr dl.asts dt{background-color:#7c51a1;}
+	.astStdr dl.asts dt::before{content:url('/images/web/jw/sub_cnt/ico_astStdr01.png');}
+	.astStdr dl.asts dd p.num span{color:#7c51a1;}
+	.astStdr dl.asts dd p.num::after{background:#7c51a1;}
+	.astStdr dl.car dt{background-color:#f5706e;}
+	.astStdr dl.car dt::before{content:url('/images/web/jw/sub_cnt/ico_astStdr02.png');}
+	.astStdr dl.car dd p.num span{color:#f5706e;}
+	.astStdr dl.car dd p.num::after{background:#f5706e;}
+
+/* 콘텐츠 리스트 스타일 *//* 200116 */
+.t_cirDot{display:inline-block; width:15px; height:15px; background:#666; color:#fff; font-size:12px; line-height:15px; text-align:center; margin-right:3px; border-radius:50%; vertical-align: middle;}
+
+/* 당첨자조회 *//* 200117 */ /* 200220 수정 */
+.inqireBox {position:relative; width:100%; text-align:center; margin:0 auto;}
+.inqireBox::before{content:""; position:absolute; left:0; top:0; width:100%; height:320px; /*background:url('/images/web/jw/sub_cnt/inqire_bg.png') no-repeat center bottom;*/ /*background-size:cover;*/}
+.inqireBox h1{position:absolute; left:-9999em; top:-9999em; width:1px; height:1px; text-indent:-9999em; overflow:hidden;}
+.inqireBox .topInfo{position:relative; padding:0; color:#fff; text-align:Center; font-size:24px; line-height:26px; word-break:keep-all;}
+.inqireBox .topInfo .info{font-size:13px; margin:20px 0 0; color:#777; word-wrap:keep-all;}
+.inqireBox .form_wrap{position:relative; /*margin:0 50px;*/ padding:30px 40px; background:#0055a2; /* border:1px solid #ccc; */}
+.inqireBox .form_wrap::before{content:""; position:absolute; left:3%; bottom:0; width:202px; height:170px; background:url('/images/web/jw/sub_cnt/img_inqire01.png') no-repeat center; background-size:cover;}
+.inqireBox .form_wrap::after{content:""; position:absolute; right:3%; bottom:0; width:156px; height:81px; background:url('/images/web/jw/sub_cnt/img_inqire02.png') no-repeat center; background-size:cover;}
+.inqireBox .form_wrap .info{background:#fafafa; margin:0 0 30px; padding:10px 5px;}
+.inqireBox .form_wrap .info p{display:inline-block; color:#222;}
+.inqireBox .form_wrap .txt {text-align:center; line-height:1.4;  font-size:20px; color:#fff; margin-bottom:10px; word-break:keep-all;}
+.inqireBox .formBox{position:relative; width:100%; max-width:600px; margin:0 auto;}
+.inqireBox .formBox .inputBox{margin-right:130px; overflow:hidden;}
+.inqireBox .formBox .inputBox span{float:left; width:10%; font-size:18px; line-height:40px; color:#fff;}
+.inqireBox .formBox .inputBox input{width:45%; height:40px; padding:0 2%; line-height:40px; font-size:15px; float:left; box-sizing:border-box; -ms-box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box;}
+.inqireBox .form_wrap input[type=button]{position:absolute; right:0; bottom:0; width:120px; height:40px; line-height:40px; color:#fff; font-family:'NotoM'; background:#002042; border:0; font-size:16px;}
+.inqireBox .result{padding:40px 0 0; text-align:center; overflow:hidden;}
+.inqireBox .result div{font-size:24px; font-family:'NotoM'; word-break:keep-all; color:#fff;}
+.inqireBox .result div span{color:#a8cd08;}
+/* 200118 간이권리분석 */
+.rightAls{width:100%; min-height:100%; background:#ececec;}
+.rightAls .tit_wrap{background:#00132b; width:100%;}
+.rightAls .tit_wrap h2{max-width:1360px; margin:0 auto; font-size:24px; font-family:'NotoM'; color:#fff; line-height:30px; padding:15px 20px; }
+.rightAls .cont{width:95%; max-width:1400px; padding:30px; margin:20px auto; background:#fff; box-sizing:border-box; -ms-box-sizing:border-box; -moz-box-sizing:border-box; -webkit-box-sizing:border-box;}
+.rightAls a.closebtn{display:block; position: absolute; right:50%; top:15px; margin-right:-680px; width:30px; height:30px; background:url('/images/web/jw/sub_cnt/btn_close_wh.png') no-repeat center; text-indent:-9999em; overflow:hidden;}
+
+/* 권리분석이란 */ /* 200220 추가 */
+.con_box1{position:relative;}
+.con_box1 dl{position:relative; overflow:hidden; margin:30px 0; padding:0 2% 30px; border-bottom:1px dotted #d2d2d2;}
+.con_box1 dl.b_none{border-bottom:none;}
+.con_box1 dt{float:left; width:10%; margin-right:2%;}
+.con_box1 dt img{max-width:100%;}
+.con_box1 dd{float:left; width:83%; margin-top:20px;}
+.con_box1 dd span{display:block; color:#171b28; font-size:24px; font-weight:500;}
+.box_tit {margin-bottom:10px; font-size:24px; line-height:1.3; font-family:'NotoM'; color:#111; letter-spacing:-1px;}
+.box_txt {margin-bottom:10px; font-size:19px; line-height:1.7; font-family:'NotoR'; color:#333; letter-spacing:-1px; word-break:keep-all;}
+.box_txt2 {margin-bottom:10px; font-size:17px; line-height:1.7; font-family:'NotoR'; color:#333; letter-spacing:-1px; word-break:keep-all;}
+
+/* 200120 권리분석이란? : 절차도 */
+.right_procss > li {position:relative; margin-bottom:5px; padding-bottom:40px; background:url('/images/web/jw/sub_cnt/arr_right_1.png') no-repeat 125px bottom;}
+.right_procss > li.last {margin-bottom:0; padding-bottom:0; background:none;}
+.right_procss > li > dl {position:relative; padding-left:560px;}
+.right_procss li dl dt, .right_procss li dl dd { -webkit-box-sizing:border-box; -moz-box-sizing:border-box; box-sizing:border-box;}
+.right_procss li dl dt {position:absolute; left:0; top:0; width:270px; height:100%; display:block; padding:0 10px; line-height:30px; color:#fff; text-align:center; font-size:17px; word-break:keep-all;  background:#63b711 url('/images/web/jw/sub_cnt/bg_right.png') no-repeat center bottom; background-size:100% auto; border-radius:20px;}
+.right_procss li dl dt p {display:table; height:100%; width:100%;}
+.right_procss li dl dt p span {display:table-cell; vertical-align:middle;}
+.right_procss li dl dd.Tbox1 {position:absolute; left:280px; top:0; width:270px; height:100%; display:block; padding:0 10px; line-height:30px; text-align:center; font-size:15px; border:1px solid #63b711; background:#f1f1f1 url('/images/web/jw/sub_cnt/bg_right.png') no-repeat center bottom; background-size:100% auto; border-radius:20px;}
+.right_procss li dl dd.Tbox1 div {display:table; height:100%; width:100%;}
+.right_procss li dl dd.Tbox1 div p {display:table-cell; vertical-align:middle;}
+.right_procss li dl dd.Tbox1 .arr {display:inline-block; width:21px; height:14px; margin:0 4px; vertical-align:middle; text-indent:-10000em; font-size:0; background:url('/images/web/jw/sub_cnt/arr_right_2.png') no-repeat center;}
+.right_procss li dl dd.Tbox1 .arr2 {display:inline-block; width:21px; height:14px; margin:0 4px; vertical-align:middle; text-indent:-10000em; font-size:0; background:url('/images/web/jw/sub_cnt/arr_right_3.png') no-repeat center;}
+.right_procss li dl dd.Tbox1 .txt {line-height:30px; display:inline-block;}
+.right_procss li dl dd.Tbox1 .lh {min-width:4px; height:30px; padding-left:40px; line-height:30px; display:inline-block; background:url('/images/web/jw/sub_cnt/img_right_lh.png') no-repeat left center;}
+.right_procss li dl dd.Tbox2 {padding:25px 20px; line-height:30px; font-size:15px; border:1px solid #c1c1c1; border-radius:20px;}
+
+
+/*0401_전세임대 사업안내 (200402 : 추가)*/
+.li_st_fm { overflow:hidden;}
+.li_st_fm > li{ float:left; width:18%; box-size:border-box;}
+
+.li_st_live { overflow:hidden;}
+.li_st_live > li{ float:left; width:31%; box-size:border-box;}
+
+/* 200424 : 오픈이벤트 당첨자 발표 */
+.opEvt .tit{position:relative; padding:70px 10px 0; text-align:center; background:#05c18e; z-index:0;}
+.opEvt .tit img{max-width:100%; height:auto;}
+.opEvt .cont{position:relative; width:100%; padding:40px 0; text-align:center; background:#eee; z-index:1;}
+.opEvt .cont:before{content:""; position:absolute; left:0; top:-11px; width:100%; height:11px; background:url('/images/web/jw/sub_cnt/bg_openEvent.png') repeat-x;}
+.opEvt .cont .info{margin:20px 0;}
+.opEvt .cont .info p{font-size:16px; font-family: 'NotoM'; margin:5px 0;}
+.opEvt .listBox{position:relative; padding:45px 0 0; margin:0 30px; overflow:hidden;}
+.opEvt .listBox .list{height:500px; overflow:auto; background:#fff;}
+.opEvt .listBox table{width:50%; float:left;  background:#fff;}
+.opEvt .listBox table:first-child{border-right:1px solid #ddd;}
+.opEvt .listBox table th{padding:15px 5px; border-right: solid 1px #fff; font-size:16px; color:#fff; background:#a9b4c0;}
+.opEvt .listBox table td{padding:10px 5px;  border-right: solid 1px #d9d9d9; font-size:15px; word-break:break-all; border-bottom:1px solid #ddd;}
+
+/* 200528 : 입주후기이벤트 */
+.reviewEvt {width:100%; max-width:900px; margin:0 auto; text-align:center; font-size:16px; word-break: keep-all;}
+.reviewEvt img{max-width:100%; height:auto;}
+.reviewEvt .tit{padding:30px 10px; font-size:18px; background:url('/images/web/jw/sub_cnt/evt_titBg01.png') no-repeat center;}
+.reviewEvt .tit p{margin:20px 0 0; font-family: 'NotoM'; color:#333;}
+.reviewEvt .cont{padding:20px 10px; background:#0088ec; color:#fff;}
+.reviewEvt .cont > ul{display:inline-block; margin:0 auto;}
+.reviewEvt .cont > ul > li{position:relative; padding:5px 0 5px 130px; text-align:left; line-height:20px; margin:10px 0; overflow:hidden;}
+.reviewEvt .cont > ul > li > p{position:absolute; left:0; top:0; width:120px; height:30px; font-family: 'NotoM'; line-height:30px; background:#fff; text-align:center; color:#002042; border-radius:10px 0;}
+.reviewEvt .cont > ul > li.ty01{padding:5px 0;}
+.reviewEvt .cont > ul > li.ty01 > p{position: relative; left:auto; top:auto;}
+.reviewEvt .cont > ul > li > ul > li{position:relative; padding-left:25px; margin:10px 0; line-height:20px; overflow:hidden;}
+.reviewEvt .cont > ul > li > ul > li > span{position: absolute; left:0; top:0; width:18px; height:18px; line-height:18px; border-radius:50%; text-align:Center; border:1px solid #fff;}
+.reviewEvt .reviewEx {max-width:600px; padding:30px; margin:0px auto 10px; border-radius:15px 0; background:#fff;}
+.reviewEvt .info{padding:40px 20px; background:#e4f4ff;}
+.reviewEvt .info p{color:#111; font-family: 'NotoM'; line-height:1.5; font-size:16px; margin:20px 0 0 ;}
+.reviewEvt .info p span{color:#522ce2;}
+.reviewEx{text-align:left; color:#444;}
+.reviewEx dl{position:relative; padding:0 120px;}
+.reviewEx dl dt{font-size:20px; font-family: 'NotoM'; color:#222;}
+.reviewEx dl dd p.addr{margin:5px 0; font-size:15px;}
+.reviewEx dl dd p.tag span{display:inline-block; margin:0 3px; border-radius:20px; font-size:13px; padding:0 10px; border:1px solid #ccc; line-height:25px; color:#0072c2;}
+.reviewEx dl dd.img{position: absolute; left:0; top:0; width:110px; height:100px; overflow:hidden;}
+.reviewEx dl dd.star{position: absolute; right:0; top:0; color:#fbc02d; font-size:25px; padding-left:30px; background:url('/images/web/jw/sub_cnt/evt_ico01_1.gif') no-repeat left center;}
+.reviewEx h5{color:#111; font-family: 'NotoM'; font-size:18px; margin-bottom:3px;}
+.reviewEx .score span{display:inline-block; width:20%; height:15px; margin:0 2px; background:#ddd;}
+.reviewEx .score span.ck{background:#2c8ce4;}
+
+/* 200701 : 입주후기 VIEW 결과발표 */
+.reviewEvt.w90{width:90%; max-width:100%;}
+
+/* 200728 : 최대매물등록 이벤트 */
+.mxrtEvt{max-width:1000px; margin:0 auto; padding:0 0 80px; background:#f7efd7 url('/images/web/jw/sub_cnt/mxrtEvt_bg2.png') no-repeat left bottom;}
+.mxrtEvt *{ box-sizing:border-box;}
+.mxrtEvt .tit{padding:0 20px 30px; text-align:center;  }
+.mxrtEvt .tit:first-child{background:url('/images/web/jw/sub_cnt/mxrtEvt_bg.png') no-repeat center top; padding-top:200px;}
+.mxrtEvt .tit img{max-width:100%; height:auto; margin:20px 0 0;}
+.mxrtEvt .tit p{text-align:center;}
+.mxrtEvt .tit p.stit{color:#000; font-size:22px; font-family: 'NotoM'; margin:20px 0 0; word-break: keep-all;}
+/*.mxrtEvt .tit p.pt{background:rgba(254, 211, 109, 0.9); display:inline-block; font-family: 'NotoM'; border-radius:30px; padding:10px 20px;}*/
+.mxrtEvt .tit p img{max-width:100%; height:auto;}
+.mxrtEvt .tit p img.mobImg{display:none;}
+.mxrtEvt .cont{margin:0 auto; width:90%; border-radius:20px; padding:25px 40px; border:3px solid #ebd08f; background:#fff;}
+.mxrtEvt .cont .info li{position:relative;  padding:5px 0 5px 190px; word-break: keep-all; font-size:18px; color:#111; line-height:28px; min-height:45px; margin:10px 0; overflow:hidden; font-family: 'NotoM';}
+.mxrtEvt .cont .info li > p{position:absolute; left:0; top:0; width:170px; text-align:center; font-family: 'NotoM'; border-radius:20px; background:#ffe4a3; color:#111; padding:8px;}
+.mxrtEvt .cont .atte{color:#a32424; font-size:16px;}
+.mxrtEvt .cont h4{ position:relative; display:inline-block; font-size:22px; padding:0 20px; color:#c10c0c; font-family: 'NotoM';}
+.mxrtEvt .cont h4:before,
+.mxrtEvt .cont h4:after{content:""; position: absolute; top:50%; width:8px; height:8px; border-radius:50%; margin-top:-4px; background:#c10c0c;}
+.mxrtEvt .cont h4:before{left:0;}
+.mxrtEvt .cont h4:after{right:0;}
+.mxrtEvt .cont .dis_b{display:block;}
+.mxrtEvt .cont .list_stT1 > li{font-size:18px; color:#000; word-break: keep-all; }
+p.mxrtEvt_txt{position:relative; max-width:1000px; line-height:1.6; padding:30px 5%; text-align:center; font-size:20px; color:#111; background:#fce399; margin:-30px auto 0; box-sizing:border-box; font-family: 'NotoM'; word-break: keep-all;}
+p.mxrtEvt_txt:before{content:""; position: absolute; left:0; top:-21px; width:100%; height:21px; background:url('/images/web/jw/sub_cnt/mxrtEvt_pttrn.png') repeat-x top;}
+
+/* 200914 : 중개업소대상 이벤트 결과 */
+.mxrtEvt_rst{max-width:1000px; margin:0 auto; text-align: center;padding:0 0 80px; background:#f7efd7}
+.mxrtEvt_rst .opEvt .listBox table th{background:#786060;}
+.mxrtEvt_rst h3{text-align:left;margin-left:3%;color:#890808;margin-bottom:0;font-size:20px;}
+.mxrtEvt_rst div.box_st{padding:20px;width:91%;margin:0 auto;background:#fbf8ed;}
+.mxrtEvt_rst div.box_st p{text-align:left;color:#333;font-weight: bold;}
+.mxrtEvt_rst div.box_st ul li{text-align:left;}
+
+/* 2001006 : 임대인부담 중개수수료 전액 지원 이벤트 */
+.evnt_201006box{max-width:1000px; margin:0 auto; width:100%;height:500px;display:block;background:#1c87fb url('/images/web/jw/sub_cnt/evnt_201006_bg.png') no-repeat right bottom;}
+.evnt_201006box p.txt{padding:7% 0 0 5%}
+.evnt_201006box p.desc{font-size:1.3rem;font-weight:normal;color:#fff;line-height:2rem;text-shadow:2px 2px 2px rgba(0,0,0,0.5);padding:3% 0 0 5%}
+.evnt_201006box p.desc span{color:#ffe404;}
+
+
+/* 210312_매물신고방법 */
+.guideBox { position:relative; overflow:hidden; margin-top:40px}
+.guideBox > li {position:relative; padding-bottom:50px}
+.guideBox > li span.line { position:absolute; bottom:0; left:100px; width:20px; height:59px}
+.guideBox > li dl {padding:10px 20px;/*display:flex; display:-ms-flexbox; justify-content:space-between; -ms-flex-pack:justify; flex-wrap:wrap; -ms-flex-wrap:wrap; */ font-size:17px; color:#333; line-height:30px; background:url('/images/web/jw/sub_cnt/bg_0202_box2.png') no-repeat 99% 0; border:1px solid #c9c9c9; border-top:3px solid #2c8ce4; }
+.guideBox > li dl dt {width:100%;border-bottom: 1px dotted #ccc;}
+.guideBox > li dl dd img {width:100%;padding:15px 0px;}
+.guideBox > li dl dt span { display:inline-block; font-family:'NotoM'; font-size:20px; color:#333; letter-spacing:-1px; padding:5px 10px 15px;}
+.guideBox > li dl dd {width:100%;  }
+.guideBox > li dl dd div {display:table; height:100%; width:100%}
+.guideBox > li dl dd div p {font-family:'NotoM'; display:table-cell; vertical-align:middle}
+
+/* 210928 : 전세임대 챗봇 시범오픈 기념 이벤트 */
+.chatbot{max-width:1000px;margin:0 auto;text-align: center;padding: 0 0 50px;background:#3a61c0; position:relative;}
+.chatbot .titT3{text-align:center;padding:0 20px;color:#fff;margin-bottom:0;font-size:22px;line-height: 1.5;word-break:keep-all;display:block;}
+.chatbot .titT3 .nl{display:block;}
+.chatbot .offc{text-align:left;padding:0 38px;color:#fff;margin:187px 0 0 13px;font-size:17px;line-height: 1.5;word-break:keep-all;position:absolute;}
+.chatbot .box_st{padding:20px;width:85%;border-radius:18px;margin:0 auto;background:#fff; border:4px solid #e1e1e1;}
+.chatbot .box_st .st1 .info{display:table; margin:auto; text-align:left;}
+.chatbot .box_st .st2{text-align:center;}
+.chatbot .box_st .info li{position:relative; padding:1.5% 0 5px 200px; word-break: keep-all; font-size:18px; color:#111; line-height:28px; min-height:45px; margin:10px 0; overflow:hidden; font-family: 'NotoM';}
+.chatbot .box_st .info li > p{position:absolute; left:0; top:0; width:170px; text-align:center; font-family: 'NotoM'; border-radius:20px; background:#e1e1e1; color:#111; padding:8px;}
+.chatbot .box_st h4{ position:relative; display:inline-block; font-size:22px; padding:0 20px; color:#c10c0c; font-family: 'NotoM'; text-align:center;}
+.chatbot .box_st h4:before,
+.chatbot .box_st h4:after{content:""; position: absolute; top:50%; width:8px; height:8px; border-radius:50%; margin-top:-4px; background:#c10c0c;}
+.chatbot .box_st h4:before{left:0;}
+.chatbot .box_st h4:after{right:0;}
+.chatbot .box_st .list_stT1 > li{font-size:18px; color:#000; word-break: keep-all; text-align:center;font-weight: 600;font-size:20px;}
+.chatbot .box_st a.btn_sgray{padding:15px 20px; color:#fff; background:#4d4e4e;display:inline-block;margin:30px 1px 30px 1px;line-height:22px;font-size:20px;font-family:"NotoM"; -webkit-transition:all 0.3s ease; -moz-transition:all 0.3s ease; -ms-transition:all 0.3s ease; transition:all 0.3s ease; border-radius:0 10px;}
+.chatbot .box_st a.btn_sgray:hover, .chatbot .box_st a.btn_sgray:focus{background:#808080;}
+
+/*211124 집주인 부담분 중개수수료 지원안내 수정*/
+.event1115{width:100%;max-width:900px;margin:0 auto;text-align:center;overflow: hidden;font-size:16px;word-break: keep-all;background: #0963c4 no-repeat right bottom; height: auto;}
+.event1115 img{max-width:100%;}
+.event1115 .tit{padding:0;height: auto;position: relative;overflow: hidden;}
+.event1115 .box_tit{padding:20px 10px;background: #fff;width: 90%;color: #333;border-radius: 25px;margin: 0 auto 30px;font-family: 'NotoM';box-sizing: border-box;border: 5px solid #fed615;}
+.event1115 .box_tit p{font-size: 20px;}
+.event1115 .box_tit p span{font-size: 18px; display: block; margin: 10px 0;}
+.event1115 .box_tit p.txt{position:relative; text-align:center; font-size:17px; font-family: 'NotoM'; color:#fff; margin:0 0 10px; word-break:keep-all;}
+.event1115 .box_tit p.txt::before{content:""; position:absolute; left:3%; top:50%; width:94%; height:2px; background:#1f59be;}
+.event1115 .box_tit p.txt span{position:relative; display:inline-block; border-radius:20px; background:#1f59be; padding:5px 25px; width:160px; font-size:20px;}
+.event1115 .box_tit > ul{display: inline-block;margin: 0 auto;width: 100%;}
+.event1115 .box_tit > ul > li.ty01{padding:5px 0;}
+.event1115 .box_tit > ul > li > ul {width:100%;margin: 20px;}
+.event1115 .box_tit > ul > li > ul > li{font-size:20px;position:relative;margin:10px 30px 10px 0;line-height:20px;overflow:hidden;text-align: left;}
+.event1115 .box_tit > ul > li > ul > li.inWrite{list-style-position: inside;text-indent:-25px;padding-left: 25px;margin-top:20px;padding-top:2px;}
+.event1115 .box_tit > ul > li > ul > li:first-child{margin-top: 10px;}
+.event1115 .box_tit > ul > li > ul > li > span.num {line-height:28px;font-weight:bold;font-size:21px;vertical-align:text-top;}
+.event1115 .box_tit > ul > li > ul > li > span.cond {line-height:25px;}
+.event1115 .box_tit > ul > li > ul > li > span.ex {display:block; margin-top:-5px; font-size:18px;line-height:25px;padding:0 25px;}
+
+/*211224 전세임대 챗봇 정식오픈기념이벤트*/
+.event1224{width: 100%; max-width:1000px;position: relative; overflow: hidden;margin: 0 auto;}
+.event1224 .tit{position:relative;width:100%; height:429px; background:url(/images/web/jw/sub_cnt/event_bg.png) no-repeat top center; }
+.event1224 .tit .tit_img{text-align:center;padding-top:15px;}
+.event1224 .tit .tit_icon{margin: 0 auto; width:103px;  padding-top:45px;}
+.event1224 .tit .tit_txt{width:500px; text-align:center; padding-top:34px;margin: 0 auto;}
+.event1224 .tit .tit_txt > p{ line-height: 1.2; color: #fff; font-family:'NotoR'; font-size:22px;}
+.event1224 .tit .tit_txt > p > span{display:block;}
+.event1224 img{max-width:100%;}
+.event1224 .cont{width: 80%;color: #333;margin: 0 auto;}
+.event1224 .cont ul{padding: 25px;}
+.event1224 .cont ul li{font-size: 18px;color: #333;font-family: 'NotoM';line-height: 2;/* min-height: 50px; */position: relative;}
+.event1224 .cont ul li + li{margin-top:20px;}
+.event1224 .cont ul li p{display: inline-block;padding-left: 7rem;}
+.event1224 .cont ul li > span{display: inline-block;width: 100px;border-radius: 25px;color: #fff;background: #0057bf;text-align:Center;position: absolute;left: 0;top: 0;line-height: 2;/* border:1px solid #fff; */}
+.event1224 .cont ul li p > span{display:block;}
+
+.event1224 .cont02{width: 100%;position: relative;overflow: hidden;background: #e4f3f9 url(/images/web/jw/sub_cnt/present_bg.png) no-repeat 99% 97%; background-size:124px; padding-bottom: 50px}
+.event1224 .cont02 h3{font-size:23px; text-align:center; padding:15px 0; color:#fff; background:#275176; width:265px; margin: 30px auto; border-radius:30px}
+.event1224 .cont02 ul{width:55%; margin:0 auto; overflow:hidden;}
+.event1224 .cont02 ul li{ float:left; width:30%; margin-left:3%; text-align: center;}
+.event1224 .cont02 ul li p{width:85px; height:85px; border: 2px dotted #275176; border-radius:50%; margin: 0 auto}
+.event1224 .cont02 ul li p img{display:block; margin:0 auto; margin-top:20px}
+
+.event1224 .cont02 ul li > span{display: block; font-size: 16px; color: #275176; font-family: 'NotoM'; margin-top: 15px;}
+.event1224 .cont02 ul li > span b{display:block;}
+
+
+/*220406 봄맞이 퀴즈이벤트*/
+.event0406{width:100%;max-width:900px;margin:0 auto;text-align:center;overflow: hidden;font-size:16px;word-break: keep-all;background: #c9e1a7 url(/images/web/jw/sub_cnt/evnt_220406_bg02.png) no-repeat top; height: auto;}
+.event0406 .tit{width: 60%; margin: 50px auto;}
+.event0406 .tit img{max-width: 100%;}
+.event0406 .quiz{display: block; margin: 0 auto;width: 200px;}
+.event0406 .cont{width: 80%; margin: 0 auto; background: #fff; border: 3px solid #548c43; border-radius: 15px; box-sizing: border-box; box-shadow: 5px 5px #548c43; overflow: hidden; padding: 1rem; margin-top: -17px}
+.event0406 .box1 p{color: #333; font-size: 1.25rem; font-weight: 600; display: inline-block;}
+.event0406 .box1 ol{margin-top: 20px;overflow: hidden;}
+.event0406 .box1 ol li{float: left; width: 20%; color: #333; font-size: 1.10rem;}
+.event0406 .box1 ol li span.num{display: inline-block; background:#85c976; border-radius: 50px; width: 30px; height: 30px; line-height: 30px; color: #fff; }
+.event0406 .box1 ol li span.qesitmSn{font-weight:bold;}
+.event0406 .box1 ol li span.qAnswer{color: #FD7A8E;}
+.event0406 .box2{margin: 30px auto;}
+.event0406 .box2 ul li{font-size: 18px;color: #333;font-family: 'NotoM';line-height: 2;/* min-height: 50px; */position: relative; text-align: left; }
+.event0406 .box2 ul li + li{margin-top:20px;}
+.event0406 .box2 ul li p{display: inline-block;padding-left: 9rem;}
+.event0406 .box2 ul li > span.highright{display: inline-block;width: 120px; border-top-right-radius: 20px; color: #fff;background: #76b54d;text-align:Center;position: absolute;left: 0;top: 0;line-height: 2;}
+.event0406 .box2 ul li p > span.pc_pink{display:inline-block; color: #e88192;font-family: 'NotoB'; font-size: 20px; }
+.event0406 button{background:#76b54d; padding: 0.5rem 1.5rem; border-radius: 30px; margin-bottom: 30px; }
+.event0406 button a{color: #fff; font-size: 1.25rem;}
+.event0406 button:hover{background:#47831f;}
+
+/*220502 봄맞이 이벤트추가 */
+/* .event0406 .box1_1{margin-top: 30px;} */
+.event0406 .box1_1 {position: relative; overflow: hidden; text-align: center; padding: 1rem; min-height: 300px; margin-top: 30px;}
+.event0406 .box1_1 .correct{position: relative; overflow: hidden; text-align: center; background: url(/images/web/jw/sub_cnt/evnt_220502_img.png) no-repeat center; background-size: 100% 90%;  padding: 1rem; min-height: 300px;}
+.event0406 .box1_1 .correct h5{font-size: 2.5rem; margin-top: 7rem; color: #327224; font-weight: 600;}
+.event0406 .box1_1 .correct p {color: #333; font-size: 2rem; margin-top: 1rem; }
+.event0406 .box1_1 .correct p>span{color: #fff; background:  #85c976; display: inline-block; width: 50px; height: 50px; border-radius: 50%; line-height: 50px;}
+.sr-only{display: none;}
+.event0406 .box1 ol li.check a{display: inline-block; background:#fd7a8e; border-radius: 50px; width: 30px; height: 30px; line-height: 30px; color: #fff;}
+.event0406 .box1 ol li.check a i.xi-check{display: block; text-align: center; line-height: 30px; font-weight: bold;}
+
+/* 221220 : LH전세임대포털 최다계약 공인중개사 선정이벤트 결과 발표 */
+.mxrtEvt_lh{max-width:1000px;margin:0 auto;text-align: center;padding:0 0 60px;background:#d2efff}
+.mxrtEvt_lh .opEvt .listBox table {width: 100%;}
+.mxrtEvt_lh img {max-width: 100%; height: auto;}
+.mxrtEvt_lh .opEvt .listBox table th{background:#eabf66;}
+.mxrtEvt_lh .opEvt .listBox table p {font-size:14px; line-height:1.3;}
+.mxrtEvt_lh h3{text-align:left;margin-left:3%;color:#b3722e;margin-bottom:0;font-size:20px;}
+.mxrtEvt_lh div.box_st{padding:20px;width:91%;margin:0 auto;background:#fbf8ed;}
+.mxrtEvt_lh div.box_st p{text-align:left;color:#333;font-weight: bold;}
+.mxrtEvt_lh div.box_st ul li{text-align:left;}
+.mgr10 {margin-left: 1rem !important;}
+.tbl_bg_ye {background-color: #f8f0a7 !important;}
+.mxrtEvt_lh .listBox .list{height:600px;}
+
+/*개인정보처리방침*/
+.personal_warp .tbl_st .img {width: 5rem; height: 5rem; margin: 0 auto;}
+.personal_warp .tbl_st .img img {max-width: 100%;}
+.personal_warp h3 .ico {display: inline-block; width: 3rem; height: 3rem;}
+.personal_warp h3 .ico img {max-width: 100%;}
+
+/********** Media quary **********/
+@media screen and (max-width:1420px){
+
+	/* 200118 간이권리분석 */
+	.rightAls a.closebtn{right:20px; margin-right:0;}
+
+	/*0401_전세임대 사업안내 (200402 : 추가)*/
+	.li_st_fm > li{ width:29%;}
+	.li_st_fm25 > li{width:47%;}
+}
+/* 권리분석 절차안내 */
+@media screen and (min-width:1301px) and (max-width:1419px) {
+	 .procssBox > li dl{min-height:210px;}
+	 .procssBox > li dl dd.Tbox2{padding-left:48px; font-size:16px;}
+
+}
+
+@media screen and (max-width:1300px){
+	/*주택검색*//*191106*/
+	.serch_home input.addr { width:calc(100% - 15px);  margin-bottom:10px;}
+	.serch_home .btnSearch {float: none; }
+	.serch_home .serch_slct{display: block;}
+	.serch_home select { width:calc(50% - 6px); margin-bottom:10px;}
+	.dropdown {width:calc(25% - 4px);}
+	.dropdown a { width:100%; box-sizing:border-box; }
+	.serch_home .addr_div { width:calc(100% - 48px); box-sizing:border-box;}
+	.dropdown-content {width:auto; box-sizing:border-box;}
+	.serch_home a.btnSearch{ display:block; margin:20px auto 0; width:200px;}/*200119*/
+
+	/*.매물비교보기*//*191106*/
+	.campare_list { width:100%;  overflow:hidden;}
+    .campare_list div.box_st5{float:none;  width:100%; height:auto; margin:0 0 20px 0;}
+	.campare_list .infor_box {height:auto; overflow:inherit;}
+
+    /* 200325_권리분석절차안내 */
+	.procssBox > li span.line {left:50%; margin-left:-10px}
+	.procssBox > li dl { height:100%; min-height:auto; margin-left:0; border-radius:30px 0; border-top:inherit; word-break:keep-all; overflow:hidden}
+	.procssBox > li dl dt { position: relative; top:0; width:100%; height:90px}
+	.procssBox > li dl dt br { display:none}
+	.procssBox > li dl dt img {top:10px}
+	.procssBox > li dl dt span { padding:0 0 0 90px; line-height:90px}
+	.procssBox > li dl dd {position: relative; left:0; top:0; height:auto;}
+	.procssBox > li dl dd div {display:inline-block; text-align:center; margin:1% 0; padding:1% 5%; box-sizing:border-box}
+	.procssBox > li dl dd div p {display:block}
+	.procssBox > li dl dd div p br { display:none}
+	.procssBox > li dl dd.Tbox2 { left:auto; background:url('/images/web/jw/sub_cnt/ico_0202_arrow_rt.png') no-repeat 50% 0; background-position:50% 0; padding:40px 0 20px}
+	.procssBox > li dl dd.Tbox2 div p { text-align:left}
+	.procssBox > li dl dd.Tbox2 div.li2 {margin:2% 0;}
+	.procssBox > li dl dd.Tbox2 div ul { text-align:left}
+	.procssBox > li dl dd.Tbox1 div.li3 { padding-top:0}
+	.procssBox > li dl dd.Tbox1 div.li3 p {padding-left:0}
+	.procssBox > li dl dd.Tbox2 div.li4 {margin:2% 0;}
+	.procssBox > li dl dd.Tbox1 div.li4 p { padding-left:0}
+	.procssBox > li dl dt span.mgt15 { margin-top:0 !important}
+
+	/* 전세임대사업안내 : 지원방법 절차 *//* 200116 */
+	.cnckrInfo .ordrList > ul{padding-left:15px;}
+	.cnckrInfo .ordrList > ul > li{width:33.33%; margin:5px 0%;}
+
+	/* 200120 권리분석이란? : 절차도 */
+	.right_procss > li {background-position:75px bottom;}
+	.right_procss > li.last {margin-bottom:0; padding-bottom:0; background:none;}
+	.right_procss > li > dl {padding-left:460px;}
+	.right_procss li dl dt {width:170px;}
+	.right_procss li dl dd.Tbox1 {left:180px;}
+
+
+
+}
+
+@media screen and (max-width:1060px){
+	.cost_area { float:none; display:block; text-align:right;}
+
+	/* 210928 : 전세임대 챗봇 시범오픈 기념 이벤트 */
+	.chatbot .offc{font-size:16px;}
+}
+
+@media screen and (max-width:1019px) {
+	/* 온라인 권리 분석 시스템(신청화면) */
+	.formTy01{margin:0; word-break: break-all;}
+	.formTy01 > tbody > tr{display:block; width:100%;}
+	.formTy01 > tbody > tr > th, .formTy01 > tbody > tr > td{box-sizing: border-box; -ms-box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box;}
+	.formTy01 > tbody > tr > th{display:block; width:100%; padding:5px 5%; background:#3d4c6d; border-top:0; color:#fff;}
+	.formTy01 > tbody > tr > td{display:block; border-left:0; width:100%;}
+	.formTy01 > tbody > tr > td .contBox{width:90%; padding:10px 5%; border-left:0; border-left:0;}
+	.formTy01 .inner > tbody > tr > th{border-left:0;}
+	.formTy01 .inner::before{content:""; position: absolute; left:-1px; top:0; width:2px; height:100%; background:#fff;}
+
+	/* 00_submain : 191028 */
+	.cmmnty_list {margin-top:2%}
+	.cmmnty_list li { width:49%}
+	.cmmnty_list li a span.img { width:100%}
+
+	/* 전세임대사업안내 : 지원방법 절차 *//* 200116 */
+	.cnckrInfo .ordrList.wStep5 > ul > li{width:33.33%;}
+
+	/* 200424 : 오픈이벤트 당첨자 발표 */
+    .opEvt .listBox table.mobHid thead{display:none;}
+    .opEvt .listBox table{width:100%;}
+    .opEvt .listBox table:first-child{border:0;}
+
+    /* 210928 : 전세임대 챗봇 시범오픈 기념 이벤트 */
+	.chatbot .offc{position:static; margin:0 auto; text-align:center; margin-top:20px;}
+}
+
+@media screen and (max-width:960px) {
+	/*센터소개*/
+	.work li { width:100%; height:auto;  margin:10px 0; float:none;}
+
+	/*전월세길라잡이*/
+	.jense_guide{ width:100%; overflow:hidden;}
+	.jense_guide .step1, .jense_guide .step2, .jense_guide .step3, .jense_guide .step4, .jense_guide .step5 { height:auto; }
+    .jense_guide h3 { width:100%; height:50px; float:none;   text-align:center; margin-bottom:10px;  box-sizing:border-box;}
+	.jense_guide .arrow1{ display:none;}
+	.jense_guide  ol.visible, .jense_guide  ol.visible2 {  width:100%; height:auto; float:none; }
+    .jense_guide  ol.visible2 { padding-bottom:20px;   padding-bottom:15px;}
+	.jense_guide  ol.visible li {width:100%; height:60px; font-size:13px;}
+	.jense_guide  ol.visible li a:hover {height:60px }
+	.jense_guide  ol.visible2 li ul li { font-size:13px;}
+
+	/*센터소개*/ /* 200220 추가 수정 */
+	/*.work li { width:100%; height:auto;  margin:10px 0; float:none;} */ /* 200220 삭제 */
+	.establish_bg .img {margin-left:-252px; width:504px; height:155px;}
+	.pt_info {padding:30px 20px;}
+	.work li .tit {font-size:20px;}
+	.work li .txt {font-size:16px;}
+
+	/* 안내문 모식도 *//* 200120 */
+	.gdccStep ul{padding-left:10px;}
+	.gdccStep li{width:29.33%; margin:5px 2%;}
+	.gdccStep li:first-child{margin-left:2%;}
+	.gdccStep.wStep4 > ul > li{width:31.33%;}
+
+	/* 전세임대사업안내 : 지원방법 절차 *//* 200116 */
+	.cnckrInfo .ordrList.wStep3 > ul > li{width:50%;}
+	.cnckrInfo .ordrList.wStep4 > ul > li{width:33.33%;}
+
+	/* 당첨자조회 *//* 200117 */
+	.inqireBox .topInfo{padding:0 170px 0;} /* 200220 수정 */
+	.inqireBox .topInfo br{display:none;}
+	.inqireBox .form_wrap::before{width:120px; height:100px;}/* 200220 수정 */
+	.inqireBox .form_wrap::after{width:125px; height:65px;}/* 200220 수정 */
+
+	/* 200120 권리분석이란? : 절차도 */
+	.right_procss > li {background-position:center bottom;}
+	.right_procss > li > dl {padding-left:0;}
+	.right_procss li dl dt {position:relative; left:auto; top:auto; width:100%; height:50px; display:block; padding:10px; line-height:30px; border-radius:10px;}
+	.right_procss li dl dt span {display:block;}
+	.right_procss li dl dd.Tbox1 {position:relative; left:auto; top:auto; width:100%; height:50px; margin:5px 0; display:block; padding:10px; line-height:30px; border-radius:10px;}
+	.right_procss li dl dd.Tbox1 p {display:block; }
+	.right_procss li dl dd.Tbox1 p br {display:none}
+	.right_procss li dl dd.Tbox1 p .tm_lh {margin-left:20px;}
+	.right_procss li dl dd.Tbox2 {padding:10px 10px; border-radius:10px;}
+
+	/*0401_전세임대 사업안내 (200402 : 추가)*/
+	.li_st_fm > li, .li_st_live > li{ width:47%;}
+
+	/* 2001006 : 임대인부담 중개수수료 전액 지원 이벤트 */
+	.evnt_201006box{background-size:400px;}
+	.evnt_201006box p.txt img{width:95%}
+
+	/* 210928 : 전세임대 챗봇 시범오픈 기념 이벤트 */
+	.chatbot .titT3{font-size:20px;}
+	.chatbot .offc{font-size:15px;}
+
+	/*211124 집주인 부담분 중개수수료 지원안내 수정*/
+    .event1115{background: #0963c4;}
+}
+
+@media screen and (max-width:840px) {
+
+    /* 팝업창 매물 비교 보기*//*200611*/
+    .campare_list div.box_st2{width:98%;}
+
+    /* 210928 : 전세임대 챗봇 시범오픈 기념 이벤트 */
+	.chatbot .titT3{font-size:16px;}
+	.chatbot .titT3 .nl{display:inline-block;}
+	.chatbot .box_st{width:85%;}
+
+    /*211124 집주인 부담분 중개수수료 지원안내 수정*/
+    .event1115{background: #0963c4;}
+
+	/*211224 전세임대 챗봇 정식오픈기념이벤트*/
+    .event1224 .cont{width: 95%;}
+    .event1224 .cont ul{padding: 15px;}
+    .event1224 .cont02{padding-bottom: 30px; background-image:none;}
+    .event1224 .cont02 ul{width: 95%;}
+
+    /*220406 봄맞이 퀴즈이벤트*/
+	.event0406 .box1 ol li{float: left; width: 20%; color: #333; font-size: 18px; display: contents;}
+}
+
+@media screen and (max-width:800px) {
+    /*220406 봄맞이 퀴즈이벤트*/
+    .event0406 .tit{width: 80%;}
+    .event0406 .box1 ol{position: relative; margin:10px auto; }
+    .event0406 .box1 ol li{ width: 50%; text-align: left; margin-top: 10px;}
+    .event0406 .box1 ol li span.num{text-align: center;}
+}
+
+
+@media screen and (max-width:760px) {
+	/* 온라인 권리 분석 시스템(신청화면) */
+	.formTy01 .inner > tbody > tr{display:block; width:100%;}
+	.formTy01 .inner > tbody > tr > th, .formTy01 .inner > tbody > tr > td{box-sizing: border-box; -ms-box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box;}
+	.formTy01 .inner > tbody > tr > th{display:block; width:30%; height:60px; line-height:1.3; text-align:left; padding:10px 3%; border:0; float:left; border-bottom:1px solid #ccc; overflow:auto;}
+	.formTy01 .inner > tbody > tr > th.th_h180{height:180px;}
+	.formTy01 .inner > tbody > tr > th.th_h240{height:240px;}
+	.formTy01 .inner > tbody > tr > td{display:block; width:70%; height:60px; line-height:55px; overflow: auto; border-top:0; border-bottom:1px solid #ccc; padding:0px 3%; float:left;}
+	.formTy01 .inner > tbody > tr > td > p{white-space: nowrap; }
+	.formTy01 .inner > tbody > tr > td.midTh{text-align:left;}
+	.formTy01 .inner > tbody > tr > th.th_h360{height: 360px;}
+
+	/* 법무사 지역 배분 */
+	.jcfSer .selectBox{width:100%; margin:0 0 30px;}
+	.jcfSer .areaBox{width:100%; }
+	.jcfSer .areaBox .jcfAreaBox{padding:15px;}
+
+	/* 온라인 권리분석 작성 화면 50%보이기*/
+	.formTy02 .inner > tbody > tr{display:block; width:100%;}
+	.formTy02 > tbody > tr > th,
+	.formTy02 > tbody > tr > td{ box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;}
+	.formTy02 > tbody > tr > th{display:block; float:left; width:34%; height:40px; padding:0; line-height:38px; overflow:auto; text-align:center !important;}
+	.formTy02 > tbody > tr > td{display:block; float:left; width:66%; height:40px; padding:0; line-height:38px; overflow:auto;}
+	.formTy02 > tbody > tr > td p, .formTy02 > tbody > tr > th p{white-space: nowrap; margin:0 5px;}
+	.formTy02 > tbody > tr > td.td_w33{width:33%;}
+	.formTy02 > tbody > tr > td.td_w100{width:100%;}
+	.formTy02 > tbody > tr > td.td_h200{height:200px;}
+
+	/*주택검색*//*191106*/
+	.dropdown {width:calc(100% - 2px);}
+	.dropdown a { width:100%; box-sizing:border-box; }
+	.btnSearch a { width:100%;  box-sizing:border-box;}
+	.serch_home .addr_div { width:calc(100% - 48px); box-sizing:border-box;}
+	.dropdown-content {width:100%; }
+	.drop_box input {width:50px; text-align: center; font-size:13px;}
+	.dropdown-content div.btn_st_number button.confmdeBtn{width:20%;}
+	.dropdown-content .confmde_box .confmdeRangeSlider{width:92%;}
+
+	/*주택검색 결과*//*191106*/
+	.result_area { width:100%;}
+	.result_list { width:100%; height:320px; float:none;}
+	.result_list .result_detail { width:calc(50% - 10px); display:inline-block; vertical-align:top; *display:inline; *zoom:1}
+	.result_detail .box_st2{min-height:145px;}
+
+	/* 주택검색 - 관심매물 */
+    #intrstResult .result_detail{width:calc(100% - 10px);}
+
+	/*포털소개 200220 추가*/
+	.establish_bg {padding-bottom:100px;}
+	.establish_bg .img {margin-left:-150px; width:300px; height:auto;}
+	.work li {width:100%; height:200px; box-sizing:border-box; margin:1% 0}
+	.work.w50 > li {width:100%;}
+	.work li ul li {width:100%; height:auto; border:none; text-align:left; font-size:17px; color:#333; padding-top:5px; padding-bottom:0;}
+
+	/* 전세임대사업안내 : 보유자산기준 *//* 200116 */
+	.astStdr dl{width:100%; margin:5px 0;}
+
+	/* 전세임대사업안내 : 지원방법 절차 *//* 200116 */
+	.cnckrInfo .ordrList.listTy02 li{width:50% !important;}
+
+	/* 200728 : 최대매물등록 이벤트 */
+	.mxrtEvt .tit{padding:0 20px 20px;}
+	.mxrtEvt .tit:first-child{padding-top:20%; background-size:contain;}
+    .mxrtEvt .tit p img{display:none;}
+    .mxrtEvt .tit p img.mobImg{display:block !important;}
+	.mxrtEvt .cont{padding:10px 20px 20px;}
+	.mxrtEvt .cont .info li{padding:5px; font-size:16px; min-height:0; line-height:24px;}
+	.mxrtEvt .cont .info li p{position:relative; left:auto; top:auto; width:120px; margin-left:-5px; margin-bottom:5px;}
+	.mxrtEvt .cont h4{ font-size:20px; }
+	.mxrtEvt .cont .list_stT1 > li,
+	.mxrtEvt .cont .atte{font-size:15px; }
+	.mxrtEvt_txt br{display:none;}
+	.mxrtEvt_txt{padding:30px 5%; word-break: keep-all; font-size:16px;}
+	p.mxrtEvt_txt{font-size:15px;}
+
+	/* 210928 : 전세임대 챗봇 시범오픈 기념 이벤트 */
+	.chatbot .box_st .info li{padding-top:1%;padding-left:150px;font-size:16px;line-height:24px;margin-bottom:-20px;}
+	.chatbot .box_st .info li > p{width:120px;line-height:1.2;}
+	.chatbot .box_st .st2 li{font-size:17px;}
+	.chatbot .box_st h4{font-size:19px;margin-top:40px !important;}
+	.chatbot .box_st a.btn_sgray{padding:12px 17px;height:20px;font-size:16px;}
+
+	.event1115 .box_tit{padding:15px 10px;}
+	.event1115 .box_tit p{font-size:18px;}
+	.event1115 .box_tit p span{font-size:17px;margin-top:0;}
+	.event1115 .cont > ul > li > ul > li{font-size:16px; padding-left:0px;}
+
+	/*211124 집주인 부담분 중개수수료 지원안내 수정*/
+	.event1115 .box_tit > ul > li > ul > li > span.cond {line-height:22px;font-size:18px;}
+	.event1115 .box_tit > ul > li > ul > li > span.ex {font-size:16px;}
+}
+
+@media screen and (max-width:640px) {
+
+    /* 팝업창 매물 상세보기 */
+   .huBox .huInfo{width:100%;}
+   .huBox .huInfoBtn{width:100%; float:none; text-align:right;}
+
+   .opt_area{width:25%;}
+
+	/* 법무사 지역 배분 */
+	.jcfSer .areaBox .jcfAreaBox dd ul li{width:100%;}
+
+	.box_st6 .box_st_photo {position:relative; padding-left:0; }
+	.box_st6 .box_st_photo .photo_boxImg {position:relative; left:auto; top:10px; text-align:center; margin-bottom:20px; }
+
+
+	/*사이트맵*//*200106*/
+	#sitemap .sitemap ul.group > li { width:48%;}
+
+	/* 안내문 모식도 *//* 200120 */
+	.gdccStep li{ width:46% !important;}
+	.gdccStep li::before{left:-8%;}
+
+	/*주택검색*//*220422*/
+	.dropdown-content .confmde_box .confmdeRangeSlider{width:90%;}
+
+	/* 전세임대사업안내 *//* 200116 */
+	.cnckrInfo .titL span{width:70%; font-size:16px; padding:10px 5px;}
+
+	/* 전세임대사업안내 : 지원방법 절차 *//* 200116 */
+	.cnckrInfo .ordrList > ul > li{width:50% !important;}
+
+	/* 당첨자조회 *//* 200117 */
+	.inqireBox .topInfo{padding:0 100px 0;} /* 200220 수정 */
+	.inqireBox::before {height:250px;} /* 200220 추가 */
+	.inqireBox .form_wrap{margin:0 2%; padding:30px 20px;}
+	.inqireBox .form_wrap .info{margin:0 0 20px;}
+	.inqireBox .formBox .inputBox{margin-right:0;}
+	.inqireBox .form_wrap input[type=button]{position:relative; right:auto; bottom:auto; width:100%; height:50px; line-height:50px; margin:10px auto;}
+	.inqireBox .form_wrap::before{width:95px; height:80px; /* top:-80px; */} /* 200220 수정 */
+	.inqireBox .form_wrap::after{width:87px; height:45px;} /* 200220 수정 */
+	.inqireBox .result{padding:20px 0 0;}
+	.inqireBox .result div{font-size:20px;}
+
+	/* 권리분석이란 200220 추가*/
+	.box_tit {font-size:18px;}
+	.con_box1 dd {margin-top:10px;}
+	.box_st6 .box_st_photo {position:relative; padding-left:0;}
+	.box_st6 .box_st_photo .photo_boxImg {position:relative; left:auto; top:auto; text-align:center; margin-bottom:20px;}
+
+	/*0401_전세임대 사업안내 (200402 : 추가)*/
+	.li_st_fm > li, .li_st_live > li, 	.li_st_fm25 > li{ float:none; width:100%; }
+
+	/* 200424 : 오픈이벤트 당첨자 발표 */
+	.opEvt .cont .info{margin:20px; text-align:left;}
+    .opEvt .cont .info p{display:inline; line-height:28px; margin:0; word-break: keep-all;}
+    .opEvt .listBox{margin:0 15px;}
+
+	/* 200528 : 입주후기이벤트 */
+	.reviewEvt {font-size:15px;}
+	.reviewEvt .tit img{width:50%; min-width:250px;}
+	.reviewEvt .info p br{display:none;}
+	.reviewEx dl{padding:0;}
+	.reviewEx dl dd.img{position: relative; left:auto; top:auto;}
+	.reviewEx h5{font-size:16px;}
+
+   /* 팝업창 매물 비교 보기*//*200611*/
+    .campare_list div.box_st2{padding:15px;}
+	.cost_area { float:none; margin:5px 0 0;}
+
+	/* 2001006 : 임대인부담 중개수수료 전액 지원 이벤트 */
+	.evnt_201006box p.desc{font-size:1rem;line-height:1.5rem}
+
+	/* 210315 : 매물신고방법안내 */
+	.guideBox > li dl dt span{font-size:16px;padding: 5px 8px 12px;}
+
+	/* 210928 : 전세임대 챗봇 시범오픈 기념 이벤트 */
+	.chatbot .box_st{width:80%;}
+	.chatbot .box_st .st1 .info li{padding:7px;text-align:center;}
+	.chatbot .box_st .st1 .info li > p{position:relative;font-size:14px;font-weight:bold;margin:13px 0 5px -7px;}
+	.chatbot .box_st .info li > p{width:98%; margin-top:5px;height:13px;}
+
+	/*211124 집주인 부담분 중개수수료 지원안내 수정*/
+	.event1115 .box_tit p.txt span{width:82%;}
+	.event1115 .box_tit p.txt::before {display:none;}
+
+	/*211224  챗봇 정식오픈 이벤트  */
+	.event1224 .tit{ height:300px; background:url(/images/web/jw/sub_cnt/event_bg.png) no-repeat;background-position: right;background-size: cover; }
+	.event1224 .tit .tit_img{text-align:center;padding:15px 25px 30px 25px; background:#3962c0;}
+	.event1224 .tit .tit_icon{width:80px; padding-top:20px;}
+	.event1224 .tit .tit_txt{width:94%; text-align:center;margin: 0 auto; padding:0px 10px; background:#3962c0;}
+	.event1224 .tit .tit_txt > p{ line-height: 1.2; font-size:16px;}
+	.event1224 .tit .tit_txt > p > span{display:inline-block;}
+
+	.event1224 .cont{width:100%;}
+	.event1224 .cont ul{padding:20px 5px;}
+	.event1224 .cont ul li{font-size:16px;}
+	.event1224 .cont ul li > span{position: initial; border-radius:0px;}
+	.event1224 .cont ul li p{display:block; padding-left:0px; padding-top:6px;}
+	.event1224 .cont ul li p > span{display:inline-block;}
+
+	.event1224 .cont02 h3{font-size:18px; padding: 7px 0; width:220px;}
+	.event1224 .cont02 ul li span{font-size:14px;}
+	.event1224 .cont02 ul li span b{display:block;}
+
+	/*220406 봄맞이 퀴즈이벤트*/
+	.event0406{width:100%;max-width:900px;margin:0 auto;text-align:center;overflow: hidden;font-size:16px;word-break: keep-all;background: #c9e1a7 url(/images/web/jw/sub_cnt/evnt_220406_bg02.png) no-repeat top; height: auto;}
+	.event0406 .tit{width: 80%; margin: 30px auto;}
+	.event0406 .tit img{max-width: 100%;}
+	.event0406 .quiz{display: block; margin: 0 auto;width: 125px;}
+	.event0406 .cont{width: 96%; margin: 0 auto; background: #fff; border: 3px solid #548c43; border-radius: 15px; box-sizing: border-box; box-shadow: 5px 5px #548c43; overflow: hidden; padding: 1rem; margin-top: -13px;}
+	.event0406 .box1 p{color: #333; font-size: 1.1rem; font-weight: 600; display: inline-block; margin-right:12px;}
+	.event0406 .box1 ol{margin-top: 21px;overflow: hidden;}
+	.event0406 .box1 ol li{float: left; width: 30%; color: #333; font-size: 16px;}
+	.event0406 .box1 ol li span.num{display: inline-block; background:#85c976; border-radius: 50px; width: 25px; height: 25px; line-height: 24px; color: #fff;}
+	.event0406 .box2{margin: 30px auto;}
+	.event0406 .box2 ul li{font-size: 18px;color: #333;font-family: 'NotoM';line-height: 2;/* min-height: 50px; */position: relative; text-align: left; }
+	.event0406 .box2 ul li + li{margin-top:20px;}
+	.event0406 .box2 ul li p{display: inline-block;padding-left: 7rem; font-size:16px;margin-top: 45px; padding-left: 0px;}
+	.event0406 .box2 ul li > span.highright{display: inline-block;width: 100%; border-radius: 20px 20px 20px 20px; color: #fff;background: #76b54d;text-align:Center;position: absolute;left: 0;top: 0;line-height: 2;font-size: 16px;}
+	.event0406 .box2 ul li p > span.pc_pink{display:inline-block; color: #e88192;font-family: 'NotoB'; font-size: 14px; }
+	.subCntBody p { line-height: 1.4; margin-bottom: 7px;}
+
+	.event0406 .box1_1 {min-height: 263px; margin-top: 30px; }
+	.event0406 .box1_1 .correct{background: url(/images/web/jw/sub_cnt/evnt_220502_img.png) no-repeat center;  background-size: 100% 90%;  padding: 0; min-height: 236px;}
+	.event0406 .box1_1 .correct h5{font-size: 1.6rem; margin-top: 82px;}
+	.event0406 .box1_1 .correct p { font-size: 1.5rem; }
+	.event0406 .box1_1 .correct p>span{width: 38px; height: 38px;line-height: 37px;}
+
+}
+
+@media screen and (max-width:560px) {
+
+	/*센터소개*/
+	.introduce .photo{ float:none; margin-right:0; text-align:center;}
+	.introduce .txt_detail { float:none; margin-top:10px;}
+
+	/* 온라인 권리 분석 시스템(신청화면) */
+	.formTy01 .inner > tbody > tr > td p{width:100%; }
+	.formTy01 .inner > tbody > tr > td p label{display:inline-block; width:auto;}
+	.formTy01 .inner > tbody > tr > td.callNumBox p label{width:auto;}
+
+	/* 법무사 지역 배분 */
+	.jcfSer .areaBox .jcfAreaBox dl{width:100%;}
+	.jcfSer .areaBox .jcfAreaBox dd{height:155px; overflow:auto;}
+	.jcfSer .areaBox .jcfAreaBox dd ul{margin:10px 15px;}
+	.jcfSer .areaBox .jcfAreaBox .jurangArea {margin:0 0 60px;}
+	.jcfSer .areaBox .jcfAreaBox a.moveArea{ top:295px; margin-top: 0 !important; transform: rotate(90deg); -moz-transform: rotate(90deg); -ms-transform: rotate(90deg); -webkit-transform: rotate(90deg);}
+	.jcfSer .areaBox .jcfAreaBox a.moveLeft{margin-left:-20px;}
+	.jcfSer .areaBox .jcfAreaBox a.moveRight{margin-left:20px;}
+
+	/* SMS발송 */
+	.smsSendpop .smsSend li p.tit{position:relative; width:100%; left:auto; top:auto;}
+	.smsSendpop .smsSend li p.cont{margin-left:0px;}
+
+	/*포털소개 200220 추가*/
+	.work li .ico {bottom:20px;}
+	.work li .ico img {width:40px; height:40px;}
+    .establish_bg {padding:30px 20px 100px;}
+
+	.slideList a.allShow{font-size:15px;}
+	.slideList > dl > dt{font-size:16px; padding:15px 15px 15px 55px}
+	.slideList > dl > dt::before{text-indent: -9999em; overflow:hidden;}
+	.slideList > dl > dt span{width:30px; height:30px; line-height:30px;}
+
+	/*주택검색*//*220422*/
+	.dropdown-content .confmde_box .confmdeRangeSlider{width:90%;}
+	.noUi-pips .noUi-value:nth-child(4),
+	.noUi-pips .noUi-value:nth-child(8),
+	.noUi-pips .noUi-marker-horizontal.noUi-marker-large:nth-child(3),
+	.noUi-pips .noUi-marker-horizontal.noUi-marker-large:nth-child(7){display:none;}
+	.noUi-value:nth-child(10){top:5px;line-height:18px;}
+	.noUi-value:nth-child(10) .nl{display:block;}
+
+	/* 전세임대사업안내 : 지원방법 절차 *//* 200116 */
+	.cnckrInfo .ordrList.listTy03 > ul{padding-left:0;}
+	.cnckrInfo .ordrList.listTy03 > ul > li::before{top:-5px; left:50%; margin-top:0; transform: rotate(90deg); -ms-transform: rotate(90deg); -moz-transform: rotate(90deg); -webkit-transform: rotate(90deg);}
+	.cnckrInfo .ordrList.listTy03 .box{width:90%; margin:30px auto 0;}
+	.cnckrInfo .ordrList.listTy03 .box .txt{min-height:0;}
+	.cnckrInfo .ordrList.wStep3 > ul > li{width:100% !important;}
+
+	/* 당첨자조회 *//* 200220 추가 */
+    .inqireBox .topInfo {padding:0 50px 0;}
+	.inqireBox .form_wrap::before{display:none}
+	.inqireBox .form_wrap::after{display:none}
+
+	/*주택검색 결과*//*191106*/
+	.result_area { width:100%;}
+	.result_list { width:100%; height:320px; float:none; }
+	.result_list .result_detail { width:100%; margin-right:0; float:none;}
+
+	/* 200424 : 오픈이벤트 당첨자 발표 */
+	.opEvt .listBox table{width:560px;}
+
+
+	/* 210315 : 매물신고방법안내 */
+	.guideBox > li dl{padding: 10px 10px}
+	.guideBox > li dl dd img{ width: 85%;padding: 15px 7.5%;}
+	.guideBox > li dl dt span{font-size:14px; padding: 0px 5px 10px; font-weight: 600;}
+}
+
+@media screen and (max-width:480px) {
+	/* 온라인 권리분석 작성 화면 50%보이기*/
+	.formTy02 > tbody > tr > th{width:40%;}
+	.formTy02 > tbody > tr > td{width:60%;}
+	.formTy02 > tbody > tr > td.td_w33{width:30%;}
+	.formTy02 > tbody > tr > td p, .formTy02 > tbody > tr > th p{margin:0 2px;}
+	/* 200122 */
+	.formTy01 .inner > tbody > tr > td.callNumBox span{display:block;}
+	.formTy01 .inner > tbody > tr > td.callNumBox input[type=text]{width:35px; padding:0 3px; margin:0;}
+
+	/* 200325_권리분석절차안내 */
+	.procssBox > li dl dt {height:auto}
+	.procssBox > li dl dt img { left:50%; margin-left:-35px}
+	.procssBox > li dl dt span { display:block; padding:100px 0 10px; line-height:30px; text-align:center}
+
+	/*사이트맵*//*200106*/
+	#sitemap .sitemap ul.group > li { width:100%; padding:0; min-height:auto;}
+
+	/* 안내문 모식도 *//* 200116 */
+	.gdccStep{margin:10px 0;}
+	.gdccStep li{ width:100% !important; min-height:0; margin:20px 0 0; display:block;}
+	.gdccStep li:first-child{margin:0;}
+	.gdccStep li::before{left:50%; top:-19px; margin-top:0; margin-left:-7px; transform:rotate(90deg); -ms-transform:rotate(90deg); -webkit-transform:rotate(90deg); -moz-transform:rotate(90deg);}
+	.gdccStep li p{display:block; padding:10px 5px;}
+
+	/*주택검색*//*220422*/
+	.dropdown-content .confmde_box .confmdeRangeSlider{width:87%;}
+
+	/* 전세임대사업안내 : 지원방법 절차 *//* 200116 */
+	.cnckrInfo .ordrList > ul{padding-left:10px;}
+	.cnckrInfo .ordrList > ul > li::before{width:20px; height:20px; margin-top:-10px; margin-left:-10px; background:url('/images/web/jw/sub_cnt/ico_arrL.png') no-repeat center;}
+	.cnckrInfo .ordrList > ul > li .box{width:85% !important; border-radius:20px;}
+	.cnckrInfo .ordrList.listTy01 li .box{width:100px; height:100px; font-size:14px;}
+	.cnckrInfo .ordrList.listTy02 .box p span{padding:0 5px;}
+	.cnckrInfo .ordrList.listTy02 .box .txt{border-radius:0 0 20px 20px;}
+
+	/* 당첨자조회 *//* 200117 */
+	.inqireBox .topInfo{/* text-align:left; */padding:0 50px 0 50px; font-size:15px;} /* 200220 수정 */
+	.inqireBox .form_wrap{padding:20px;}  /* 200220 수정 */
+	.inqireBox .form_wrap::before{display:none;}
+	.inqireBox .result{padding:20px 0 0;}
+	.inqireBox .result div{font-size:20px;}
+
+	/* 권리분석이란 */ /* 200220 추가 */
+	 .box_txt2 {word-break:break-all;}
+
+	/* 200424 : 오픈이벤트 당첨자 발표 */
+	.opEvt .tit{padding:20px 10px 0;}
+    .opEvt .cont .info p{font-size:15px;}
+    .opEvt .listBox table td{font-size:14px;}
+
+    /* 권리분석 절차안내 - 20200625 */
+    .box_st6{padding:15px 15px !important;}
+	.box_txt{line-height:1.5 !important; font-size:17px;}
+
+	/* 주택검색 - 검색 조건 *//* 20200806 */
+	.dropdown-content div.btn_st_number button{display:inline; width:45%;}
+	.dropdown-content div.btn_st_number button.confmdeBtn{width:45%;}
+	.result_detail .box_st2 p{font-weight:600;}
+
+	/* 2001006 : 임대인부담 중개수수료 전액 지원 이벤트 */
+	.evnt_201006box{background-size:340px;}
+	.evnt_201006box p.desc{font-size:0.9rem;}
+
+    /* 210928 : 전세임대 챗봇 시범오픈 기념 이벤트 */
+	.chatbot .titT3{font-size: 16px !important;}
+	.chatbot .box_st{width:75%;}
+	.chatbot div.box_st p{font-size: 16px;}
+	.chatbot .box_st li{font-size:14px !important;}
+
+	/*211124 집주인 부담분 중개수수료 지원안내 수정*/
+	.event1115 .box_tit p{font-size:17px;line-height: 1.5}
+	.event1115 .box_tit p span{font-size:16px; margin-top:10px;}
+}
+
+@media screen and (max-width:390px) {
+	/* 팝업창 매물 비교 보기*//*200611 삭제
+	.cost_area { float:none; display:block; text-align:right;}*/
+
+	/* 전세임대사업안내 *//* 200116 */
+	.cnckrInfo .titL span{width:80%; }
+	.cnckrInfo .ordrList.dbline ul{padding:0;}
+	.cnckrInfo .ordrList.dbline li{width:100% !important;}
+	.cnckrInfo .ordrList.dbline li::before{top:-14px; left:50%; margin-top:0; transform:rotate(90deg); -moz-transform:rotate(90deg); -ms-transform:rotate(90deg); -webkit-transform:rotate(90deg); }
+
+	/* 전세임대사업안내 : 보유자산기준 *//* 200116 */
+	.astStdr dt{position:relative; margin:0 auto;}
+	.astStdr dd{margin-left:0;}
+	.astStdr dd p.num::before{width:100%;}
+	.astStdr dd p.num::after{left:100%; margin-left:-7px;}
+
+	/* 200528 : 입주후기이벤트 */
+	.reviewEvt .cont > ul > li{padding:5px 0;}
+	.reviewEvt .cont > ul > li > p{position:relative; left:auto; top:auto; margin:0 0 5px;}
+	.reviewEvt .reviewEx{padding:30px 15px;}
+
+	/* 주택검색 - 검색 조건 *//* 20200806 */
+	.dropdown-content div.drop_box  button.minus::before{left:3px;}
+	.dropdown-content div.drop_box button.plus::before{left:3px;}
+	.dropdown-content div.drop_box button.plus::after{left:7px;}
+
+}

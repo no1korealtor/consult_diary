@@ -1,0 +1,1 @@
+﻿data = open('d:/부동산업무/antigravity/consult_diary/dist/중개수첩_오토봇_완벽최종판.exe', 'rb').read(); n_str = '[기본값: n]'.encode('utf-8'); y_str = '[기본값: y]'.encode('utf-8'); print('n_str found:', n_str in data); print('y_str found:', y_str in data)

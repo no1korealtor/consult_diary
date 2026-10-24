@@ -1,4 +1,4 @@
-import urllib.request as urllib, urllib.parse as urllib, json, requests, re, sys, os
+import urllib.request, urllib.parse, urllib.error, json, requests, re, sys, os
 from datetime import datetime
 
 def load_member_info():
@@ -57,10 +57,13 @@ def get_kakao_address_info(address_str):
                 road_addr_val = ""
                 if doc.get("road_address"):
                     road_addr_val = doc.get("road_address", {}).get("address_name", "")
+                bjdong_val = addr.get("region_3depth_name", "")
+                if not bjdong_val:
+                    bjdong_val = addr.get("region_3depth_h_name", "")
                 return {
                     "sigunguCd": code_to_use[:5],
                     "bjdongCd": code_to_use[5:10],
-                    "bjdongNm": addr.get("region_3depth_name", ""),
+                    "bjdongNm": bjdong_val,
                     "bun": addr.get("main_address_no", ""),
                     "ji": addr.get("sub_address_no", "0") or "0",
                     "road_address": road_addr_val,
@@ -89,6 +92,54 @@ def get_vworld_land_info(vworld_key, pnu):
         return None
     except Exception as e:
         print(f"공시지가 조회 에러: {e}")
+        return None
+
+def get_vworld_land_price(vworld_key, pnu):
+    url = f"https://api.vworld.kr/ned/data/getLandCharacteristics?key={vworld_key}&domain=http://localhost&pnu={pnu}&format=json&numOfRows=100&pageNo=1"
+    req = urllib.request.Request(url)
+    req.add_header("Referer", "http://localhost")
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            items = data.get("landCharacteristicss", {}).get("field", [])
+            if not items:
+                items = data.get("response", {}).get("landCharacteristicss", {}).get("field", [])
+        if items:
+            if isinstance(items, dict):
+                items = [items]
+            items_sorted = sorted(items, key=lambda x: x.get("stdrYear", ""), reverse=True)
+            for item in items_sorted:
+                price_val = item.get("pblntfPclnd")
+                year_val = item.get("stdrYear")
+                if price_val and year_val:
+                    return {"year": year_val, "price": int(price_val)}
+        return None
+    except Exception as e:
+        print(f"개별공시지가 조회 에러: {e}")
+        return None
+
+def get_vworld_individual_house_price(vworld_key, pnu):
+    url = f"https://api.vworld.kr/ned/data/getIndvdHousingPriceAttr?key={vworld_key}&domain=http://localhost&pnu={pnu}&format=json&numOfRows=100&pageNo=1"
+    req = urllib.request.Request(url)
+    req.add_header("Referer", "http://localhost")
+    try:
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            items = data.get("indvdHousingPrices", {}).get("field", [])
+            if not items:
+                items = data.get("response", {}).get("indvdHousingPrices", {}).get("field", [])
+        if items:
+            if isinstance(items, dict):
+                items = [items]
+            items_sorted = sorted(items, key=lambda x: x.get("stdrYear", ""), reverse=True)
+            for item in items_sorted:
+                price_val = item.get("housePc")
+                year_val = item.get("stdrYear")
+                if price_val and year_val:
+                    return {"year": year_val, "price": int(price_val)}
+        return None
+    except Exception as e:
+        print(f"개별주택가격 조회 에러: {e}")
         return None
 
 def get_vworld_land_use_info(vworld_key, pnu, sigungu_cd):
@@ -222,74 +273,103 @@ def format_assessed_price(val):
 def get_building_title_info(sigungu, bjdong, bun, ji):
     bun_str = str(bun).zfill(4) if bun else "0000"
     ji_str = str(ji).zfill(4) if ji else "0000"
-    url = "https://apis.data.go.kr/1613000/BldRgstHubService/getBrTitleInfo"
+    url = "http://apis.data.go.kr/1613000/BldRgstHubService/getBrTitleInfo"
     query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd=0&bun={bun_str}&ji={ji_str}&numOfRows=10&pageNo=1&_type=json"
-    try:
-        req = urllib.request.Request(url + query)
-        req.add_header("User-Agent", "Mozilla/5.0")
-        req.add_header("Accept", "application/json, text/plain, */*")
-        with urllib.request.urlopen(req, timeout=5) as response:
-            res_text = response.read().decode("utf-8")
-        if not res_text.strip():
-            return None
-        json_data = json.loads(res_text)
-        items = json_data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
-        if not items:
-            return None
-        if isinstance(items, dict):
-            return [items]
-        return items
-    except Exception as e:
-        print(f"get_building_title_info 에러: {e}")
-        return None
+    for attempt in range(4):
+        try:
+            req = urllib.request.Request(url + query)
+            req.add_header("User-Agent", "Mozilla/5.0")
+            req.add_header("Accept", "application/json, text/plain, */*")
+            with urllib.request.urlopen(req, timeout=10) as response:
+                res_text = response.read().decode("utf-8")
+            if not res_text.strip():
+                continue
+            json_data = json.loads(res_text)
+            items = json_data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
+            if not items:
+                continue
+            if isinstance(items, dict):
+                return [items]
+            return items
+        except Exception as e:
+            if attempt == 3:
+                print(f"get_building_title_info 에러: {e}")
+            import time; time.sleep(0.5 * (attempt + 1))
+    return None
 
 def get_expos_info_list(sigungu, bjdong, bun, ji):
     bun_str = str(bun).zfill(4) if bun else "0000"
     ji_str = str(ji).zfill(4) if ji else "0000"
-    url = "https://apis.data.go.kr/1613000/BldRgstHubService/getBrExposInfo"
-    query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd=0&bun={bun_str}&ji={ji_str}&numOfRows=100&pageNo=1&_type=json"
-    try:
-        req = urllib.request.Request(url + query)
-        req.add_header("User-Agent", "Mozilla/5.0")
-        req.add_header("Accept", "application/json, text/plain, */*")
-        with urllib.request.urlopen(req, timeout=5) as response:
-            res_text = response.read().decode("utf-8")
-        if not res_text.strip():
-            return None
-        json_data = json.loads(res_text)
-        items = json_data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
-        if not items:
-            return None
-        if isinstance(items, dict):
-            return [items]
-        return items
-    except Exception as e:
-        print(f"get_expos_info_list 에러: {e}")
-        return None
+    # 1. getBrExposPubuseAreaInfo 우선 조회 (전유부 면적, 주용도, 기타용도 포함)
+    for plat in (0, 1, 2):
+        url = "http://apis.data.go.kr/1613000/BldRgstHubService/getBrExposPubuseAreaInfo"
+        query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo=1&_type=json"
+        for attempt in range(2):
+            try:
+                req = urllib.request.Request(url + query, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, text/plain, */*"})
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    res_text = response.read().decode("utf-8")
+                if not res_text.strip():
+                    continue
+                json_data = json.loads(res_text)
+                items = json_data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
+                if items:
+                    if isinstance(items, dict):
+                        items = [items]
+                    expos_items = [it for it in items if str(it.get("exposPubuseGbCd", "1")).strip() == "1" or str(it.get("exposPubuseGbCdNm", "")).strip() == "전유"]
+                    if expos_items:
+                        return expos_items
+                    return items
+            except Exception:
+                pass
+
+    # 2. getBrExposInfo 대체 조회
+    for plat in (0, 1, 2):
+        url = "http://apis.data.go.kr/1613000/BldRgstHubService/getBrExposInfo"
+        query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd={plat}&bun={bun_str}&ji={ji_str}&numOfRows=1000&pageNo=1&_type=json"
+        for attempt in range(2):
+            try:
+                req = urllib.request.Request(url + query, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json, text/plain, */*"})
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    res_text = response.read().decode("utf-8")
+                if not res_text.strip():
+                    continue
+                json_data = json.loads(res_text)
+                items = json_data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
+                if items:
+                    if isinstance(items, dict):
+                        items = [items]
+                    return items
+            except Exception:
+                pass
+    return None
 
 def get_building_floor_info(sigungu, bjdong, bun, ji):
     bun_str = str(bun).zfill(4) if bun else "0000"
     ji_str = str(ji).zfill(4) if ji else "0000"
-    url = "https://apis.data.go.kr/1613000/BldRgstHubService/getBrFlrOulnInfo"
+    url = "http://apis.data.go.kr/1613000/BldRgstHubService/getBrFlrOulnInfo"
     query = f"?serviceKey={GOV_API_KEY}&sigunguCd={sigungu}&bjdongCd={bjdong}&platGbCd=0&bun={bun_str}&ji={ji_str}&numOfRows=100&pageNo=1&_type=json"
-    try:
-        req = urllib.request.Request(url + query)
-        req.add_header("User-Agent", "Mozilla/5.0")
-        req.add_header("Accept", "application/json, text/plain, */*")
-        with urllib.request.urlopen(req, timeout=5) as response:
-            res_text = response.read().decode("utf-8")
-        if not res_text.strip():
-            return None
-        json_data = json.loads(res_text)
-        items = json_data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
-        if not items:
-            return None
-        if isinstance(items, dict):
-            return [items]
-        return items
-    except Exception as e:
-        print(f"get_building_floor_info 에러: {e}")
-        return None
+    for attempt in range(2):
+        try:
+            req = urllib.request.Request(url + query)
+            req.add_header("User-Agent", "Mozilla/5.0")
+            req.add_header("Accept", "application/json, text/plain, */*")
+            with urllib.request.urlopen(req, timeout=10) as response:
+                res_text = response.read().decode("utf-8")
+            if not res_text.strip():
+                continue
+            json_data = json.loads(res_text)
+            items = json_data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
+            if not items:
+                continue
+            if isinstance(items, dict):
+                return [items]
+            return items
+        except Exception as e:
+            if attempt == 1:
+                print(f"get_building_floor_info 에러: {e}")
+            import time; time.sleep(0.3)
+    return None
 
     if not addr_str:
         return ""
@@ -361,6 +441,7 @@ def mask_phone_number(phone):
     return "****"
 def save_building_report_pdf(address, bld_data, filename_pdf):
     try:
+        from trade_viewer import mask_address_string, mask_phone_number
         from reportlab.lib.pagesizes import A4
         from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -467,15 +548,16 @@ Paragraph(bld_nm_str, value_style)],
             if bld_data.get("land_price_year"):
                 land_price_str = f"{bld_data["land_price_year"]}년 기준 {land_price_str}"
         house_price_str = "정보없음"
-        if bld_data["is_jibbap"] and bld_data.get("indiv_house_price"):
-            price_val = bld_data["indiv_house_price"]
+        h_price_val = bld_data.get("house_price") or bld_data.get("indiv_house_price")
+        if h_price_val:
+            price_val = h_price_val
             formatted_p = format_assessed_price(price_val)
             price_126 = int(price_val * 1.26)
             formatted_126 = format_assessed_price(price_126)
-            house_price_str = f"{formatted_p} (126%: {formatted_126})"
-            if bld_data.get("indiv_house_price_year"):
-                house_price_str = f"{bld_data["indiv_house_price_year"]}년 기준 {house_price_str}"
-        if bld_data["is_jibbap"]:
+            h_year = bld_data.get("house_price_year") or bld_data.get("indiv_house_price_year")
+            year_tag = f"{h_year}년 기준 " if h_year else ""
+            house_price_str = f"{year_tag}{formatted_p} (126%: {formatted_126})"
+        if bld_data.get("is_jibbap"):
             land_price_data = [
                 [Paragraph("<b>개별공시지가</b>", label_style), Paragraph(land_price_str, value_style),
                  Paragraph("<b>공동주택가격</b>", label_style), Paragraph(house_price_str, value_style)]
@@ -496,6 +578,7 @@ colors.HexColor("#FFFFFF")), ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8
         story.append(land_table)
         story.append(Spacer(1, 10))
         story.append(Paragraph("■ [토지이용규제 및 개발구역 정보]", h2_style))
+        reg = bld_data.get("reg_info", {"moatown": False, "moatown_name": "", "redev": False, "redev_name": "", "permit": False, "permit_name": "", "regulated": False, "regulated_name": ""})
         dev_status = "⚪ 해당없음"
         if reg["moatown"]:
             dev_status = f"⚠️ 모아타운 ({reg['moatown_name']})"
@@ -543,9 +626,18 @@ colors.HexColor("#FFFFFF")), ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8
                 if hd.get("apt_price_year"):
                     apt_price_str = f"{hd['apt_price_year']}년 기준 {apt_price_str}"
             viol_status = "⚠️ 위반건축물" if hd.get("viol_yn") == "Y" else "정상 (위반 없음)"
+            hd_flr = hd.get("flr_no") or hd.get("flrNo") or "정보없음"
+            hd_flr_str = f"{hd_flr}층" if str(hd_flr).isdigit() else str(hd_flr)
+            purp_val = hd.get("purpose") or "정보없음"
+            if hd.get("is_commercial"):
+                purp_p = Paragraph(f"<font color='#DC2626'><b>⚠️ {purp_val} [근생]</b></font>", value_style)
+            elif purp_val != "정보없음":
+                purp_p = Paragraph(f"<font color='#0284C7'><b>{purp_val} [주택]</b></font>", value_style)
+            else:
+                purp_p = Paragraph(purp_val, value_style)
             ho_table_data = [
-                [Paragraph("<b>해당 층수</b>", label_style), Paragraph(f"{hd['flr_no']}층", value_style), Paragraph("<b>위반 여부</b>", label_style), Paragraph(viol_status, value_style)],
-                [Paragraph("<b>전용면적</b>", label_style), Paragraph(pyung_area, value_style), Paragraph("<b>공급면적</b>", label_style), Paragraph(supply_area, value_style)],
+                [Paragraph("<b>해당 층수</b>", label_style), Paragraph(hd_flr_str, value_style), Paragraph("<b>전유부 용도</b>", label_style), purp_p],
+                [Paragraph("<b>전용면적</b>", label_style), Paragraph(pyung_area, value_style), Paragraph("<b>위반 여부</b>", label_style), Paragraph(viol_status, value_style)],
                 [Paragraph("<b>대지지분</b>", label_style), Paragraph(land_share_str, value_style), Paragraph("<b>공동주택가격</b>", label_style), Paragraph(apt_price_str, value_style)]
             ]
             ho_table = Table(ho_table_data, colWidths=[100, 150, 100, 150])
@@ -556,16 +648,24 @@ colors.HexColor("#FFFFFF")), ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8
             story.append(Spacer(1, 10))
         if bld_data.get("floor_map"):
             dong_desc = bld_data["dong_nm"] and ""
-            story.append(Paragraph(f"■ [호수별 구성]{dong_desc} (총 {bld_data["expos_list_count"]}개 호실)", h2_style))
+            story.append(Paragraph(f"■ [호수별 구성 및 전유부 용도]{dong_desc} (총 {bld_data['expos_list_count']}개 호실)", h2_style))
             floor_rows = []
             fm = bld_data["floor_map"]
+            floor_units_map = bld_data.get("floor_units_map", {})
             sorted_floors_list = sorted(fm.keys(), key=(lambda x: int(re.sub("[^0-9-]", "", x)) if re.sub("[^0-9-]", "", x) else 0))
             for flr in sorted_floors_list:
-                hos = sorted(list(fm[flr]))
-                hos_str = ", ".join(hos)
-                floor_rows.append([Paragraph(f"<b>{flr}층</b>", label_style),
-
-Paragraph(hos_str, value_style)])
+                hos = sorted(list(fm[flr]), key=(lambda x: int(re.sub("[^0-9]", "", x)) if re.sub("[^0-9]", "", x) else 0))
+                hos_fmt = []
+                for h in hos:
+                    u_item = floor_units_map.get((flr, h), {})
+                    if u_item.get("is_comm"):
+                        hos_fmt.append(f"<font color='#DC2626'><b>{h}호[근생]</b></font>")
+                    elif u_item.get("purp"):
+                        hos_fmt.append(f"{h}호[주택]")
+                    else:
+                        hos_fmt.append(f"{h}호")
+                hos_str = ", ".join(hos_fmt)
+                floor_rows.append([Paragraph(f"<b>{flr}층</b>", label_style), Paragraph(hos_str, value_style)])
             f" [{bld_data["dong_nm"]}동]"
             floor_table = Table(floor_rows, colWidths=[80, 420])
             floor_table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFFFF")), ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8F0")),
@@ -601,44 +701,47 @@ Paragraph(area_str, table_cell_style_right), Paragraph(f["structure"], table_cel
             fl_table.setStyle(TableStyle(fl_table_style))
             story.append(fl_table)
             story.append(Spacer(1, 10))
-        if not bld_data["is_jibbap"]:
-            story.append(Paragraph("■ [대지지분 정보]", h2_style))
+        if bld_data.get("land_shares_raw"):
+            story.append(Paragraph("■ [단지/동별 대지지분 현황]", h2_style))
             share_rows = []
-            while bld_data.get("land_shares_raw"):
-                seen = set()
-                for item in bld_data["land_shares_raw"]:
-                    rate = item["rate"]
-                    ho = item["ho"]
-                    if ho and ho != "0000":
-                        pass
-                    ho_str = ""
-                    if not rate:
-                        continue
-                    if not rate not in seen:
-                        continue
-                    seen.add(rate)
-                    share_rows.append([Paragraph("대지지분 비율", label_style), Paragraph(f"{rate}{ho_str}", value_style)])
-                None
-                break
-            share_rows.append([Paragraph("대지지분 형태", label_style),
-
-Paragraph(f"단독 소유 (대지면적 {bld_data["plat_area"]} ㎡ 전체)", value_style)])
+            seen = set()
+            for item in bld_data["land_shares_raw"]:
+                rate = item.get("rate") or item.get("raw")
+                ho = item.get("ho")
+                ho_str = f" ({ho}호)" if ho and ho != "0000" else ""
+                if not rate or rate in seen:
+                    continue
+                seen.add(rate)
+                m2_val = item.get("m2")
+                py_val = item.get("pyung")
+                if m2_val and py_val:
+                    val_text = f"{m2_val:.2f} ㎡ (약 {py_val}평) [비율: {rate}]"
+                else:
+                    val_text = f"{rate}"
+                share_rows.append([Paragraph(f"대지지분{ho_str}", label_style), Paragraph(val_text, value_style)])
+                if len(share_rows) >= 15:
+                    break
+            if not bld_data.get("is_jibbap"):
+                share_rows.append([Paragraph("대지지분 형태", label_style), Paragraph(f"단독 소유 (대지면적 {bld_data.get('plat_area', 0)} ㎡ 전체)", value_style)])
+            if share_rows:
+                share_table = Table(share_rows, colWidths=[120, 380])
+                share_table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFFFF")), ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8F0")), ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5), ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8)]))
+                story.append(share_table)
+                story.append(Spacer(1, 10))
+        elif not bld_data.get("is_jibbap"):
+            story.append(Paragraph("■ [대지지분 정보]", h2_style))
+            share_rows = [[Paragraph("대지지분 형태", label_style), Paragraph(f"단독 소유 (대지면적 {bld_data.get('plat_area', 0)} ㎡ 전체)", value_style)]]
             share_table = Table(share_rows, colWidths=[120, 380])
-            share_table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFFFF")),
-
-("BOX", (0, 0), (-1, -1), 1,
-
-colors.HexColor("#E2E8F0")), ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5), ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8)]))
+            share_table.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#FFFFFF")), ("BOX", (0, 0), (-1, -1), 1, colors.HexColor("#E2E8F0")), ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#EDF2F7")), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5), ("LEFTPADDING", (0, 0), (-1, -1), 8), ("RIGHTPADDING", (0, 0), (-1, -1), 8)]))
             story.append(share_table)
+            story.append(Spacer(1, 10))
         def find_img_file(name):
-            for d in (".", "scratch", ".."):
+            for d in (".", "scratch", "..", "assets", "../assets"):
                 for ext in (".png", ".jpg", ".jpeg"):
                     p_path = os.path.join(d, name + ext)
-                    if not os.path.exists(p_path):
-                        pass
-                    None
-                    None
-                return p_path
+                    if os.path.exists(p_path):
+                        return p_path
+            return None
         center_bold_style = ParagraphStyle("FooterCenterBold", parent=styles["Normal"], fontName="KoreanFont", fontSize=11, leading=15, textColor=colors.HexColor("#1A365D"), alignment=1, bold=True)
         center_normal_style = ParagraphStyle("FooterCenterNormal", parent=styles["Normal"], fontName="KoreanFont", fontSize=9.5, leading=14, textColor=colors.HexColor("#4A5568"), alignment=1)
         italic_quote_style = ParagraphStyle("FooterItalicQuote", parent=styles["Normal"], fontName="KoreanFont", fontSize=11, leading=16, textColor=colors.HexColor("#2D3748"), alignment=1)
@@ -696,83 +799,156 @@ colors.HexColor("#E2E8F0")), ("INNERGRID", (0, 0), (-1, -1), 0.5, colors.HexColo
         if naver_path:
             from reportlab.platypus import Image
             naver_img = Image(naver_path, width=70, height=70)
-            while 1:
-                if kakao_img or naver_img:
-                    cols = []
-                    widths = []
-                    if kakao_img:
-                        cols.append(kakao_img)
-                        widths.append(70)
-                    if kakao_img and naver_img:
-                        cols.append("")
-                        widths.append(20)
-                    if naver_img:
-                        cols.append(naver_img)
-                        widths.append(70)
-                    qr_table = Table([cols], colWidths=widths)
-                    qr_table.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
-                    qr_row = Table([[qr_table]], colWidths=[500])
-                    qr_row.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
-                    story.append(qr_row)
-                    story.append(Spacer(1, 12))
-                story.append(get_divider())
-                story.append(Spacer(1, 10))
-                story.append(Paragraph('"데이터로 설명하고,<br/>신뢰로 연결합니다."', italic_quote_style))
-                story.append(Spacer(1, 8))
-                story.append(Paragraph("<b>SHINDAERIM PROPERTY INTELLIGENCE</b>", center_bold_style))
-                def draw_page_decorations(canvas, doc_obj):
-                    try:
-                        canvas.saveState()
-                        member = load_member_info()
-                        if member:
-                            m_name = format_member_name(member.get("name", ""))
-                            m_phone = member.get("phone", "")
-                            m_addr = member.get("office_address", "")
-                            m_reg = member.get("registration_number", "")
-                            if m_reg:
-                                pass
-                            reg_part = ""
-                            office_info = f"{m_name} | {m_addr} | Tel: {m_phone}{reg_part}"
-                        else:
-                            office_info = "신대림공인중개사사무소 | 서울 마포구 모래내로 7길 52 | Tel 02-375-4489 | HP 010-9128-0586"
-                            if os.path.exists("office_info.txt"):
-                                try:
-                                    with open("office_info.txt", "r", encoding="utf-8") as f:
-                                        content = f.read().strip()
-                                        if content:
-                                            office_info = content
-                                except:
-                                    canvas.setStrokeColor(colors.HexColor("#E2E8F0"))
-                                    canvas.setLineWidth(0.5)
-                                    canvas.line(47, 45, A4[0] - 47, 45)
-                                    canvas.setFont("KoreanFont", 8)
-                                    canvas.setFillColor(colors.HexColor("#718096"))
-                                    canvas.drawString(47, 30, office_info)
-                                    canvas.drawRightString(A4[0] - 47, 30, page_num_str)
-                                    canvas.restoreState()
-                    except:
-                        pass
-                doc.build(story, onFirstPage=draw_page_decorations, onLaterPages=draw_page_decorations)
-                print(f"       -> PDF 파일 위치: {os.path.abspath(filename_pdf)}")
+        if kakao_img or naver_img:
+            cols = []
+            widths = []
+            if kakao_img:
+                cols.append(kakao_img)
+                widths.append(70)
+            if kakao_img and naver_img:
+                cols.append("")
+                widths.append(20)
+            if naver_img:
+                cols.append(naver_img)
+                widths.append(70)
+            qr_table = Table([cols], colWidths=widths)
+            qr_table.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+            qr_row = Table([[qr_table]], colWidths=[500])
+            qr_row.setStyle(TableStyle([("ALIGN", (0, 0), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE")]))
+            story.append(qr_row)
+            story.append(Spacer(1, 12))
+        story.append(get_divider())
+        story.append(Spacer(1, 10))
+        story.append(Paragraph('"본 자료는 참고용이며, 정확한 시세와 매물 상담은 직접 전화주시면 친절하게 안내해 드립니다.<br/><font color="#E53E3E"><b>지금 바로 전화주시면, 고객님께 딱 맞는 최적의 매물을 찾아드립니다!</b></font>"<br/><br/>이제 중개도 과학입니다.', italic_quote_style))
+        story.append(Spacer(1, 8))
+        story.append(Paragraph("<b>SHINDAERIM PROPERTY INTELLIGENCE</b>", center_bold_style))
+        def draw_page_decorations(canvas, doc_obj):
+            try:
+                canvas.saveState()
+                member = load_member_info()
+                if member:
+                    m_name = format_member_name(member.get("name", ""))
+                    m_phone = member.get("phone", "")
+                    m_addr = member.get("office_address", "")
+                    m_reg = member.get("registration_number", "")
+                    reg_part = f" | 등록번호: {m_reg}" if m_reg else ""
+                    office_info = f"{m_name} | {m_addr} | Tel: {m_phone}{reg_part}"
+                else:
+                    office_info = "신대림공인중개사사무소 | 서울 마포구 모래내로 7길 52 | Tel 02-375-4489 | HP 010-9128-0586"
+                    if os.path.exists("office_info.txt"):
+                        try:
+                            with open("office_info.txt", "r", encoding="utf-8") as f:
+                                content = f.read().strip()
+                                if content:
+                                    office_info = content
+                        except:
+                            pass
+                canvas.setStrokeColor(colors.HexColor("#E2E8F0"))
+                canvas.setLineWidth(0.5)
+                canvas.line(47, 45, A4[0] - 47, 45)
+                canvas.setFont("KoreanFont", 8)
+                canvas.setFillColor(colors.HexColor("#718096"))
+                canvas.drawString(47, 30, office_info)
+                page_num_str = f"- {doc_obj.page} -"
+                canvas.drawRightString(A4[0] - 47, 30, page_num_str)
+                canvas.restoreState()
+            except:
+                pass
+        doc.build(story, onFirstPage=draw_page_decorations, onLaterPages=draw_page_decorations)
+        print(f"       -> PDF 파일 위치: {os.path.abspath(filename_pdf)}")
         grnd_cnt_int = 0
     except Exception as e:
         print(f" [!] PDF 파일 생성 중 오류 발생: {e}")
+
+def save_consultation_history_log(clean_addr, road_addr, ho_name, phone_no, trade_type, price, monthly, area, land_share, viol_str="정상"):
+    """
+    상담 분석 이력을 종합분석보고서/상담분석_이력대장.csv 에 자동 누적 기록
+    """
+    try:
+        import os
+        import csv
+        from datetime import datetime
+        
+        unified_dir = "종합분석보고서"
+        os.makedirs(unified_dir, exist_ok=True)
+        csv_path = os.path.join(unified_dir, "상담분석_이력대장.csv")
+        
+        file_exists = os.path.exists(csv_path)
+        with open(csv_path, "a", encoding="utf-8-sig", newline="") as f:
+            writer = csv.writer(f)
+            if not file_exists:
+                writer.writerow([
+                    "일시", "지번주소", "도로명주소", "호수", "상담자전화번호", 
+                    "거래유형", "희망가격(만원)", "월세(만원)", 
+                    "전용면적(㎡)", "전용면적(평)", "대지지분(㎡)", "대지지분(평)", "위반여부"
+                ])
+            
+            area_m2 = f"{float(area):.2f}" if area else ""
+            area_py = f"{round(float(area) * 0.3025, 1)}" if area else ""
+            
+            ls_m2 = f"{float(land_share):.2f}" if land_share else ""
+            ls_py = f"{round(float(land_share) * 0.3025, 1)}" if land_share else ""
+            
+            ho_disp = f"{ho_name}호" if ho_name and not str(ho_name).endswith("호") else (ho_name or "")
+            
+            writer.writerow([
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                clean_addr or "",
+                road_addr or "",
+                ho_disp,
+                phone_no or "",
+                trade_type or "종합",
+                price or "",
+                monthly or "",
+                area_m2,
+                area_py,
+                ls_m2,
+                ls_py,
+                viol_str or "정상"
+            ])
+        print(f"       -> [기록 보존] 상담분석 이력대장 자동 저장 완료: {csv_path}")
+    except Exception as e:
+        print(f" [!] 상담분석 이력대장 저장 중 오류: {e}")
+
 def save_building_report(address, bld_data):
+    from trade_viewer import mask_address_string, mask_phone_number
     import os; os.makedirs("건축물대장", exist_ok=True)
-    safe_addr = "".join([c for c in address if c not in (" ", "-", "_")]).strip();
     
+    # 1. 파일명 생성 (호수가 있으면 호수 포함)
+    ho_name = bld_data.get("ho_name", "")
+    safe_ho = "".join([c for c in str(ho_name) if c.isalnum()]).strip()
+    ho_suffix = f"_{safe_ho}호" if safe_ho else ""
+    
+    safe_addr = "".join([c for c in address if c not in (" ", "-", "_")]).strip()
+    filename_txt = f"건축물대장/건축물대장_{safe_addr}{ho_suffix}.txt"
+    filename_pdf = f"건축물대장/건축물대장_{safe_addr}.pdf"
+    
+    # 2. 정확한 원본 주소 조합 (저장용 텍스트 기록에 보존)
+    raw_clean_addr = bld_data.get("clean_address", "")
+    raw_road_addr = bld_data.get("road_address", "")
+    if raw_clean_addr and raw_road_addr and raw_clean_addr != raw_road_addr:
+        full_raw_address = f"{raw_clean_addr} ({raw_road_addr})"
+    else:
+        full_raw_address = raw_clean_addr or raw_road_addr or address
+    if ho_name and not full_raw_address.endswith(f"{ho_name}호") and not full_raw_address.endswith(f"{ho_name}"):
+        full_raw_address += f" {ho_name}호"
+        
     masked_address = mask_address_string(address)
     
     lines = []
     
-    lines.append("================================================================================"); lines.append(f"               [ {masked_address} 건축물대장 및 토지 정보 ]"); lines.append("================================================================================"); lines.append("※ 본 보고서는 대장 조회를 통해 실시간 분석한 결과입니다.")
+    lines.append("================================================================================")
+    lines.append(f"               [ {full_raw_address} 건축물대장 및 토지 정보 ]")
+    lines.append("================================================================================")
+    lines.append("※ 본 보고서는 대장 조회를 통해 실시간 분석한 결과입니다. (내부 보관용 상세 기록)")
     
-    lines.append(f"※ 조회 일시: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}")
+    lines.append(f"※ 조회 일시: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     phone_no = bld_data.get("phone_number")
     if phone_no:
-        lines.append(f"※ 의뢰인 연락처: {mask_phone_number(phone_no)}")
-    lines.append("--------------------------------------------------------------------------------"); lines.append("■ [기본 건축물 정보]")
+        lines.append(f"※ 의뢰인 연락처: {phone_no}") # 저장 기록에는 마스킹 없이 원본 전화번호 보존!
+    lines.append("--------------------------------------------------------------------------------")
+    lines.append("■ [기본 건축물 정보]")
     bld_type_str = "집합건물 (공동주택/아파트/오피스텔 등)" if bld_data["is_jibbap"] else "일반건물 (단독/다가구/상가주택 등)"
     lines.append(f"  • 건물 유형: {bld_type_str}")
     
@@ -783,6 +959,7 @@ def save_building_report(address, bld_data):
     lines.append(f"  • 지목     : {bld_data.get('lndcgr') or '정보없음'}")
     lines.append(f"  • 용도지역 : {bld_data.get('use_zone') or '정보없음'}")
     
+    land_price_str = "정보없음"
     if bld_data.get("land_price_m2"):
         p_m2 = bld_data["land_price_m2"]
         p_py = round(p_m2 / 0.3025)
@@ -797,20 +974,12 @@ def save_building_report(address, bld_data):
     lines.append(f"  • 층수     : 지상 {bld_data["grnd_cnt"]}층 / 지하 {bld_data["ugrnd_cnt"]}층"); lines.append(f"  • 세대/가구: 공동주택 {bld_data["hhld"]}세대 / 다가구 {bld_data["fmly"]}가구"); lines.append(f"  • 주차대수 : {bld_data["parking"]} 대")
     
     lines.append(f"  • 사용승인 : {bld_data["apr_day"]}"); lines.append(f"  • 위반여부 : {bld_data["viol_str"]}")
-    if not bld_data.get("ride_elvt", 0):
-        bld_data.get("ride_elvt", 0)
-    ride_elvt = 0
+    ride_elvt = bld_data.get("ride_elvt", 0)
+    emgen_elvt = bld_data.get("emgen_elvt", 0)
+    total_elvt = bld_data.get("elvt_cnt", 0)
     
-    if not bld_data.get("emgen_elvt", 0):
-        bld_data.get("emgen_elvt", 0)
-    emgen_elvt = 0
-    if not bld_data.get("elvt_cnt", 0):
-        bld_data.get("elvt_cnt", 0)
-    total_elvt = 0
     try:
-        if not bld_data.get("grnd_cnt", 0):
-            bld_data.get("grnd_cnt", 0)
-        grnd_cnt_int = int(0)
+        grnd_cnt_int = int(bld_data.get("grnd_cnt", 0))
         if total_elvt > 0:
             elvt_txt = f"있음 (승용 {ride_elvt}대 / 비상용 {emgen_elvt}대)"
         elif grnd_cnt_int >= 4:
@@ -820,13 +989,16 @@ def save_building_report(address, bld_data):
         lines.append(f"  • 엘리베이터: {elvt_txt}")
         if bld_data.get("room_count_label"):
             lines.append(f"  • 방 개수  : {bld_data["room_count_label"]}")
-        if bld_data["is_jibbap"] and bld_data.get("indiv_house_price"):
-            price_val = bld_data["indiv_house_price"]
+        h_price_val = bld_data.get("house_price") or bld_data.get("indiv_house_price")
+        if h_price_val:
+            price_val = h_price_val
             formatted_p = format_assessed_price(price_val)
             price_126 = int(price_val * 1.26)
             formatted_126 = format_assessed_price(price_126)
-            year_str = bld_data.get("indiv_house_price_year") and ""
-            lines.append(f"  • 주택공시가격: {year_str}{formatted_p} (126%: {formatted_126})")
+            h_year = bld_data.get("house_price_year") or bld_data.get("indiv_house_price_year")
+            year_str = f"{h_year}년 기준 " if h_year else ""
+            label_name = "공동주택가격" if bld_data.get("is_jibbap") else "주택공시가격"
+            lines.append(f"  • {label_name}: {year_str}{formatted_p} (126%: {formatted_126})")
         lines.append("--------------------------------------------------------------------------------")
         reg = bld_data["reg_info"]
         lines.append("■ [토지 규제 및 구역 지정 정보]")
@@ -849,21 +1021,27 @@ def save_building_report(address, bld_data):
         lines.append("--------------------------------------------------------------------------------")
         if bld_data.get("ho_details"):
             hd = bld_data["ho_details"]
-            lines.append(f"■ [{mask_ho_name(bld_data["ho_name"])}호 전유부분 상세 정보]")
-            lines.append(f"  • 해당 층수: {hd["flr_no"]}층")
+            ho_title = f"{bld_data['ho_name']}호" if bld_data.get("ho_name") else "전유부분"
+            lines.append(f"■ [{ho_title} 상세 정보]")
+            hd_flr = hd.get("flr_no") or hd.get("flrNo") or "정보없음"
+            hd_flr_str = f"{hd_flr}층" if str(hd_flr).isdigit() else str(hd_flr)
+            lines.append(f"  • 해당 층수: {hd_flr_str}")
+            if hd.get("purpose"):
+                comm_tag = " ⚠️ [비주거용 근린생활시설 - 전세대출/보증보험 불가 및 주거용 불법 사용 주의]" if hd.get("is_commercial") else " (주거용)"
+                lines.append(f"  • 전유부 용도: {hd['purpose']}{comm_tag}")
             if hd.get("area"):
                 pyung = round(hd["area"] * 0.3025, 1)
-                lines.append(f"  • 전용면적: {hd["area"]:.2f} ㎡ ({pyung}평)")
+                lines.append(f"  • 전용면적: {hd['area']:.2f} ㎡ ({pyung}평)")
             if hd.get("supply_area"):
                 spyung = round(hd["supply_area"] * 0.3025, 1)
-                lines.append(f"  • 공급면적: {hd["supply_area"]:.2f} ㎡ ({spyung}평)")
+                lines.append(f"  • 공급면적: {hd['supply_area']:.2f} ㎡ ({spyung}평)")
             land_share_str = "정보없음"
             if hd.get("land_share"):
                 l_area = float(hd["land_share"])
                 l_pyung = round(l_area * 0.3025, 1)
                 land_share_str = f"{l_area:.2f} ㎡ ({l_pyung}평)"
             lines.append(f"  • 대지지분: {land_share_str}")
-            viol_status = hd.get("viol_yn") == "Y" and "정상 (위반 없음)"
+            viol_status = "⚠️ 위반건축물" if (hd.get("viol_yn") == "Y" or hd.get("violBldYn") == "Y") else "정상 (위반 없음)"
             lines.append(f"  • 위반 여부: {viol_status}")
             if hd.get("apt_price"):
                 price_val = hd["apt_price"]
@@ -875,14 +1053,24 @@ def save_building_report(address, bld_data):
             lines.append("--------------------------------------------------------------------------------")
         if bld_data.get("floor_map"):
             fm = bld_data["floor_map"]
+            floor_units_map = bld_data.get("floor_units_map", {})
             dong_desc = bld_data["dong_nm"] and ""
-            lines.append(f"■ [호수별 구성]{dong_desc} (총 {bld_data["expos_list_count"]}개 호실)")
+            lines.append(f"■ [호수별 구성 및 전유부 용도]{dong_desc} (총 {bld_data['expos_list_count']}개 호실)")
             sorted_floors_list = sorted(fm.keys(), key=(lambda x: int(re.sub("[^0-9-]", "", x)) if re.sub("[^0-9-]", "", x) else 0))
             for flr in sorted_floors_list:
-                hos = sorted(list(fm[flr]))
-                hos_str = ", ".join(hos)
+                hos = sorted(list(fm[flr]), key=(lambda x: int(re.sub("[^0-9]", "", x)) if re.sub("[^0-9]", "", x) else 0))
+                hos_fmt = []
+                for h in hos:
+                    u_item = floor_units_map.get((flr, h), {})
+                    if u_item.get("is_comm"):
+                        hos_fmt.append(f"{h}호[⚠️근생]")
+                    elif u_item.get("purp"):
+                        hos_fmt.append(f"{h}호[주택]")
+                    else:
+                        hos_fmt.append(f"{h}호")
+                hos_str = ", ".join(hos_fmt)
                 lines.append(f"  • {flr}층: {hos_str}")
-            f" [{bld_data["dong_nm"]}동]"
+            f" [{bld_data['dong_nm']}동]"
             lines.append("--------------------------------------------------------------------------------")
         elif bld_data.get("distinct_dongs"):
             dongs_str = ", ".join(bld_data["distinct_dongs"])
@@ -900,32 +1088,33 @@ def save_building_report(address, bld_data):
             lines.append("--------------------------------------------------------------------------------")
         if not bld_data["is_jibbap"]:
             lines.append("■ [대지지분 정보]")
-            while bld_data.get("land_shares_raw"):
+            if bld_data.get("land_shares_raw"):
                 seen = set()
                 for item in bld_data["land_shares_raw"]:
                     rate = item["rate"]
                     ho = item["ho"]
-                    if ho and ho != "0000":
-                        pass
-                    ho_str = ""
-                    if not rate:
-                        continue
-                    if not rate not in seen:
+                    ho_str = f" ({ho}호)" if ho and ho != "0000" else ""
+                    if not rate or rate in seen:
                         continue
                     seen.add(rate)
                     lines.append(f"  • 대지지분 비율: {rate}{ho_str}")
-                None
-                break
-            lines.append(f"  • 대지 지분: 단독 소유 (대지면적: {bld_data["plat_area"]} ㎡ 전체)")
+            else:
+                lines.append(f"  • 대지 지분: 단독 소유 (대지면적: {bld_data['plat_area']} ㎡ 전체)")
             lines.append("--------------------------------------------------------------------------------")
+        m_name = "조항준 공인중개사"
+        phone_line = "📞 02-375-4489 / 010-9128-0586"
+        addr_lines = ["📍 서울 마포구 모래내로 7길 52"]
+        m_reg = ""
         member = load_member_info()
         if member:
-            m_name = format_member_name(member.get("name", ""))
+            m_name = format_member_name(member.get("name", "")) or m_name
             m_phone = member.get("phone", "")
+            if m_phone:
+                phone_line = f"📞 {m_phone}"
             m_addr = member.get("office_address", "")
+            if m_addr:
+                addr_lines = [f"📍 {m_addr}"]
             m_reg = member.get("registration_number", "")
-            phone_line = f"📞 {m_phone}"
-            addr_lines = [f"📍 {m_addr}"]
         lines.append("──────────────────────────────")
         lines.append("")
         lines.append("        감사합니다.")
@@ -947,8 +1136,8 @@ def save_building_report(address, bld_data):
         lines.append("")
         lines.append("──────────────────────────────")
         lines.append("")
-        lines.append('"데이터로 설명하고,')
-        lines.append('신뢰로 연결합니다."')
+        lines.append('"이제 중개도')
+        lines.append('과학입니다."')
         lines.append("")
         lines.append("SHINDAERIM PROPERTY INTELLIGENCE")
         txt_content = "\n".join(lines)
@@ -960,23 +1149,65 @@ def save_building_report(address, bld_data):
         import shutil
         unified_dir = "종합분석보고서"
         os.makedirs(unified_dir, exist_ok=True)
-        unified_txt = os.path.join(unified_dir, f"건축물대장_{safe_addr.replace(" ", "_")}.txt")
-        unified_pdf = os.path.join(unified_dir, f"건축물대장_{safe_addr.replace(" ", "_")}.pdf")
+        safe_addr_clean = safe_addr.replace(" ", "_")
+        unified_txt = os.path.join(unified_dir, f"건축물대장_{safe_addr_clean}.txt")
+        unified_pdf = os.path.join(unified_dir, f"건축물대장_{safe_addr_clean}.pdf")
         shutil.copy2(filename_txt, unified_txt)
+        if ho_suffix:
+            unified_ho_txt = os.path.join(unified_dir, f"건축물대장_{safe_addr_clean}{ho_suffix}.txt")
+            try:
+                shutil.copy2(filename_txt, unified_ho_txt)
+            except Exception:
+                pass
         if os.path.exists(filename_pdf):
             shutil.copy2(filename_pdf, unified_pdf)
         print("       -> 종합분석보고서 통합 폴더에도 복사본이 저장되었습니다.")
         return
-        open(filename_txt, "w", encoding="utf-8")
-        c = "⚠️ 지정됨"
-    except:
-        grnd_cnt_int = 0
-    sorted_floors_list = sorted(fm.keys())
+    except Exception as e:
+        print(f" [!] 보고서 저장 중 오류 발생: {e}")
+
+def filter_villas_by_redev_status(transactions, target_reg_info, sigungu_cd, bjdong_cd, vworld_key):
+    import concurrent.futures
+    import re
+    is_target_redev = bool(target_reg_info.get("moatown") or target_reg_info.get("redev"))
     
-    area_str = f"{f["area"]} ㎡"
-    if not __exception__(__exception__, "🟢 해당", __exception__):
-        pass
-    open(filename_txt, "w", encoding="utf-8").__exit__
+    unique_pnus = {}
+    for t in transactions:
+        jibun = str(t.get("jibun", ""))
+        san_gb = "2" if "산" in jibun else "1"
+        jibun_clean = re.sub(r"[^\d-]", "", jibun)
+        parts = jibun_clean.split("-")
+        bun_str = parts[0].zfill(4) if len(parts) > 0 and parts[0] else "0000"
+        ji_str = parts[1].zfill(4) if len(parts) > 1 and parts[1] else "0000"
+        pnu = f"{sigungu_cd}{bjdong_cd}{san_gb}{bun_str}{ji_str}"
+        if pnu not in unique_pnus:
+            unique_pnus[pnu] = []
+        unique_pnus[pnu].append(t)
+        
+    def check_pnu(pnu):
+        return get_vworld_land_use_info(vworld_key, pnu, sigungu_cd)
+        
+    print(f"\n -> [빌라/다세대] 인근 매물 정비구역(모아타운 등) 특성 일치 여부 병렬 분석 중... (비교 대상 지번: {len(unique_pnus)}개)")
+    pnu_results = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        future_to_pnu = {executor.submit(check_pnu, p): p for p in unique_pnus.keys()}
+        for future in concurrent.futures.as_completed(future_to_pnu):
+            p = future_to_pnu[future]
+            try:
+                pnu_results[p] = future.result()
+            except Exception:
+                pnu_results[p] = {"moatown": False, "redev": False}
+                
+    filtered_transactions = []
+    for pnu, tx_list in unique_pnus.items():
+        res = pnu_results.get(pnu, {})
+        is_pnu_redev = bool(res.get("moatown") or res.get("redev"))
+        if is_target_redev == is_pnu_redev:
+            filtered_transactions.extend(tx_list)
+            
+    print(f"    (정비구역/일반구역 특성 일치 매물 필터링 완료: 확장 전 {len(transactions)}건 -> 필터링 후 {len(filtered_transactions)}건)")
+    return filtered_transactions
+
 def run_building_viewer():
     try:
         print("\n============================================================")
@@ -992,8 +1223,13 @@ def run_building_viewer():
         address = input("\n[입력] 조회할 건물 주소 (예: 성산동 138-4 402호): ").strip()
         if not address or address.lower() == "q":
             return
-        from trade_viewer import parse_address_and_ho, get_expos_unit_details, classify_property_type, get_recent_transactions, print_comparison_table, match_dong, print_empty_transactions_explanation
+        from trade_viewer import (
+            parse_address_and_ho, get_expos_unit_details, classify_property_type,
+            get_recent_transactions, print_comparison_table, match_dong,
+            print_empty_transactions_explanation, parse_money_input, extract_floor_from_string
+        )
         clean_address, dong_name, ho_name = parse_address_and_ho(address)
+        is_complex_analysis = False
         bld_nm = ""
         dong_nm = ""
         is_jibbap = False
@@ -1018,16 +1254,87 @@ def run_building_viewer():
         if not titles:
             print(" [!] 등록된 표제부(건물 정보) 데이터가 없습니다. (단독 필지 또는 미등록 대지)")
             return
-        selected_title = titles[0]
         if dong_name:
+            selected_title = titles[0]
             for t in titles:
-                if match_dong(dong_name, t.get("dongNm", "")):
+                if match_dong(dong_name, t.get("dongNm", "")) or match_dong(dong_name, t.get("bldNm", "")):
                     selected_title = t
                     break
+        else:
+            if len(titles) > 1:
+                print("\n [!] 해당 지번에 여러 개의 건물이 확인되었습니다.")
+                print(" [안내] 어떤 형태의 분석을 진행하시겠습니까?")
+                print("  1: [개별 세대 CMA] 특정 동/호수를 지정하여 해당 호실의 적정가격을 산출합니다.")
+                print("  2: [단지 종합 분석] 특정 동/호수 지정 없이, 단지 전체의 시세 흐름을 분석합니다.")
+                purpose_sel = input("\n[입력] 원하시는 분석 번호를 선택해 주세요 (1 또는 2, 기본값 1): ").strip()
+                
+                if purpose_sel == '2':
+                    is_complex_analysis = True
+                    best_t = titles[0]
+                    max_h = 0
+                    for t in titles:
+                        try: h = int(t.get("hhldCnt", 0) or 0)
+                        except: h = 0
+                        if h > max_h:
+                            max_h = h
+                            best_t = t
+                    selected_title = best_t
+                else:
+                    # Filter for residential buildings
+                    residential_items = []
+                    other_items = []
+                    for t in titles:
+                        b_nm = str(t.get("bldNm", ""))
+                        d_nm = str(t.get("dongNm", ""))
+                        purp = str(t.get("mainPurpsCdNm", ""))
+                        try: h = int(t.get("hhldCnt", 0) or 0)
+                        except: h = 0
+                        
+                        is_residential = h > 0 or "아파트" in b_nm or "아파트" in d_nm or "주택" in purp or "오피스텔" in purp
+                        if h == 0 and ("근린" in purp or "상가" in b_nm or "상가" in d_nm or "주차" in purp or "영업" in purp):
+                            is_residential = False
+                            
+                        if is_residential:
+                            residential_items.append(t)
+                        else:
+                            other_items.append(t)
+                            
+                    # If there are residential buildings, prefer them
+                    display_items = residential_items if residential_items else other_items
+                    if residential_items and other_items:
+                        print("     (주거용 건물만 필터링하여 보여줍니다.)")
+                        
+                    for idx, t in enumerate(display_items):
+                        b_nm = str(t.get("bldNm", "")).strip() or "건물명 없음"
+                        d_nm = str(t.get("dongNm", "")).strip() or "동 없음"
+                        purp = str(t.get("mainPurpsCdNm", "")).strip() or "용도 불명"
+                        h = t.get("hhldCnt", 0)
+                        print(f"  {idx+1}: {b_nm} ({d_nm}) - {purp} (세대수: {h})")
+                    
+                    while True:
+                        sel = input(f"\n[입력] 분석할 주거용 건물 번호를 선택해 주세요 (1~{len(display_items)}, 자동선택 시 엔터): ").strip()
+                        if not sel:
+                            best_t = display_items[0]
+                            max_h = 0
+                            for t in display_items:
+                                try: h = int(t.get("hhldCnt", 0) or 0)
+                                except: h = 0
+                                if h > max_h:
+                                    max_h = h
+                                    best_t = t
+                            selected_title = best_t
+                            break
+                        if sel.isdigit() and 1 <= int(sel) <= len(display_items):
+                            selected_title = display_items[int(sel)-1]
+                            break
+                        print(" [!] 올바른 번호를 입력해 주세요.")
+            else:
+                selected_title = titles[0]
         main_purp = selected_title.get("mainPurpsCdNm", "")
-        bld_name = selected_title.get("bldNm", "")
+        bld_name = selected_title.get("bldNm", "").strip() or selected_title.get("dongNm", "").strip()
         etc_purp = selected_title.get("etcPurps", "")
-        prop_type = classify_property_type(main_purp, bld_name, etc_purp)
+        hhld_cnt = int(selected_title.get("hhldCnt", 0) or 0)
+        prop_type = classify_property_type(main_purp, bld_name, etc_purp, hhld_cnt)
         reg_gb_cd = str(selected_title.get("regstrGbCd", "")).strip()
         reg_gb_nm = str(selected_title.get("regstrGbCdNm", "")).strip()
         if reg_gb_cd:
@@ -1038,15 +1345,22 @@ def run_building_viewer():
         ji_val = str(addr_info["ji"]).zfill(4) if addr_info.get("ji") else "0000"
         pnu = f"{addr_info['sigunguCd']}{addr_info['bjdongCd']}1{bun_val}{ji_val}"
         vworld_key = "80194C85-0EE3-3220-A3C1-3268AD8756B9"
+        from serve_auto_upload import get_vworld_land_share, get_vworld_all_land_shares
+        shares_map = {}
+        raw_shares = []
+        try:
+            shares_map, raw_shares = get_vworld_all_land_shares(vworld_key, pnu)
+        except Exception as e:
+            print(f"대지권등록부 조회 에러: {e}")
+
         land_share = ""
         if ho_name:
             try:
-                from serve_auto_upload import get_vworld_land_share
-                land_share = get_vworld_land_share(vworld_key, pnu, "", ho_name)
+                land_share = get_vworld_land_share(vworld_key, pnu, dong_name, ho_name)
             except Exception as e:
                 print(f"대지지분 조회 에러: {e}")
         print("\n═══════════════════════════════════════════════════════")
-        bld_nm = selected_title.get("bldNm", "").strip()
+        bld_nm = selected_title.get("bldNm", "").strip() or selected_title.get("dongNm", "").strip()
         dong_nm = selected_title.get("dongNm", "").strip()
         bld_tag = f" ({bld_nm})" if bld_nm else ""
         dong_tag = f" / {dong_nm}동" if dong_nm else ""
@@ -1060,6 +1374,10 @@ def run_building_viewer():
             plat_area_float = 0.0
         if plat_area_float == 0.0 and land_info and land_info.get("area") and float(land_info["area"]) > 0:
             plat_area_val = land_info["area"]
+            try:
+                plat_area_float = float(plat_area_val)
+            except:
+                pass
         print(f"  • 대지면적  : {plat_area_val} ㎡")
         if land_info:
             if land_info.get("lndcgr"):
@@ -1072,7 +1390,8 @@ def run_building_viewer():
             p_py = round(p_m2 / 0.3025)
             print(f"  • 공시지가  : {land_price_info['year']}년 기준 ㎡당 {p_m2:,}원 (평당 약 {p_py:,}원)")
         print(f"  • 건축면적  : {selected_title.get('archArea', '0')} ㎡")
-        print(f"  • 연면적    : {selected_title.get('totArea', '0')} ㎡ (용적률산정연면적: {selected_title.get('vlRatEstTotArea', '0')} ㎡)")
+        vl_rat_tot_area = selected_title.get('vlRatEstmTotArea') or selected_title.get('vlRatEstTotArea', '0')
+        print(f"  • 연면적    : {selected_title.get('totArea', '0')} ㎡ (용적률산정연면적: {vl_rat_tot_area} ㎡)")
         print(f"  • 건물구조  : {selected_title.get('strctCdNm', '정보없음')}")
         print(f"  • 주용도    : {selected_title.get('mainPurpsCdNm', '정보없음')}")
         print(f"  • 층수      : 지상 {selected_title.get('grndFlrCnt', '0')}층 / 지하 {selected_title.get('ugrndFlrCnt', '0')}층")
@@ -1085,7 +1404,24 @@ def run_building_viewer():
         except:
             fmly = 0
         max_units = max(hhld, fmly)
-        print(f"  • 세대/가구 : 공동주택 {hhld}세대 / 다가구 {fmly}가구 (총 {max_units}호실)")
+        
+        total_hhld = 0
+        total_fmly = 0
+        for t in titles:
+            try:
+                total_hhld += int(t.get("hhldCnt", 0) or 0)
+            except:
+                pass
+            try:
+                total_fmly += int(t.get("fmlyCnt", 0) or 0)
+            except:
+                pass
+                
+        if len(titles) > 1 and (total_hhld > hhld or total_fmly > fmly):
+            print(f"  • 세대/가구 : [해당 동] 공동주택 {hhld}세대 / 다가구 {fmly}가구 (총 {max_units}호실)")
+            print(f"               [단지 전체] 공동주택 {total_hhld}세대 / 다가구 {total_fmly}가구")
+        else:
+            print(f"  • 세대/가구 : 공동주택 {hhld}세대 / 다가구 {fmly}가구 (총 {max_units}호실)")
         parking = 0
         for p_type in ("indrAutoUtcnt", "indrMechUtcnt", "oudrAutoUtcnt", "oudrMechUtcnt"):
             try:
@@ -1137,14 +1473,18 @@ def run_building_viewer():
         else:
             elvt_str = "없음"
         print(f"  • 엘리베이터: {elvt_str}")
+        official_house_price = None
+        official_house_year = ""
         if not is_jibbap:
             indiv_house_price = get_vworld_individual_house_price(vworld_key, pnu)
             if indiv_house_price:
                 price_val = indiv_house_price["price"]
+                official_house_price = price_val
+                official_house_year = str(indiv_house_price.get("year", ""))
                 formatted_p = format_assessed_price(price_val)
                 price_126 = int(price_val * 1.26)
                 formatted_126 = format_assessed_price(price_126)
-                print(f"  • 주택공시가격: {indiv_house_price['year']}년 기준 {formatted_p} (126%: {formatted_126})")
+                print(f"  • 주택공시가격: {official_house_year}년 기준 {formatted_p} (126%: {formatted_126})")
         print(" -> 토지이용규제 및 개발구역(모아타운/정비구역/허가구역) 정보 조회 중...")
         reg_info = get_vworld_land_use_info(vworld_key, pnu, addr_info["sigunguCd"])
         if reg_info:
@@ -1167,11 +1507,82 @@ def run_building_viewer():
         target_area = None
         unit_info = None
         floor_map = {}
+        floor_units_map = {}
         expos_list_count = 0
         if is_jibbap:
             if ho_name:
                 print(f"\n -> 요청하신 [{ho_name}호] 전유부 상세 정보 조회 중...")
                 unit_info = get_expos_unit_details(addr_info["sigunguCd"], addr_info["bjdongCd"], addr_info["bun"], addr_info["ji"], ho_name, dong_name)
+                if unit_info:
+                    # 대지지분 매칭 및 주입
+                    l_share_entry = None
+                    if shares_map:
+                        target_clean = re.sub(r'[^0-9]', '', ho_name)
+                        l_share_entry = shares_map.get(ho_name) or shares_map.get(f"{ho_name}호") or (shares_map.get(target_clean) if target_clean else None)
+                    if l_share_entry and l_share_entry.get("m2") is not None:
+                        l_m2 = l_share_entry["m2"]
+                        l_py = l_share_entry["pyung"]
+                        unit_info["land_share"] = l_m2
+                        unit_info["land_share_pyung"] = l_py
+                        unit_info["land_share_str"] = f"{l_m2:.2f} ㎡ ({l_py}평)"
+                        unit_info["land_share_raw"] = l_share_entry.get("raw", "")
+                    elif land_share:
+                        try:
+                            l_m2 = float(land_share)
+                            l_py = round(l_m2 * 0.3025, 2)
+                            unit_info["land_share"] = l_m2
+                            unit_info["land_share_pyung"] = l_py
+                            unit_info["land_share_str"] = f"{l_m2:.2f} ㎡ ({l_py}평)"
+                        except:
+                            pass
+
+                    # 1차 화면 상단에 호실 핵심 지표 즉시 출력!
+                    disp_ho = unit_info.get('hoNm') or ho_name
+                    if not str(disp_ho).endswith("호"):
+                        disp_ho = f"{disp_ho}호"
+                    flr_val = unit_info.get('flrNo')
+                    if not flr_val and l_share_entry and l_share_entry.get('floor'):
+                        flr_val = l_share_entry['floor']
+                    if not flr_val:
+                        from trade_viewer import extract_floor_from_string
+                        flr_val = extract_floor_from_string(ho_name)
+                    flr_disp = f"{flr_val}층" if flr_val else "정보없음"
+
+                    print("\n───────────────────────────────────────────────────────")
+                    print(f"  🎯 [ {disp_ho} 전유부분 및 대지지분 핵심 정보 ]")
+                    print("───────────────────────────────────────────────────────")
+                    print(f"  • 해당 층수    : {flr_disp}")
+                    purp_val = unit_info.get("purpose")
+                    if purp_val:
+                        if unit_info.get("is_commercial"):
+                            print(f"  • 전유부 주용도: ⚠️ {purp_val} [근린생활시설 - 전세대출/보증보험 제한 및 주거용 불법개조 여부 주의]")
+                        else:
+                            print(f"  • 전유부 주용도: {purp_val} (주거용)")
+                    if unit_info.get("area"):
+                        pyung = round(unit_info["area"] * 0.3025, 1)
+                        print(f"  • 전용면적    : {unit_info['area']:.2f} ㎡ (약 {pyung}평)")
+                        target_area = unit_info["area"]
+                    if unit_info.get("supply_area"):
+                        spyung = round(unit_info["supply_area"] * 0.3025, 1)
+                        print(f"  • 공급면적    : {unit_info['supply_area']:.2f} ㎡ (약 {spyung}평)")
+                    if unit_info.get("land_share"):
+                        raw_tag = f" [대지권비율: {unit_info.get('land_share_raw')}]" if unit_info.get('land_share_raw') else ""
+                        print(f"  • ★대지지분★ : {unit_info['land_share']:.2f} ㎡ (약 {unit_info['land_share_pyung']}평){raw_tag}")
+                    else:
+                        print(f"  • 대지지분    : 대지권등록부 정보 없음 (단독/다가구 또는 미등기)")
+                    viol_status = "⚠️ 위반건축물" if unit_info.get("viol_yn") == "Y" or unit_info.get("violBldYn") == "Y" else "정상 (위반 없음)"
+                    print(f"  • 위반 여부    : {viol_status}")
+                    apt_house_price = get_vworld_apartment_house_price(vworld_key, pnu, dong_name, ho_name)
+                    if apt_house_price:
+                        price_val = apt_house_price["price"]
+                        official_house_price = price_val
+                        official_house_year = str(apt_house_price.get("year", ""))
+                        formatted_p = format_assessed_price(price_val)
+                        price_126 = int(price_val * 1.26)
+                        formatted_126 = format_assessed_price(price_126)
+                        print(f"  • 공동주택가격: {official_house_year}년 기준 {formatted_p} (126%: {formatted_126})")
+                    print("───────────────────────────────────────────────────────")
+
             print("\n -> 전유부(가구/호수 리스트) 조회 중...")
             expos_list = get_expos_info_list(addr_info["sigunguCd"], addr_info["bjdongCd"], addr_info["bun"], addr_info["ji"])
             if expos_list:
@@ -1184,7 +1595,11 @@ def run_building_viewer():
                     print("--------------------------------------------------")
                 else:
                     filtered_count = 0
+                    floor_units_map = {}
                     for item in expos_list:
+                        gb = str(item.get("exposPubuseGbCd", "1")).strip()
+                        if gb == "2" or str(item.get("exposPubuseGbCdNm", "")).strip() == "공용":
+                            continue
                         item_dong = item.get("dongNm", "") or ""
                         if dong_name and not match_dong(dong_name, item_dong):
                             continue
@@ -1192,19 +1607,46 @@ def run_building_viewer():
                         ho = str(item.get("hoNm", "")).strip()
                         if not flr or not ho:
                             continue
+                        mp = str(item.get("mainPurpsCdNm", "") or "").strip()
+                        ep = str(item.get("etcPurps", "") or "").strip()
+                        purp = ep if ep else mp
+                        comm_keywords = ["근린생활", "근생", "사무소", "소매점", "음식점", "학원", "상가", "점포", "창고", "공장", "의원", "판매시설", "고시원"]
+                        is_comm = any(k in purp for k in comm_keywords)
+                        area_val = item.get("area")
                         if flr not in floor_map:
                             floor_map[flr] = set()
                         floor_map[flr].add(ho)
+                        floor_units_map[(flr, ho)] = {"area": area_val, "purp": purp, "is_comm": is_comm}
                         filtered_count += 1
                     expos_list_count = filtered_count
                     print("--------------------------------------------------")
                     dong_desc = f" [{dong_name}동]" if dong_name else ""
-                    print(f"  [호수별 구성]{dong_desc} 총 {filtered_count}개 전유부분 등록됨")
+                    print(f"  [호수별 구성 및 전유부 용도 현황]{dong_desc} 총 {filtered_count}개 전유부분 등록됨")
                     sorted_floors = sorted(floor_map.keys(), key=(lambda x: int(re.sub("[^0-9-]", "", x)) if re.sub("[^0-9-]", "", x) else 0))
                     for flr in sorted_floors:
-                        hos = sorted(list(floor_map[flr]))
-                        hos_str = ", ".join(hos)
-                        print(f"   • {flr}층: {hos_str}")
+                        hos = sorted(list(floor_map[flr]), key=(lambda x: int(re.sub("[^0-9]", "", x)) if re.sub("[^0-9]", "", x) else 0))
+                        if filtered_count <= 30:
+                            print(f"   • {flr}층:")
+                            for h in hos:
+                                u_item = floor_units_map.get((flr, h), {})
+                                u_purp = u_item.get("purp", "")
+                                u_comm = u_item.get("is_comm", False)
+                                u_area = u_item.get("area")
+                                area_str = f" {u_area}㎡" if u_area else ""
+                                tag = " [⚠️근생]" if u_comm else " [주택]"
+                                purp_str = f" - {u_purp}" if u_purp else ""
+                                h_clean = re.sub(r'[^0-9]', '', h)
+                                sh = shares_map.get(h) or shares_map.get(f"{h}호") or (shares_map.get(h_clean) if h_clean else None) if shares_map else None
+                                sh_str = f" | 대지지분 {sh['m2']:.2f} ㎡ (약 {sh['pyung']}평)" if (sh and sh.get("m2") is not None) else ""
+                                print(f"      - {h}호{tag}{area_str}{purp_str}{sh_str}")
+                        else:
+                            hos_formatted = []
+                            for h in hos:
+                                u_item = floor_units_map.get((flr, h), {})
+                                u_comm = u_item.get("is_comm", False)
+                                tag = "[근생]" if u_comm else "[주택]"
+                                hos_formatted.append(f"{h}호{tag}")
+                            print(f"   • {flr}층: {', '.join(hos_formatted)}")
                     print("--------------------------------------------------")
             else:
                 print("  [참고] 등록된 개별 호수 구성(전유부분)이 없습니다.")
@@ -1256,15 +1698,15 @@ def run_building_viewer():
             except Exception as e:
                 print(f"토지대장 조회 에러: {e}")
         print("\n==================================================")
-        cma_choice = input("[입력] 물건 분석(CMA) 및 시세 브리핑 보고서 생성을 진행하시겠습니까? (y/n) [기본값: n]: ").strip().lower()
-        if cma_choice != "y":
+        cma_choice = input("[입력] 물건 분석(CMA) 및 시세 브리핑 보고서 생성을 진행하시겠습니까? (y/n) [기본값: y]: ").strip().lower()
+        if cma_choice == "n":
             print(" -> 물건 분석을 진행하지 않고 종료합니다. (보고서가 저장되지 않습니다)")
             print("═══════════════════════════════════════════════════════")
             return
         if not is_jibbap and ho_name:
             print("\n [안내] 해당 건물은 일반건축물이지만 호실이 지정되어 있어 집합건축물(호별대장)처럼 분석합니다.")
             unit_info = get_expos_unit_details(addr_info["sigunguCd"], addr_info["bjdongCd"], addr_info["bun"], addr_info["ji"], ho_name, dong_name)
-        elif is_jibbap and not ho_name:
+        elif is_jibbap and not ho_name and not is_complex_analysis:
             print("\n [안내] 해당 건물은 집합건축물(호별대장 있음)이지만 호실이 지정되지 않았습니다.")
             ho_input = input("[입력] 분석을 진행할 호실 번호를 입력해 주세요 (예: 201호, 건너뜀 시 엔터): ").strip()
             if ho_input:
@@ -1280,44 +1722,109 @@ def run_building_viewer():
                 pyung = round(unit_info["area"] * 0.3025, 1)
                 print(f"  • 전용면적  : {unit_info['area']:.2f} ㎡ ({pyung}평)")
                 target_area = unit_info["area"]
+            else:
+                print("  • 전용면적  : 정보없음")
+                area_in = input(" [입력] 해당 호실의 전용면적(㎡)을 직접 입력하시겠습니까? (예: 20.66, 없을 시 엔터): ").strip()
+                if area_in:
+                    try:
+                        val_a = float(re.sub(r'[^0-9.]', '', area_in))
+                        if val_a > 0:
+                            unit_info["area"] = val_a
+                            target_area = val_a
+                            py = round(val_a * 0.3025, 1)
+                            print(f" -> 전용면적 직접 설정 완료: {val_a:.2f} ㎡ (약 {py}평)")
+                    except Exception:
+                        pass
             if unit_info.get("supply_area"):
                 spyung = round(unit_info["supply_area"] * 0.3025, 1)
                 print(f"  • 공급면적  : {unit_info['supply_area']:.2f} ㎡ ({spyung}평)")
-            try:
-                from serve_auto_upload import get_vworld_land_share
-                land_share = get_vworld_land_share(vworld_key, pnu, "", ho_name)
-                if land_share:
-                    l_area = float(land_share)
-                    l_pyung = round(l_area * 0.3025, 1)
-                    print(f"  • 대지지분  : {l_area:.2f} ㎡ ({l_pyung}평)")
-            except Exception as e:
-                print(f"대지지분 조회 중 오류: {e}")
+
+            # 대지지분 확인 및 unit_info 주입
+            if not unit_info.get("land_share"):
+                l_share_entry = None
+                if shares_map:
+                    target_clean = re.sub(r'[^0-9]', '', ho_name)
+                    l_share_entry = shares_map.get(ho_name) or shares_map.get(f"{ho_name}호") or (shares_map.get(target_clean) if target_clean else None)
+                if l_share_entry and l_share_entry.get("m2") is not None:
+                    unit_info["land_share"] = l_share_entry["m2"]
+                    unit_info["land_share_pyung"] = l_share_entry["pyung"]
+                    unit_info["land_share_str"] = f"{l_share_entry['m2']:.2f} ㎡ ({l_share_entry['pyung']}평)"
+                    unit_info["land_share_raw"] = l_share_entry.get("raw", "")
+                else:
+                    try:
+                        from serve_auto_upload import get_vworld_land_share
+                        land_share = get_vworld_land_share(vworld_key, pnu, dong_name, ho_name)
+                        if land_share:
+                            l_area = float(land_share)
+                            l_pyung = round(l_area * 0.3025, 2)
+                            unit_info["land_share"] = l_area
+                            unit_info["land_share_pyung"] = l_pyung
+                            unit_info["land_share_str"] = f"{l_area:.2f} ㎡ ({l_pyung}평)"
+                    except Exception as e:
+                        pass
+
+            if unit_info.get("land_share"):
+                raw_tag = f" [대지권비율: {unit_info.get('land_share_raw')}]" if unit_info.get('land_share_raw') else ""
+                print(f"  • ★대지지분★: {unit_info['land_share']:.2f} ㎡ (약 {unit_info.get('land_share_pyung', round(unit_info['land_share']*0.3025, 2))}평){raw_tag}")
+            else:
+                print(f"  • 대지지분  : 정보없음 (대지권등록부 미등기 또는 조회 불가)")
+
+            purp_val = unit_info.get("purpose")
+            if purp_val:
+                if unit_info.get("is_commercial"):
+                    print(f"  • 호실 주용도  : ⚠️ {purp_val} [근린생활시설 - 전세대출/보증보험 불가 유의]")
+                else:
+                    print(f"  • 호실 주용도  : {purp_val} (주거용)")
             viol_status = "⚠️ 위반건축물" if unit_info.get("viol_yn") == "Y" or unit_info.get("violBldYn") == "Y" else "정상 (위반 없음)"
             print(f"  • 위반 여부  : {viol_status}")
             apt_house_price = get_vworld_apartment_house_price(vworld_key, pnu, dong_name, ho_name)
             if apt_house_price:
                 price_val = apt_house_price["price"]
+                official_house_price = price_val
+                official_house_year = str(apt_house_price.get("year", ""))
                 formatted_p = format_assessed_price(price_val)
                 price_126 = int(price_val * 1.26)
                 formatted_126 = format_assessed_price(price_126)
-                print(f"  • 공동주택가격: {apt_house_price['year']}년 기준 {formatted_p} (126%: {formatted_126})")
+                print(f"  • 공동주택가격: {official_house_year}년 기준 {formatted_p} (126%: {formatted_126})")
             print("--------------------------------------------------")
-            try:
-                target_floor = int(re.sub('\\D', '', str(unit_info.get("flrNo", "0"))))
-            except:
-                target_floor = 0
-        elif is_jibbap and ho_name:
-            print(f" [!] 전유부 대장에서 [{ho_name}호]의 상세 정보를 찾지 못했습니다.")
+            target_floor = extract_floor_from_string(ho_name, unit_info)
+        elif ho_name:
+            target_floor = extract_floor_from_string(ho_name)
+            if is_jibbap:
+                print(f" [!] 전유부 대장에서 [{ho_name}호]의 상세 정보를 찾지 못했습니다.")
+                area_in = input(f" [입력] [{ho_name}호]의 전용면적(㎡)을 직접 입력하시겠습니까? (예: 20.66, 건너뜀 시 엔터): ").strip()
+                if area_in:
+                    try:
+                        val_a = float(re.sub(r'[^0-9.]', '', area_in))
+                        if val_a > 0:
+                            target_area = val_a
+                            py = round(val_a * 0.3025, 1)
+                            unit_info = {"area": val_a, "supply_area": None, "flrNo": extract_floor_from_string(ho_name), "violBldYn": "N", "hoNm": ho_name}
+                            print(f" -> 전용면적 직접 설정 완료: {val_a:.2f} ㎡ (약 {py}평)")
+                    except Exception:
+                        pass
+
+        if not official_house_price and (ho_name or not is_jibbap) and not is_complex_analysis:
+            if unit_info and unit_info.get("is_commercial"):
+                print("\n [안내] 해당 호실은 건축물대장상 '근린생활시설(비주거용)'입니다.")
+                print("        주택이 아니므로 주택공시가격(공동주택가격) 및 126% HUG 주택전세보증보험 대상에서 제외됩니다.")
+            else:
+                print("\n [안내] 공공데이터에서 해당 물건/호실의 주택공시가격을 자동으로 조회하지 못했습니다 (신축 또는 미공시).")
         
-        print("\n[희망 거래 형태 선택]")
-        print("  1: 매매")
-        print("  2: 전세")
-        print("  3: 월세")
-        t_choice = input("[입력] 번호를 선택하세요 (1/2/3): ").strip()
-        while t_choice not in ("1", "2", "3"):
-            print(" [!] 올바른 번호(1, 2, 3)를 입력해 주세요.")
-            t_choice = input("[입력] 번호를 선택하세요 (1/2/3): ").strip()
-        trade_type_map = {"1": "매매", "2": "전세", "3": "월세"}
+        if is_complex_analysis:
+            t_choice = "4"
+            print("\n -> [단지 종합 분석] 단지 전체 시세 흐름 조회를 시작합니다.")
+        else:
+            print("\n[희망 거래/보고서 형태 선택]")
+            print("  1: 매매 (CMA 시세 분석)")
+            print("  2: 전세 (CMA 시세 분석)")
+            print("  3: 월세 (CMA 시세 분석)")
+            print("  4: 종합 (전체 거래 동향 보고서 - 가격 비교 생략)")
+            t_choice = input("[입력] 번호를 선택하세요 (1/2/3/4): ").strip()
+            while t_choice not in ("1", "2", "3", "4"):
+                print(" [!] 올바른 번호(1, 2, 3, 4)를 입력해 주세요.")
+                t_choice = input("[입력] 번호를 선택하세요 (1/2/3/4): ").strip()
+        trade_type_map = {"1": "매매", "2": "전세", "3": "월세", "4": "종합"}
         trade_type = trade_type_map[t_choice]
         room_choice = ""
         room_label = ""
@@ -1341,54 +1848,238 @@ def run_building_viewer():
             elif room_choice == "3":
                 room_label = "쓰리룸 이상형"
                 target_area = 55.0
-            floor_input = input("\n[입력] 해당 임대차 매물의 층수를 입력해 주세요 (숫자만 입력, 예: 반지하는 -1, 1층은 1, 2층은 2 등): ").strip()
-            try:
-                target_floor = int(floor_input.replace("층", "").strip())
-            except:
+            
+            fl_desc = f"지하 {abs(target_floor)}층" if (target_floor is not None and target_floor < 0) else (f"{target_floor}층" if target_floor is not None else "1층")
+            fl_guide = f" (현재 인식: {fl_desc}, 유지 시 엔터)" if target_floor is not None else ""
+            floor_input = input(f"\n[입력] 해당 임대차 매물의 층수를 입력해 주세요 (숫자 또는 '지하'/'반지하', 예: -1, 지하1층, 2층 등){fl_guide}: ").strip()
+            if floor_input:
+                parsed_fl = extract_floor_from_string(floor_input)
+                if parsed_fl is not None:
+                    target_floor = parsed_fl
+            elif target_floor is None:
                 target_floor = 1
+
         client_phone = input("[입력] 의뢰인 전화번호 입력 (예: 010-1234-5678, 생략 시 엔터): ").strip()
         target_price = 0
         target_monthly = 0
+        py_price = 0
+        existing_deposit = 0
+        existing_rent = 0
+        loan_amount = 0
+        actual_cash = 0
+        annual_yield = 0.0
+        
+        plat_py = round(plat_area_float * 0.3025, 1) if plat_area_float > 0 else 0.0
         if trade_type == "매매":
-            while True:
-                price_input = input("[입력] 매매 희망가 입력 (단위: 만원, 예: 85000): ").strip()
-                if price_input.isdigit():
-                    target_price = int(price_input)
-                    break
-                print(" [!] 숫자만 입력해 주세요.")
+            price_mode = "1"
+            if (not is_jibbap or prop_type == "4") and plat_py > 0:
+                print(f"\n[희망 매매가 입력 방식 선택] (대지면적: {plat_area_float:.1f}㎡ / 약 {plat_py}평)")
+                print("  1: 총 매매가 기준 (예: 15억 -> 150000 입력)")
+                print("  2: 대지 평당가 기준 (예: 평당 3,200만 -> 3200 입력 시 총액 자동 계산)")
+                pm_input = input("[입력] 번호를 선택하세요 (1/2) [기본값: 1]: ").strip()
+                if pm_input == "2":
+                    price_mode = "2"
+            
+            if price_mode == "2":
+                while True:
+                    py_input = input(f"[입력] 희망 대지 평당가 입력 (단위: 만원/평, 예: 3200, 3,200만): ").strip()
+                    parsed_py = parse_money_input(py_input)
+                    if parsed_py and parsed_py > 0:
+                        py_price = parsed_py
+                        target_price = int(round(plat_py * py_price))
+                        eok = target_price // 10000
+                        man = target_price % 10000
+                        eok_str = f"{eok}억 {man:,}만" if man > 0 else f"{eok}억"
+                        print(f" -> [자동 환산] 대지 {plat_py}평 × 평당 {py_price:,}만 = 총 매매가 {eok_str}원 ({target_price:,}만 원)")
+                        break
+                    print(" [!] 올바른 금액을 입력해 주세요. (예: 3200, 3,200만 등)")
+            else:
+                while True:
+                    price_input = input("[입력] 매매 희망가 입력 (단위: 만원, 예: 85000, 8.5억, 8억 5000): ").strip()
+                    parsed_p = parse_money_input(price_input)
+                    if parsed_p and parsed_p > 0:
+                        target_price = parsed_p
+                        if (not is_jibbap or prop_type == "4") and plat_py > 0:
+                            py_price = int(round(target_price / plat_py))
+                            eok = target_price // 10000
+                            man = target_price % 10000
+                            eok_str = f"{eok}억 {man:,}만" if man > 0 else f"{eok}억"
+                            print(f" -> [자동 환산] 총 매매가 {eok_str}원 ÷ 대지 {plat_py}평 = 대지 평당 약 {py_price:,}만 원")
+                        break
+                    print(" [!] 올바른 금액을 입력해 주세요. (예: 85000, 8.5억, 8억 5000 등)")
+                    
+            if (not is_jibbap or prop_type == "4") and target_price > 0:
+                print("\n [선택] 다가구/단독 임대차 정보 입력 (실투자금 및 수익률 분석용, 없을 시 엔터)")
+                dep_in = input("  • 기존 임대보증금 총액 (단위: 만원, 예: 55000 또는 5.5억, 생략 시 엔터): ").strip()
+                if dep_in:
+                    existing_deposit = parse_money_input(dep_in) or 0
+                rent_in = input("  • 기존 월세 수입 총액 (단위: 만원, 예: 350 또는 350만, 생략 시 엔터): ").strip()
+                if rent_in:
+                    existing_rent = parse_money_input(rent_in) or 0
+                loan_in = input("  • 승계/실행 대출금액 (단위: 만원, 예: 40000 또는 4억, 생략 시 엔터): ").strip()
+                if loan_in:
+                    loan_amount = parse_money_input(loan_in) or 0
+                    
+                if existing_deposit > 0 or existing_rent > 0 or loan_amount > 0:
+                    actual_cash = max(0, target_price - existing_deposit - loan_amount)
+                    if actual_cash > 0 and existing_rent > 0:
+                        annual_yield = round(((existing_rent * 12) / actual_cash) * 100, 2)
+                    
+                    eok_cash = actual_cash // 10000
+                    man_cash = actual_cash % 10000
+                    cash_str = f"{eok_cash}억 {man_cash:,}만" if man_cash > 0 else f"{eok_cash}억"
+                    print(f"  -> [수익률 분석] 실인수금(현금 필요액): {cash_str}원 | 예상 연수익률: {annual_yield}%")
+
         elif trade_type == "전세":
             while True:
-                price_input = input("[입력] 보증금 입력 (단위: 만원, 예: 50000): ").strip()
-                if price_input.isdigit():
-                    target_price = int(price_input)
+                price_input = input("[입력] 보증금 입력 (단위: 만원, 예: 50000, 50,000, 5억): ").strip()
+                parsed_p = parse_money_input(price_input)
+                if parsed_p and parsed_p > 0:
+                    target_price = parsed_p
+                    eok = target_price // 10000
+                    man = target_price % 10000
+                    eok_str = f"{eok}억 {man:,}만" if man > 0 else f"{eok}억"
+                    print(f" -> [확인] 전세 보증금 {eok_str}원 ({target_price:,}만 원) 입력 완료")
                     break
-                print(" [!] 숫자만 입력해 주세요.")
+                print(" [!] 올바른 금액을 입력해 주세요. (예: 50000, 50,000, 5억 등)")
         elif trade_type == "월세":
             while True:
-                dep_input = input("[입력] 보증금 입력 (단위: 만원, 예: 10000): ").strip()
-                if dep_input.isdigit():
-                    target_price = int(dep_input)
+                dep_input = input("[입력] 보증금 입력 (단위: 만원, 예: 10000, 10,000, 1억): ").strip()
+                parsed_d = parse_money_input(dep_input)
+                if parsed_d is not None and parsed_d >= 0:
+                    target_price = parsed_d
                     break
-                print(" [!] 숫자만 입력해 주세요.")
+                print(" [!] 올바른 금액을 입력해 주세요. (예: 10000, 10,000, 1억 등)")
             while True:
-                mon_input = input("[입력] 월세 입력 (단위: 만원, 예: 150): ").strip()
-                if mon_input.isdigit():
-                    target_monthly = int(mon_input)
+                mon_input = input("[입력] 월세 입력 (단위: 만원, 예: 150, 150만): ").strip()
+                parsed_m = parse_money_input(mon_input)
+                if parsed_m is not None and parsed_m >= 0:
+                    target_monthly = parsed_m
                     break
-                print(" [!] 숫자만 입력해 주세요.")
-        desired_info = {"trade_type": trade_type, "price": target_price, "monthly_rent": target_monthly, "phone_number": client_phone, "room_count_choice": room_choice, "room_count_label": room_label}
+                print(" [!] 올바른 금액을 입력해 주세요. (예: 150, 150만 등)")
+            eok = target_price // 10000
+            man = target_price % 10000
+            dep_str = f"{eok}억 {man:,}만" if man > 0 else f"{eok}억" if eok > 0 else f"{man:,}만"
+            print(f" -> [확인] 월세 {dep_str}원 / {target_monthly:,}만 원 입력 완료")
+
+        if trade_type in ("전세", "월세") and official_house_price and target_price > 0:
+            dep_won = target_price * 10_000
+            dep_ratio = (dep_won / official_house_price) * 100
+            p126_won = int(official_house_price * 1.26)
+            p126_str = format_assessed_price(p126_won)
+            off_str = format_assessed_price(official_house_price)
+            yr_str = f"({official_house_year}년 기준) " if official_house_year else ""
+            print("\n───────────────────────────────────────────────────────")
+            print("  🎯 [ 공시가격 대비 보증금 및 126% 보증보험 분석 ]")
+            print(f"  • 주택 공시가격 : {yr_str}{off_str}")
+            print(f"  • 공시가격 126% : {p126_str} (HUG/SGI 보증보험 안심 가입 한도)")
+            print(f"  • 보증금 비율   : 공시가격의 {dep_ratio:.1f}%")
+            if dep_won <= p126_won:
+                diff_str = format_assessed_price(p126_won - dep_won)
+                print(f"  • 가입 적격 여부: ✅ [안심 가입 가능] 126% 한도 내 충족 (여유 한도: 약 {diff_str})")
+            else:
+                excess_str = format_assessed_price(dep_won - p126_won)
+                print(f"  • 가입 적격 여부: ⚠️ [126% 초과 주의] 보증보험 가입을 위해 약 {excess_str} 감액 필요 (최대 {p126_str} 이하 권장)")
+            print("───────────────────────────────────────────────────────\n")
+        
+        if trade_type == "종합":
+            desired_info = None
+            if client_phone:
+                desired_info = {"trade_type": "종합", "phone_number": client_phone, "room_count_choice": room_choice, "room_count_label": room_label}
+        else:
+            desired_info = {
+                "trade_type": trade_type,
+                "price": target_price,
+                "monthly_rent": target_monthly,
+                "phone_number": client_phone,
+                "room_count_choice": room_choice,
+                "room_count_label": room_label,
+                "pyeong_price": py_price if py_price > 0 else None,
+                "land_py": plat_py if plat_py > 0 else None,
+                "existing_deposit": existing_deposit if existing_deposit > 0 else None,
+                "existing_rent": existing_rent if existing_rent > 0 else None,
+                "loan_amount": loan_amount if loan_amount > 0 else None,
+                "actual_cash": actual_cash if actual_cash > 0 else None,
+                "annual_yield": annual_yield if annual_yield > 0 else None
+            }
         print("\n -> 최근 실거래(매매/임대차) 내역 및 자동 비교 조회 중...")
         transactions = get_recent_transactions(addr_info["sigunguCd"], addr_info["bun"], addr_info["ji"], prop_type, addr_info.get("bjdongNm"), target_build_year, target_house_type)
+        
+        is_expanded = False
+        t_24_initial = len([t for t in (transactions or []) if t.get("_trade_type") == "매매"])
+        tot_24_initial = len(transactions or [])
+        
+        if addr_info.get("sigunguCd") and addr_info.get("bjdongNm"):
+            hhld_cnt = locals().get("total_hhld", locals().get("hhld", 0))
+            admin_dong = addr_info.get("adminDongNm", addr_info.get("bjdongNm"))
+            bjdong = addr_info.get("bjdongNm", "")
+            full_reg = f"{addr_info.get('sidoNm', '')} {addr_info.get('sigunguNm', '')}".strip()
+            
+            if tot_24_initial < 3 or t_24_initial <= 1 or (prop_type == "1" and hhld_cnt < 300):
+                print("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                print(f" ⚠️ 조회하신 지번의 실거래 데이터가 부족하거나, 300세대 미만의 소규모 단지입니다.")
+                print(f"    (최근 24개월 매매 {t_24_initial}건 / 전체 {tot_24_initial}건, 단지 총 세대수: {hhld_cnt}세대)")
+                if admin_dong and admin_dong != bjdong:
+                    print(f"    동일 행정동(생활권: {admin_dong}) 내 유사 조건의 인근 매물 실거래 사례로 범위를 확장할 수 있습니다.")
+                else:
+                    print(f"    동일 지역({admin_dong or bjdong}) 내 유사 조건의 인근 매물 실거래 사례로 범위를 확장할 수 있습니다.")
+                print("    [선택안내]")
+                print(f"    1. 행정동 생활권 유사 기준 (권장 - {admin_dong or bjdong} 관할, 준공 ±3년, 면적 ±15%이내)")
+                print(f"    2. 법정동 전체 유사 기준 (비교 사례 부족 시 - {bjdong} 전체, 준공 ±5년, 면적 ±20%이내)")
+                print("    3. 확장하지 않음 (해당 지번의 거래만 표시)")
+                print("    4. 맞춤형 동네 확장 (예: 성산동, 중동 등 쉼표로 구분하여 여러 동 입력)")
+                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                expand_choice = input(f"[입력] 분석 범위를 선택하세요 (1: 행정동 생활권({admin_dong}) | 2: 법정동 전체({bjdong}) | 3: 미확장 | 4: 맞춤형 확장) [기본값: 1]: ").strip()
+                if not expand_choice:
+                    expand_choice = "1"
+                    
+                target_bjdongs = addr_info.get("bjdongNm", "")
+                if expand_choice == "4":
+                    custom_dongs = input("[입력] 포함할 법정동 이름을 쉼표로 구분해 입력하세요 (예: 성산동, 중동): ").strip()
+                    if custom_dongs:
+                        target_bjdongs = custom_dongs
+                    
+                    margin_choice = input("[입력] 필터 조건을 선택하세요 (1: 엄격(±3년, ±15%) | 2: 넓게(±5년, ±20%) | 3: 조건 없음(전체)) [기본값: 1]: ").strip()
+                    if margin_choice == "2":
+                        expand_choice = "2"
+                    elif margin_choice == "3":
+                        expand_choice = "5"
+                    else:
+                        expand_choice = "1"
+                    
+                if expand_choice in ("1", "2", "5"):
+                    from trade_viewer import filter_expanded_apartments
+                    b_margin = 3 if expand_choice == "1" else (5 if expand_choice == "2" else 100)
+                    a_margin = 0.15 if expand_choice == "1" else (0.20 if expand_choice == "2" else 1.0)
+                    target_admin = admin_dong if expand_choice == "1" else None
+                    dong_guide = f"{admin_dong} 생활권" if (expand_choice == "1" and admin_dong) else target_bjdongs
+                    print(f" -> 인근 유사 매물 데이터 수집 중 (대상 동네: {dong_guide})...")
+                    expanded_txs = get_recent_transactions(addr_info["sigunguCd"], addr_info["bun"], addr_info["ji"], prop_type, target_bjdongs, target_build_year, target_house_type, expand_similar=True, target_area=target_area, build_year_margin=b_margin, area_margin=a_margin, target_admin_dong=target_admin, full_region_name=full_reg)
+                    
+                    # 행정동 필터링 후 표본 부족 시 법정동 fallback
+                    if expand_choice == "1" and (not expanded_txs or len(expanded_txs) <= len([t for t in (expanded_txs or []) if t.get("_is_target_property")])):
+                        print(f" -> {admin_dong} 관할 유사 매물 표본이 부족하여 동일 법정동({bjdong}) 전체로 범위를 보완합니다...")
+                        expanded_txs = get_recent_transactions(addr_info["sigunguCd"], addr_info["bun"], addr_info["ji"], prop_type, target_bjdongs, target_build_year, target_house_type, expand_similar=True, target_area=target_area, build_year_margin=b_margin, area_margin=a_margin)
+                        
+                    if expanded_txs:
+                        transactions = expanded_txs
+                        if prop_type == "1":
+                            transactions = filter_expanded_apartments(transactions, addr_info["bun"], addr_info["ji"])
+                        elif prop_type == "2":
+                            reg_info = locals().get("reg_info", {})
+                            if reg_info:
+                                transactions = filter_villas_by_redev_status(transactions, reg_info, addr_info["sigunguCd"], addr_info.get("bjdongCd", ""), vworld_key)
+                        is_expanded = True
+
         trades = []
         jeonses = []
         wolses = []
         prop_type_name = "일반 부동산"
         selected_label = "최근 12개월"
-        is_expanded = False
         if transactions:
-            trades = [t for t in transactions if t.get("trade_type") == "매매"]
-            jeonses = [t for t in transactions if t.get("trade_type") == "전세"]
-            wolses = [t for t in transactions if t.get("trade_type") == "월세"]
+            trades = [t for t in transactions if t.get("_trade_type") == "매매"]
+            jeonses = [t for t in transactions if t.get("_trade_type") == "전세"]
+            wolses = [t for t in transactions if t.get("_trade_type") == "월세"]
             type_names = {"1": "아파트", "2": "연립/다세대/빌라", "3": "오피스텔", "4": "단독/다가구"}
             prop_type_name = type_names.get(prop_type, "일반 부동산")
         bld_data = {
@@ -1416,33 +2107,90 @@ def run_building_viewer():
             "emgen_elvt": locals().get("emgen_elvt", 0),
             "elvt_cnt": locals().get("elvt_cnt", 0),
             "room_count_label": locals().get("room_label"),
-            "indiv_house_price": locals().get("indiv_house_price"),
-            "indiv_house_price_year": locals().get("indiv_house_price_year"),
+            "indiv_house_price": official_house_price,
+            "indiv_house_price_year": official_house_year,
+            "house_price": official_house_price,
+            "house_price_year": official_house_year,
             "reg_info": locals().get("reg_info", {"moatown": False, "moatown_name": "", "redev": False, "redev_name": "", "permit": False, "permit_name": "", "regulated": False, "regulated_name": ""}),
             "ho_details": locals().get("unit_info"),
             "ho_name": locals().get("ho_name", ""),
             "floor_map": locals().get("floor_map"),
+            "floor_units_map": locals().get("floor_units_map", {}),
             "expos_list_count": locals().get("expos_list_count", 0),
             "distinct_dongs": locals().get("distinct_dongs", []),
             "floors": locals().get("floors", []),
-            "land_shares_raw": locals().get("items", [])
+            "land_shares_raw": raw_shares if raw_shares else locals().get("items", []),
+            "clean_address": clean_address,
+            "road_address": addr_info.get("road_address", "")
         }
         save_building_report(addr_info.get("road_address") or clean_address, bld_data)
+        
+        # [신설] 상담 분석 이력 CSV 자동 누적 기록
+        eff_area = target_area or (unit_info.get("area") if unit_info else None)
+        eff_land_share = (unit_info.get("land_share") if unit_info else None) or land_share
+        eff_viol = unit_info.get("viol_str") if (unit_info and unit_info.get("viol_str")) else bld_data.get("viol_str", "정상")
+        save_consultation_history_log(
+            clean_addr=clean_address,
+            road_addr=addr_info.get("road_address", ""),
+            ho_name=ho_name,
+            phone_no=client_phone,
+            trade_type=locals().get("trade_type", "종합"),
+            price=locals().get("target_price"),
+            monthly=locals().get("target_monthly"),
+            area=eff_area,
+            land_share=eff_land_share,
+            viol_str=eff_viol
+        )
+
         from trade_viewer import save_briefing_report
         display_addr = addr_info.get("road_address") or clean_address or "조회 대상 주소"
-        save_briefing_report(display_addr, trades, jeonses, wolses, prop_type_name, period_label=selected_label, is_expanded=is_expanded, target_build_year=target_build_year, target_area=target_area, target_floor=target_floor, desired_info=desired_info)
+        
+        # [강화] desired_info에 개별호수, 전용면적, 대지지분, 공시가격, 원본 주소/전화번호 전달
+        if desired_info is None:
+            desired_info = {}
+        desired_info["phone_number"] = client_phone
+        desired_info["ho_name"] = ho_name
+        desired_info["unit_info"] = unit_info
+        desired_info["clean_address"] = clean_address
+        desired_info["road_address"] = addr_info.get("road_address", "")
+        desired_info["official_price"] = official_house_price
+        desired_info["official_price_year"] = official_house_year
+        desired_info["official_price_126"] = int(official_house_price * 1.26) if official_house_price else None
+        if unit_info:
+            desired_info["exclusive_area"] = unit_info.get("area") or target_area
+            desired_info["supply_area"] = unit_info.get("supply_area")
+            desired_info["land_share"] = unit_info.get("land_share")
+            desired_info["land_share_pyung"] = unit_info.get("land_share_pyung")
+            desired_info["unit_purpose"] = unit_info.get("purpose")
+            desired_info["is_commercial"] = unit_info.get("is_commercial", False)
+        elif eff_land_share:
+            desired_info["land_share"] = eff_land_share
+        if not desired_info.get("exclusive_area") and target_area:
+            desired_info["exclusive_area"] = target_area
+            
+        save_res = save_briefing_report(display_addr, trades, jeonses, wolses, prop_type_name, period_label=selected_label, is_expanded=is_expanded, target_build_year=target_build_year, target_area=target_area, target_floor=target_floor, desired_info=desired_info, target_bld_nm=bld_data.get("bld_nm"), target_bun=addr_info.get("bun"), target_ji=addr_info.get("ji"), is_complex_analysis=is_complex_analysis)
         target_addr_str = addr_info.get("road_address") or clean_address
         safe_addr_for_open = "".join([c for c in target_addr_str if c not in (" ", "-", "_")]).strip()
         bld_pdf_path = os.path.abspath(f"종합분석보고서/건축물대장_{safe_addr_for_open.replace(' ', '_')}.pdf")
-        brief_pdf_path = os.path.abspath(f"종합분석보고서/시세브리핑_{safe_addr_for_open.replace(' ', '_')}.pdf")
+        brief_pdf_path = None
+        if isinstance(save_res, tuple) and len(save_res) > 1 and save_res[1]:
+            brief_pdf_path = save_res[1]
+        if not brief_pdf_path or not os.path.exists(brief_pdf_path):
+            brief_pdf_path = os.path.abspath(f"종합분석보고서/시세브리핑_{safe_addr_for_open.replace(' ', '_')}.pdf")
         opened_any = False
         if sys.platform == "win32":
             if os.path.exists(bld_pdf_path):
-                os.startfile(bld_pdf_path)
-                opened_any = True
+                try:
+                    os.startfile(bld_pdf_path)
+                    opened_any = True
+                except Exception:
+                    pass
             if os.path.exists(brief_pdf_path):
-                os.startfile(brief_pdf_path)
-                opened_any = True
+                try:
+                    os.startfile(brief_pdf_path)
+                    opened_any = True
+                except Exception:
+                    pass
         if opened_any:
             print("\n [안내] 생성된 PDF 보고서(건축물대장 및 시세브리핑)를 자동으로 실행하였습니다.")
             print("        (종합분석보고서 폴더 내에 함께 저장되어 있습니다.)")

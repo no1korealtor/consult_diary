@@ -199,6 +199,220 @@ def estimate_floor_from_address(detail_val, ho_name):
 
     return ""
 
+
+def extract_complex_info(driver):
+    """
+    부동산써브 단지 방식(다세대/연립/빌라/아파트) 화면에서
+    선택된 단지명, 번지, 동, 호 정보를 다각도로 추출합니다.
+    반환값: {"name": complex_name, "bunji": bunji_val, "dong": dong_val, "ho": ho_val}
+    """
+    res = {"name": "", "bunji": "", "dong": "", "ho": ""}
+
+    # 1. Select2 요소 확인 (다세대/연립/빌라 단지 풀다운)
+    try:
+        sel_text = driver.execute_script("""
+            var sel = document.querySelector("select.select2-hidden-accessible");
+            if (!sel) {
+                var ths = document.querySelectorAll('th');
+                for (var i = 0; i < ths.length; i++) {
+                    if (ths[i].textContent.indexOf('단지') !== -1) {
+                        var tr = ths[i].closest('tr');
+                        if (tr) {
+                            sel = tr.querySelector('select');
+                            break;
+                        }
+                    }
+                }
+            }
+            if (sel && sel.selectedIndex >= 0 && sel.options[sel.selectedIndex]) {
+                var opt = sel.options[sel.selectedIndex];
+                return opt.text || opt.title || opt.getAttribute('title') || '';
+            }
+            return '';
+        """)
+
+        if not sel_text or "선택" in sel_text:
+            renders = driver.find_elements(By.CSS_SELECTOR, ".select2-selection__rendered")
+            for r in renders:
+                txt = r.text.strip()
+                if txt and "선택" not in txt:
+                    sel_text = txt
+                    break
+
+        if sel_text and "선택" not in sel_text:
+            m_bunji = re.search(r'\(([\d\-]+)\)', sel_text)
+            if m_bunji:
+                res["bunji"] = m_bunji.group(1).strip()
+            res["name"] = re.sub(r'\(.*?\)', '', sel_text).strip()
+    except Exception:
+        pass
+
+    # 2. Vuetify 단지 선택 combobox/input 확인 (아파트 또는 Vuetify 단지 드롭다운)
+    if not res["name"]:
+        try:
+            inputs = driver.find_elements(By.XPATH, "//th[contains(., '단지')]/following-sibling::td//input[not(@type='hidden') and not(@type='radio') and not(@type='checkbox')]")
+            for inp in inputs:
+                ph = inp.get_attribute("placeholder") or ""
+                lbl = inp.get_attribute("aria-label") or ""
+                val = (inp.get_attribute("value") or "").strip()
+                if ("단지" in ph or "단지" in lbl) and val and "선택" not in val:
+                    res["name"] = re.sub(r'\(.*?\)', '', val).strip()
+                    m_bunji = re.search(r'\(([\d\-]+)\)', val)
+                    if m_bunji:
+                        res["bunji"] = m_bunji.group(1).strip()
+                    break
+        except Exception:
+            pass
+
+    # 3. 동 선택 및 호 선택 확인
+    try:
+        inputs = driver.find_elements(By.XPATH, "//th[contains(., '단지')]/following-sibling::td//input[not(@type='hidden') and not(@type='radio') and not(@type='checkbox')]")
+        for inp in inputs:
+            ph = inp.get_attribute("placeholder") or ""
+            lbl = inp.get_attribute("aria-label") or ""
+            val = (inp.get_attribute("value") or "").strip()
+            if not val or "선택" in val:
+                continue
+            if "동" in ph or "동" in lbl:
+                res["dong"] = val
+            elif "호" in ph or "호" in lbl:
+                res["ho"] = val
+    except Exception:
+        pass
+
+    return res
+
+def select_complex_dropdown(driver, bunji_val, building_name=""):
+    """
+    부동산써브 화면의 '단지 선택' 풀다운(Select2 또는 Vuetify)에서
+    번지(bunji_val) 또는 건물명(building_name)에 해당하는 단지를 찾아 자동 선택합니다.
+    """
+    bunji_clean = str(bunji_val).strip()
+    target_paren = f"({bunji_clean})"
+    bld_clean = re.sub(r'[\s\(\)\d\-]', '', building_name or "")
+
+    # ─── 1. Select2 (<select class="select2-hidden-accessible">) 방식 ───
+    try:
+        select_els = driver.find_elements(By.CSS_SELECTOR, "select.select2-hidden-accessible, tr select")
+        for sel_el in select_els:
+            opt_data = driver.execute_script("""
+                var sel = arguments[0];
+                var res = [];
+                for (var i = 0; i < sel.options.length; i++) {
+                    res.push({
+                        index: i,
+                        value: sel.options[i].value,
+                        text: sel.options[i].text || sel.options[i].title || sel.options[i].getAttribute('title') || ''
+                    });
+                }
+                return res;
+            """, sel_el)
+
+            if not opt_data:
+                continue
+
+            matched_opt = None
+
+            # 1단계: 건물명과 번지 둘 다 일치 (가장 정확)
+            if bld_clean and len(bld_clean) >= 2:
+                for o in opt_data:
+                    txt = o['text']
+                    if target_paren in txt and bld_clean in txt:
+                        matched_opt = o
+                        break
+
+            # 2단계: 번지(괄호 안) 정확히 일치
+            if not matched_opt:
+                for o in opt_data:
+                    if target_paren in o['text']:
+                        matched_opt = o
+                        break
+
+            # 3단계: 부번이 0인 경우 본번(main_bunji) 일치
+            if not matched_opt and '-' in bunji_clean:
+                main_b, sub_b = bunji_clean.split('-', 1)
+                if sub_b in ('0', '00', '000', '0000'):
+                    for o in opt_data:
+                        if f"({main_b})" in o['text']:
+                            matched_opt = o
+                            break
+            elif not matched_opt and '-' not in bunji_clean:
+                for o in opt_data:
+                    if f"({bunji_clean})" in o['text']:
+                        matched_opt = o
+                        break
+
+            # 4단계: 건물명만으로 일치
+            if not matched_opt and bld_clean and len(bld_clean) >= 2:
+                for o in opt_data:
+                    txt_no_paren = re.sub(r'\(.*?\)', '', o['text'])
+                    if bld_clean in txt_no_paren:
+                        matched_opt = o
+                        break
+
+            if matched_opt:
+                target_val = matched_opt['value']
+                target_text = matched_opt['text']
+
+                driver.execute_script("""
+                    var sel = arguments[0];
+                    var val = arguments[1];
+                    var text = arguments[2];
+                    sel.value = val;
+                    sel.dispatchEvent(new Event('input', { bubbles: true }));
+                    sel.dispatchEvent(new Event('change', { bubbles: true }));
+                    if (window.jQuery) {
+                        var $s = window.jQuery(sel);
+                        $s.val(val).trigger('change').trigger('change.select2').trigger('select2:select');
+                    }
+                    var container = sel.closest('div, tr, td') || document;
+                    var rendered = container.querySelector('.select2-selection__rendered');
+                    if (rendered) {
+                        rendered.textContent = text;
+                        rendered.title = text;
+                    }
+                """, sel_el, target_val, target_text)
+
+                print(f" -> [단지 풀다운 자동 선택 성공] '{target_text}' (단지코드: {target_val})")
+                time.sleep(0.5)
+                return target_text
+    except Exception as e_sel:
+        print(f" -> [안내] Select2 단지 선택 시도 중 오류: {e_sel}")
+
+    # ─── 2. Vuetify v-select 방식 (일반 드롭다운인 경우) ───
+    try:
+        inputs = driver.find_elements(By.XPATH, "//th[contains(., '단지')]/following-sibling::td//input[contains(@placeholder, '단지') or @aria-label='단지 선택']")
+        if inputs:
+            inp = inputs[0]
+            driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", inp)
+            time.sleep(0.1)
+            try:
+                inp.click()
+            except:
+                driver.execute_script("arguments[0].click();", inp)
+            time.sleep(0.5)
+
+            opts = driver.find_elements(By.XPATH, f"//div[contains(@class, 'v-overlay-container')]//*[contains(@class, 'v-list-item') or @role='option'][contains(., '{target_paren}')]")
+            if not opts and bld_clean:
+                opts = driver.find_elements(By.XPATH, f"//div[contains(@class, 'v-overlay-container')]//*[contains(@class, 'v-list-item') or @role='option'][contains(., '{bld_clean}')]")
+
+            if opts:
+                matched_item = opts[0]
+                matched_text = matched_item.text.strip()
+                driver.execute_script("arguments[0].click();", matched_item)
+                print(f" -> [단지 드롭다운 자동 선택 성공] '{matched_text}'")
+                time.sleep(0.5)
+                return matched_text
+            else:
+                try:
+                    inp.send_keys(Keys.ESCAPE)
+                except:
+                    pass
+    except Exception:
+        pass
+
+    return ""
+
 def inject_preset_address(driver, preset_data):
     if not preset_data:
         return False
@@ -208,6 +422,7 @@ def inject_preset_address(driver, preset_data):
     sigungu_name = preset_data.get("sigungu_name")
     bjdong_name = preset_data.get("bjdong_name")
     bunji_val = preset_data.get("bunji_val")
+    building_name = preset_data.get("building_name", "")
     
     if not (sigungu_cd and bjdong_cd and sigungu_name and bjdong_name and bunji_val):
         return False
@@ -216,7 +431,7 @@ def inject_preset_address(driver, preset_data):
         sigungu_val = f"{sigungu_cd}00000|{sigungu_name}"
         dong_val = f"{sigungu_cd}{bjdong_cd}|{bjdong_name}"
         
-        print(f"\n[주소 자동 입력 시작] {sigungu_name} {bjdong_name} {bunji_val}...")
+        print(f"\n[주소 자동 입력 시작] {sigungu_name} {bjdong_name} {bunji_val} (단지/건물: {building_name or '미지정'})...")
         
         # 1. 시/군/구 입력
         sig_el = driver.find_element(By.XPATH, "//input[@aria-label='시/군/구']")
@@ -230,31 +445,53 @@ def inject_preset_address(driver, preset_data):
         driver.execute_script("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", d_el)
         driver.execute_script("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", d_el)
         
-        # 3. 번지 입력
-        inputs = driver.find_elements(By.XPATH, "//input[@type='text']")
-        for inp in inputs:
-            ph = inp.get_attribute("placeholder") or ""
-            lbl = inp.get_attribute("aria-label") or ""
-            if "12-1" in ph or "번지" in lbl or "번지" in ph:
-                try:
-                    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", inp)
-                    time.sleep(0.1)
-                    inp.click()
-                    time.sleep(0.1)
-                    inp.send_keys(Keys.CONTROL + "a")
-                    inp.send_keys(Keys.BACKSPACE)
-                    inp.send_keys(bunji_val)
-                    driver.execute_script("""
-                        arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
-                        arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
-                    """, inp)
-                    print(f" -> 번지 자동 입력 성공: {bunji_val}")
-                except Exception as e_bunji:
-                    driver.execute_script("arguments[0].value = arguments[1];", inp, bunji_val)
-                    driver.execute_script("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", inp)
-                    driver.execute_script("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", inp)
-                    print(f" -> 번지 JS 강제 대입 성공: {bunji_val}")
-                break
+        time.sleep(0.8) # 읍면동 선택 후 단지 풀다운 목록 로딩 대기
+
+        # 3. 단지 풀다운 선택 (다세대/연립/빌라/아파트 단지 방식)
+        has_complex_select = False
+        try:
+            sel_check = driver.find_elements(By.CSS_SELECTOR, "select.select2-hidden-accessible, tr:has(th:contains('단지')) select")
+            if not sel_check:
+                sel_check = driver.find_elements(By.XPATH, "//th[contains(., '단지')]/following-sibling::td//input[contains(@placeholder, '단지') or @aria-label='단지 선택']")
+            has_complex_select = len(sel_check) > 0
+        except:
+            has_complex_select = False
+
+        complex_selected = False
+        if has_complex_select:
+            print(f" -> 단지 풀다운 등록 방식 감지. 번지({bunji_val})에 해당하는 단지를 자동 선택합니다...")
+            sel_res = select_complex_dropdown(driver, bunji_val, building_name)
+            if sel_res:
+                complex_selected = True
+            else:
+                print(f" -> [안내] 해당 번지({bunji_val})에 매칭되는 단지를 자동으로 찾지 못했습니다. 화면의 '단지 선택' 풀다운에서 직접 선택해 주세요.")
+
+        # 단지 풀다운이 없거나(단독/다가구/상가 등 지번 방식) 선택되지 않은 경우: 기존 번지 입력칸 찾기
+        if not complex_selected:
+            inputs = driver.find_elements(By.XPATH, "//input[@type='text']")
+            for inp in inputs:
+                ph = inp.get_attribute("placeholder") or ""
+                lbl = inp.get_attribute("aria-label") or ""
+                if "12-1" in ph or "번지" in lbl or "번지" in ph:
+                    try:
+                        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", inp)
+                        time.sleep(0.1)
+                        inp.click()
+                        time.sleep(0.1)
+                        inp.send_keys(Keys.CONTROL + "a")
+                        inp.send_keys(Keys.BACKSPACE)
+                        inp.send_keys(bunji_val)
+                        driver.execute_script("""
+                            arguments[0].dispatchEvent(new Event('input', { bubbles: true }));
+                            arguments[0].dispatchEvent(new Event('change', { bubbles: true }));
+                        """, inp)
+                        print(f" -> 번지 자동 입력 성공: {bunji_val}")
+                    except Exception as e_bunji:
+                        driver.execute_script("arguments[0].value = arguments[1];", inp, bunji_val)
+                        driver.execute_script("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", inp)
+                        driver.execute_script("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", inp)
+                        print(f" -> 번지 JS 강제 대입 성공: {bunji_val}")
+                    break
                 
         # 4. hidden/ID 요소 입력
         for hid in ["sigunguCd", "bjdongCd", "mnnm", "slno"]:
@@ -271,9 +508,25 @@ def inject_preset_address(driver, preset_data):
             except:
                 pass
                 
-        # 5. 상세주소(동 호수) 입력
+        # 5. 상세주소(동/호수) 입력 및 동/호 풀다운 선택
         ho_name = preset_data.get("ho_name") or ""
         dong_name_preset = preset_data.get("dong_name") or ""
+
+        # 동/호 풀다운이 화면에 있는 경우 풀다운 자동 선택 시도
+        if dong_name_preset or ho_name:
+            try:
+                if dong_name_preset:
+                    dong_clean = dong_name_preset.replace("동", "").strip()
+                    dong_inputs = driver.find_elements(By.XPATH, "//th[contains(., '단지')]/following-sibling::td//input[contains(@placeholder, '동 선택') or contains(@aria-label, '동 선택')]")
+                    if dong_inputs:
+                        select_vuetify_dropdown(["동", "동선택", "단지"], dong_clean)
+                if ho_name:
+                    ho_clean = ho_name.replace("호", "").strip()
+                    ho_inputs = driver.find_elements(By.XPATH, "//th[contains(., '단지')]/following-sibling::td//input[contains(@placeholder, '호 선택') or contains(@aria-label, '호 선택')]")
+                    if ho_inputs:
+                        select_vuetify_dropdown(["호", "호선택", "단지"], ho_clean)
+            except Exception as e_dong_ho:
+                pass
         
         detail_val = ""
         if dong_name_preset and ho_name:
@@ -286,7 +539,6 @@ def inject_preset_address(driver, preset_data):
             
         if detail_val:
             try:
-                # refresh inputs to avoid stale element reference
                 inputs = driver.find_elements(By.XPATH, "//input[@type='text']")
                 for inp in inputs:
                     ph = inp.get_attribute("placeholder") or ""
@@ -319,6 +571,7 @@ def inject_preset_address(driver, preset_data):
     except Exception as e:
         print(f" -> [경고] 주소 자동 입력 실패: {e}")
         return False
+
 
 def run_serve_auto_upload(preset_data=None):
     global _kept_alive_driver
@@ -375,7 +628,9 @@ def run_serve_auto_upload(preset_data=None):
     try:
         while True:
             print("\n" + "="*50)
-            print(" [1단계] 인터넷 창에서 소재지(주소)와 번지를 먼저 입력해 주세요.")
+            print(" [1단계] 인터넷 창에서 소재지(주소)를 선택하시고,")
+            print("         다세대/연립/빌라인 경우 '단지 선택' 풀다운에서 해당 단지를 선택해 주세요.")
+            print("         (풀다운에 번지가 포함되어 번지와 건물명이 자동으로 인식됩니다)")
             print(" [2단계] 등록할 매물의 거래 종류를 번호로 선택해 주세요:")
             print("   1. 매매  |  2. 전세  |  3. 월세  |  4. 단기임대  (q: 메인 메뉴로)")
             print("="*50)
@@ -466,7 +721,7 @@ def run_serve_auto_upload(preset_data=None):
                     dong_val = driver.find_element(By.XPATH, "//input[@aria-label='읍/면/동']").get_attribute("value")
                     bjdongCd = dong_val.split('|')[0][5:10]
                 
-                    # 번지 추출
+                    # 번지 추출 (기존 지번 텍스트 입력칸 우선 확인)
                     bunji_val = ""
                     inputs = driver.find_elements(By.XPATH, "//input[@type='text']")
                     for inp in inputs:
@@ -475,6 +730,19 @@ def run_serve_auto_upload(preset_data=None):
                         if "12-1" in ph or "번지" in lbl or "번지" in ph:
                             bunji_val = inp.get_attribute("value") or ""
                             break
+
+                    # ✅ 번지 텍스트칸이 비어있는 경우: 단지 풀다운(다세대/연립/빌라/아파트)에서 번지 추출!
+                    complex_info = None
+                    if not bunji_val:
+                        complex_info = extract_complex_info(driver)
+                        if complex_info and complex_info.get("bunji"):
+                            bunji_val = complex_info["bunji"]
+                            print(f" -> [단지 풀다운 인식 성공!] 선택된 단지: '{complex_info.get('name')}', 번지: '{bunji_val}'")
+                        elif complex_info and complex_info.get("name"):
+                            print(f" -> [단지 풀다운 인식] 선택된 단지: '{complex_info['name']}' (단지명에 번지 미포함)")
+                            manual_bunji = input(f" ▶ 단지 '{complex_info['name']}'의 번지(지번)를 입력해 주세요 (예: 123-4) : ").strip()
+                            if manual_bunji:
+                                bunji_val = manual_bunji
             
                 # ✅ 번지 칸이 비어있을 때: 직전 성공 주소 재사용 (월세 전환 등으로 초기화된 경우 대응)
                 if not bunji_val:
@@ -484,7 +752,7 @@ def run_serve_auto_upload(preset_data=None):
                         bjdongCd  = _last_addr_cache['bjdongCd']
                         bunji_val = _last_addr_cache['bunji_val']
                     else:
-                        print("\n[오류] 번지 입력을 찾지 못했습니다. 브라우저에서 번지 칸을 다시 채워주세요!")
+                        print("\n[오류] 번지 입력을 찾지 못했습니다. 브라우저에서 '단지 선택' 풀다운을 선택하시거나 번지 칸을 채워주세요!")
                         continue
                 
                 bunji_clean = str(bunji_val).strip()
@@ -512,6 +780,17 @@ def run_serve_auto_upload(preset_data=None):
                         if "예시" in ph or "동, 층, 호수" in ph or "상세" in lbl:
                             detail_val = inp.get_attribute("value") or ""
                             break
+
+                    # 상세주소 텍스트칸이 비어있다면, 단지 동/호 풀다운에서 추출!
+                    if not detail_val:
+                        if not complex_info:
+                            complex_info = extract_complex_info(driver)
+                        if complex_info:
+                            d_val = complex_info.get("dong", "")
+                            h_val = complex_info.get("ho", "")
+                            if d_val or h_val:
+                                detail_val = f"{d_val} {h_val}".strip()
+                                print(f" -> [동/호 풀다운 상세주소 인식] '{detail_val}'")
                         
                 # ─── 거래 종류 자동 선택 ───
                 deal_types = {
@@ -543,7 +822,11 @@ def run_serve_auto_upload(preset_data=None):
                         driver.execute_script("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", d_el)
                         driver.execute_script("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", d_el)
                         
-                        # 3. 번지 및 상세주소 복구
+                        # 3. 단지 풀다운 및 번지/상세주소 복구
+                        if bunji_val:
+                            c_name = complex_info.get("name", "") if complex_info else ""
+                            select_complex_dropdown(driver, bunji_val, c_name)
+
                         inputs = driver.find_elements(By.XPATH, "//input[@type='text']")
                         for inp in inputs:
                             ph = inp.get_attribute("placeholder") or ""
@@ -930,6 +1213,11 @@ def run_serve_auto_upload(preset_data=None):
                 if preset_phone:
                     print(f"\n[의뢰인 연락처 자동 입력] 의뢰인 연락처 입력을 시도합니다 ({preset_phone})...")
                     enter_value(["의뢰인연락처", "소유자연락처", "의뢰인 연락처", "소유자 연락처", "연락처", "전화번호", "소유주연락처"], preset_phone)
+
+                # [건물명 자동 입력]
+                bld_name_to_enter = (complex_info.get("name") if complex_info else "") or data.get("bldNm", "")
+                if bld_name_to_enter:
+                    enter_value(["건물명", "단지명"], bld_name_to_enter)
         
                 print("\n[성공] 필수 데이터들을 자동으로 채워 넣었습니다!")
                 print("인터넷 창은 그대로 열어둘 테니, 나머지 정보(금액, 사진 등)를 천천히 입력하시고 '매물 등록' 버튼을 직접 눌러주세요!")

@@ -1436,9 +1436,19 @@ def run_building_viewer():
             p_m2 = land_price_info["price"]
             p_py = round(p_m2 / 0.3025)
             print(f"  • 공시지가  : {land_price_info['year']}년 기준 ㎡당 {p_m2:,}원 (평당 약 {p_py:,}원)")
-        print(f"  • 건축면적  : {selected_title.get('archArea', '0')} ㎡")
+        arch_area_val = selected_title.get('archArea', '0')
+        tot_area_val = selected_title.get('totArea', '0')
+        try:
+            tot_area_float = float(tot_area_val or 0)
+        except Exception:
+            tot_area_float = 0.0
+        tot_area = tot_area_float
+        try:
+            arch_area = float(arch_area_val or 0)
+        except Exception:
+            arch_area = 0.0
         vl_rat_tot_area = selected_title.get('vlRatEstmTotArea') or selected_title.get('vlRatEstTotArea', '0')
-        print(f"  • 연면적    : {selected_title.get('totArea', '0')} ㎡ (용적률산정연면적: {vl_rat_tot_area} ㎡)")
+        print(f"  • 연면적    : {tot_area_val} ㎡ (용적률산정연면적: {vl_rat_tot_area} ㎡)")
         print(f"  • 건물구조  : {selected_title.get('strctCdNm', '정보없음')}")
         print(f"  • 주용도    : {selected_title.get('mainPurpsCdNm', '정보없음')}")
         print(f"  • 층수      : 지상 {selected_title.get('grndFlrCnt', '0')}층 / 지하 {selected_title.get('ugrndFlrCnt', '0')}층")
@@ -1901,13 +1911,15 @@ def run_building_viewer():
                 room_label = "쓰리룸 이상형"
                 target_area = 55.0
             
-            fl_desc = f"지하 {abs(target_floor)}층" if (target_floor is not None and target_floor < 0) else (f"{target_floor}층" if target_floor is not None else "1층")
+            fl_desc = f"지하 {abs(target_floor)}층 (반지하)" if (target_floor is not None and target_floor == -1) else (f"지하 {abs(target_floor)}층" if (target_floor is not None and target_floor < 0) else (f"{target_floor}층" if target_floor is not None else "1층"))
             fl_guide = f" (현재 인식: {fl_desc}, 유지 시 엔터)" if target_floor is not None else ""
             floor_input = input(f"\n[입력] 해당 임대차 매물의 층수를 입력해 주세요 (숫자 또는 '지하'/'반지하', 예: -1, 지하1층, 2층 등){fl_guide}: ").strip()
             if floor_input:
                 parsed_fl = extract_floor_from_string(floor_input)
                 if parsed_fl is not None:
                     target_floor = parsed_fl
+                    disp_f = f"지하 {abs(target_floor)}층 (반지하)" if target_floor == -1 else (f"지하 {abs(target_floor)}층" if target_floor < 0 else f"{target_floor}층")
+                    print(f" -> [확인] 층수 [{disp_f}] 설정 완료")
             elif target_floor is None:
                 target_floor = 1
 
@@ -1955,6 +1967,9 @@ def run_building_viewer():
             return 0.0
 
         plat_py = round(plat_area_float * 0.3025, 1) if plat_area_float > 0 else 0.0
+        is_multi_family_unit = (not is_jibbap and trade_type in ("전세", "월세"))
+        unit_official_price = official_house_price
+        effective_unit_price = official_house_price
         if trade_type == "매매":
             price_mode = "1"
             if (not is_jibbap or prop_type == "4") and plat_py > 0:
@@ -2097,209 +2112,245 @@ def run_building_viewer():
                     cash_str = f"{eok_cash}억 {man_cash:,}만" if man_cash > 0 else f"{eok_cash}억"
                     print(f"  -> [수익률 분석] 실인수금(현금 필요액): {cash_str}원 | 예상 연수익률: {annual_yield}%")
 
-        elif trade_type == "전세":
-            while True:
-                price_input = input("[입력] 보증금 입력 (단위: 만원, 예: 50000, 50,000, 5억 / 없을 시 엔터: 적정가 자동평가): ").strip()
-                parsed_p = parse_money_input(price_input)
-                if parsed_p and parsed_p > 0:
-                    target_price = parsed_p
-                    eok = target_price // 10000
-                    man = target_price % 10000
-                    eok_str = f"{eok}억 {man:,}만" if man > 0 else f"{eok}억"
-                    print(f" -> [확인] 전세 보증금 {eok_str}원 ({target_price:,}만 원) 입력 완료")
-                    break
-                elif not price_input:
-                    # 엔터 입력 시: 시세 평가 및 적정 가이드 자동 산출!
-                    p126_val = 0
-                    p126_str = ""
-                    off_str = ""
-                    if official_house_price:
-                        p126_won = int(official_house_price * 1.26)
-                        p126_val = round(p126_won / 10000)
-                        p126_str = format_assessed_price(p126_won)
-                        off_str = format_assessed_price(official_house_price)
-
-                    jeonse_txs = [t for t in (transactions or []) if t.get("_trade_type") == "전세" and extract_tx_deposit(t) > 0]
-                    if target_area and target_area > 0:
-                        sim_txs = [t for t in jeonse_txs if extract_tx_area(t) > 0 and abs(extract_tx_area(t) - target_area) / target_area <= 0.25]
-                        if sim_txs:
-                            jeonse_txs = sim_txs
+        elif trade_type in ("전세", "월세"):
+            # [다가구/단독 임대차 호실 안분 공시가격 및 CMA 층수별 기준가 산출]
+            is_multi_family_unit = (not is_jibbap and trade_type in ("전세", "월세"))
+            tot_area_float = float(selected_title.get('totArea', 0) or 0)
+            
+            unit_official_price = None
+            effective_unit_price = None
+            if official_house_price:
+                if is_multi_family_unit:
+                    if target_area and tot_area_float > 0:
+                        unit_official_price = int(official_house_price * (target_area / tot_area_float))
+                    elif max_units > 1:
+                        unit_official_price = int(official_house_price / max_units)
+                    else:
+                        unit_official_price = official_house_price
                     
-                    avg_jeonse = 0
-                    min_jeonse = 0
-                    max_jeonse = 0
-                    if jeonse_txs:
-                        dep_list = [extract_tx_deposit(t) for t in jeonse_txs if extract_tx_deposit(t) > 0]
-                        if dep_list:
-                            avg_jeonse = int(round(sum(dep_list) / len(dep_list)))
-                            min_jeonse = min(dep_list)
-                            max_jeonse = max(dep_list)
-
-                    if p126_val > 0 and avg_jeonse > 0:
-                        recommended_dep = min(p126_val, avg_jeonse)
-                    elif p126_val > 0:
-                        recommended_dep = p126_val
-                    elif avg_jeonse > 0:
-                        recommended_dep = avg_jeonse
-                    elif target_area and target_area > 0:
-                        recommended_dep = int(round((target_area * 0.3025) * 1200 / 100) * 100)
+                    # 층수별 유효 공시가 (반지하/지하층은 지상층 대비 70% 감가율 적용)
+                    if target_floor is not None and target_floor < 0:
+                        effective_unit_price = int(unit_official_price * 0.70)
                     else:
-                        recommended_dep = 20000
-
-                    if recommended_dep > 10000:
-                        recommended_dep = int(round(recommended_dep / 100) * 100)
-
-                    eok_r = recommended_dep // 10000
-                    man_r = recommended_dep % 10000
-                    rec_str = f"{eok_r}억 {man_r:,}만" if man_r > 0 else f"{eok_r}억"
-
-                    print("\n" + "═"*64)
-                    print("  💡 [상담 가이드: 전세 적정 시세 평가 및 거래기준가]")
-                    print("═"*64)
-                    if official_house_price:
-                        yr_txt = f"({official_house_year}년 기준) " if official_house_year else ""
-                        print(f"  • 공동주택가격    : {yr_txt}{off_str}")
-                        print(f"  • 126% 보증보험한도: {p126_str} (HUG·시중은행·LH 대출 상한선)")
-                    if jeonse_txs:
-                        avg_str = f"{avg_jeonse//10000}억 {avg_jeonse%10000:,}만" if avg_jeonse%10000 > 0 else f"{avg_jeonse//10000}억"
-                        min_str = f"{min_jeonse//10000}억 {min_jeonse%10000:,}만" if min_jeonse%10000 > 0 else f"{min_jeonse//10000}억"
-                        max_str = f"{max_jeonse//10000}억 {max_jeonse%10000:,}만" if max_jeonse%10000 > 0 else f"{max_jeonse//10000}억"
-                        print(f"  • 최근 실거래 시세 : 평균 {avg_str}원 (범위: {min_str} ~ {max_str}원, {len(jeonse_txs)}건 분석)")
-                    if target_area and target_area > 0:
-                        py_val = round(target_area * 0.3025, 1)
-                        py_dep = int(round(recommended_dep / py_val))
-                        print(f"  • 전용면적 기준   : {target_area:.1f}㎡ (약 {py_val}평) ➔ 평당 약 {py_dep:,}만 원")
-                    print("  " + "─"*60)
-                    print(f"  🎯 추천 적정 전세가 : {rec_str}원 ({recommended_dep:,}만 원)")
-                    print("     (안심 대출·HUG 보증보험 100% 가입 안전선)")
-                    print("═"*64)
-
-                    guide_in = input(f"[입력] 위 추천 적정가({rec_str}원)로 분석하시겠습니까? (엔터: 수락 / 다른 금액 직접 입력): ").strip()
-                    if not guide_in:
-                        target_price = recommended_dep
-                        print(f" -> [확인] 추천 적정 전세가 {rec_str}원 ({target_price:,}만 원)으로 설정 완료!")
-                        break
-                    else:
-                        parsed_g = parse_money_input(guide_in)
-                        if parsed_g and parsed_g > 0:
-                            target_price = parsed_g
-                            eok = target_price // 10000
-                            man = target_price % 10000
-                            eok_str = f"{eok}억 {man:,}만" if man > 0 else f"{eok}억"
-                            print(f" -> [확인] 전세 보증금 {eok_str}원 ({target_price:,}만 원) 입력 완료")
-                            break
-                        print(" [!] 입력이 취소되었습니다. 다시 입력해 주세요.")
+                        effective_unit_price = unit_official_price
                 else:
-                    print(" [!] 올바른 금액을 입력해 주세요. (예: 50000, 50,000, 5억 등)")
+                    unit_official_price = official_house_price
+                    effective_unit_price = official_house_price
 
-        elif trade_type == "월세":
-            p126_val = round(int(official_house_price * 1.26) / 10000) if official_house_price else 0
+            # 126% 기준금액 (만원 및 원 단위)
+            p126_won = int(effective_unit_price * 1.26) if effective_unit_price else 0
+            p126_val = round(p126_won / 10000) if p126_won else 0
+            p126_str = format_assessed_price(p126_won) if p126_won else ""
+            off_str = format_assessed_price(effective_unit_price) if effective_unit_price else ""
+            raw_bld_off_str = format_assessed_price(official_house_price) if official_house_price else ""
+
+            # 실거래 전세(CMA) 필터링 및 층수 보정
             jeonse_txs = [t for t in (transactions or []) if t.get("_trade_type") == "전세" and extract_tx_deposit(t) > 0]
             if target_area and target_area > 0:
-                sim_txs = [t for t in jeonse_txs if extract_tx_area(t) > 0 and abs(extract_tx_area(t) - target_area) / target_area <= 0.25]
+                sim_txs = [t for t in jeonse_txs if extract_tx_area(t) > 0 and abs(extract_tx_area(t) - target_area) / target_area <= 0.30]
                 if sim_txs:
                     jeonse_txs = sim_txs
+
+            from trade_viewer import classify_by_floor, get_cma_ref_price
+            floor_cat = "base" if (target_floor is not None and target_floor < 0) else ("first" if target_floor == 1 else "upper")
+            cma_val, cma_desc = get_cma_ref_price(jeonse_txs, floor_cat, is_rent=True, is_wolse=False)
+
             dep_list = [extract_tx_deposit(t) for t in jeonse_txs if extract_tx_deposit(t) > 0]
-            avg_jeonse = int(round(sum(dep_list) / len(dep_list))) if dep_list else 0
-            base_jeonse = p126_val if p126_val > 0 else (avg_jeonse if avg_jeonse > 0 else (int(round((target_area * 0.3025) * 1200)) if target_area else 20000))
+            avg_jeonse = int(round(cma_val)) if (cma_val and cma_val > 0) else (int(round(sum(dep_list) / len(dep_list))) if dep_list else 0)
+            min_jeonse = min(dep_list) if dep_list else 0
+            max_jeonse = max(dep_list) if dep_list else 0
 
-            while True:
-                dep_input = input("[입력] 보증금 입력 (단위: 만원, 예: 10000, 10,000, 1억 / 없을 시 엔터: 보증금별 조견표): ").strip()
-                parsed_d = parse_money_input(dep_input)
-                if parsed_d is not None and parsed_d >= 0 and dep_input:
-                    target_price = parsed_d
-                    break
-                elif not dep_input:
-                    # 엔터 입력 시: 보증금대별 월세 조견표 자동 산출!
-                    table_options = generate_wolse_schedule(base_jeonse, 0, 0, official_house_price)
-                    
-                    eok_bj = base_jeonse // 10000
-                    man_bj = base_jeonse % 10000
-                    bj_str = f"{eok_bj}억 {man_bj:,}만" if man_bj > 0 else f"{eok_bj}억"
+            fl_mult = 0.70 if (target_floor is not None and target_floor < 0) else 1.0
+            est_area_jeonse = int(round((target_area * 0.3025) * 1200 * fl_mult / 100) * 100) if (target_area and target_area > 0) else 0
 
-                    print("\n" + "═"*64)
-                    print("  💡 [상담 가이드: '보증금 얼마 받으면 월세 얼마 받나?' 조견표]")
-                    print("═"*64)
-                    print(f"  • 기준 전세 환산가 : 약 {bj_str}원 (공시가격 126% 및 시세 기준)")
-                    print(f"  • 실무 전월세전환율: 연 5.5% 기준 (1,000만원당 약 4.6만~5만원)")
-                    print("  " + "─"*60)
-                    print("  📊 보증금대별 실시간 예상 월세 조견표:")
-                    for idx, item in enumerate(table_options, 1):
-                        tag_str = f" ({item['tag']})" if item.get("tag") else ""
-                        print(f"    {idx}: 보증금 {item['deposit_str']:>7}원  ➔  월세 약 {item['monthly_rent']:>3}만 원{tag_str}")
-                    print("═"*64)
-
-                    default_idx = 3 if len(table_options) >= 3 else 1
-                    def_item = table_options[default_idx - 1]
-
-                    select_in = input(f"[입력] 번호 선택 (1~{len(table_options)}) 또는 엔터(기본: {default_idx}번 [{def_item['deposit_str']}/{def_item['monthly_rent']}만]) / '보증금 월세' 직접 입력: ").strip()
-                    if not select_in:
-                        target_price = def_item["deposit"]
-                        target_monthly = def_item["monthly_rent"]
-                        print(f" -> [확인] 추천 {default_idx}번: 보증금 {def_item['deposit_str']}원 / 월세 {def_item['monthly_rent']}만 원 적용 완료!")
+            if trade_type == "전세":
+                while True:
+                    price_input = input("[입력] 보증금 입력 (단위: 만원, 예: 50000, 50,000, 5억 / 없을 시 엔터: 적정가 자동평가): ").strip()
+                    parsed_p = parse_money_input(price_input)
+                    if parsed_p and parsed_p > 0:
+                        target_price = parsed_p
+                        eok = target_price // 10000
+                        man = target_price % 10000
+                        eok_str = f"{eok}억 {man:,}만" if man > 0 else f"{eok}억" if eok > 0 else f"{man:,}만"
+                        print(f" -> [확인] 전세 보증금 {eok_str}원 ({target_price:,}만 원) 입력 완료")
                         break
-                    elif select_in.isdigit() and 1 <= int(select_in) <= len(table_options):
-                        sel_item = table_options[int(select_in) - 1]
-                        target_price = sel_item["deposit"]
-                        target_monthly = sel_item["monthly_rent"]
-                        print(f" -> [확인] {select_in}번: 보증금 {sel_item['deposit_str']}원 / 월세 {sel_item['monthly_rent']}만 원 적용 완료!")
-                        break
-                    else:
-                        parts = re.split(r'[\s/,]+', select_in)
-                        p_d = parse_money_input(parts[0])
-                        if p_d is not None and p_d >= 0:
-                            target_price = p_d
-                            if len(parts) >= 2:
-                                p_m = parse_money_input(parts[1])
-                                if p_m is not None and p_m >= 0:
-                                    target_monthly = p_m
-                                    break
+                    elif not price_input:
+                        # 엔터 입력 시: 시세 평가 및 적정 가이드 자동 산출!
+                        if avg_jeonse > 0 and p126_val > 0:
+                            recommended_dep = min(p126_val, avg_jeonse)
+                        elif avg_jeonse > 0:
+                            recommended_dep = avg_jeonse
+                        elif p126_val > 0:
+                            recommended_dep = p126_val
+                        elif est_area_jeonse > 0:
+                            recommended_dep = est_area_jeonse
+                        else:
+                            recommended_dep = 10000 if (target_floor is not None and target_floor < 0) else 20000
+
+                        if recommended_dep > 10000:
+                            recommended_dep = int(round(recommended_dep / 100) * 100)
+
+                        eok_r = recommended_dep // 10000
+                        man_r = recommended_dep % 10000
+                        rec_str = f"{eok_r}억 {man_r:,}만" if man_r > 0 else f"{eok_r}억" if eok_r > 0 else f"{man_r:,}만"
+
+                        print("\n" + "═"*64)
+                        print("  💡 [상담 가이드: 전세 적정 시세 평가 및 거래기준가]")
+                        print("═"*64)
+                        if official_house_price:
+                            yr_txt = f"({official_house_year}년 기준) " if official_house_year else ""
+                            if is_multi_family_unit:
+                                fl_tag = " (반지하 감가 70% 적용)" if (target_floor is not None and target_floor < 0) else ""
+                                print(f"  • 건물 전체 공시가격 : {yr_txt}{raw_bld_off_str} (총 {max_units}가구, 연면적 {tot_area_float:.1f}㎡)")
+                                print(f"  • 호실 안분 공시가격 : 약 {off_str}{fl_tag} (전용 {target_area:.1f}㎡ 기준)")
+                                print(f"  • 126% 보증보험한도  : {p126_str} (HUG·시중은행·LH 대출 상한선)")
+                            else:
+                                print(f"  • 공동주택가격       : {yr_txt}{off_str}")
+                                print(f"  • 126% 보증보험한도  : {p126_str} (HUG·시중은행·LH 대출 상한선)")
+                        if jeonse_txs:
+                            avg_str = f"{avg_jeonse//10000}억 {avg_jeonse%10000:,}만" if avg_jeonse%10000 > 0 else f"{avg_jeonse//10000}억" if avg_jeonse >= 10000 else f"{avg_jeonse:,}만"
+                            cma_tag = f" [{cma_desc}]" if cma_desc else ""
+                            print(f"  • 최근 실거래 시세    : 평균 {avg_str}원{cma_tag} ({len(jeonse_txs)}건 분석)")
+                        if target_area and target_area > 0:
+                            py_val = round(target_area * 0.3025, 1)
+                            py_dep = int(round(recommended_dep / py_val))
+                            print(f"  • 전용면적 기준      : {target_area:.1f}㎡ (약 {py_val}평) ➔ 평당 약 {py_dep:,}만 원")
+                        print("  " + "─"*60)
+                        print(f"  🎯 추천 적정 전세가   : {rec_str}원 ({recommended_dep:,}만 원)")
+                        print("     (안심 대출·HUG 보증보험 100% 가입 안전선)")
+                        print("═"*64)
+
+                        guide_in = input(f"[입력] 위 추천 적정가({rec_str}원)로 분석하시겠습니까? (엔터: 수락 / 다른 금액 직접 입력): ").strip()
+                        if not guide_in:
+                            target_price = recommended_dep
+                            print(f" -> [확인] 추천 적정 전세가 {rec_str}원 ({target_price:,}만 원)으로 설정 완료!")
                             break
-                        print(" [!] 올바른 번호나 금액을 입력해 주세요.")
-                else:
-                    print(" [!] 올바른 금액을 입력해 주세요. (예: 10000, 10,000, 1억 등)")
+                        else:
+                            parsed_g = parse_money_input(guide_in)
+                            if parsed_g and parsed_g > 0:
+                                target_price = parsed_g
+                                eok = target_price // 10000
+                                man = target_price % 10000
+                                eok_str = f"{eok}억 {man:,}만" if man > 0 else f"{eok}억" if eok > 0 else f"{man:,}만"
+                                print(f" -> [확인] 전세 보증금 {eok_str}원 ({target_price:,}만 원) 입력 완료")
+                                break
+                            print(" [!] 입력이 취소되었습니다. 다시 입력해 주세요.")
+                    else:
+                        print(" [!] 올바른 금액을 입력해 주세요. (예: 50000, 50,000, 5억 등)")
 
-            if target_monthly == 0:
-                rec_m = max(5, int(round(((base_jeonse - target_price) * 0.055 / 12) / 5) * 5)) if base_jeonse > target_price else 50
+            elif trade_type == "월세":
+                # 기준 전세 환산가(base_jeonse) 산출: 실거래 시세(CMA) 및 유효 126% 기준
+                if avg_jeonse > 0 and p126_val > 0:
+                    base_jeonse = min(p126_val, avg_jeonse)
+                elif avg_jeonse > 0:
+                    base_jeonse = avg_jeonse
+                elif p126_val > 0:
+                    base_jeonse = p126_val
+                elif est_area_jeonse > 0:
+                    base_jeonse = est_area_jeonse
+                else:
+                    base_jeonse = 10000 if (target_floor is not None and target_floor < 0) else 20000
 
                 while True:
-                    mon_input = input(f"[입력] 월세 입력 (단위: 만원, 예: 150 / 없을 시 엔터: 추천 월세 약 {rec_m}만원 적용): ").strip()
-                    parsed_m = parse_money_input(mon_input)
-                    if parsed_m is not None and parsed_m >= 0 and mon_input:
-                        target_monthly = parsed_m
+                    dep_input = input("[입력] 보증금 입력 (단위: 만원, 예: 10000, 10,000, 1억 / 없을 시 엔터: 보증금별 조견표): ").strip()
+                    parsed_d = parse_money_input(dep_input)
+                    if parsed_d is not None and parsed_d >= 0 and dep_input:
+                        target_price = parsed_d
                         break
-                    elif not mon_input:
-                        target_monthly = rec_m
-                        print(f" -> [확인] 추천 월세 약 {target_monthly:,}만 원 적용 완료!")
-                        break
-                    print(" [!] 올바른 금액을 입력해 주세요. (예: 150, 150만 등)")
+                    elif not dep_input:
+                        # 엔터 입력 시: 보증금대별 월세 조견표 자동 산출!
+                        table_options = generate_wolse_schedule(base_jeonse, 0, 0, effective_unit_price)
+                        
+                        eok_bj = base_jeonse // 10000
+                        man_bj = base_jeonse % 10000
+                        bj_str = f"{eok_bj}억 {man_bj:,}만" if man_bj > 0 else f"{eok_bj}억" if eok_bj > 0 else f"{man_bj:,}만"
 
-            eok = target_price // 10000
-            man = target_price % 10000
-            dep_str = f"{eok}억 {man:,}만" if man > 0 else f"{eok}억" if eok > 0 else f"{man:,}만"
-            print(f" -> [확인] 월세 {dep_str}원 / {target_monthly:,}만 원 설정 완료")
+                        print("\n" + "═"*64)
+                        print("  💡 [상담 가이드: '보증금 얼마 받으면 월세 얼마 받나?' 조견표]")
+                        print("═"*64)
+                        print(f"  • 기준 전세 환산가 : 약 {bj_str}원 (공시가격 126% 및 실거래 기준)")
+                        print(f"  • 실무 전월세전환율: 연 5.5% 기준 (1,000만원당 약 4.6만~5만원)")
+                        print("  " + "─"*60)
+                        print("  📊 보증금대별 실시간 예상 월세 조견표:")
+                        for idx, item in enumerate(table_options, 1):
+                            tag_str = f" ({item['tag']})" if item.get("tag") else ""
+                            print(f"    {idx}: 보증금 {item['deposit_str']:>7}원  ➔  월세 약 {item['monthly_rent']:>3}만 원{tag_str}")
+                        print("═"*64)
 
-        if trade_type in ("전세", "월세") and official_house_price and target_price > 0:
-            dep_won = target_price * 10_000
-            dep_ratio = (dep_won / official_house_price) * 100
-            p126_won = int(official_house_price * 1.26)
-            p126_str = format_assessed_price(p126_won)
-            off_str = format_assessed_price(official_house_price)
-            yr_str = f"({official_house_year}년 기준) " if official_house_year else ""
-            print("\n───────────────────────────────────────────────────────")
-            print("  🎯 [ 공시가격 대비 보증금 및 126% 대출·보증보험 기준선 분석 ]")
-            print(f"  • 주택 공시가격 : {yr_str}{off_str}")
-            print(f"  • 공시가격 126% : {p126_str} (시중은행 전세대출 · LH 전세대출 · HUG 보증보험 기준선)")
-            print(f"  • 보증금 비율   : 공시가격의 {dep_ratio:.1f}%")
-            if dep_won <= p126_won:
-                diff_str = format_assessed_price(p126_won - dep_won)
-                print(f"  • 대출·보증 적격: ✅ [안심 적격] 126% 기준선 이내 충족 (여유 한도: 약 {diff_str})")
-                print("                    (시중은행 전세대출, LH 대출, HUG 전세보증보험 안심 가입 가능)")
-            else:
-                excess_str = format_assessed_price(dep_won - p126_won)
-                print(f"  • 대출·보증 적격: ⚠️ [126% 초과 주의] 기준선 대비 약 {excess_str} 초과")
-                print(f"                    (은행 전세대출/LH/HUG 보증보험 가입을 위해 최대 {p126_str} 이하 권장)")
-            print("───────────────────────────────────────────────────────\n")
+                        default_idx = 3 if len(table_options) >= 3 else 1
+                        def_item = table_options[default_idx - 1]
+
+                        select_in = input(f"[입력] 번호 선택 (1~{len(table_options)}) 또는 엔터(기본: {default_idx}번 [{def_item['deposit_str']}/{def_item['monthly_rent']}만]) / '보증금 월세' 직접 입력: ").strip()
+                        if not select_in:
+                            target_price = def_item["deposit"]
+                            target_monthly = def_item["monthly_rent"]
+                            print(f" -> [확인] 추천 {default_idx}번: 보증금 {def_item['deposit_str']}원 / 월세 {def_item['monthly_rent']}만 원 적용 완료!")
+                            break
+                        elif select_in.isdigit() and 1 <= int(select_in) <= len(table_options):
+                            sel_item = table_options[int(select_in) - 1]
+                            target_price = sel_item["deposit"]
+                            target_monthly = sel_item["monthly_rent"]
+                            print(f" -> [확인] {select_in}번: 보증금 {sel_item['deposit_str']}원 / 월세 {sel_item['monthly_rent']}만 원 적용 완료!")
+                            break
+                        else:
+                            parts = re.split(r'[\s/,]+', select_in)
+                            p_d = parse_money_input(parts[0])
+                            if p_d is not None and p_d >= 0:
+                                target_price = p_d
+                                if len(parts) >= 2:
+                                    p_m = parse_money_input(parts[1])
+                                    if p_m is not None and p_m >= 0:
+                                        target_monthly = p_m
+                                        break
+                                break
+                            print(" [!] 올바른 번호나 금액을 입력해 주세요.")
+                    else:
+                        print(" [!] 올바른 금액을 입력해 주세요. (예: 10000, 10,000, 1억 등)")
+
+                if target_monthly == 0:
+                    rec_m = max(5, int(round(((base_jeonse - target_price) * 0.055 / 12) / 5) * 5)) if base_jeonse > target_price else 40
+
+                    while True:
+                        mon_input = input(f"[입력] 월세 입력 (단위: 만원, 예: 45 / 없을 시 엔터: 추천 월세 약 {rec_m}만원 적용): ").strip()
+                        parsed_m = parse_money_input(mon_input)
+                        if parsed_m is not None and parsed_m >= 0 and mon_input:
+                            target_monthly = parsed_m
+                            break
+                        elif not mon_input:
+                            target_monthly = rec_m
+                            print(f" -> [확인] 추천 월세 약 {target_monthly:,}만 원 적용 완료!")
+                            break
+                        print(" [!] 올바른 금액을 입력해 주세요. (예: 45, 45만 등)")
+
+                eok = target_price // 10000
+                man = target_price % 10000
+                dep_str = f"{eok}억 {man:,}만" if man > 0 else f"{eok}억" if eok > 0 else f"{man:,}만"
+                print(f" -> [확인] 월세 {dep_str}원 / {target_monthly:,}만 원 설정 완료")
+
+            if effective_unit_price and target_price > 0:
+                dep_won = target_price * 10_000
+                dep_ratio = (dep_won / effective_unit_price) * 100
+                eff_off_str = format_assessed_price(effective_unit_price)
+                yr_str = f"({official_house_year}년 기준) " if official_house_year else ""
+                print("\n───────────────────────────────────────────────────────")
+                print("  🎯 [ 공시가격 대비 보증금 및 126% 대출·보증보험 기준선 분석 ]")
+                if is_multi_family_unit:
+                    fl_tag = " (반지하 감가 70% 적용)" if (target_floor is not None and target_floor < 0) else ""
+                    print(f"  • 건물 전체 공시가격 : {yr_str}{raw_bld_off_str} (총 {max_units}가구, 연면적 {tot_area_float:.1f}㎡)")
+                    print(f"  • 해당 호실 안분가격 : 약 {eff_off_str}{fl_tag} (전용 {target_area:.1f}㎡ 기준)")
+                else:
+                    print(f"  • 주택 공시가격     : {yr_str}{eff_off_str}")
+                print(f"  • 공시가격 126%     : {p126_str} (시중은행 전세대출 · LH 전세대출 · HUG 보증보험 기준선)")
+                print(f"  • 보증금 비율       : 호실 기준 공시가격의 {dep_ratio:.1f}%")
+                if dep_won <= p126_won:
+                    diff_str = format_assessed_price(p126_won - dep_won)
+                    print(f"  • 대출·보증 적격    : ✅ [안심 적격] 126% 기준선 이내 충족 (여유 한도: 약 {diff_str})")
+                    print("                        (시중은행 전세대출, LH 대출, HUG 전세보증보험 안심 가입 가능)")
+                else:
+                    excess_str = format_assessed_price(dep_won - p126_won)
+                    print(f"  • 대출·보증 적격    : ⚠️ [126% 초과 주의] 기준선 대비 약 {excess_str} 초과")
+                    print(f"                        (은행 전세대출/LH/HUG 보증보험 가입을 위해 최대 {p126_str} 이하 권장)")
+                print("───────────────────────────────────────────────────────\n")
         
         if trade_type == "종합":
             desired_info = None
@@ -2324,7 +2375,7 @@ def run_building_viewer():
             if trade_type == "월세":
                 bj_val = locals().get("base_jeonse", 0)
                 desired_info["base_jeonse"] = bj_val
-                desired_info["wolse_schedule"] = generate_wolse_schedule(bj_val, target_price, target_monthly, official_house_price)
+                desired_info["wolse_schedule"] = generate_wolse_schedule(bj_val, target_price, target_monthly, effective_unit_price if (is_multi_family_unit and effective_unit_price) else official_house_price)
         if not locals().get("transactions_loaded"):
             print("\n -> 최근 실거래(매매/임대차) 내역 및 자동 비교 조회 중...")
             transactions = get_recent_transactions(addr_info["sigunguCd"], addr_info["bun"], addr_info["ji"], prop_type, addr_info.get("bjdongNm"), target_build_year, target_house_type)
@@ -2479,9 +2530,11 @@ def run_building_viewer():
         desired_info["unit_info"] = unit_info
         desired_info["clean_address"] = clean_address
         desired_info["road_address"] = addr_info.get("road_address", "")
-        desired_info["official_price"] = official_house_price
+        desired_info["official_price"] = effective_unit_price if (is_multi_family_unit and effective_unit_price) else official_house_price
+        desired_info["official_price_raw_building"] = official_house_price if is_multi_family_unit else None
         desired_info["official_price_year"] = official_house_year
-        desired_info["official_price_126"] = int(official_house_price * 1.26) if official_house_price else None
+        desired_info["official_price_126"] = int(desired_info["official_price"] * 1.26) if desired_info.get("official_price") else None
+        desired_info["is_multi_family_unit"] = is_multi_family_unit
         if unit_info:
             desired_info["exclusive_area"] = unit_info.get("area") or target_area
             desired_info["supply_area"] = unit_info.get("supply_area")
@@ -2542,7 +2595,8 @@ def run_building_viewer():
                 "bjdong_name": addr_info.get("bjdongNm", ""),
                 "bunji_val": bunji_val,
                 "ho_name": ho_name,
-                "dong_name": dong_nm
+                "dong_name": dong_nm,
+                "building_name": (bld_data.get("bld_nm") if isinstance(locals().get("bld_data"), dict) else "") or addr_info.get("bldNm", "")
             }
             print(" -> 부동산써브 자동 매물 등록 연동을 시작합니다...")
             from serve_auto_upload import run_serve_auto_upload

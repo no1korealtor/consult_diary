@@ -28,6 +28,8 @@ class TestTradeViewer(unittest.TestCase):
         self.assertEqual(addr, "서울 마포구 성산동 138")
         self.assertEqual(dong, "")
         self.assertEqual(ho, "402")
+        self.assertEqual(dong, "")
+        self.assertEqual(ho, "402")
  
         # Case 3: No room number
         addr, dong, ho = parse_address_and_ho("서울 마포구 성산동 200-94")
@@ -49,16 +51,21 @@ class TestTradeViewer(unittest.TestCase):
 
     def test_classify_property_type(self):
         """Test property type classification logic"""
-        # Apartment
-        self.assertEqual(classify_property_type("아파트", "현대아파트"), "1")
+        # Apartment (by keyword)
+        self.assertEqual(classify_property_type("공동주택", "현대아파트", ""), "1")
+        # Apartment (by household count, without '아파트' keyword)
+        self.assertEqual(classify_property_type("공동주택", "건영", "", hhld_cnt=100), "1")
         # Officetel
-        self.assertEqual(classify_property_type("업무시설", "마포오피스텔"), "3")
-        # Villa/Rowhouse
-        self.assertEqual(classify_property_type("공동주택", "성산빌라"), "2")
+        self.assertEqual(classify_property_type("업무시설", "마포오피스텔", ""), "3")
+        # Villa/Rowhouse (by keywords)
+        self.assertEqual(classify_property_type("공동주택", "성산빌라", ""), "2")
+        self.assertEqual(classify_property_type("공동주택", "다세대주택", ""), "2")
+        # Villa/Rowhouse (fallback for '공동주택' with low household count)
+        self.assertEqual(classify_property_type("공동주택", "건영", "", hhld_cnt=10), "2")
         # General/Single house
-        self.assertEqual(classify_property_type("단독주택", "단독"), "4")
+        self.assertEqual(classify_property_type("단독주택", "단독", ""), "4")
         # Default fallback
-        self.assertEqual(classify_property_type("", ""), "2")
+        self.assertEqual(classify_property_type("", "", ""), "2")
 
     def test_format_price_trade(self):
         """Test formatting of trade amounts"""
@@ -143,9 +150,10 @@ class TestTradeViewer(unittest.TestCase):
             sys.stdout = sys.__stdout__
 
         # Verify
-        self.assertIsNone(transactions)
+        self.assertEqual(transactions, [])
+        self.assertTrue(getattr(transactions, 'trade_permission_error', False) or getattr(transactions, 'rent_permission_error', False))
         # Check that error guide was printed
-        self.assertIn("공공데이터 API 호출 오류 (인증 실패 / 403 Forbidden)", captured_output.getvalue())
+        self.assertIn("API 호출 오류 (인증 실패 / 403 Forbidden)", captured_output.getvalue())
 
     @patch('urllib.request.urlopen')
     def test_get_recent_transactions_empty(self, mock_urlopen):
@@ -227,7 +235,10 @@ class TestTradeViewer(unittest.TestCase):
                 bun="200",
                 ji="94",
                 bjdong_nm="성산동",
-                target_build_year=2015
+                target_build_year=2015,
+                target_house_type=None,
+                save_report=True,
+                desired_info=None
             )
         finally:
             sys.stdout = sys.__stdout__

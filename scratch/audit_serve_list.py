@@ -6,7 +6,7 @@ import re
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-from get_building_info import get_building_data, get_expos_data
+from get_building_info import get_building_data, get_expos_data, get_floor_data
 from trade_viewer import (
     get_kakao_address_info,
     get_recent_transactions,
@@ -205,29 +205,82 @@ def run_audit_serve_list():
                     
                 pnu = items[0].get('id', '')
                 sigunguCd, bjdongCd, bun, ji = pnu[0:5], pnu[5:10], pnu[11:15], pnu[15:19]
-                
-                bldg_data = get_building_data(sigunguCd, bjdongCd, bun, ji)
-                expos_data = get_expos_data(sigunguCd, bjdongCd, bun, ji, "", ho) if ho else None
-                
+                plat_code = '1' if len(pnu) >= 11 and pnu[10] == '2' else '0'
+
+                # 지하/지층 여부 확인 (예: -1층, 지하1층, 지층)
+                is_underground = False
+                flr_str = str(item.get('floor', '')).strip()
+                if flr_str.startswith('-') or '지하' in flr_str or '지층' in flr_str:
+                    is_underground = True
+
+                bldg_data = get_building_data(sigunguCd, bjdongCd, bun, ji, plat_code=plat_code)
+                expos_data = get_expos_data(sigunguCd, bjdongCd, bun, ji, "", ho, is_underground=is_underground, plat_code=plat_code) if ho else None
+
                 if not bldg_data:
                     print("  ❌ 건축물대장 데이터 없음")
                     print("-" * 40)
                     continue
                     
-                off_area = expos_data.get('area', '') if expos_data else bldg_data.get('totArea', '')
+                is_dagagu = (
+                    bldg_data.get('regstrGbCd') == '1' or
+                    '단독' in bldg_data.get('purpose', '') or
+                    '다가구' in bldg_data.get('etcPurps', '')
+                )
+                
+                floor_data = None
+                if is_dagagu and flr_str:
+                    try:
+                        floor_data = get_floor_data(sigunguCd, bjdongCd, bun, ji, flr_str)
+                    except Exception:
+                        pass
+
+                if expos_data and expos_data.get('area'):
+                    off_area = expos_data.get('area', '')
+                elif floor_data and floor_data.get('area'):
+                    off_area = floor_data.get('area', '')
+                else:
+                    off_area = bldg_data.get('totArea', '')
                 
                 # 비교 로직
+                match = False
+                dagagu_matched = False
+                matched_reason = ""
                 try:
                     reg_f = float(reg_excl_area)
-                    off_f = float(off_area)
+                    off_f = float(off_area) if off_area else 0.0
                     match = (reg_f == off_f)
-                except:
-                    match = str(reg_excl_area) == str(off_area)
                     
+                    # 다가구 가구수 안분 일치 여부 확인 (예: 3층 69.21㎡ / 2가구 = 34.605 ≒ 34.61㎡)
+                    if not match and is_dagagu and floor_data and floor_data.get('area'):
+                        flr_area = float(floor_data['area'])
+                        etc_p = floor_data.get('etcPurps', '')
+                        m_hh = re.search(r'(\d+)\s*가구', etc_p)
+                        if m_hh:
+                            hh_num = int(m_hh.group(1))
+                            if hh_num > 0 and (abs((flr_area / hh_num) - reg_f) <= 0.05 or round(flr_area / hh_num, 2) == round(reg_f, 2)):
+                                dagagu_matched = True
+                                matched_reason = f"{flr_str}층 {flr_area}㎡ / {hh_num}가구 안분"
+                                off_area = f"{round(flr_area / hh_num, 2)}"
+                        if not dagagu_matched and flr_area > reg_f:
+                            for div in [2, 3, 4, 5]:
+                                if abs((flr_area / div) - reg_f) <= 0.05 or round(flr_area / div, 2) == round(reg_f, 2):
+                                    dagagu_matched = True
+                                    matched_reason = f"{flr_str}층 {flr_area}㎡ / {div}등분 안분"
+                                    off_area = f"{round(flr_area / div, 2)}"
+                                    break
+                except Exception:
+                    match = str(reg_excl_area) == str(off_area)
+
                 if match:
                     print(f"  ✅ [전용면적 일치] 등록값: {reg_excl_area}㎡ == 공식값: {off_area}㎡")
+                elif dagagu_matched:
+                    print(f"  ✅ [다가구 안분 일치] 등록값: {reg_excl_area}㎡ == 건축물대장 ({matched_reason}: 약 {off_area}㎡)")
+                elif is_dagagu:
+                    flr_desc = f"{flr_str}층" if flr_str and not str(flr_str).endswith('층') else (flr_str or "해당 층")
+                    flr_info_str = f", {flr_desc} 면적: {floor_data.get('area')}㎡" if floor_data and floor_data.get('area') else ""
+                    print(f"  ℹ️ [다가구주택] 등록값: {reg_excl_area}㎡ (호별 전유대장 없음{flr_info_str} / 건물 전체 연면적: {bldg_data.get('totArea')}㎡)")
                 else:
-                    print(f"   [전용면적 불일치] 등록값: {reg_excl_area}㎡ != 공식값: {off_area}㎡ (다가구인 경우 정상일 수 있음)")
+                    print(f"  ⚠️ [전용면적 불일치] 등록값: {reg_excl_area}㎡ != 공식값: {off_area}㎡")
                     
                 # CMA 시세 분석 및 가격 의견
                 if enable_cma and 'trade_type' in item:
@@ -293,21 +346,43 @@ def run_audit_serve_list():
                     if transactions is None:
                         transactions = []
                         
-                    # 거래 내역이 부족할 시 자동으로 인근 유사 조건으로 확장
+                    # 거래 내역이 부족할 시 자동으로 인근 유사 조건으로 확장 (행정동 우선)
                     if len(transactions) < 3:
+                        admin_d = addr_info.get('adminDongNm')
+                        bjd = addr_info.get('bjdongNm')
+                        full_reg = f"{addr_info.get('sidoNm', '')} {addr_info.get('sigunguNm', '')}".strip()
                         expanded_txs = get_recent_transactions(
                             addr_info['sigunguCd'],
                             addr_info['bun'],
                             addr_info['ji'],
                             prop_type,
-                            addr_info.get('bjdongNm'),
+                            bjd,
                             target_build_year=target_build_year,
                             target_house_type=target_house_type,
                             expand_similar=True,
                             target_area=target_area,
                             build_year_margin=3,
-                            area_margin=0.15
+                            area_margin=0.15,
+                            target_admin_dong=admin_d,
+                            full_region_name=full_reg
                         )
+                        # 행정동 필터링 후 표본 부족 시 법정동 전체 fallback
+                        if not expanded_txs or len(expanded_txs) < 3:
+                            fallback_txs = get_recent_transactions(
+                                addr_info['sigunguCd'],
+                                addr_info['bun'],
+                                addr_info['ji'],
+                                prop_type,
+                                bjd,
+                                target_build_year=target_build_year,
+                                target_house_type=target_house_type,
+                                expand_similar=True,
+                                target_area=target_area,
+                                build_year_margin=3,
+                                area_margin=0.15
+                            )
+                            if fallback_txs:
+                                expanded_txs = fallback_txs
                         if expanded_txs:
                             transactions = expanded_txs
                             
@@ -386,6 +461,7 @@ def run_audit_serve_list():
             except Exception as e:
                 print(f"  ⚠️ 조회 중 에러 발생: {e}")
             print("-" * 40)
+            time.sleep(0.15) # 정부 API 과부하 방지용 미세 딜레이
             
         print(" 현재 페이지 스캔 및 검증이 완료되었습니다. 다음 페이지로 넘어가신 후 다시 엔터를 치시면 계속 진행합니다!")
 
