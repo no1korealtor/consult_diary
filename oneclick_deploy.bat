@@ -1,3 +1,3 @@
 @echo off
-python deploy_tracker_fix.py
+python deploy_auto_recover.py
 pause
