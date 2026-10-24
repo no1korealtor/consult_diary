@@ -1,3 +1,3 @@
 @echo off
-python deploy_local.py
+python run_deploy.py
 pause
