@@ -1,3 +1,3 @@
 @echo off
-python deploy_tracker_guarantee.py
+python deploy_hard_guarantee.py
 pause
