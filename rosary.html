@@ -3874,6 +3874,102 @@ input:checked + .toggle-slider:before {
   color: #7DD3FC;
 }
 
+
+/* ========================================================
+   [REFINED] 연도 & 조문 예절 단정 서브 배너 (하단 위계)
+   ======================================================== */
+.yeondo-sub-banner-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7) 0%, rgba(15, 23, 42, 0.85) 100%) !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  margin-top: 4px;
+}
+
+.yeondo-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.yeondo-banner-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.yeondo-banner-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.yeondo-banner-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #F1F5F9;
+  letter-spacing: -0.2px;
+}
+
+.yeondo-banner-sub {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.yeondo-banner-btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.yeondo-banner-pill-btn {
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #E2E8F0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.yeondo-banner-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.yeondo-banner-pill-btn.highlight {
+  background: rgba(56, 189, 248, 0.16);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #BAE6FD;
+}
+
+.yeondo-banner-pill-btn.highlight:hover {
+  background: rgba(56, 189, 248, 0.28);
+  color: #FFF;
+}
+
+/* 상단 헤더 연도 원터치 아이콘 */
+.yeondo-quick-header-btn {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  color: #7DD3FC !important;
+}
+
+.yeondo-quick-header-btn:hover {
+  background: rgba(56, 189, 248, 0.25) !important;
+  color: #FFF !important;
+}
+
 </style>
 </head>
 <body>
@@ -4015,6 +4111,9 @@ input:checked + .toggle-slider:before {
           <span class="intro-brand-name">묵주기도</span>
         </div>
         <div class="intro-top-actions">
+          <button id="btnIntroYeondoQuick" class="icon-btn yeondo-quick-header-btn" aria-label="연도 및 조문 예절" title="연도 및 조문 예절">
+            <span style="font-size: 1.05rem;">🕯️</span>
+          </button>
           <button id="btnIntroInstall" class="icon-btn highlight-btn" aria-label="바탕화면에 바로가기" title="바탕화면에 바로가기 추가">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
@@ -4051,62 +4150,6 @@ input:checked + .toggle-slider:before {
           <p id="introHeroQuote" class="intro-hero-quote">"성모님과 함께 바치는 거룩한 장미 화관"</p>
         </div>
 
-        <!-- ==============================================
-             [NEW] 은총의 묵주기도 봉헌 현황 (공동체 & 나의 단수)
-             ============================================== -->
-        <div id="introCommunityCard" class="intro-section-card community-stats-card">
-          <div class="community-card-top">
-            <div class="community-name-badge">
-              <span class="comm-pin-icon">📍</span>
-              <span id="commCurrentName" class="comm-name-text">전국 교우 공동체</span>
-            </div>
-            <button type="button" id="btnOpenCommModal" class="comm-change-btn">
-              <span>PIN / 단체 변경 ❯</span>
-            </button>
-          </div>
-
-          <div class="community-stats-grid">
-            <div class="comm-stat-box comm-total">
-              <div class="comm-stat-label">
-                <span class="comm-stat-dot">🕊️</span>
-                <span>공동체 함께 봉헌</span>
-              </div>
-              <div id="commTotalDecades" class="comm-stat-value">0단</div>
-              <div id="commTotalRoses" class="comm-stat-sub">(장미 0송이 🌹)</div>
-            </div>
-
-            <div class="comm-stat-box my-total">
-              <div class="comm-stat-label">
-                <span class="comm-stat-dot">🌹</span>
-                <span>내가 봉헌한 기도</span>
-              </div>
-              <div id="myTotalDecades" class="comm-stat-value">0단</div>
-              <div id="myTotalRoses" class="comm-stat-sub">(0송이)</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- [NEW PROMINENT] 가톨릭 연도 & 조문 예절 바로가기 포털 카드 -->
-        <div id="introYeondoPortalCard" class="intro-section-card yeondo-portal-card">
-          <div class="intro-card-header">
-            <span class="intro-card-icon">🕯️</span>
-            <span class="intro-card-title">가톨릭 연도 · 조문 예절</span>
-            <span class="intro-today-badge yeondo-badge">상장예식 바로가기</span>
-          </div>
-          <p class="intro-card-desc" style="font-size: 0.82rem; color: rgba(226, 232, 240, 0.85); line-height: 1.45;">
-            상가 빈소 조문 예절(1분 요약)과 고인을 위한 전통 위령기도(연도)를 바칠 수 있습니다.
-          </p>
-          <div class="yeondo-portal-btn-row">
-            <button type="button" id="btnPortalCondolenceGuide" class="yeondo-portal-action-btn">
-              <span>📜 1분 조문 예절</span>
-            </button>
-            <button type="button" id="btnPortalStartYeondo" class="yeondo-portal-action-btn highlight">
-              <span>🕯️ 연도(위령기도) 시작</span>
-              <span class="portal-arrow">❯</span>
-            </button>
-          </div>
-        </div>
-
         <!-- 1. 언어 선택 카드 (한국어 / English) -->
         <div class="intro-section-card">
           <div class="intro-card-header">
@@ -4125,11 +4168,10 @@ input:checked + .toggle-slider:before {
             <span class="intro-card-icon">📿</span>
             <span id="introPrayerTypeTitle" class="intro-card-title">기도 선택 (Devotion)</span>
           </div>
-          <div class="intro-toggle-group prayer-type-toggle devotion-3way">
+          <div class="intro-toggle-group prayer-type-toggle">
             <button type="button" id="btnPrayerTypeRosary" class="intro-toggle-btn active">🌹 성모 묵주기도</button>
             <button type="button" id="btnPrayerTypeDivineMercy" class="intro-toggle-btn">🕊️ 자비의 기도</button>
-            <button type="button" id="btnPrayerTypeYeondo" class="intro-toggle-btn">🕯️ 연도 · 조문</button>
-          </div>
+            </div>
         </div>
 
         <!-- 3. 지난 기도 이어하기 카드 (기록이 있을 때만 노출) -->
@@ -4279,7 +4321,63 @@ input:checked + .toggle-slider:before {
           </div>
         </div>
 
-        <!-- 6. 주간 기록 미니 현황 카드 -->
+        
+        <!-- [SUB BANNER] 가톨릭 연도 & 조문 예절 안내 (필요할 때 바로 찾는 단정 배너) -->
+        <div id="introYeondoBannerCard" class="intro-section-card yeondo-sub-banner-card">
+          <div class="yeondo-banner-content">
+            <span class="yeondo-banner-icon">🕯️</span>
+            <div class="yeondo-banner-texts">
+              <span class="yeondo-banner-title">상가 빈소 조문 · 연도(위령기도)</span>
+              <span class="yeondo-banner-sub">1분 조문 예절 요약 및 위령기도 바치기</span>
+            </div>
+          </div>
+          <div class="yeondo-banner-btn-group">
+            <button type="button" id="btnPortalCondolenceGuide" class="yeondo-banner-pill-btn">
+              <span>📜 조문 예절</span>
+            </button>
+            <button type="button" id="btnPortalStartYeondo" class="yeondo-banner-pill-btn highlight">
+              <span>연도 시작 ❯</span>
+            </button>
+          </div>
+        </div>
+
+<!-- ==============================================
+             [NEW] 은총의 묵주기도 봉헌 현황 (공동체 & 나의 단수)
+             ============================================== -->
+        <div id="introCommunityCard" class="intro-section-card community-stats-card">
+          <div class="community-card-top">
+            <div class="community-name-badge">
+              <span class="comm-pin-icon">📍</span>
+              <span id="commCurrentName" class="comm-name-text">전국 교우 공동체</span>
+            </div>
+            <button type="button" id="btnOpenCommModal" class="comm-change-btn">
+              <span>PIN / 단체 변경 ❯</span>
+            </button>
+          </div>
+
+          <div class="community-stats-grid">
+            <div class="comm-stat-box comm-total">
+              <div class="comm-stat-label">
+                <span class="comm-stat-dot">🕊️</span>
+                <span>공동체 함께 봉헌</span>
+              </div>
+              <div id="commTotalDecades" class="comm-stat-value">0단</div>
+              <div id="commTotalRoses" class="comm-stat-sub">(장미 0송이 🌹)</div>
+            </div>
+
+            <div class="comm-stat-box my-total">
+              <div class="comm-stat-label">
+                <span class="comm-stat-dot">🌹</span>
+                <span>내가 봉헌한 기도</span>
+              </div>
+              <div id="myTotalDecades" class="comm-stat-value">0단</div>
+              <div id="myTotalRoses" class="comm-stat-sub">(0송이)</div>
+            </div>
+          </div>
+        </div>
+
+        
+<!-- 6. 주간 기록 미니 현황 카드 -->
         <div id="introTrackerMiniCard" class="intro-section-card tracker-mini-card">
           <div class="tracker-mini-info">
             <span class="tracker-mini-icon">📅</span>
@@ -6326,6 +6424,7 @@ class RosaryApp {
 
       // 인트로 헤더 및 히어로
       btnIntroInstall: document.getElementById("btnIntroInstall"),
+      btnIntroYeondoQuick: document.getElementById("btnIntroYeondoQuick"),
       btnIntroTracker: document.getElementById("btnIntroTracker"),
       btnIntroSettings: document.getElementById("btnIntroSettings"),
       introHeroTitle: document.getElementById("introHeroTitle"),
@@ -8764,6 +8863,87 @@ class RosaryApp {
   bindEvents() {
     const card = this.dom.prayerCard;
 
+    // 0) 상단 헤더 연도 퀵 버튼 (원터치 조문/연도 전환)
+    if (this.dom.btnIntroYeondoQuick) {
+      this.dom.btnIntroYeondoQuick.addEventListener("click", () => {
+        this.switchView("yeondo");
+      });
+    }
+
+    // 0-0-1) 공동체 PIN 모달 열기 및 PIN 확인
+    if (this.dom.btnOpenCommModal) {
+      this.dom.btnOpenCommModal.addEventListener("click", () => {
+        if (this.dom.inputCommunityPin) this.dom.inputCommunityPin.value = "";
+        if (this.dom.commPinFeedback) this.dom.commPinFeedback.style.display = "none";
+        this.openModal(this.dom.communityModal);
+      });
+    }
+    if (this.dom.btnSubmitCommunityPin) {
+      this.dom.btnSubmitCommunityPin.addEventListener("click", () => {
+        const val = this.dom.inputCommunityPin ? this.dom.inputCommunityPin.value : "";
+        this.applyCommunityPin(val);
+      });
+    }
+    if (this.dom.btnDismissCommunityModal) {
+      this.dom.btnDismissCommunityModal.addEventListener("click", () => {
+        this.closeModals();
+      });
+    }
+    document.querySelectorAll(".comm-quick-pill").forEach(pill => {
+      pill.addEventListener("click", () => {
+        const pin = pill.dataset.pin;
+        if (pin) this.applyCommunityPin(pin);
+      });
+    });
+
+    // 0-0-2) 관리자 모달 이벤트 (암호 확인 & 단체 승인 등록 - 십자가 5연타)
+    const introBrandCross = document.querySelector(".intro-cross-icon");
+    if (introBrandCross) {
+      let tapCount = 0;
+      let lastTapTime = 0;
+      introBrandCross.addEventListener("click", () => {
+        const now = Date.now();
+        if (now - lastTapTime > 2000) tapCount = 0;
+        lastTapTime = now;
+        tapCount++;
+        if (tapCount >= 5) {
+          tapCount = 0;
+          this.openAdminModal();
+        }
+      });
+    }
+    if (this.dom.btnSubmitAdminPassword) {
+      this.dom.btnSubmitAdminPassword.addEventListener("click", () => {
+        const pwd = this.dom.inputAdminPassword ? this.dom.inputAdminPassword.value : "";
+        this.verifyAdminPassword(pwd);
+      });
+    }
+    if (this.dom.btnAdminRegisterComm) {
+      this.dom.btnAdminRegisterComm.addEventListener("click", () => {
+        const name = this.dom.adminNewCommName ? this.dom.adminNewCommName.value : "";
+        const pin = this.dom.adminNewCommPin ? this.dom.adminNewCommPin.value : "";
+        const base = this.dom.adminNewCommBase ? this.dom.adminNewCommBase.value : 0;
+        const res = this.registerNewCommunity(name, pin, base);
+        if (this.dom.adminRegisterFeedback) {
+          this.dom.adminRegisterFeedback.style.display = "block";
+          this.dom.adminRegisterFeedback.style.color = res.success ? "#4ADE80" : "#F87171";
+          this.dom.adminRegisterFeedback.textContent = res.msg;
+        }
+        if (res.success) {
+          if (this.dom.adminNewCommName) this.dom.adminNewCommName.value = "";
+          if (this.dom.adminNewCommPin) this.dom.adminNewCommPin.value = "";
+          this.renderAdminCommList();
+          this.renderCommunityStats();
+        }
+      });
+    }
+    if (this.dom.btnDismissAdminModal) {
+      this.dom.btnDismissAdminModal.addEventListener("click", () => {
+        this.closeModals();
+      });
+    }
+
+
     // 0) 인트로 화면 인터랙션 이벤트
     // [NEW] 연도 포털 버튼 이벤트
     if (this.dom.btnPortalCondolenceGuide) {
@@ -10241,10 +10421,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=33').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=34').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=33').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=34').catch(() => {});
         });
       });
 
@@ -10252,7 +10432,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v33' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v34' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
