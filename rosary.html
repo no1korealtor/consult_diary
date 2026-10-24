@@ -3820,6 +3820,60 @@ input:checked + .toggle-slider:before {
   font-weight: 800;
 }
 
+
+/* 가톨릭 연도 포털 카드 (인트로 상단 고정 노출) */
+.intro-section-card.yeondo-portal-card {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.14) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+}
+
+.yeondo-portal-btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.yeondo-portal-action-btn {
+  height: 42px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFF;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.yeondo-portal-action-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.yeondo-portal-action-btn.highlight {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.25) 0%, rgba(14, 116, 144, 0.4) 100%);
+  border-color: rgba(56, 189, 248, 0.55);
+  color: #E0F2FE;
+}
+
+.yeondo-portal-action-btn.highlight:hover {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.4) 0%, rgba(14, 116, 144, 0.6) 100%);
+  color: #FFF;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+}
+
+.portal-arrow {
+  font-size: 0.75rem;
+  color: #7DD3FC;
+}
+
 </style>
 </head>
 <body>
@@ -4029,6 +4083,27 @@ input:checked + .toggle-slider:before {
               <div id="myTotalDecades" class="comm-stat-value">0단</div>
               <div id="myTotalRoses" class="comm-stat-sub">(0송이)</div>
             </div>
+          </div>
+        </div>
+
+        <!-- [NEW PROMINENT] 가톨릭 연도 & 조문 예절 바로가기 포털 카드 -->
+        <div id="introYeondoPortalCard" class="intro-section-card yeondo-portal-card">
+          <div class="intro-card-header">
+            <span class="intro-card-icon">🕯️</span>
+            <span class="intro-card-title">가톨릭 연도 · 조문 예절</span>
+            <span class="intro-today-badge yeondo-badge">상장예식 바로가기</span>
+          </div>
+          <p class="intro-card-desc" style="font-size: 0.82rem; color: rgba(226, 232, 240, 0.85); line-height: 1.45;">
+            상가 빈소 조문 예절(1분 요약)과 고인을 위한 전통 위령기도(연도)를 바칠 수 있습니다.
+          </p>
+          <div class="yeondo-portal-btn-row">
+            <button type="button" id="btnPortalCondolenceGuide" class="yeondo-portal-action-btn">
+              <span>📜 1분 조문 예절</span>
+            </button>
+            <button type="button" id="btnPortalStartYeondo" class="yeondo-portal-action-btn highlight">
+              <span>🕯️ 연도(위령기도) 시작</span>
+              <span class="portal-arrow">❯</span>
+            </button>
           </div>
         </div>
 
@@ -6269,6 +6344,8 @@ class RosaryApp {
       btnPrayerTypeDivineMercy: document.getElementById("btnPrayerTypeDivineMercy"),
       btnPrayerTypeYeondo: document.getElementById("btnPrayerTypeYeondo"),
       introYeondoCard: document.getElementById("introYeondoCard"),
+      btnPortalCondolenceGuide: document.getElementById("btnPortalCondolenceGuide"),
+      btnPortalStartYeondo: document.getElementById("btnPortalStartYeondo"),
       btnOpenCondolenceGuide: document.getElementById("btnOpenCondolenceGuide"),
       btnStartYeondoDirect: document.getElementById("btnStartYeondoDirect"),
 
@@ -10108,10 +10185,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=31').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=32').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=31').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=32').catch(() => {});
         });
       });
 
@@ -10119,7 +10196,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v31' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v32' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
