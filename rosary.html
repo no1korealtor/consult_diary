@@ -7643,50 +7643,10 @@ class RosaryApp {
 
     const activeMystery = mysteries[this.currentMysteryKey] || mysteries.joyful;
     if (this.dom.introMysteryDescBox && activeMystery) {
-      const decadesPreview = activeMystery.decades 
-        ? activeMystery.decades.map(d => `
-          <div class="intro-decade-scripture-card" style="margin-top:8px; padding:8px 10px; background:rgba(243,198,105,0.06); border-radius:6px; border-left:3px solid var(--gold-primary);">
-            <div style="font-weight:700; color:var(--gold-primary); font-size:0.8rem; display:flex; justify-content:space-between; align-items:center;">
-              <span>✦ ${d.decadeNum}${isEn ? 'd' : '단'}: ${d.title}</span>
-              ${d.scripture ? `<span style="font-size:0.7rem; background:rgba(243,198,105,0.18); padding:1px 6px; border-radius:4px; color:#FDE68A;">${d.scripture.verse}</span>` : ''}
-            </div>
-            <div style="font-size:0.77rem; color:var(--text-secondary); margin-top:2px;">"${d.meditation}"</div>
-            ${d.fruit ? `<div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">열매: ${d.fruit}</div>` : ''}
-            ${d.scripture ? `
-              <div style="margin-top:6px; font-size:0.75rem; color:#FEF3C7; line-height:1.5; padding:6px 8px; background:rgba(12,17,29,0.7); border-radius:4px; border:1px solid rgba(243,198,105,0.18); word-break:keep-all;">
-                "${d.scripture.text}"
-                <div style="font-size:0.65rem; color:rgba(255,255,255,0.5); text-align:right; margin-top:3px;">${isEn ? 'USCCB (NABRE)' : '한국천주교주교회의 [가톨릭 성경]'}</div>
-              </div>
-            ` : ''}
-          </div>
-        `).join("") 
-        : "";
-
       this.dom.introMysteryDescBox.innerHTML = `
         <div style="font-weight:700; color:var(--gold-primary); margin-bottom:4px; font-size:0.88rem;">✨ ${activeMystery.name} (${activeMystery.days})</div>
-        <div style="margin-bottom:8px; color:var(--text-secondary); font-size:0.78rem; line-height:1.45;">${activeMystery.description}</div>
-        
-        <!-- 각 단 성경 구절 펼쳐서 묵상하기 아코디언 버튼 -->
-        <button type="button" id="btnIntroScripturesToggle" style="width:100%; display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:rgba(243,198,105,0.12); border:1px solid rgba(243,198,105,0.3); border-radius:8px; color:var(--gold-primary); font-size:0.82rem; font-weight:700; cursor:pointer; font-family:inherit;">
-          <span>📖 ${isEn ? "Read 5 Decades Scripture Passages" : "각 단 성경 구절 펼쳐서 묵상하기 (가톨릭 성경)"}</span>
-          <span id="introScripturesArrow">▼</span>
-        </button>
-        <div id="introScripturesList" style="display:none; margin-top:8px;">
-          ${decadesPreview}
-        </div>
+        <div style="color:var(--text-secondary); font-size:0.82rem; line-height:1.5;">${activeMystery.description}</div>
       `;
-
-      const toggleBtn = document.getElementById("btnIntroScripturesToggle");
-      const listEl = document.getElementById("introScripturesList");
-      const arrowEl = document.getElementById("introScripturesArrow");
-      if (toggleBtn && listEl && arrowEl) {
-        toggleBtn.addEventListener("click", () => {
-          const isHidden = listEl.style.display === "none";
-          listEl.style.display = isHidden ? "block" : "none";
-          arrowEl.textContent = isHidden ? "▲" : "▼";
-          toggleBtn.style.background = isHidden ? "rgba(243,198,105,0.22)" : "rgba(243,198,105,0.12)";
-        });
-      }
     }
   }
 
@@ -10748,10 +10708,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=43').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=44').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=43').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=44').catch(() => {});
         });
       });
 
@@ -10759,7 +10719,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v43' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v44' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
