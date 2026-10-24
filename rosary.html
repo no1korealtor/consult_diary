@@ -8765,12 +8765,41 @@ class RosaryApp {
     const card = this.dom.prayerCard;
 
     // 0) 인트로 화면 인터랙션 이벤트
-    // 0-0) 기도 종류 선택 (성모 묵주기도 / 하느님 자비의 기도)
+    // [NEW] 연도 포털 버튼 이벤트
+    if (this.dom.btnPortalCondolenceGuide) {
+      this.dom.btnPortalCondolenceGuide.addEventListener("click", (e) => {
+        if (e) e.preventDefault();
+        this.renderCondolenceModal();
+        this.openModal(this.dom.condolenceModal);
+      });
+    }
+    if (this.dom.btnPortalStartYeondo) {
+      this.dom.btnPortalStartYeondo.addEventListener("click", (e) => {
+        if (e) e.preventDefault();
+        this.switchView("yeondo");
+      });
+    }
+
+    // 0-0) 기도 종류 선택 (성모 묵주기도 / 하느님 자비의 기도 / 연도)
     if (this.dom.btnPrayerTypeRosary) {
       this.dom.btnPrayerTypeRosary.addEventListener("click", () => this.setPrayerType("rosary"));
     }
     if (this.dom.btnPrayerTypeDivineMercy) {
       this.dom.btnPrayerTypeDivineMercy.addEventListener("click", () => this.setPrayerType("divine_mercy"));
+    }
+    if (this.dom.btnPrayerTypeYeondo) {
+      this.dom.btnPrayerTypeYeondo.addEventListener("click", () => this.setPrayerType("yeondo"));
+    }
+    if (this.dom.btnOpenCondolenceGuide) {
+      this.dom.btnOpenCondolenceGuide.addEventListener("click", () => {
+        this.renderCondolenceModal();
+        this.openModal(this.dom.condolenceModal);
+      });
+    }
+    if (this.dom.btnStartYeondoDirect) {
+      this.dom.btnStartYeondoDirect.addEventListener("click", () => {
+        this.switchView("yeondo");
+      });
     }
 
     // 0-1) 언어 토글 (한국어 / English)
@@ -8878,6 +8907,33 @@ class RosaryApp {
       this.dom.btnBackToIntro.addEventListener("click", () => {
         this.saveProgress();
         this.switchView("intro");
+      });
+    }
+
+    if (this.dom.btnYeondoBackToIntro) {
+      this.dom.btnYeondoBackToIntro.addEventListener("click", () => {
+        this.switchView("intro");
+      });
+    }
+    if (this.dom.btnFinishYeondo) {
+      this.dom.btnFinishYeondo.addEventListener("click", () => {
+        this.switchView("intro");
+      });
+    }
+    if (this.dom.btnYeondoCondolenceTab) {
+      this.dom.btnYeondoCondolenceTab.addEventListener("click", () => {
+        this.renderCondolenceModal();
+        this.openModal(this.dom.condolenceModal);
+      });
+    }
+    if (this.dom.deceasedNameInput) {
+      this.dom.deceasedNameInput.addEventListener("input", () => {
+        this.renderYeondoPrayer();
+      });
+    }
+    if (this.dom.btnDismissCondolenceModal) {
+      this.dom.btnDismissCondolenceModal.addEventListener("click", () => {
+        this.closeModals();
       });
     }
 
@@ -10185,10 +10241,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=32').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=33').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=32').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=33').catch(() => {});
         });
       });
 
@@ -10196,7 +10252,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v32' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v33' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
