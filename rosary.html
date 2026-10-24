@@ -3970,6 +3970,83 @@ input:checked + .toggle-slider:before {
   color: #FFF !important;
 }
 
+
+/* ========================================================
+   [NEW] 연도 가락 소리 듣기 컨트롤 바 스타일
+   ======================================================== */
+.yeondo-audio-control-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin-top: 10px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.yeondo-audio-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.yeondo-audio-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.yeondo-audio-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.yeondo-audio-status {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #BAE6FD;
+}
+
+.yeondo-audio-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.yeondo-audio-play-btn {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22) 0%, rgba(14, 116, 144, 0.45) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.55);
+  color: #FFF;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+
+.yeondo-audio-play-btn:hover {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.38) 0%, rgba(14, 116, 144, 0.65) 100%);
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.4);
+}
+
+.yeondo-audio-play-btn.playing {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(185, 28, 28, 0.5) 100%);
+  border-color: rgba(239, 68, 68, 0.6);
+  color: #FEE2E2;
+}
+
 </style>
 </head>
 <body>
@@ -4579,6 +4656,21 @@ input:checked + .toggle-slider:before {
           <div class="yeondo-deceased-input-bar">
             <label for="deceasedNameInput">기도 지향 고인:</label>
             <input type="text" id="deceasedNameInput" placeholder="예: 요셉, 마리아" maxlength="15" />
+          </div>
+
+          <!-- [NEW] 연도 가락 낭독 소리 듣기 컨트롤 바 -->
+          <div class="yeondo-audio-control-bar">
+            <div class="yeondo-audio-info">
+              <span id="yeondoAudioIcon" class="yeondo-audio-icon">🎧</span>
+              <div class="yeondo-audio-texts">
+                <span id="yeondoAudioStatus" class="yeondo-audio-status">연도 낭독 듣기 준비</span>
+                <span class="yeondo-audio-sub">메김과 받음의 운율을 들으며 함께 기도할 수 있습니다</span>
+              </div>
+            </div>
+            <button type="button" id="btnToggleYeondoAudio" class="yeondo-audio-play-btn">
+              <span id="btnYeondoAudioIcon">▶</span>
+              <span id="btnYeondoAudioText">소리 듣기</span>
+            </button>
           </div>
 
           <!-- 연도 기도문 본문 -->
@@ -6494,6 +6586,11 @@ class RosaryApp {
       // 연도 뷰 및 조문 모달
       yeondoView: document.getElementById("yeondoView"),
       btnYeondoBackToIntro: document.getElementById("btnYeondoBackToIntro"),
+      btnToggleYeondoAudio: document.getElementById("btnToggleYeondoAudio"),
+      btnYeondoAudioIcon: document.getElementById("btnYeondoAudioIcon"),
+      btnYeondoAudioText: document.getElementById("btnYeondoAudioText"),
+      yeondoAudioStatus: document.getElementById("yeondoAudioStatus"),
+      yeondoAudioIcon: document.getElementById("yeondoAudioIcon"),
       btnYeondoCondolenceTab: document.getElementById("btnYeondoCondolenceTab"),
       yeondoBodyScroll: document.getElementById("yeondoBodyScroll"),
       deceasedNameInput: document.getElementById("deceasedNameInput"),
@@ -9125,13 +9222,20 @@ class RosaryApp {
       });
     }
 
-    if (this.dom.btnYeondoBackToIntro) {
+        if (this.dom.btnToggleYeondoAudio) {
+      this.dom.btnToggleYeondoAudio.addEventListener("click", () => {
+        this.toggleYeondoAudio();
+      });
+    }
+if (this.dom.btnYeondoBackToIntro) {
       this.dom.btnYeondoBackToIntro.addEventListener("click", () => {
+        this.stopYeondoAudio();
         this.switchView("intro");
       });
     }
     if (this.dom.btnFinishYeondo) {
       this.dom.btnFinishYeondo.addEventListener("click", () => {
+        this.stopYeondoAudio();
         this.switchView("intro");
       });
     }
@@ -10278,6 +10382,118 @@ class RosaryApp {
   // ==========================================
   // 가톨릭 연도 & 조문 예절 렌더링 모듈
   // ==========================================
+  
+  // ==========================================
+  // [NEW] 연도 전통 가락 낭독 소리 엔진 (TTS)
+  // ==========================================
+  initYeondoAudio() {
+    this.yeondoAudioPlaying = false;
+    this.yeondoSpeechQueue = [];
+    this.yeondoSpeechIndex = 0;
+  }
+
+  toggleYeondoAudio() {
+    if (this.yeondoAudioPlaying) {
+      this.stopYeondoAudio();
+    } else {
+      this.startYeondoAudio();
+    }
+  }
+
+  stopYeondoAudio() {
+    this.yeondoAudioPlaying = false;
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    if (this.dom.btnYeondoAudioIcon) this.dom.btnYeondoAudioIcon.textContent = "▶";
+    if (this.dom.btnYeondoAudioText) this.dom.btnYeondoAudioText.textContent = "소리 듣기";
+    if (this.dom.btnToggleYeondoAudio) this.dom.btnToggleYeondoAudio.classList.remove("playing");
+    if (this.dom.yeondoAudioStatus) this.dom.yeondoAudioStatus.textContent = "연도 낭독 일시정지됨";
+    if (this.dom.yeondoAudioIcon) this.dom.yeondoAudioIcon.textContent = "🎧";
+  }
+
+  startYeondoAudio() {
+    if (!window.speechSynthesis) {
+      alert("현재 브라우저에서는 음성 낭독 기능을 지원하지 않습니다.");
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    this.yeondoAudioPlaying = true;
+
+    if (this.dom.btnYeondoAudioIcon) this.dom.btnYeondoAudioIcon.textContent = "⏹";
+    if (this.dom.btnYeondoAudioText) this.dom.btnYeondoAudioText.textContent = "소리 멈춤";
+    if (this.dom.btnToggleYeondoAudio) this.dom.btnToggleYeondoAudio.classList.add("playing");
+    if (this.dom.yeondoAudioIcon) this.dom.yeondoAudioIcon.textContent = "🔊";
+
+    // 연도 텍스트 줄 모으기
+    const deceasedName = (this.dom.deceasedNameInput && this.dom.deceasedNameInput.value.trim()) || "고인";
+    const sections = (typeof YEONDO_DATA !== "undefined" && YEONDO_DATA.yeondoPrayer && YEONDO_DATA.yeondoPrayer.sections) || [];
+    this.yeondoSpeechQueue = [];
+
+    sections.forEach(sec => {
+      this.yeondoSpeechQueue.push({
+        text: sec.sectionTitle,
+        rate: 0.85,
+        pitch: 0.9,
+        isHeader: true
+      });
+      (sec.lines || []).forEach(l => {
+        let t = l.text.replace(/\(세례명\)/g, deceasedName);
+        // 메김(선창)은 조금 엄숙하고 높은 피치, 받음(후창)은 장중하고 차분한 피치
+        const isLeader = l.role === "leader";
+        this.yeondoSpeechQueue.push({
+          text: `${l.label}. ${t}`,
+          rate: 0.82, // 한국 천주교 전통 연도의 차분하고 장엄한 운율 속도
+          pitch: isLeader ? 1.05 : 0.92,
+          isLeader: isLeader
+        });
+      });
+    });
+
+    this.yeondoSpeechIndex = 0;
+    this.playNextYeondoSpeech();
+  }
+
+  playNextYeondoSpeech() {
+    if (!this.yeondoAudioPlaying) return;
+
+    if (this.yeondoSpeechIndex >= this.yeondoSpeechQueue.length) {
+      this.stopYeondoAudio();
+      if (this.dom.yeondoAudioStatus) this.dom.yeondoAudioStatus.textContent = "연도 전편 낭독 완료";
+      return;
+    }
+
+    const item = this.yeondoSpeechQueue[this.yeondoSpeechIndex];
+    if (this.dom.yeondoAudioStatus) {
+      this.dom.yeondoAudioStatus.textContent = item.isHeader ? `[${item.text}]` : item.text.substring(0, 26) + "...";
+    }
+
+    const utter = new SpeechSynthesisUtterance(item.text);
+    utter.lang = "ko-KR";
+    utter.rate = item.rate || 0.84;
+    utter.pitch = item.pitch || 1.0;
+
+    utter.onend = () => {
+      if (this.yeondoAudioPlaying) {
+        this.yeondoSpeechIndex++;
+        // 연도 고유의 메김-받음 사이 경건한 침묵(0.4초 호흡)
+        setTimeout(() => {
+          this.playNextYeondoSpeech();
+        }, 400);
+      }
+    };
+
+    utter.onerror = () => {
+      if (this.yeondoAudioPlaying) {
+        this.yeondoSpeechIndex++;
+        this.playNextYeondoSpeech();
+      }
+    };
+
+    window.speechSynthesis.speak(utter);
+  }
+
   renderYeondoPrayer() {
     if (!this.dom.yeondoContentContainer) return;
     const deceasedName = (this.dom.deceasedNameInput && this.dom.deceasedNameInput.value.trim()) || "고인";
@@ -10612,10 +10828,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=38').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=39').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=38').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=39').catch(() => {});
         });
       });
 
@@ -10623,7 +10839,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v38' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v39' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
