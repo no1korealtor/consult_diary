@@ -5108,11 +5108,13 @@ input:checked + .toggle-slider:before {
 
           <!-- 신규 단체 등록 신청 안내 -->
           <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center;">
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;">우리 성당·단체도 기도를 모으고 싶으신가요?</div>
-            <a id="btnApplyNewCommunity" href="mailto:no1korealtor@naver.com?subject=%5B%EB%AC%B5%EC%A3%BC%EA%B8%B0%EB%8F%84%20%EC%95%B1%5D%20%EC%8B%A0%EA%B7%9C%20%EA%B3%B5%EB%8F%99%EC%B2%B4%20%EB%93%B1%EB%A1%9D%20%EB%B0%8F%20PIN%20%EB%B0%9C%EA%B8%89%20%EC%8B%A0%EC%B2%AD&body=%E2%96%B6%20%EC%84%B1%EB%8B%B9%20%EB%98%90%EB%8A%94%20%EB%8B%A8%EC%B2%B4%EB%AA%85%3A%20%0A%E2%96%B6%20%EC%86%8C%EC%86%8D%20%EA%B5%90%EA%2F%EC%A7%80%EA%B5%AC%3A%20%0A%E2%96%B6%20%EC%8B%A0%EC%B2%AD%EC%9E%90%20%EC%84%B8%EB%A1%80%EB%AA%85%2F%EC%97%B0%EB%9D%BD%EC%B2%98%3A%20%0A%E2%96%B6%20%EA%B8%B0%EB%8F%84%20%EC%A7%80%ED%96%A5%20%EB%98%90%EB%8A%94%20%ED%95%9C%EB%A7%88%EB%94%94%3A%20" 
-               class="comm-apply-link">
-              ✉️ 단체 등록 신청 및 고유 PIN 발급 문의
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">우리 성당·단체도 기도를 함께 모으고 싶으신가요?</div>
+            <a id="btnApplyNewCommunity" href="tel:010-9128-0586" 
+               class="comm-apply-link" 
+               style="display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 14px; background: rgba(243, 198, 105, 0.12); border: 1px solid rgba(243, 198, 105, 0.35); border-radius: 999px; color: var(--gold-light); font-size: 0.84rem; font-weight: 700; text-decoration: none;">
+              <span>📞 단체 등록 & PIN 발급 문의 : 010-9128-0586</span>
             </a>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 6px;">(전화 또는 문자 주시면 고유 PIN을 발급해 드립니다)</div>
           </div>
 
           <button type="button" id="btnDismissCommunityModal" class="action-pill-btn" style="width: 100%; margin-top: 14px; height: 40px; font-size: 0.84rem;">
@@ -10610,10 +10612,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=37').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=38').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=37').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=38').catch(() => {});
         });
       });
 
@@ -10621,7 +10623,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v37' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v38' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
