@@ -6409,7 +6409,7 @@ class RosaryApp {
     this.sessionCompletedDecades = new Set();
 
     // 공동체 및 총 봉헌 단수 초기화
-    this.initCommunityStats();
+    // this.initCommunityStats();
 
     // 오늘 요일 신비
     this.todayMysteryKey = getTodayMysteryKey();
@@ -6758,7 +6758,7 @@ class RosaryApp {
       this.sessionCompletedDecades = new Set();
 
     // 공동체 및 총 봉헌 단수 초기화
-    this.initCommunityStats();
+    // this.initCommunityStats();
       this.goToStep(0, true);
     }
   }
@@ -7241,7 +7241,7 @@ class RosaryApp {
         this.sessionCompletedDecades = new Set();
 
     // 공동체 및 총 봉헌 단수 초기화
-    this.initCommunityStats();
+    // this.initCommunityStats();
         this.steps = this.buildCurrentSteps();
         this.renderDecadeProgressPills();
         this.switchView("prayer");
@@ -7407,7 +7407,7 @@ class RosaryApp {
         this.sessionCompletedDecades = new Set();
 
     // 공동체 및 총 봉헌 단수 초기화
-    this.initCommunityStats();
+    // this.initCommunityStats();
         for (let i = 0; i <= saved.stepIndex; i++) {
           const s = this.steps[i];
           if (s && s.decadeNum && s.beadType === "connector") {
@@ -8165,7 +8165,7 @@ class RosaryApp {
     this.sessionCompletedDecades = new Set();
 
     // 공동체 및 총 봉헌 단수 초기화
-    this.initCommunityStats();
+    // this.initCommunityStats();
     for (let i = 0; i <= saved.stepIndex; i++) {
       const s = this.steps[i];
       if (s && s.decadeNum && s.beadType === "connector") {
@@ -8200,7 +8200,7 @@ class RosaryApp {
       this.sessionCompletedDecades = new Set();
 
     // 공동체 및 총 봉헌 단수 초기화
-    this.initCommunityStats();
+    // this.initCommunityStats();
       this.goToStep(0, true);
     }
   }
@@ -9385,7 +9385,7 @@ if (this.dom.btnYeondoBackToIntro) {
         this.sessionCompletedDecades = new Set();
 
     // 공동체 및 총 봉헌 단수 초기화
-    this.initCommunityStats();
+    // this.initCommunityStats();
         this.setMystery(this.todayMysteryKey, false);
         this.goToStep(0);
         this.closeModals();
@@ -9401,7 +9401,7 @@ if (this.dom.btnYeondoBackToIntro) {
         this.sessionCompletedDecades = new Set();
 
     // 공동체 및 총 봉헌 단수 초기화
-    this.initCommunityStats();
+    // this.initCommunityStats();
         this.switchView("intro");
       });
     }
@@ -10651,6 +10651,31 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
       </div>
     </div>
+
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const calBtn = document.getElementById('btnIntroTracker');
+  if (calBtn) {
+    calBtn.onclick = function() {
+      if (window.rosaryApp) {
+        window.rosaryApp.trackerWeekOffset = 0;
+        window.rosaryApp.selectedTrackerDate = window.rosaryApp.getTodayStr();
+        window.rosaryApp.renderWeeklyTracker();
+        const m = document.getElementById('trackerModal');
+        if (m) m.classList.add('show');
+      }
+    };
+  }
+  const closeCalBtn = document.getElementById('closeTrackerBtn');
+  if (closeCalBtn) {
+    closeCalBtn.onclick = function() {
+      const m = document.getElementById('trackerModal');
+      if (m) m.classList.remove('show');
+    };
+  }
+});
+</script>
 
 </body>
 </html>

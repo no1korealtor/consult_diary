@@ -1,3 +1,3 @@
 @echo off
-python fix_calendar.py
+python deploy_tracker_fix.py
 pause
