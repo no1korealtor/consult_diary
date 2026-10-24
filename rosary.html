@@ -4345,6 +4345,13 @@ input:checked + .toggle-slider:before {
              [NEW] 은총의 묵주기도 봉헌 현황 (공동체 & 나의 단수)
              ============================================== -->
         <div id="introCommunityCard" class="intro-section-card community-stats-card">
+          <div class="community-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 1rem;">🌹</span>
+              <span id="commHeaderCardTitle" style="font-size: 0.88rem; font-weight: 700; color: #FFF; letter-spacing: -0.2px;">성모 묵주기도 봉헌 현황</span>
+            </div>
+            <span class="intro-today-badge" style="background: rgba(243, 198, 105, 0.16); color: var(--gold-light); font-size: 0.72rem; padding: 2px 7px;">묵주 5단</span>
+          </div>
           <div class="community-card-top">
             <div class="community-name-badge">
               <span class="comm-pin-icon">📍</span>
@@ -6759,6 +6766,13 @@ class RosaryApp {
     }
     if (this.dom.introDivineMercyCard) {
       this.dom.introDivineMercyCard.style.display = isDm ? "block" : "none";
+    }
+    // [Option 1] 성모 묵주기도 모드일 때만 묵주기도 봉헌 현황(공동체 & 장미) 및 주간 장미 기록 카드 노출
+    if (this.dom.introCommunityCard) {
+      this.dom.introCommunityCard.style.display = isDm ? "none" : "block";
+    }
+    if (this.dom.introTrackerMiniCard) {
+      this.dom.introTrackerMiniCard.style.display = isDm ? "none" : "flex";
     }
 
     this.updateIntroTexts();
@@ -10421,10 +10435,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=34').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=35').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=34').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=35').catch(() => {});
         });
       });
 
@@ -10432,7 +10446,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v34' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v35' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
