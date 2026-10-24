@@ -10384,12 +10384,13 @@ if (this.dom.btnYeondoBackToIntro) {
   // ==========================================
   
   // ==========================================
-  // [NEW] 연도 전통 가락 낭독 소리 엔진 (TTS)
+  // [NEW] 연도 전통 가락 낭독 소리 엔진 (하이브리드: TTS + 한국 전통 가락 오르간 챈트)
   // ==========================================
   initYeondoAudio() {
     this.yeondoAudioPlaying = false;
     this.yeondoSpeechQueue = [];
     this.yeondoSpeechIndex = 0;
+    this.yeondoAudioTimer = null;
   }
 
   toggleYeondoAudio() {
@@ -10402,31 +10403,27 @@ if (this.dom.btnYeondoBackToIntro) {
 
   stopYeondoAudio() {
     this.yeondoAudioPlaying = false;
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
+    if (this.yeondoAudioTimer) {
+      clearTimeout(this.yeondoAudioTimer);
+      this.yeondoAudioTimer = null;
+    }
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      try { window.speechSynthesis.cancel(); } catch (e) {}
     }
     if (this.dom.btnYeondoAudioIcon) this.dom.btnYeondoAudioIcon.textContent = "▶";
-    if (this.dom.btnYeondoAudioText) this.dom.btnYeondoAudioText.textContent = "소리 듣기";
+    if (this.dom.btnYeondoAudioText) this.dom.btnYeondoAudioText.textContent = "가락 소리 듣기";
     if (this.dom.btnToggleYeondoAudio) this.dom.btnToggleYeondoAudio.classList.remove("playing");
     if (this.dom.yeondoAudioStatus) this.dom.yeondoAudioStatus.textContent = "연도 낭독 일시정지됨";
     if (this.dom.yeondoAudioIcon) this.dom.yeondoAudioIcon.textContent = "🎧";
   }
 
   startYeondoAudio() {
-    if (!window.speechSynthesis) {
-      alert("현재 브라우저에서는 음성 낭독 기능을 지원하지 않습니다.");
-      return;
-    }
-
-    window.speechSynthesis.cancel();
     this.yeondoAudioPlaying = true;
-
     if (this.dom.btnYeondoAudioIcon) this.dom.btnYeondoAudioIcon.textContent = "⏹";
     if (this.dom.btnYeondoAudioText) this.dom.btnYeondoAudioText.textContent = "소리 멈춤";
     if (this.dom.btnToggleYeondoAudio) this.dom.btnToggleYeondoAudio.classList.add("playing");
     if (this.dom.yeondoAudioIcon) this.dom.yeondoAudioIcon.textContent = "🔊";
 
-    // 연도 텍스트 줄 모으기
     const deceasedName = (this.dom.deceasedNameInput && this.dom.deceasedNameInput.value.trim()) || "고인";
     const sections = (typeof YEONDO_DATA !== "undefined" && YEONDO_DATA.yeondoPrayer && YEONDO_DATA.yeondoPrayer.sections) || [];
     this.yeondoSpeechQueue = [];
@@ -10434,25 +10431,39 @@ if (this.dom.btnYeondoBackToIntro) {
     sections.forEach(sec => {
       this.yeondoSpeechQueue.push({
         text: sec.sectionTitle,
-        rate: 0.85,
-        pitch: 0.9,
-        isHeader: true
+        isHeader: true,
+        pitchNote: 220 // A3
       });
       (sec.lines || []).forEach(l => {
         let t = l.text.replace(/\(세례명\)/g, deceasedName);
-        // 메김(선창)은 조금 엄숙하고 높은 피치, 받음(후창)은 장중하고 차분한 피치
         const isLeader = l.role === "leader";
         this.yeondoSpeechQueue.push({
-          text: `${l.label}. ${t}`,
-          rate: 0.82, // 한국 천주교 전통 연도의 차분하고 장엄한 운율 속도
-          pitch: isLeader ? 1.05 : 0.92,
-          isLeader: isLeader
+          label: l.label,
+          text: t,
+          isLeader: isLeader,
+          // 전통 연도 고유 가락 음고 (메김: 293Hz(D4) / 받음: 220Hz(A3))
+          pitchNote: isLeader ? 293.66 : 220.00
         });
       });
     });
 
     this.yeondoSpeechIndex = 0;
-    this.playNextYeondoSpeech();
+
+    // 삼성 인터넷 및 모바일 브라우저 음성 지원 검사
+    const hasSpeech = typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
+
+    if (hasSpeech) {
+      try {
+        window.speechSynthesis.cancel();
+        this.playNextYeondoSpeech();
+        return;
+      } catch (err) {
+        console.warn("speechSynthesis failed, falling back to traditional melodic chant:", err);
+      }
+    }
+
+    // SpeechSynthesis가 미지원되거나 차단된 인앱 브라우저의 경우: 100% 작동하는 한국 전통 연도 가락(음률 챈트)으로 즉시 재생
+    this.playNextYeondoMelodyChant();
   }
 
   playNextYeondoSpeech() {
@@ -10466,32 +10477,116 @@ if (this.dom.btnYeondoBackToIntro) {
 
     const item = this.yeondoSpeechQueue[this.yeondoSpeechIndex];
     if (this.dom.yeondoAudioStatus) {
-      this.dom.yeondoAudioStatus.textContent = item.isHeader ? `[${item.text}]` : item.text.substring(0, 26) + "...";
+      this.dom.yeondoAudioStatus.textContent = item.isHeader ? `[${item.text}]` : `${item.label}: ${item.text.substring(0, 24)}...`;
     }
 
-    const utter = new SpeechSynthesisUtterance(item.text);
+    // 메김과 받음에 맞춘 전통 가락 종소리 배경음 동시 은은하게 울림
+    this.playYeondoTone(item.pitchNote, 0.4);
+
+    const speechText = item.isHeader ? item.text : `${item.label}. ${item.text}`;
+    const utter = new SpeechSynthesisUtterance(speechText);
     utter.lang = "ko-KR";
-    utter.rate = item.rate || 0.84;
-    utter.pitch = item.pitch || 1.0;
+    utter.rate = 0.82;
+    utter.pitch = item.isLeader ? 1.08 : 0.92;
 
-    utter.onend = () => {
+    let hasEnded = false;
+    const proceed = () => {
+      if (hasEnded) return;
+      hasEnded = true;
       if (this.yeondoAudioPlaying) {
         this.yeondoSpeechIndex++;
-        // 연도 고유의 메김-받음 사이 경건한 침묵(0.4초 호흡)
-        setTimeout(() => {
-          this.playNextYeondoSpeech();
-        }, 400);
+        this.yeondoAudioTimer = setTimeout(() => this.playNextYeondoSpeech(), 450);
       }
     };
 
-    utter.onerror = () => {
-      if (this.yeondoAudioPlaying) {
-        this.yeondoSpeechIndex++;
-        this.playNextYeondoSpeech();
-      }
+    utter.onend = proceed;
+    utter.onerror = (e) => {
+      // 모바일에서 음성 엔진 오류 발생 시 가락 챈트 모드로 부드럽게 자동 전환
+      console.warn("Speech error, switching to chant:", e);
+      this.playNextYeondoMelodyChant();
     };
 
+    // 모바일 브라우저 절전 방지 타임아웃
+    setTimeout(proceed, Math.max(3000, speechText.length * 280));
     window.speechSynthesis.speak(utter);
+  }
+
+  playNextYeondoMelodyChant() {
+    if (!this.yeondoAudioPlaying) return;
+
+    if (this.yeondoSpeechIndex >= this.yeondoSpeechQueue.length) {
+      this.stopYeondoAudio();
+      if (this.dom.yeondoAudioStatus) this.dom.yeondoAudioStatus.textContent = "연도 가락 묵상 완료";
+      return;
+    }
+
+    const item = this.yeondoSpeechQueue[this.yeondoSpeechIndex];
+    if (this.dom.yeondoAudioStatus) {
+      this.dom.yeondoAudioStatus.textContent = item.isHeader ? `[가락] ${item.text}` : `[${item.label}] ${item.text.substring(0, 24)}...`;
+    }
+
+    // 한국 전통 연도 특유의 메김(미-솔-라)과 받음(라-솔-미) 5음 음계 가락 연주
+    const freq = item.isLeader ? 293.66 : 220.00; // D4 vs A3
+    this.playYeondoChantMelody(freq, item.isLeader);
+
+    // 텍스트 길이에 맞춰 다음 구절로 자연스럽게 이동
+    const durationMs = item.isHeader ? 2200 : Math.min(6500, Math.max(3000, (item.text || "").length * 200));
+    this.yeondoSpeechIndex++;
+    this.yeondoAudioTimer = setTimeout(() => {
+      if (this.yeondoAudioPlaying) {
+        this.playNextYeondoMelodyChant();
+      }
+    }, durationMs);
+  }
+
+  playYeondoTone(freq = 220, duration = 0.5) {
+    try {
+      if (!this.audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.audioCtx = new AudioContext();
+      }
+      if (this.audioCtx.state === "suspended") {
+        this.audioCtx.resume();
+      }
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.04, this.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, this.audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      osc.start();
+      osc.stop(this.audioCtx.currentTime + duration);
+    } catch (e) {}
+  }
+
+  playYeondoChantMelody(baseFreq = 220, isLeader = true) {
+    try {
+      if (!this.audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        this.audioCtx = new AudioContext();
+      }
+      if (this.audioCtx.state === "suspended") {
+        this.audioCtx.resume();
+      }
+      // 가톨릭 상장예식 전통 시조조 3도/4도 음률 (장엄한 종소리 파형)
+      const notes = isLeader ? [baseFreq, baseFreq * 1.12, baseFreq] : [baseFreq, baseFreq * 0.89, baseFreq * 0.75];
+      let startTime = this.audioCtx.currentTime;
+
+      notes.forEach((f, idx) => {
+        const osc = this.audioCtx.createOscillator();
+        const gain = this.audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(f, startTime + idx * 0.4);
+        gain.gain.setValueAtTime(0.06, startTime + idx * 0.4);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + (idx + 1) * 0.4);
+        osc.connect(gain);
+        gain.connect(this.audioCtx.destination);
+        osc.start(startTime + idx * 0.4);
+        osc.stop(startTime + (idx + 1) * 0.4);
+      });
+    } catch (e) {}
   }
 
   renderYeondoPrayer() {
@@ -10828,10 +10923,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=39').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=40').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=39').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=40').catch(() => {});
         });
       });
 
@@ -10839,7 +10934,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v39' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v40' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
