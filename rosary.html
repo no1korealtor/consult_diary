@@ -4746,6 +4746,15 @@ input:checked + .toggle-slider:before {
           <button type="button" id="btnSettingsInstall" class="action-pill-btn gold" style="flex:0 0 88px; height:34px; font-size:0.82rem;">바로가기</button>
         </div>
 
+        <!-- [NEW] 기도 기록 안전 백업 & 복원 -->
+        <div class="setting-row" style="background: rgba(56, 189, 248, 0.06); padding: 12px; border-radius: var(--radius-sm); border: 1px solid rgba(56, 189, 248, 0.28); margin-top: 8px;">
+          <div style="display:flex; flex-direction:column; gap:2px;">
+            <span class="setting-label" style="color:#7DD3FC; font-weight:700;">💾 내 기도 기록 백업 · 복원</span>
+            <span style="font-size:0.75rem; color:var(--text-secondary);">폰 교체/청소 대비 소중한 묵주기도 기록 안전 보관</span>
+          </div>
+          <button type="button" id="btnSettingsOpenBackup" class="action-pill-btn" style="flex:0 0 76px; height:34px; font-size:0.82rem; border-color: rgba(56, 189, 248, 0.4); color: #BAE6FD;">관리하기</button>
+        </div>
+
         <div class="setting-row" style="background: rgba(243, 198, 105, 0.05); padding: 12px; border-radius: var(--radius-sm); border: 1px solid rgba(243, 198, 105, 0.2); margin-top: 8px;">
           <div style="display:flex; flex-direction:column; gap:2px;">
             <span id="settingDonationLabel" class="setting-label" style="color:var(--text-primary); font-weight:700;">☕ 따뜻한 차 한 잔 후원하기</span>
@@ -5084,17 +5093,17 @@ input:checked + .toggle-slider:before {
 
           <!-- PIN 입력 폼 -->
           <div class="comm-pin-input-box">
-            <input type="text" id="inputCommunityPin" placeholder="PIN 번호 입력 (예: 7702)" maxlength="8" />
+            <input type="text" id="inputCommunityPin" placeholder="소속 본당·단체 PIN 입력 (예: 4~6자리)" maxlength="8" />
             <button type="button" id="btnSubmitCommunityPin" class="action-pill-btn gold">확인</button>
           </div>
 
           <div id="commPinFeedback" style="display: none; font-size: 0.8rem; margin-top: 8px; text-align: center;"></div>
 
-          <!-- 등록된 샘플 추천 단체 -->
-          <div class="comm-quick-list" style="margin-top: 16px;">
-            <div style="font-size: 0.78rem; color: var(--gold-primary); font-weight: 700; margin-bottom: 8px;">선택 가능한 공동체:</div>
-            <button type="button" class="comm-quick-pill" data-pin="global">🌐 전국 교우 공동체 (기본)</button>
-            <button type="button" class="comm-quick-pill highlight" data-pin="7702">📍 서울대교구 성산2동성당 (PIN: 7702)</button>
+          <!-- 기본 전국 공동체 초기화 -->
+          <div class="comm-quick-list" style="margin-top: 14px;">
+            <button type="button" class="comm-quick-pill" data-pin="global" style="width: 100%; justify-content: center; font-size: 0.8rem; height: 38px;">
+              🌐 기본 소속으로 재설정 (전국 교우 공동체)
+            </button>
           </div>
 
           <!-- 신규 단체 등록 신청 안내 -->
@@ -6668,6 +6677,15 @@ class RosaryApp {
       introDonationTitle: document.getElementById("introDonationTitle"),
       introDonationSub: document.getElementById("introDonationSub"),
       btnSettingsOpenDonation: document.getElementById("btnSettingsOpenDonation"),
+      btnSettingsOpenBackup: document.getElementById("btnSettingsOpenBackup"),
+      backupModal: document.getElementById("backupModal"),
+      backupDecadesPreview: document.getElementById("backupDecadesPreview"),
+      backupDataTextarea: document.getElementById("backupDataTextarea"),
+      restoreDataTextarea: document.getElementById("restoreDataTextarea"),
+      btnCopyBackupText: document.getElementById("btnCopyBackupText"),
+      btnExecuteRestore: document.getElementById("btnExecuteRestore"),
+      restoreFeedback: document.getElementById("restoreFeedback"),
+      btnDismissBackupModal: document.getElementById("btnDismissBackupModal"),
       settingDonationLabel: document.getElementById("settingDonationLabel"),
       settingDonationSub: document.getElementById("settingDonationSub"),
       completionDonationBox: document.getElementById("completionDonationBox"),
@@ -8946,7 +8964,8 @@ class RosaryApp {
         if (res.success) {
           if (this.dom.adminNewCommName) this.dom.adminNewCommName.value = "";
           if (this.dom.adminNewCommPin) this.dom.adminNewCommPin.value = "";
-          this.renderAdminCommList();
+          this.
+  renderAdminCommList();
           this.renderCommunityStats();
         }
       });
@@ -9347,6 +9366,30 @@ class RosaryApp {
     if (this.dom.btnCopyDonationAccount) {
       this.dom.btnCopyDonationAccount.addEventListener("click", () => {
         this.copyDonationAccount();
+      });
+    }
+
+    // 5-9) 백업 & 복원 모달 이벤트
+    if (this.dom.btnSettingsOpenBackup) {
+      this.dom.btnSettingsOpenBackup.addEventListener("click", () => {
+        this.closeModals();
+        setTimeout(() => this.openBackupModal(), 150);
+      });
+    }
+    if (this.dom.btnCopyBackupText) {
+      this.dom.btnCopyBackupText.addEventListener("click", () => {
+        this.copyBackupCode();
+      });
+    }
+    if (this.dom.btnExecuteRestore) {
+      this.dom.btnExecuteRestore.addEventListener("click", () => {
+        const raw = this.dom.restoreDataTextarea ? this.dom.restoreDataTextarea.value : "";
+        this.restoreBackupPayload(raw);
+      });
+    }
+    if (this.dom.btnDismissBackupModal) {
+      this.dom.btnDismissBackupModal.addEventListener("click", () => {
+        this.closeModals();
       });
     }
 
@@ -10387,6 +10430,138 @@ class RosaryApp {
     return { success: true, msg: `'${newObj.name}'(PIN: ${cleanPin}) 승인 등록 완료!` };
   }
 
+    // ==========================================
+  // [NEW] 기도 기록 안전 백업 및 복원 모듈
+  // ==========================================
+  generateBackupPayload() {
+    const data = {
+      app: "CatholicRosaryApp",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      lifetimeDecades: this.getUserLifetimeDecades(),
+      history: this.loadHistory(),
+      settings: this.settings,
+      community: this.getCurrentCommunity()
+    };
+    return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+  }
+
+  openBackupModal() {
+    try {
+      const decades = this.getUserLifetimeDecades();
+      if (this.dom.backupDecadesPreview) {
+        this.dom.backupDecadesPreview.textContent = `${decades.toLocaleString()}단 (장미 ${(decades * 10).toLocaleString()}송이 🌹)`;
+      }
+      const code = this.generateBackupPayload();
+      if (this.dom.backupDataTextarea) {
+        this.dom.backupDataTextarea.value = code;
+      }
+      if (this.dom.restoreDataTextarea) {
+        this.dom.restoreDataTextarea.value = "";
+      }
+      if (this.dom.restoreFeedback) {
+        this.dom.restoreFeedback.style.display = "none";
+      }
+      this.openModal(this.dom.backupModal);
+    } catch (e) {
+      console.error("openBackupModal error:", e);
+    }
+  }
+
+  copyBackupCode() {
+    try {
+      const code = this.dom.backupDataTextarea ? this.dom.backupDataTextarea.value : "";
+      if (!code) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(() => {
+          if (this.dom.btnCopyBackupText) {
+            this.dom.btnCopyBackupText.textContent = "✓ 복사 완료!";
+            setTimeout(() => {
+              if (this.dom.btnCopyBackupText) this.dom.btnCopyBackupText.textContent = "클립보드 복사";
+            }, 2000);
+          }
+        });
+      } else {
+        if (this.dom.backupDataTextarea) {
+          this.dom.backupDataTextarea.select();
+          document.execCommand("copy");
+          if (this.dom.btnCopyBackupText) {
+            this.dom.btnCopyBackupText.textContent = "✓ 복사 완료!";
+            setTimeout(() => {
+              if (this.dom.btnCopyBackupText) this.dom.btnCopyBackupText.textContent = "클립보드 복사";
+            }, 2000);
+          }
+        }
+      }
+    } catch (e) {}
+  }
+
+  restoreBackupPayload(rawCode) {
+    const feedback = this.dom.restoreFeedback;
+    if (!rawCode || !rawCode.trim()) {
+      if (feedback) {
+        feedback.style.display = "block";
+        feedback.style.color = "#F87171";
+        feedback.textContent = "✕ 복원할 백업 코드를 입력해 주세요.";
+      }
+      return;
+    }
+
+    try {
+      const jsonStr = decodeURIComponent(escape(atob(rawCode.trim())));
+      const parsed = JSON.parse(jsonStr);
+
+      if (!parsed || parsed.app !== "CatholicRosaryApp") {
+        throw new Error("Invalid app backup format");
+      }
+
+      // 1. 복원 실행
+      if (typeof parsed.lifetimeDecades === "number") {
+        const curLife = this.getUserLifetimeDecades();
+        const maxLife = Math.max(curLife, parsed.lifetimeDecades);
+        localStorage.setItem(this.userLifetimeDecadesKey, maxLife.toString());
+      }
+
+      if (parsed.history && typeof parsed.history === "object") {
+        const curHist = this.loadHistory();
+        const mergedHist = Object.assign({}, curHist, parsed.history);
+        this.saveHistory(mergedHist);
+      }
+
+      if (parsed.community && parsed.community.id) {
+        this.setCurrentCommunity(parsed.community);
+      }
+
+      if (parsed.settings && typeof parsed.settings === "object") {
+        this.settings = Object.assign({}, this.settings, parsed.settings);
+        this.saveSettings();
+        this.applySettings();
+      }
+
+      // 2. UI 갱신
+      this.renderCommunityStats();
+      this.renderWeeklyTracker();
+      this.updateIntroView();
+
+      if (feedback) {
+        feedback.style.display = "block";
+        feedback.style.color = "#4ADE80";
+        feedback.textContent = `✓ 총 ${this.getUserLifetimeDecades()}단의 기도 기록이 성공적으로 복원되었습니다!`;
+      }
+
+      setTimeout(() => {
+        this.closeModals();
+      }, 1200);
+    } catch (err) {
+      if (feedback) {
+        feedback.style.display = "block";
+        feedback.style.color = "#F87171";
+        feedback.textContent = "✕ 유효하지 않은 백업 코드입니다. 확인 후 다시 시도해 주세요.";
+      }
+    }
+  }
+
+
   renderAdminCommList() {
     if (!this.dom.adminCommList) return;
     const all = this.getAllCommunities();
@@ -10435,10 +10610,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=35').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=36').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=35').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=36').catch(() => {});
         });
       });
 
@@ -10446,7 +10621,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v35' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v36' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
@@ -10462,5 +10637,49 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   </script>
+
+    <!-- [NEW] 기도 기록 백업 및 복원 전용 모달 -->
+    <div id="backupModal" class="modal-backdrop">
+      <div class="bottom-sheet" style="max-width: 440px;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>💾</span> <span>내 기도 기록 백업 & 복원</span>
+        </div>
+
+        <div style="padding: 10px 4px 16px;">
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px; text-align: center;">
+            정성껏 바쳐오신 <strong><span id="backupDecadesPreview" style="color:var(--gold-primary); font-weight:700;">0단</span></strong>의 기도 기록과 본당 설정을 안전하게 보관하거나 새 기기로 옮겨올 수 있습니다.
+          </p>
+
+          <!-- 1. 백업하기 (복사/내보내기) -->
+          <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 0.88rem; font-weight: 700; color: #FFF;">1. 기도 기록 내보내기 (백업)</span>
+              <button type="button" id="btnCopyBackupText" class="action-pill-btn gold" style="height: 28px; font-size: 0.75rem; padding: 0 10px;">클립보드 복사</button>
+            </div>
+            <p style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px;">
+              아래 백업 코드를 복사해 카카오톡 '나에게 보내기'나 메모장에 붙여넣어 두세요.
+            </p>
+            <textarea id="backupDataTextarea" readonly style="width: 100%; height: 70px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #E2E8F0; font-family: monospace; font-size: 0.74rem; padding: 8px; resize: none; box-sizing: border-box;"></textarea>
+          </div>
+
+          <!-- 2. 복원하기 (붙여넣기) -->
+          <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px;">
+            <span style="font-size: 0.88rem; font-weight: 700; color: #FFF; display: block; margin-bottom: 6px;">2. 예전 기록 불러오기 (복원)</span>
+            <p style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px;">
+              새 폰이나 브라우저에서 보관해 둔 백업 코드를 아래에 붙여넣고 [복원하기]를 누르세요.
+            </p>
+            <textarea id="restoreDataTextarea" placeholder="보관해 둔 백업 코드를 여기에 붙여넣으세요..." style="width: 100%; height: 60px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #E2E8F0; font-family: monospace; font-size: 0.74rem; padding: 8px; resize: none; box-sizing: border-box;"></textarea>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+              <button type="button" id="btnExecuteRestore" class="action-pill-btn gold" style="flex: 1; height: 36px; font-size: 0.82rem; font-weight: 700;">기록 불러오기 및 복원</button>
+            </div>
+            <div id="restoreFeedback" style="display: none; font-size: 0.8rem; margin-top: 8px; text-align: center;"></div>
+          </div>
+
+          <button type="button" id="btnDismissBackupModal" class="action-pill-btn" style="width: 100%; height: 40px; margin-top: 4px;">닫기</button>
+        </div>
+      </div>
+    </div>
+
 </body>
 </html>
