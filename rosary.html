@@ -3306,6 +3306,475 @@ input:checked + .toggle-slider:before {
 
 
 
+
+/* ===================================================
+   16. [NEW] 공동체 묵주기도 은총 현황 & PIN 모달
+   =================================================== */
+.community-stats-card {
+  background: linear-gradient(135deg, rgba(243, 198, 105, 0.12) 0%, rgba(15, 23, 42, 0.85) 100%) !important;
+  border: 1px solid rgba(243, 198, 105, 0.35) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+}
+
+.community-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.community-name-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.comm-pin-icon {
+  font-size: 1rem;
+}
+
+.comm-name-text {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #FFF;
+  letter-spacing: -0.3px;
+}
+
+.comm-change-btn {
+  background: rgba(243, 198, 105, 0.14);
+  border: 1px solid rgba(243, 198, 105, 0.4);
+  color: var(--gold-light);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.comm-change-btn:hover {
+  background: rgba(243, 198, 105, 0.25);
+  color: #FFF;
+}
+
+.community-stats-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.comm-stat-box {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.comm-stat-box.comm-total {
+  border-left: 3px solid var(--gold-primary);
+}
+
+.comm-stat-box.my-total {
+  border-left: 3px solid #F43F5E;
+}
+
+.comm-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.comm-stat-value {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #FFF;
+  letter-spacing: -0.3px;
+}
+
+.comm-stat-box.comm-total .comm-stat-value {
+  color: var(--gold-light);
+}
+
+.comm-stat-sub {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* 3-way 기도 선택 토글 */
+.prayer-type-toggle.devotion-3way {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+}
+
+.prayer-type-toggle.devotion-3way .intro-toggle-btn {
+  padding: 9px 4px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* 연도 안내 카드 */
+.intro-section-card.yeondo-card {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(15, 23, 42, 0.9) 100%) !important;
+  border: 1.2px solid rgba(56, 189, 248, 0.35) !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
+}
+
+.intro-today-badge.yeondo-badge {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #7DD3FC;
+}
+
+.yeondo-preview-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.yeondo-sub-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  text-align: left;
+  cursor: pointer;
+  color: #FFF;
+  transition: all 0.2s ease;
+}
+
+.yeondo-sub-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.yeondo-sub-btn.highlight {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.38);
+}
+
+.yeondo-sub-btn.highlight:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: rgba(56, 189, 248, 0.55);
+}
+
+.yeondo-sub-icon {
+  font-size: 1.35rem;
+}
+
+.yeondo-sub-texts {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.yeondo-sub-texts strong {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #FFF;
+}
+
+.yeondo-sub-texts small {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+}
+
+.yeondo-sub-arrow {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* ===================================================
+   17. [NEW] 가톨릭 연도 전용 뷰 (Yeondo View) 스타일
+   =================================================== */
+.yeondo-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 50% 20%, #161D2E 0%, #0F172A 60%, #090D1A 100%);
+  z-index: 10;
+  overflow: hidden;
+}
+
+.yeondo-header {
+  border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.yeondo-body-scroll {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px 16px calc(var(--safe-bottom) + 32px);
+}
+
+.yeondo-card-container {
+  max-width: 480px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.yeondo-candle-emblem {
+  font-size: 2.2rem;
+  margin-bottom: 4px;
+}
+
+.yeondo-main-title {
+  font-size: 1.32rem;
+  font-weight: 800;
+  color: #FFF;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+.yeondo-sub-desc {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.yeondo-deceased-input-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 8px 16px;
+  margin-bottom: 22px;
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.yeondo-deceased-input-bar label {
+  font-size: 0.78rem;
+  color: var(--gold-light);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.yeondo-deceased-input-bar input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #FFF;
+  font-size: 0.86rem;
+  font-weight: 700;
+  width: 100%;
+  font-family: inherit;
+}
+
+.yeondo-deceased-input-bar input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: normal;
+}
+
+/* 연도 섹션 블록 */
+.yeondo-section-card {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 18px 16px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+
+.yeondo-section-header {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--gold-light);
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 8px;
+}
+
+.yeondo-section-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.yeondo-lines-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.yeondo-line-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  line-height: 1.6;
+}
+
+.yeondo-role-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.yeondo-role-badge.leader {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--gold-light);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.yeondo-role-badge.respond {
+  background: rgba(56, 189, 248, 0.16);
+  color: #7DD3FC;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.yeondo-role-badge.all {
+  background: rgba(255, 255, 255, 0.15);
+  color: #FFF;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.yeondo-line-text {
+  font-size: 0.92rem;
+  color: rgba(241, 245, 249, 0.92);
+}
+
+.yeondo-line-row.respond .yeondo-line-text {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* PIN 모달 스타일 */
+.comm-pin-input-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.comm-pin-input-box input {
+  flex: 1;
+  height: 44px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(243, 198, 105, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 0 14px;
+  color: #FFF;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  outline: none;
+  text-align: center;
+}
+
+.comm-pin-input-box input:focus {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 10px rgba(243, 198, 105, 0.3);
+}
+
+.comm-quick-pill {
+  width: 100%;
+  display: block;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  color: #FFF;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 6px;
+  transition: all 0.2s;
+}
+
+.comm-quick-pill:hover, .comm-quick-pill.highlight {
+  background: rgba(243, 198, 105, 0.15);
+  border-color: rgba(243, 198, 105, 0.4);
+  color: var(--gold-light);
+}
+
+.comm-apply-link {
+  display: inline-block;
+  color: var(--gold-primary);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(243, 198, 105, 0.08);
+  border: 1px solid rgba(243, 198, 105, 0.25);
+  transition: all 0.2s;
+}
+
+.comm-apply-link:hover {
+  background: rgba(243, 198, 105, 0.18);
+  color: #FFF;
+}
+
+/* 조문 모달 가이드 */
+.condolence-step-box {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 10px;
+  border-left: 3px solid var(--gold-primary);
+}
+
+.condolence-step-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--gold-light);
+  margin-bottom: 4px;
+}
+
+.condolence-step-desc {
+  font-size: 0.82rem;
+  color: rgba(226, 232, 240, 0.85);
+  line-height: 1.5;
+}
+
+.condolence-greeting-box {
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+
+.condolence-greeting-type {
+  font-size: 0.72rem;
+  color: #7DD3FC;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.condolence-greeting-text {
+  font-size: 0.86rem;
+  color: #FFF;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 </style>
 </head>
 <body>
@@ -3483,6 +3952,41 @@ input:checked + .toggle-slider:before {
           <p id="introHeroQuote" class="intro-hero-quote">"성모님과 함께 바치는 거룩한 장미 화관"</p>
         </div>
 
+        <!-- ==============================================
+             [NEW] 은총의 묵주기도 봉헌 현황 (공동체 & 나의 단수)
+             ============================================== -->
+        <div id="introCommunityCard" class="intro-section-card community-stats-card">
+          <div class="community-card-top">
+            <div class="community-name-badge">
+              <span class="comm-pin-icon">📍</span>
+              <span id="commCurrentName" class="comm-name-text">전국 교우 공동체</span>
+            </div>
+            <button type="button" id="btnOpenCommModal" class="comm-change-btn">
+              <span>PIN / 단체 변경 ❯</span>
+            </button>
+          </div>
+
+          <div class="community-stats-grid">
+            <div class="comm-stat-box comm-total">
+              <div class="comm-stat-label">
+                <span class="comm-stat-dot">🕊️</span>
+                <span>공동체 함께 봉헌</span>
+              </div>
+              <div id="commTotalDecades" class="comm-stat-value">38,450단</div>
+              <div id="commTotalRoses" class="comm-stat-sub">(장미 384,500송이 🌹)</div>
+            </div>
+
+            <div class="comm-stat-box my-total">
+              <div class="comm-stat-label">
+                <span class="comm-stat-dot">🌹</span>
+                <span>내가 봉헌한 기도</span>
+              </div>
+              <div id="myTotalDecades" class="comm-stat-value">0단</div>
+              <div id="myTotalRoses" class="comm-stat-sub">(0송이)</div>
+            </div>
+          </div>
+        </div>
+
         <!-- 1. 언어 선택 카드 (한국어 / English) -->
         <div class="intro-section-card">
           <div class="intro-card-header">
@@ -3501,9 +4005,10 @@ input:checked + .toggle-slider:before {
             <span class="intro-card-icon">📿</span>
             <span id="introPrayerTypeTitle" class="intro-card-title">기도 선택 (Devotion)</span>
           </div>
-          <div class="intro-toggle-group prayer-type-toggle">
-            <button type="button" id="btnPrayerTypeRosary" class="intro-toggle-btn active">🌹 성모 묵주기도 (5단)</button>
-            <button type="button" id="btnPrayerTypeDivineMercy" class="intro-toggle-btn">🕊️ 하느님 자비의 기도 (5단)</button>
+          <div class="intro-toggle-group prayer-type-toggle devotion-3way">
+            <button type="button" id="btnPrayerTypeRosary" class="intro-toggle-btn active">🌹 성모 묵주기도</button>
+            <button type="button" id="btnPrayerTypeDivineMercy" class="intro-toggle-btn">🕊️ 자비의 기도</button>
+            <button type="button" id="btnPrayerTypeYeondo" class="intro-toggle-btn">🕯️ 연도 · 조문</button>
           </div>
         </div>
 
@@ -3596,6 +4101,36 @@ input:checked + .toggle-slider:before {
             <span class="history-btn-icon">📖</span>
             <span id="txtOpenDmHistory">자비의 기도 유래와 교황청 승인 배경 ❯</span>
           </button>
+        </div>
+
+        <!-- [NEW] 가톨릭 연도 및 조문 예절 안내 카드 (연도 모드) -->
+        <div id="introYeondoCard" class="intro-section-card yeondo-card" style="display: none;">
+          <div class="intro-card-header">
+            <span class="intro-card-icon">🕯️</span>
+            <span id="introYeondoCardTitle" class="intro-card-title">가톨릭 연도 & 조문 예절</span>
+            <span class="intro-today-badge yeondo-badge">상장예식</span>
+          </div>
+          <p class="intro-card-desc">
+            세상을 떠난 교우의 영원한 안식을 청하는 한국 천주교회의 전통 위령기도(연도)와 올바른 상가 빈소 조문 예절을 지원합니다.
+          </p>
+          <div class="yeondo-preview-grid">
+            <button type="button" id="btnOpenCondolenceGuide" class="yeondo-sub-btn">
+              <span class="yeondo-sub-icon">📜</span>
+              <div class="yeondo-sub-texts">
+                <strong>1분 요약 가톨릭 조문 예절</strong>
+                <small>분향·헌화법, 맞절, 천주교 위로 인사말</small>
+              </div>
+              <span class="yeondo-sub-arrow">❯</span>
+            </button>
+            <button type="button" id="btnStartYeondoDirect" class="yeondo-sub-btn highlight">
+              <span class="yeondo-sub-icon">🕯️</span>
+              <div class="yeondo-sub-texts">
+                <strong>가톨릭 위령기도(연도) 바치기</strong>
+                <small>시편 130편 · 성인호칭기도 · 메김과 받음</small>
+              </div>
+              <span class="yeondo-sub-arrow">❯</span>
+            </button>
+          </div>
         </div>
 
         <!-- 6. 구원을 비는 기도 (구원송) 설정 카드 (성모 묵주기도 모드) -->
@@ -3783,6 +4318,56 @@ input:checked + .toggle-slider:before {
           <span>다음 기도</span> ❯
         </button>
       </footer>
+    </section>
+
+    <!-- ==============================================
+         VIEW 3: [NEW] 가톨릭 연도 & 조문 예절 전용 화면 (Yeondo View)
+         ============================================== -->
+    <section id="yeondoView" class="yeondo-view" style="display: none;">
+      <!-- 상단 헤더 -->
+      <header class="app-header yeondo-header">
+        <button id="btnYeondoBackToIntro" class="icon-btn home-btn" aria-label="처음 화면으로" title="처음 화면으로">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </button>
+
+        <div class="prayer-header-title-box">
+          <span id="yeondoHeaderTitle" class="prayer-header-mystery">가톨릭 연도 (위령기도)</span>
+          <span class="prayer-header-day">천주교 상장예식</span>
+        </div>
+
+        <div class="header-actions">
+          <button id="btnYeondoCondolenceTab" class="icon-btn" aria-label="조문 예절" title="조문 예절" style="font-size: 0.8rem; font-weight: 700; width: auto; padding: 0 10px; border-radius: 16px; color: #E2E8F0; border-color: rgba(255,255,255,0.2);">예절</button>
+        </div>
+      </header>
+
+      <!-- 연도 본문 스크롤 영역 -->
+      <main id="yeondoBodyScroll" class="yeondo-body-scroll">
+        <div class="yeondo-card-container">
+          <div class="yeondo-candle-emblem">🕯️🕊️</div>
+          <h1 class="yeondo-main-title">위령 기도 (연도, 連禱)</h1>
+          <p class="yeondo-sub-desc">주님, 세상을 떠난 모든 이에게 영원한 안식을 주소서.</p>
+
+          <!-- 고인 세례명 입력 간이 바 -->
+          <div class="yeondo-deceased-input-bar">
+            <label for="deceasedNameInput">기도 지향 고인:</label>
+            <input type="text" id="deceasedNameInput" placeholder="예: 요셉, 마리아" maxlength="15" />
+          </div>
+
+          <!-- 연도 기도문 본문 -->
+          <div id="yeondoContentContainer" class="yeondo-content-container">
+            <!-- 자바스크립트로 연도문 전체 정갈하게 렌더링 -->
+          </div>
+
+          <div style="margin-top: 30px; text-align: center;">
+            <button type="button" id="btnFinishYeondo" class="action-pill-btn gold" style="width: 100%; height: 46px; font-size: 0.95rem;">
+              위령 기도 마치기
+            </button>
+          </div>
+        </div>
+      </main>
     </section>
 
     <!-- 6.9 이전 기도 덮어쓰기 방지 확인 모달 (이어하기 보존) -->
@@ -4254,6 +4839,69 @@ input:checked + .toggle-slider:before {
 
           <button type="button" id="btnDismissDonationModal" class="action-pill-btn" style="width: 100%; margin-top: 10px; height: 40px; font-size: 0.84rem;">
             닫기
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- [NEW] 공동체 PIN 입력 및 단체 변경 모달 -->
+    <div id="communityModal" class="modal-backdrop">
+      <div class="bottom-sheet" style="max-width: 440px;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>📍</span> <span>기도 공동체 설정 (PIN)</span>
+        </div>
+
+        <div style="padding: 10px 4px 16px;">
+          <p style="font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px; text-align: center;">
+            성당이나 레지오 단체에서 발급받은 <strong>고유 PIN 번호</strong>를 입력하시면, 교우들과 함께 은총의 묵주기도를 모을 수 있습니다.
+          </p>
+
+          <!-- PIN 입력 폼 -->
+          <div class="comm-pin-input-box">
+            <input type="text" id="inputCommunityPin" placeholder="PIN 번호 입력 (예: 7702)" maxlength="8" />
+            <button type="button" id="btnSubmitCommunityPin" class="action-pill-btn gold">확인</button>
+          </div>
+
+          <div id="commPinFeedback" style="display: none; font-size: 0.8rem; margin-top: 8px; text-align: center;"></div>
+
+          <!-- 등록된 샘플 추천 단체 -->
+          <div class="comm-quick-list" style="margin-top: 16px;">
+            <div style="font-size: 0.78rem; color: var(--gold-primary); font-weight: 700; margin-bottom: 8px;">선택 가능한 공동체:</div>
+            <button type="button" class="comm-quick-pill" data-pin="global">🌐 전국 교우 공동체 (기본)</button>
+            <button type="button" class="comm-quick-pill highlight" data-pin="7702">📍 서울대교구 성산2동성당 (PIN: 7702)</button>
+          </div>
+
+          <!-- 신규 단체 등록 신청 안내 -->
+          <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center;">
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;">우리 성당·단체도 기도를 모으고 싶으신가요?</div>
+            <a id="btnApplyNewCommunity" href="mailto:no1korealtor@naver.com?subject=%5B%EB%AC%B5%EC%A3%BC%EA%B8%B0%EB%8F%84%20%EC%95%B1%5D%20%EC%8B%A0%EA%B7%9C%20%EA%B3%B5%EB%8F%99%EC%B2%B4%20%EB%93%B1%EB%A1%9D%20%EB%B0%8F%20PIN%20%EB%B0%9C%EA%B8%89%20%EC%8B%A0%EC%B2%AD&body=%E2%96%B6%20%EC%84%B1%EB%8B%B9%20%EB%98%90%EB%8A%94%20%EB%8B%A8%EC%B2%B4%EB%AA%85%3A%20%0A%E2%96%B6%20%EC%86%8C%EC%86%8D%20%EA%B5%90%EA%2F%EC%A7%80%EA%B5%AC%3A%20%0A%E2%96%B6%20%EC%8B%A0%EC%B2%AD%EC%9E%90%20%EC%84%B8%EB%A1%80%EB%AA%85%2F%EC%97%B0%EB%9D%BD%EC%B2%98%3A%20%0A%E2%96%B6%20%EA%B8%B0%EB%8F%84%20%EC%A7%80%ED%96%A5%20%EB%98%90%EB%8A%94%20%ED%95%9C%EB%A7%88%EB%94%94%3A%20" 
+               class="comm-apply-link">
+              ✉️ 단체 등록 신청 및 고유 PIN 발급 문의
+            </a>
+          </div>
+
+          <button type="button" id="btnDismissCommunityModal" class="action-pill-btn" style="width: 100%; margin-top: 14px; height: 40px; font-size: 0.84rem;">
+            닫기
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- [NEW] 가톨릭 조문 예절 안내 모달 -->
+    <div id="condolenceModal" class="modal-backdrop">
+      <div class="bottom-sheet" style="max-width: 440px; max-height: 85vh; display: flex; flex-direction: column;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>📜</span> <span>가톨릭 조문 예절 안내</span>
+        </div>
+
+        <div style="overflow-y: auto; padding: 10px 4px 16px;">
+          <div id="condolenceModalBody">
+            <!-- 자바스크립트로 조문 예절 3단계 및 인사말 렌더링 -->
+          </div>
+          <button type="button" id="btnDismissCondolenceModal" class="action-pill-btn gold" style="width: 100%; margin-top: 14px; height: 42px;">
+            확인
           </button>
         </div>
       </div>
@@ -5320,6 +5968,123 @@ function buildDivineMercySteps(lang = "ko") {
 
 
 /**
+ * yeondo-data.js
+ * 가톨릭 상장예식(연도) 및 가톨릭 조문 예절 데이터
+ */
+
+const YEONDO_DATA = {
+  // 1. 가톨릭 조문 예절 가이드
+  condolenceGuide: {
+    title: "가톨릭 조문 예절 안내",
+    subtitle: "상가 빈소에서 바치는 정갈한 천주교식 조문 순서와 인사말",
+    steps: [
+      {
+        num: 1,
+        stepName: "빈소 입장 및 분향/헌화",
+        instruction: "상주와 가볍게 눈인사를 나눈 후 영정 앞에 섭니다. 가톨릭에서는 분향(향을 피움)이나 헌화(흰 국화) 모두 가능합니다. 분향할 때는 향 1~2개를 집어 촛불에 붙인 뒤, 입으로 불지 않고 왼손을 가볍게 흔들어 끈 후 향로에 꽂습니다."
+      },
+      {
+        num: 2,
+        stepName: "묵념 또는 기도 (성호경)",
+        instruction: "영정 앞에서 성호경을 긋고, 영원한 안식을 청하는 '주님의 기도', '성모송', 또는 '위령기도(연도)'를 나직이 바칩니다. 기도를 마친 후 영정을 향해 정중히 두 번 절하거나(가톨릭 상장예식상 절 허용), 허리를 깊이 숙여 정중히 묵념합니다."
+      },
+      {
+        num: 3,
+        stepName: "상주와의 맞절 및 위로 인사",
+        instruction: "상주를 향해 돌아서서 맞절을 하거나 정중히 인사합니다. 악수는 삼가며, 두 손을 모아 가톨릭식 따뜻한 위로의 인사를 전합니다."
+      }
+    ],
+    greetings: [
+      {
+        type: "가장 권장하는 가톨릭 인사",
+        text: "“주님의 위로가 유가족분들과 늘 함께하시길 빕니다.”"
+      },
+      {
+        type: "고인을 위한 영원한 안식 기도",
+        text: "“주님, 고인에게 영원한 안식을 주시고 영원한 빛을 비추어 주소서.”"
+      },
+      {
+        type: "일반적인 정중한 위로",
+        text: "“얼마나 상심이 크십니까. 고인의 영원한 안식을 위해 기도하겠습니다.”"
+      }
+    ]
+  },
+
+  // 2. 가톨릭 연도 (위령기도 핵심 상장예식)
+  yeondoPrayer: {
+    title: "가톨릭 위령기도 (연도, 連禱)",
+    subtitle: "한국 천주교 주교회의 공인 상장예식 · 전통 메김과 받음 가락",
+    sections: [
+      {
+        sectionId: "start",
+        sectionTitle: "시작 기도",
+        lines: [
+          { role: "all", label: "모두", text: "† 성부와 성자와 성령의 이름으로. 아멘." },
+          { role: "leader", label: "선창", text: "주님, 저희의 기도를 들어주소서." },
+          { role: "respond", label: "받음", text: "저희의 부르짖음이 주님께 이르게 하소서." },
+          { role: "leader", label: "선창", text: "기도합시다. 전능하신 하느님 아버지, 사랑하시는 자녀(세례명)를 이 세상에서 불러 가셨으니," },
+          { role: "respond", label: "받음", text: "주님의 자비로 모든 죄를 용서하시고 영원한 빛의 나라로 인도하소서. 우리 주 그리스도를 통하여 비나이다. 아멘." }
+        ]
+      },
+      {
+        sectionId: "psalm130",
+        sectionTitle: "시편 130(129)편 · 깊은 구렁 속에서 (데 프로푼디스)",
+        desc: "연도에서 가장 핵심이 되는 회개와 자비의 시편입니다.",
+        lines: [
+          { role: "leader", label: "선창", text: "깊은 구렁 속에서 주님께 부르짖사오니," },
+          { role: "respond", label: "받음", text: "주님, 제 소리를 들어주소서." },
+          { role: "leader", label: "선창", text: "애원하는 제 소리에" },
+          { role: "respond", label: "받음", text: "귀를 기울이소서." },
+          { role: "leader", label: "선창", text: "주님, 당신께서 죄악을 헤아리신다면," },
+          { role: "respond", label: "받음", text: "주님, 감당할 자 누구이리까?" },
+          { role: "leader", label: "선창", text: "오히려 용서하심이 당신께 있사오니," },
+          { role: "respond", label: "받음", text: "사람들은 당신을 경외하오리이다." },
+          { role: "leader", label: "선창", text: "제 영혼이 주님을 기다리오며" },
+          { role: "respond", label: "받음", text: "당신의 말씀을 바라나이다." },
+          { role: "leader", label: "선창", text: "파수꾼이 새벽을 기다리기보다" },
+          { role: "respond", label: "받음", text: "제 영혼이 주님을 더 기다리나이다." },
+          { role: "leader", label: "선창", text: "주님께는 자비가 있고" },
+          { role: "respond", label: "받음", text: "풍요로운 구원이 있음이니," },
+          { role: "leader", label: "선창", text: "그분께서 이스라엘을" },
+          { role: "respond", label: "받음", text: "모든 죄악에서 건져내시리이다." }
+        ]
+      },
+      {
+        sectionId: "intercession",
+        sectionTitle: "성인 호칭 기도 (위령)",
+        desc: "하늘의 모든 천사와 성인들에게 고인을 위한 전구를 청합니다.",
+        lines: [
+          { role: "leader", label: "선창", text: "주님, 자비를 베푸소서." },
+          { role: "respond", label: "받음", text: "주님, 자비를 베푸소서." },
+          { role: "leader", label: "선창", text: "그리스도님, 자비를 베푸소서." },
+          { role: "respond", label: "받음", text: "그리스도님, 자비를 베푸소서." },
+          { role: "leader", label: "선창", text: "천주의 성모 마리아님," },
+          { role: "respond", label: "받음", text: "그(세례명)를 위하여 빌어주소서." },
+          { role: "leader", label: "선창", text: "성 미카엘 대천사님," },
+          { role: "respond", label: "받음", text: "그를 위하여 빌어주소서." },
+          { role: "leader", label: "선창", text: "성 요셉님," },
+          { role: "respond", label: "받음", text: "그를 위하여 빌어주소서." },
+          { role: "leader", label: "선창", text: "한국의 모든 순교 성인들이여," },
+          { role: "respond", label: "받음", text: "그를 위하여 빌어주소서." }
+        ]
+      },
+      {
+        sectionId: "ending",
+        sectionTitle: "마침 기도 (위령기도)",
+        lines: [
+          { role: "all", label: "모두", text: "하늘에 계신 우리 아버지, 아버지의 이름이 거룩히 빛나시며 아버지의 나라가 오시며, 아버지의 뜻이 하늘에서와 같이 땅에서도 이루어지소서. 오늘 저희에게 일용할 양식을 주시고, 저희에게 잘못한 이를 저희가 용서하오니 저희 죄를 용서하시고 저희를 유혹에 빠지지 않게 하시고 악에서 구하소서. 아멘." },
+          { role: "leader", label: "선창", text: "주님, 그(세례명)에게 영원한 안식을 주소서." },
+          { role: "respond", label: "받음", text: "영원한 빛을 그에게 비추소서." },
+          { role: "leader", label: "선창", text: "세상을 떠난 모든 이가 하느님의 자비로 평화의 안식을 얻게 하소서." },
+          { role: "respond", label: "받음", text: "아멘." }
+        ]
+      }
+    ]
+  }
+};
+
+
+/**
  * 묵주기도 (Holy Rosary) 메인 앱 로직
  * - 삼성 갤럭시 S23 및 최신 스마트폰 화면 비율 완벽 대응
  * - 장미꽃송이 묵주 비드 (Rosarium: 성모님께 바치는 장미 화관) 기본 탑재
@@ -5400,6 +6165,31 @@ class RosaryApp {
       introPrayerTypeTitle: document.getElementById("introPrayerTypeTitle"),
       btnPrayerTypeRosary: document.getElementById("btnPrayerTypeRosary"),
       btnPrayerTypeDivineMercy: document.getElementById("btnPrayerTypeDivineMercy"),
+      btnPrayerTypeYeondo: document.getElementById("btnPrayerTypeYeondo"),
+      introYeondoCard: document.getElementById("introYeondoCard"),
+      btnOpenCondolenceGuide: document.getElementById("btnOpenCondolenceGuide"),
+      btnStartYeondoDirect: document.getElementById("btnStartYeondoDirect"),
+
+      // 공동체 통계 & PIN 모달
+      introCommunityCard: document.getElementById("introCommunityCard"),
+      btnOpenCommModal: document.getElementById("btnOpenCommModal"),
+      communityModal: document.getElementById("communityModal"),
+      inputCommunityPin: document.getElementById("inputCommunityPin"),
+      btnSubmitCommunityPin: document.getElementById("btnSubmitCommunityPin"),
+      commPinFeedback: document.getElementById("commPinFeedback"),
+      btnDismissCommunityModal: document.getElementById("btnDismissCommunityModal"),
+
+      // 연도 뷰 및 조문 모달
+      yeondoView: document.getElementById("yeondoView"),
+      btnYeondoBackToIntro: document.getElementById("btnYeondoBackToIntro"),
+      btnYeondoCondolenceTab: document.getElementById("btnYeondoCondolenceTab"),
+      yeondoBodyScroll: document.getElementById("yeondoBodyScroll"),
+      deceasedNameInput: document.getElementById("deceasedNameInput"),
+      yeondoContentContainer: document.getElementById("yeondoContentContainer"),
+      btnFinishYeondo: document.getElementById("btnFinishYeondo"),
+      condolenceModal: document.getElementById("condolenceModal"),
+      condolenceModalBody: document.getElementById("condolenceModalBody"),
+      btnDismissCondolenceModal: document.getElementById("btnDismissCondolenceModal"),
 
       // 인트로 3. 이어하기 카드
       introResumeCard: document.getElementById("introResumeCard"),
@@ -6032,6 +6822,7 @@ class RosaryApp {
         this.sessionCompletedDecades.add(step.decadeNum);
         const mysteryKey = this.currentPrayerType === "divine_mercy" ? "divine_mercy" : this.currentMysteryKey;
         this.addDecadesToDate(this.getTodayStr(), 1, mysteryKey);
+        this.recordUserDecade(1);
       }
     }
   }
@@ -6044,21 +6835,36 @@ class RosaryApp {
     this.currentView = viewName;
     if (viewName === "prayer") {
       if (this.dom.introView) this.dom.introView.style.display = "none";
+      if (this.dom.yeondoView) this.dom.yeondoView.style.display = "none";
       if (this.dom.prayerView) this.dom.prayerView.style.display = "flex";
       this.updateBeadChain();
       this.updateDecadePillsState();
       if (this.dom.prayerBodyScroll) {
         this.dom.prayerBodyScroll.scrollTop = 0;
       }
+    } else if (viewName === "yeondo") {
+      if (this.dom.introView) this.dom.introView.style.display = "none";
+      if (this.dom.prayerView) this.dom.prayerView.style.display = "none";
+      if (this.dom.yeondoView) this.dom.yeondoView.style.display = "flex";
+      this.renderYeondoPrayer();
+      if (this.dom.yeondoBodyScroll) {
+        this.dom.yeondoBodyScroll.scrollTop = 0;
+      }
     } else {
       if (this.dom.prayerView) this.dom.prayerView.style.display = "none";
+      if (this.dom.yeondoView) this.dom.yeondoView.style.display = "none";
       if (this.dom.introView) this.dom.introView.style.display = "flex";
       this.updateIntroView();
+      this.renderCommunityStats();
     }
   }
 
   // '기도 시작하기' 버튼 클릭 시: 진행 중인 이어하기 기록이 있는지 확인
   handleStartPrayerRequest() {
+    if (this.currentPrayerType === "yeondo") {
+      this.switchView("yeondo");
+      return;
+    }
     const saved = this.loadSavedProgress();
     const hasActiveProgress = saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length - 1 : 66);
 
@@ -8815,9 +9621,234 @@ class RosaryApp {
     }
     document.body.removeChild(ta);
   }
+
+  // ==========================================
+  // 공동체 및 총 봉헌 단수 관리 모듈 (PIN 인증형)
+  // ==========================================
+  initCommunityStats() {
+    this.communityStorageKey = "rosary_community_info_v1";
+    this.communityStatsKey = "rosary_community_stats_v1";
+    this.userLifetimeDecadesKey = "rosary_user_lifetime_decades_v1";
+
+    this.COMMUNITIES_DB = {
+      "global": {
+        id: "global",
+        name: "전국 교우 공동체",
+        diocese: "한국 천주교회",
+        baseDecades: 38450,
+        isDefault: true
+      },
+      "7702": {
+        id: "sungsan2",
+        pin: "7702",
+        name: "서울대교구 성산2동성당",
+        diocese: "서울대교구 제15서대문-마포지구",
+        baseDecades: 1280,
+        desc: "성산2동천주교회 교우들의 정성 어린 묵주기도 봉헌"
+      }
+    };
+  }
+
+  getCurrentCommunity() {
+    try {
+      const raw = localStorage.getItem(this.communityStorageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.id) return parsed;
+      }
+    } catch (e) {}
+    return this.COMMUNITIES_DB["global"];
+  }
+
+  setCurrentCommunity(commObj) {
+    try {
+      localStorage.setItem(this.communityStorageKey, JSON.stringify(commObj));
+    } catch (e) {}
+    this.renderCommunityStats();
+  }
+
+  getUserLifetimeDecades() {
+    try {
+      const hist = this.loadHistory();
+      let histTotal = 0;
+      Object.values(hist).forEach(v => {
+        if (v && typeof v.decades === "number") histTotal += v.decades;
+      });
+      const savedLife = parseInt(localStorage.getItem(this.userLifetimeDecadesKey) || "0", 10);
+      return Math.max(histTotal, savedLife);
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  recordUserDecade(amount = 1) {
+    try {
+      const cur = this.getUserLifetimeDecades();
+      const updated = cur + amount;
+      localStorage.setItem(this.userLifetimeDecadesKey, updated.toString());
+
+      const curComm = this.getCurrentCommunity();
+      const statsRaw = localStorage.getItem(this.communityStatsKey);
+      const stats = statsRaw ? JSON.parse(statsRaw) : {};
+      const commId = curComm.id || "global";
+      stats[commId] = (stats[commId] || 0) + amount;
+      stats["global"] = (stats["global"] || 0) + amount;
+      localStorage.setItem(this.communityStatsKey, JSON.stringify(stats));
+
+      this.renderCommunityStats();
+    } catch (e) {}
+  }
+
+  getCommunityTotalDecades(commObj) {
+    try {
+      const base = commObj.baseDecades || 38450;
+      const statsRaw = localStorage.getItem(this.communityStatsKey);
+      const stats = statsRaw ? JSON.parse(statsRaw) : {};
+      const commId = commObj.id || "global";
+      const added = stats[commId] || 0;
+      return base + added;
+    } catch (e) {
+      return commObj.baseDecades || 38450;
+    }
+  }
+
+  renderCommunityStats() {
+    const curComm = this.getCurrentCommunity();
+    const myDecades = this.getUserLifetimeDecades();
+    const commTotal = this.getCommunityTotalDecades(curComm);
+
+    const commNameEl = document.getElementById("commCurrentName");
+    const commTotalEl = document.getElementById("commTotalDecades");
+    const myTotalEl = document.getElementById("myTotalDecades");
+    const commRosesEl = document.getElementById("commTotalRoses");
+    const myRosesEl = document.getElementById("myTotalRoses");
+
+    if (commNameEl) commNameEl.textContent = curComm.name;
+    if (commTotalEl) commTotalEl.textContent = commTotal.toLocaleString() + "단";
+    if (myTotalEl) myTotalEl.textContent = myDecades.toLocaleString() + "단";
+    if (commRosesEl) commRosesEl.textContent = `(장미 ${(commTotal * 10).toLocaleString()}송이 🌹)`;
+    if (myRosesEl) myRosesEl.textContent = `(${(myDecades * 10).toLocaleString()}송이)`;
+  }
+
+  applyCommunityPin(pin) {
+    const clean = (pin || "").trim().toLowerCase();
+    const feedbackEl = this.dom.commPinFeedback;
+    if (clean === "global" || clean === "전국") {
+      this.setCurrentCommunity(this.COMMUNITIES_DB["global"]);
+      if (feedbackEl) {
+        feedbackEl.style.display = "block";
+        feedbackEl.style.color = "#4ADE80";
+        feedbackEl.textContent = "✓ '전국 교우 공동체'로 설정되었습니다.";
+      }
+      setTimeout(() => this.closeModals(), 800);
+      return;
+    }
+
+    const matched = this.COMMUNITIES_DB[clean];
+    if (matched) {
+      this.setCurrentCommunity(matched);
+      if (feedbackEl) {
+        feedbackEl.style.display = "block";
+        feedbackEl.style.color = "#4ADE80";
+        feedbackEl.textContent = `✓ '${matched.name}' 공동체로 연결되었습니다!`;
+      }
+      setTimeout(() => this.closeModals(), 900);
+    } else {
+      if (feedbackEl) {
+        feedbackEl.style.display = "block";
+        feedbackEl.style.color = "#F87171";
+        feedbackEl.textContent = "✕ 유효하지 않은 PIN 번호입니다. 확인 후 다시 입력해 주세요.";
+      }
+    }
+  }
+
+  // ==========================================
+  // 가톨릭 연도 & 조문 예절 렌더링 모듈
+  // ==========================================
+  renderYeondoPrayer() {
+    if (!this.dom.yeondoContentContainer) return;
+    const deceasedName = (this.dom.deceasedNameInput && this.dom.deceasedNameInput.value.trim()) || "고인";
+
+    if (typeof YEONDO_DATA === "undefined" || !YEONDO_DATA.yeondoPrayer) {
+      this.dom.yeondoContentContainer.innerHTML = "<p>연도 기도 데이터를 불러오는 중입니다...</p>";
+      return;
+    }
+
+    const sections = YEONDO_DATA.yeondoPrayer.sections || [];
+    let html = "";
+
+    sections.forEach(sec => {
+      html += `
+        <div class="yeondo-section-card">
+          <div class="yeondo-section-header">${sec.sectionTitle}</div>
+          ${sec.desc ? `<div class="yeondo-section-desc">${sec.desc}</div>` : ""}
+          <div class="yeondo-lines-box">
+      `;
+
+      sec.lines.forEach(line => {
+        let lineText = line.text;
+        lineText = lineText.replace(/\(세례명\)/g, deceasedName);
+        html += `
+          <div class="yeondo-line-row ${line.role}">
+            <span class="yeondo-role-badge ${line.role}">${line.label}</span>
+            <span class="yeondo-line-text">${lineText}</span>
+          </div>
+        `;
+      });
+
+      html += `
+          </div>
+        </div>
+      `;
+    });
+
+    this.dom.yeondoContentContainer.innerHTML = html;
+  }
+
+  renderCondolenceModal() {
+    if (!this.dom.condolenceModalBody || typeof YEONDO_DATA === "undefined") return;
+    const guide = YEONDO_DATA.condolenceGuide;
+    if (!guide) return;
+
+    let html = `
+      <div style="font-size: 0.84rem; color: var(--gold-light); font-weight: 700; margin-bottom: 12px; text-align: center;">
+        ${guide.subtitle}
+      </div>
+      <div style="margin-bottom: 16px;">
+    `;
+
+    guide.steps.forEach(st => {
+      html += `
+        <div class="condolence-step-box">
+          <div class="condolence-step-title">${st.num}. ${st.stepName}</div>
+          <div class="condolence-step-desc">${st.instruction}</div>
+        </div>
+      `;
+    });
+
+    html += `
+      </div>
+      <div style="font-size: 0.82rem; color: var(--gold-primary); font-weight: 700; margin-bottom: 8px;">
+        💬 상주에게 건네는 올바른 가톨릭 위로 인사말:
+      </div>
+    `;
+
+    guide.greetings.forEach(gr => {
+      html += `
+        <div class="condolence-greeting-box">
+          <div class="condolence-greeting-type">${gr.type}</div>
+          <div class="condolence-greeting-text">${gr.text}</div>
+        </div>
+      `;
+    });
+
+    this.dom.condolenceModalBody.innerHTML = html;
+  }
+
+
 }
 
-// 앱 실행
+// 앱 자동 초기화
 document.addEventListener("DOMContentLoaded", () => {
   if (!window.__DISABLE_AUTO_INIT__) {
     window.rosaryApp = new RosaryApp();
@@ -8837,10 +9868,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=28').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=29').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=28').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=29').catch(() => {});
         });
       });
 
@@ -8848,7 +9879,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v28' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v29' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
