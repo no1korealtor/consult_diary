@@ -7812,6 +7812,9 @@ class RosaryApp {
     if (this.dom.btnIntroOpenTracker) {
       this.dom.btnIntroOpenTracker.textContent = isEn ? "Record ❯" : "기록장 ❯";
     }
+        // 기도 선택 (Devotion) 탭 텍스트 다국어 반영
+    this.updateIntroTexts();
+
     if (this.dom.btnStartPrayerText) {
       this.dom.btnStartPrayerText.textContent = isEn ? "Begin Holy Rosary" : "묵주기도 시작하기";
     }
@@ -10745,10 +10748,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }).catch(() => {});
 
         // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=42').then(reg => {
+        navigator.serviceWorker.register('/rosary-sw.js?v=43').then(reg => {
           reg.update();
         }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=42').catch(() => {});
+          navigator.serviceWorker.register('./rosary-sw.js?v=43').catch(() => {});
         });
       });
 
@@ -10756,7 +10759,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if ('caches' in window) {
         caches.keys().then(keys => {
           keys.forEach(k => {
-            if (k !== 'rosary-app-v42' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
+            if (k !== 'rosary-app-v43' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
               caches.delete(k);
             }
           });
