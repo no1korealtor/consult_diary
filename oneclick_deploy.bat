@@ -1,3 +1,3 @@
 @echo off
-python deploy_visible_card.py
+python bundle_and_deploy.py
 pause
