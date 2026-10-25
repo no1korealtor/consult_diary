@@ -4796,11 +4796,11 @@ html, body, #app, .intro-view, .prayer-view, button, a {
       </main>
 
       <!-- 5. 하단 액션 컨트롤 바 -->
-      <footer class="bottom-controls">
-        <button id="prevBtn" class="nav-bead-btn prev-btn" aria-label="이전 알" onclick="directPrevStep();">
+      <footer class="bottom-controls" style="position:relative !important; z-index:9999 !important; pointer-events:auto !important;">
+        <button id="prevBtn" class="nav-bead-btn prev-btn" aria-label="이전 알" onclick="directPrevStep();" style="position:relative; z-index:10000; pointer-events:auto !important; cursor:pointer;">
           ❮ <span>이전 알</span>
         </button>
-        <button id="nextBtn" class="nav-bead-btn next-btn" aria-label="다음 기도" onclick="directNextStep();">
+        <button id="nextBtn" class="nav-bead-btn next-btn" aria-label="다음 기도" onclick="directNextStep();" style="position:relative; z-index:10000; pointer-events:auto !important; cursor:pointer;">
           <span>다음 기도</span> ❯
         </button>
       </footer>
@@ -11439,22 +11439,32 @@ document.addEventListener('click', function(e) {
 <script>
 function directNextStep() {
   try {
+    var ko = document.getElementById('crucifixKissOverlay');
+    if (ko) {
+      ko.classList.remove('show', 'fade-out');
+      ko.style.setProperty('display', 'none', 'important');
+      ko.style.setProperty('pointer-events', 'none', 'important');
+      ko.style.setProperty('visibility', 'hidden', 'important');
+      ko.style.setProperty('z-index', '-1', 'important');
+    }
     if (window.rosaryApp && typeof window.rosaryApp.nextStep === 'function') {
       window.rosaryApp.nextStep();
-    } else {
-      var btn = document.getElementById('nextBtn');
-      if (btn) btn.click();
     }
   } catch(e) { console.error(e); }
 }
 
 function directPrevStep() {
   try {
+    var ko = document.getElementById('crucifixKissOverlay');
+    if (ko) {
+      ko.classList.remove('show', 'fade-out');
+      ko.style.setProperty('display', 'none', 'important');
+      ko.style.setProperty('pointer-events', 'none', 'important');
+      ko.style.setProperty('visibility', 'hidden', 'important');
+      ko.style.setProperty('z-index', '-1', 'important');
+    }
     if (window.rosaryApp && typeof window.rosaryApp.prevStep === 'function') {
       window.rosaryApp.prevStep();
-    } else {
-      var btn = document.getElementById('prevBtn');
-      if (btn) btn.click();
     }
   } catch(e) { console.error(e); }
 }
