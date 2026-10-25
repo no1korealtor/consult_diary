@@ -5030,7 +5030,7 @@ html, body, #app, .intro-view, .prayer-view, button, a {
     </div>
 
     <!-- 9. 주간 기도 기록 모달 바텀시트 -->
-    <div id="trackerModal" class="modal-backdrop" style="display: none !important;" style="display: none;">
+    <div id="trackerModal" class="modal-backdrop" style="display: none !important;" style="display: none !important;" style="display: none;">
       <div class="bottom-sheet tracker-sheet">
         <div class="sheet-handle"></div>
         
@@ -10875,45 +10875,23 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 </script>
+  
   <script>
-    // 서비스 워커 등록 및 구버전 캐시 자동 정리
+    // [강력 캐시 완전 삭제 및 서비스워커 즉각 파기]
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        // 1. 기존 워커 강제 업데이트
-        navigator.serviceWorker.getRegistrations().then(regs => {
-          for (let reg of regs) {
-            reg.update();
-          }
-        }).catch(() => {});
-
-        // 2. rosary-sw.js 최신 버전 등록
-        navigator.serviceWorker.register('/rosary-sw.js?v=44').then(reg => {
-          reg.update();
-        }).catch(() => {
-          navigator.serviceWorker.register('./rosary-sw.js?v=44').catch(() => {});
-        });
-      });
-
-      // 3. 브라우저 캐시 스토리지의 구버전 캐시 즉시 강제 정리
-      if ('caches' in window) {
-        caches.keys().then(keys => {
-          keys.forEach(k => {
-            if (k !== 'rosary-app-v44' && (k.startsWith('rosary-app-') || k.startsWith('consult-diary-'))) {
-              caches.delete(k);
-            }
-          });
-        }).catch(() => {});
-      }
-
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
+      navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for (let registration of registrations) {
+          registration.unregister();
         }
       });
     }
+    if ('caches' in window) {
+      caches.keys().then(function(names) {
+        for (let name of names) caches.delete(name);
+      });
+    }
   </script>
+
 
     <!-- [NEW] 기도 기록 백업 및 복원 전용 모달 -->
     <div id="backupModal" class="modal-backdrop">
@@ -11313,6 +11291,17 @@ function directStartPrayerAction() {
     console.error('directStartPrayerAction fallback error:', e);
   }
 }
+</script>
+
+
+<script>
+// 모달 배경 클릭 시 100% 즉시 닫기
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-backdrop')) {
+    e.target.classList.remove('show');
+    e.target.style.setProperty('display', 'none', 'important');
+  }
+});
 </script>
 
 </body>
