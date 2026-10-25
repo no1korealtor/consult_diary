@@ -1,3 +1,3 @@
 @echo off
-python deploy_clear_sample.py
+python deploy_v2_purge.py
 pause
