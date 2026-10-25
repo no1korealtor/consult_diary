@@ -1,3 +1,3 @@
 @echo off
-python bundle_and_deploy.py
+python deploy_honest_zero.py
 pause
