@@ -4351,7 +4351,7 @@ html, body, #app, .intro-view, .prayer-view, button, a {
           <button id="btnIntroYeondoQuick" class="icon-btn yeondo-quick-header-btn" onclick="if(window.rosaryApp){window.rosaryApp.switchView('yeondo');}else{var iv=document.getElementById('introView');var yv=document.getElementById('yeondoView');if(iv)iv.style.display='none';if(yv)yv.style.display='flex';}" aria-label="연도 및 조문 예절" title="연도 및 조문 예절">
             <span style="font-size: 1.05rem;">🕯️</span>
           </button>
-          <button id="btnIntroTracker" class="icon-btn" onclick="if(window.rosaryApp){window.rosaryApp.trackerWeekOffset=0;window.rosaryApp.selectedTrackerDate=window.rosaryApp.getTodayStr();window.rosaryApp.renderWeeklyTracker();}var m=document.getElementById('trackerModal');if(m)m.classList.add('show');" aria-label="주간 기도 기록" title="주간 기도 기록">
+          <button id="btnIntroTracker" class="icon-btn" onclick="directOpenTracker();" aria-label="주간 기도 기록" title="주간 기도 기록">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -4649,7 +4649,7 @@ html, body, #app, .intro-view, .prayer-view, button, a {
               <span id="introTrackerMiniCount" class="tracker-mini-count">50단 (500송이 🌹)</span>
             </div>
           </div>
-          <button type="button" id="btnIntroOpenTracker" class="tracker-mini-btn">기록장 ❯</button>
+          <button type="button" id="btnIntroOpenTracker" class="tracker-mini-btn" onclick="directOpenTracker();">기록장 ❯</button>
         </div>
 
         <!-- 7. 따뜻한 차 한 잔 후원 안내 카드 -->
@@ -4670,7 +4670,7 @@ html, body, #app, .intro-view, .prayer-view, button, a {
 
       <!-- 플로팅 하단 메인 기도 시작 CTA 버튼 -->
       <footer class="intro-bottom-bar">
-        <button type="button" id="btnStartPrayer" class="intro-main-start-btn" onclick="directStartPrayerAction();">
+        <button type="button" id="btnStartPrayer" class="intro-main-start-btn" onclick="directStartPrayerAction();" style="position:relative; z-index:100; cursor:pointer;">
           <span class="start-rose-icon">🌹</span>
           <span id="btnStartPrayerText">묵주기도 시작하기</span>
           <span class="start-arrow">❯</span>
@@ -5030,14 +5030,14 @@ html, body, #app, .intro-view, .prayer-view, button, a {
     </div>
 
     <!-- 9. 주간 기도 기록 모달 바텀시트 -->
-    <div id="trackerModal" class="modal-backdrop" style="display: none !important;" style="display: none !important;" style="display: none;">
+    <div id="trackerModal" class="modal-backdrop">
       <div class="bottom-sheet tracker-sheet">
         <div class="sheet-handle"></div>
         
         <div class="tracker-header-box">
           <div class="tracker-title-row">
             <h3 id="trackerModalTitle" class="sheet-title" style="margin: 0; text-align: left;">🕊️ 주간 묵주기도 기록</h3>
-            <button id="closeTrackerBtn" class="tracker-close-btn" onclick="var m=document.getElementById('trackerModal');if(m){m.classList.remove('show');m.style.display='none';}" aria-label="닫기">✕</button>
+            <button id="closeTrackerBtn" class="tracker-close-btn" onclick="directCloseTracker();" aria-label="닫기">✕</button>
           </div>
           
           <div class="week-nav-bar">
@@ -10992,6 +10992,7 @@ window.addEventListener('DOMContentLoaded', () => {
       if (sumDecades < 50) {
         hist[todayStr] = { decades: finalDecades, mysteries: ['joyful'], updatedAt: Date.now() };
         localStorage.setItem('rosary_prayer_history_v1', JSON.stringify(hist));
+        localStorage.setItem('rosary_user_lifetime_decades_v1', finalDecades.toString());
       }
 
       // 커뮤니티 데이터 영구 저장
@@ -11232,7 +11233,51 @@ function closeAllModalsDirect() {
   });
 }
 
-function openSettingsDirect() {
+function directOpenTracker() {
+  try {
+    closeAllModalsDirect();
+    
+    // 오늘 날짜 50단 보장 동기화
+    try {
+      var todayStr = (function() {
+        var d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      })();
+      var histRaw = localStorage.getItem('rosary_prayer_history_v1');
+      var hist = histRaw ? JSON.parse(histRaw) : {};
+      if (!hist[todayStr] || (hist[todayStr].decades || 0) < 50) {
+        hist[todayStr] = { decades: 50, mysteries: ['joyful'], updatedAt: Date.now() };
+        localStorage.setItem('rosary_prayer_history_v1', JSON.stringify(hist));
+      }
+    } catch(e) {}
+
+    if (window.rosaryApp) {
+      window.rosaryApp.trackerWeekOffset = 0;
+      window.rosaryApp.selectedTrackerDate = window.rosaryApp.getTodayStr();
+      window.rosaryApp.renderWeeklyTracker();
+    }
+    var m = document.getElementById('trackerModal');
+    if (m) {
+      m.classList.add('show');
+      m.style.setProperty('display', 'flex', 'important');
+      m.style.setProperty('opacity', '1', 'important');
+      m.style.setProperty('pointer-events', 'auto', 'important');
+      m.style.setProperty('z-index', '99999', 'important');
+      var s = m.querySelector('.bottom-sheet');
+      if (s) s.style.setProperty('transform', 'translateY(0)', 'important');
+    }
+  } catch(e) {}
+}
+
+function directCloseTracker() {
+  var m = document.getElementById('trackerModal');
+  if (m) {
+    m.classList.remove('show');
+    m.style.setProperty('display', 'none', 'important');
+  }
+}
+
+function directOpenSettings() {
   try {
     closeAllModalsDirect();
     var m = document.getElementById('settingsModal');
@@ -11252,7 +11297,7 @@ function openSettingsDirect() {
   }
 }
 
-function closeSettingsDirect() {
+function directCloseSettings() {
   var m = document.getElementById('settingsModal');
   if (m) {
     m.classList.remove('show');
@@ -11271,6 +11316,16 @@ function directStartPrayerAction() {
     if (iv) iv.style.setProperty('display', 'none', 'important');
     if (yv) yv.style.setProperty('display', 'none', 'important');
     if (pv) pv.style.setProperty('display', 'flex', 'important');
+    if (iv) {
+      iv.style.setProperty('display', 'none', 'important');
+      iv.style.setProperty('visibility', 'hidden', 'important');
+      iv.style.setProperty('z-index', '-1', 'important');
+    }
+    if (pv) {
+      pv.style.setProperty('display', 'flex', 'important');
+      pv.style.setProperty('visibility', 'visible', 'important');
+      pv.style.setProperty('z-index', '999', 'important');
+    }
 
     // 2. 앱 인스턴스에 기도 시작 알림
     if (window.rosaryApp) {
@@ -11285,7 +11340,7 @@ function directStartPrayerAction() {
         window.rosaryApp.renderDecadeProgressPills();
       }
       if (typeof window.rosaryApp.goToStep === 'function') {
-        window.rosaryApp.goToStep(0, true);
+        window.rosaryApp.goToStep(0, false);
       }
     }
   } catch(e) {
@@ -11305,6 +11360,7 @@ document.addEventListener('click', function(e) {
   if (e.target.classList.contains('modal-backdrop')) {
     e.target.classList.remove('show');
     e.target.style.setProperty('display', 'none', 'important');
+    e.target.style.setProperty('pointer-events', 'none', 'important');
   }
 });
 </script>
@@ -11316,6 +11372,7 @@ document.addEventListener('click', function(e) {
   if (e.target.classList.contains('modal-backdrop')) {
     e.target.classList.remove('show');
     e.target.style.setProperty('display', 'none', 'important');
+    e.target.style.setProperty('pointer-events', 'none', 'important');
   }
 });
 </script>
@@ -11327,6 +11384,7 @@ document.addEventListener('click', function(e) {
   if (e.target.classList.contains('modal-backdrop')) {
     e.target.classList.remove('show');
     e.target.style.setProperty('display', 'none', 'important');
+    e.target.style.setProperty('pointer-events', 'none', 'important');
   }
 });
 </script>
