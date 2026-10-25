@@ -4122,6 +4122,37 @@ html, body, #app, .intro-view, .prayer-view, button, a {
 }
 </style>
 
+
+<style>
+/* 설정 모달 & 모든 바텀시트 모달 확실한 팝업 스타일 */
+#settingsModal.show,
+#trackerModal.show,
+#intentionModal.show,
+#mysteryModal.show,
+#historyModal.show,
+#adminModal.show,
+#donationModal.show {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  z-index: 100000 !important;
+}
+
+#settingsModal.show .bottom-sheet,
+#trackerModal.show .bottom-sheet,
+#intentionModal.show .bottom-sheet,
+#mysteryModal.show .bottom-sheet,
+#historyModal.show .bottom-sheet,
+#adminModal.show .bottom-sheet,
+#donationModal.show .bottom-sheet {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transform: translateY(0) !important;
+}
+</style>
+
 </head>
 <body>
 <script>
@@ -4293,7 +4324,7 @@ html, body, #app, .intro-view, .prayer-view, button, a {
           <span class="intro-brand-name">묵주기도</span>
         </div>
         <div class="intro-top-actions">
-          <button id="btnHeaderLangToggle" type="button" class="action-pill-btn" onclick="if(window.rosaryApp){var nextLang = window.rosaryApp.settings.lang === 'en' ? 'ko' : 'en'; window.rosaryApp.setLanguage(nextLang); var b=document.getElementById('btnHeaderLangToggle'); if(b) b.textContent = nextLang === 'en' ? '🌐 한' : '🌐 EN';}" style="height: 32px; padding: 0 10px; font-size: 0.78rem; font-weight: 700; margin-right: 4px; background: rgba(243, 198, 105, 0.12); border: 1px solid rgba(243, 198, 105, 0.35); color: var(--gold-primary); border-radius: 16px;">
+          <button id="btnHeaderLangToggle" type="button" class="action-pill-btn" onclick="toggleGlobalLanguage();" style="height: 32px; padding: 0 10px; font-size: 0.78rem; font-weight: 700; margin-right: 4px; background: rgba(243, 198, 105, 0.12); border: 1px solid rgba(243, 198, 105, 0.35); color: var(--gold-primary); border-radius: 16px;">
             🌐 EN
           </button>
           <button id="btnIntroYeondoQuick" class="icon-btn yeondo-quick-header-btn" aria-label="연도 및 조문 예절" title="연도 및 조문 예절">
@@ -11146,6 +11177,45 @@ window.addEventListener('DOMContentLoaded', () => {
     renderIntentionCard();
   }
 })();
+</script>
+<script>
+
+// [전역 원터치 언어 전환 함수]
+function toggleGlobalLanguage() {
+  try {
+    if (!window.rosaryApp) return;
+    const cur = window.rosaryApp.settings.lang || 'ko';
+    const next = (cur === 'en') ? 'ko' : 'en';
+    window.rosaryApp.setLanguage(next);
+    
+    // 버튼 텍스트 변경
+    const btn = document.getElementById('btnHeaderLangToggle');
+    if (btn) {
+      btn.textContent = (next === 'en') ? '🌐 한' : '🌐 EN';
+    }
+  } catch(e) {
+    console.error('toggleGlobalLanguage error:', e);
+  }
+}
+
+</script>
+<script>
+
+function openSettingsDirect() {
+  const m = document.getElementById('settingsModal');
+  if (m) {
+    m.classList.add('show');
+    m.style.display = 'flex';
+  }
+}
+function closeSettingsDirect() {
+  const m = document.getElementById('settingsModal');
+  if (m) {
+    m.classList.remove('show');
+    m.style.display = 'none';
+  }
+}
+
 </script>
 </body>
 </html>

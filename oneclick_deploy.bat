@@ -1,3 +1,3 @@
 @echo off
-python surgically_cut_lang.py
+python deploy_settings_lang_fix.py
 pause
