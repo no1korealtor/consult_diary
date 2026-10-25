@@ -11264,15 +11264,8 @@ function closeSettingsDirect() {
 function directStartPrayerAction() {
   try {
     closeAllModalsDirect();
-    if (window.rosaryApp && typeof window.rosaryApp.handleStartPrayerRequest === 'function') {
-      window.rosaryApp.handleStartPrayerRequest();
-      return;
-    }
-  } catch(err) {
-    console.warn('rosaryApp handler warning:', err);
-  }
-
-  try {
+    
+    // 1. 인트로 뷰 즉시 숨기고 기도 뷰 즉시 노출
     var iv = document.getElementById('introView');
     var pv = document.getElementById('prayerView');
     var yv = document.getElementById('yeondoView');
@@ -11280,15 +11273,28 @@ function directStartPrayerAction() {
     if (yv) yv.style.setProperty('display', 'none', 'important');
     if (pv) pv.style.setProperty('display', 'flex', 'important');
 
+    // 2. 앱 인스턴스에 기도 시작 알림
     if (window.rosaryApp) {
-      if (typeof window.rosaryApp.startPrayer === 'function') {
-        window.rosaryApp.startPrayer(true);
-      } else if (typeof window.rosaryApp.goToStep === 'function') {
+      window.rosaryApp.currentView = 'prayer';
+      if (typeof window.rosaryApp.clearProgress === 'function') {
+        window.rosaryApp.clearProgress();
+      }
+      if (typeof window.rosaryApp.buildCurrentSteps === 'function') {
+        window.rosaryApp.steps = window.rosaryApp.buildCurrentSteps();
+      }
+      if (typeof window.rosaryApp.renderDecadeProgressPills === 'function') {
+        window.rosaryApp.renderDecadeProgressPills();
+      }
+      if (typeof window.rosaryApp.goToStep === 'function') {
         window.rosaryApp.goToStep(0, true);
       }
     }
   } catch(e) {
-    console.error('directStartPrayerAction fallback error:', e);
+    console.error('directStartPrayerAction error:', e);
+    var iv = document.getElementById('introView');
+    var pv = document.getElementById('prayerView');
+    if (iv) iv.style.display = 'none';
+    if (pv) pv.style.display = 'flex';
   }
 }
 </script>
