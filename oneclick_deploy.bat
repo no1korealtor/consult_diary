@@ -1,3 +1,3 @@
 @echo off
-python deploy_unblock_touch.py
+python rollback_working.py
 pause
