@@ -11320,5 +11320,16 @@ document.addEventListener('click', function(e) {
 });
 </script>
 
+
+<script>
+// 모달 배경 클릭 시 100% 즉시 닫기
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-backdrop')) {
+    e.target.classList.remove('show');
+    e.target.style.setProperty('display', 'none', 'important');
+  }
+});
+</script>
+
 </body>
 </html>
