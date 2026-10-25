@@ -4149,12 +4149,12 @@ input:checked + .toggle-slider:before {
   height: 100vh !important;
   height: 100dvh !important;
   background: radial-gradient(circle at center, #1b2845 0%, #080c14 100%) !important;
-  z-index: 999999 !important;
+  z-index: 999 !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   opacity: 0 !important;
-  pointer-events: none !important;
+  
   transition: opacity 0.35s ease !important;
 }
 
@@ -4172,6 +4172,28 @@ input:checked + .toggle-slider:before {
   0% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(243, 198, 105, 0.5)); }
   50% { transform: scale(1.04); filter: drop-shadow(0 0 28px rgba(243, 198, 105, 0.85)); }
   100% { transform: scale(1); filter: drop-shadow(0 0 15px rgba(243, 198, 105, 0.5)); }
+}
+</style>
+
+
+<style>
+/* 터치 차단 방지: 모든 모달과 오버레이는 비활성 시 클릭 통과 */
+.modal-backdrop:not(.show),
+#crucifixKissOverlay:not(.active),
+.crucifix-kiss-overlay:not(.active) {
+  display: none !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+#app, .intro-view, .prayer-view {
+  pointer-events: auto !important;
+  touch-action: manipulation !important;
+}
+
+button, a, .mystery-select-card, .day-card {
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
 </style>
 
