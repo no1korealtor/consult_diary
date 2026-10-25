@@ -1,3 +1,3 @@
 @echo off
-python deploy_center_modal.py
+python deploy_top_resume.py
 pause
