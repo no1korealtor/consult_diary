@@ -1,3 +1,3 @@
 @echo off
-python bundle_and_deploy_direct.py
+python eradicate_img.py
 pause
