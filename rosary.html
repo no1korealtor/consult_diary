@@ -5016,7 +5016,7 @@ html, body, #app, .intro-view, .prayer-view, button, a {
         <div class="tracker-header-box">
           <div class="tracker-title-row">
             <h3 id="trackerModalTitle" class="sheet-title" style="margin: 0; text-align: left;">🕊️ 주간 묵주기도 기록</h3>
-            <button id="closeTrackerBtn" class="tracker-close-btn" aria-label="닫기">✕</button>
+            <button id="closeTrackerBtn" class="tracker-close-btn" onclick="var m=document.getElementById('trackerModal');if(m){m.classList.remove('show');m.style.display='none';}" aria-label="닫기">✕</button>
           </div>
           
           <div class="week-nav-bar">
@@ -11196,9 +11196,9 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 })();
 </script>
-<script>
 
-// [전역 원터치 언어 전환 함수]
+<script>
+// [원터치 언어 전환]
 function toggleGlobalLanguage() {
   try {
     var cur = (window.rosaryApp && window.rosaryApp.settings) ? (window.rosaryApp.settings.lang || 'ko') : (localStorage.getItem('rosary_prayer_lang') || 'ko');
@@ -11210,13 +11210,9 @@ function toggleGlobalLanguage() {
       localStorage.setItem('rosary_prayer_lang', next);
     }
     
-    // 버튼 텍스트 즉시 변경
     var btn = document.getElementById('btnHeaderLangToggle');
-    if (btn) {
-      btn.textContent = (next === 'en') ? '🌐 한' : '🌐 EN';
-    }
+    if (btn) btn.textContent = (next === 'en') ? '🌐 한' : '🌐 EN';
     
-    // 화면 내 주요 텍스트 즉시 반영
     var title = document.getElementById('introHeroTitle');
     var startBtnTxt = document.getElementById('btnStartPrayerText');
     if (next === 'en') {
@@ -11231,32 +11227,44 @@ function toggleGlobalLanguage() {
   }
 }
 
-</script>
-<script>
-
-function openSettingsDirect() {
-  const m = document.getElementById('settingsModal');
-  if (m) {
-    m.classList.add('show');
-    m.style.display = 'flex';
-  }
-}
-function closeSettingsDirect() {
-  const m = document.getElementById('settingsModal');
-  if (m) {
+function closeAllModalsDirect() {
+  document.querySelectorAll('.modal-backdrop').forEach(function(m) {
     m.classList.remove('show');
     m.style.display = 'none';
+  });
+}
+
+function openSettingsDirect() {
+  try {
+    closeAllModalsDirect();
+    var m = document.getElementById('settingsModal');
+    if (m) {
+      m.classList.add('show');
+      m.style.setProperty('display', 'flex', 'important');
+      m.style.setProperty('opacity', '1', 'important');
+      m.style.setProperty('pointer-events', 'auto', 'important');
+      m.style.setProperty('z-index', '99999', 'important');
+      var s = m.querySelector('.bottom-sheet');
+      if (s) {
+        s.style.setProperty('transform', 'translateY(0)', 'important');
+      }
+    }
+  } catch(e) {
+    console.error('openSettingsDirect error:', e);
   }
 }
 
-</script>
+function closeSettingsDirect() {
+  var m = document.getElementById('settingsModal');
+  if (m) {
+    m.classList.remove('show');
+    m.style.setProperty('display', 'none', 'important');
+  }
+}
 
-
-<script>
-// [초강력 즉시 실행] 묵주기도 시작 및 뷰 전환 직통 함수
 function directStartPrayerAction() {
   try {
-    // 1. 만약 앱 인스턴스가 존재하면 공식 핸들러 실행
+    closeAllModalsDirect();
     if (window.rosaryApp && typeof window.rosaryApp.handleStartPrayerRequest === 'function') {
       window.rosaryApp.handleStartPrayerRequest();
       return;
@@ -11265,7 +11273,6 @@ function directStartPrayerAction() {
     console.warn('rosaryApp handler warning:', err);
   }
 
-  // 2. 만약 앱 인스턴스에서 에러가 나거나 로딩 중이면 즉시 기도 화면(prayerView)으로 직통 진입
   try {
     var iv = document.getElementById('introView');
     var pv = document.getElementById('prayerView');
@@ -11283,14 +11290,9 @@ function directStartPrayerAction() {
     }
   } catch(e) {
     console.error('directStartPrayerAction fallback error:', e);
-    var iv = document.getElementById('introView');
-    var pv = document.getElementById('prayerView');
-    if (iv) iv.style.display = 'none';
-    if (pv) pv.style.display = 'flex';
   }
 }
 </script>
-
 
 </body>
 </html>
