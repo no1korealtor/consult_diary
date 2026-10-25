@@ -4091,6 +4091,37 @@ input:checked + .toggle-slider:before {
 }
 
 </style>
+
+<style>
+/* [터치 완전 보장] 모달이 닫혀 있을 때는 화면 전체 터치를 절대 막지 않음 */
+.modal-backdrop {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.modal-backdrop.show {
+  display: flex !important;
+  pointer-events: auto !important;
+}
+
+#crucifixKissOverlay {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+#crucifixKissOverlay.active {
+  display: flex !important;
+  pointer-events: auto !important;
+}
+
+/* 터치 반응 속도 극대화 */
+html, body, #app, .intro-view, .prayer-view, button, a {
+  touch-action: manipulation !important;
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+</style>
+
 </head>
 <body>
 <script>

@@ -1,3 +1,3 @@
 @echo off
-python rollback_working.py
+python destroy_touch_barrier.py
 pause
