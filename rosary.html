@@ -4871,7 +4871,134 @@ html, body, #app, .intro-view, .prayer-view, button, a {
     </div>
 
     <!-- 7. 신비 선택 모달 바텀시트 -->
-    <div id="mysteryModal" class="modal-backdrop">
+    
+    <!-- 8. 설정 모달 바텀시트 -->
+    <div id="settingsModal" class="modal-backdrop">
+      <div class="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title-row" style="display: flex; align-items: center; justify-content: space-between;">
+          <h3 class="sheet-title" style="margin: 0;">설정</h3>
+          <button type="button" id="closeSettingsBtn" class="tracker-close-btn" onclick="directCloseSettings();" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="settings-content" style="max-height: 70vh; overflow-y: auto;">
+          <!-- 글자 크기 -->
+          <div class="setting-row">
+            <span class="setting-label">글자 크기</span>
+            <div class="font-size-controls">
+              <button type="button" id="fontSmallerBtn" class="font-btn">가-</button>
+              <button type="button" id="fontBiggerBtn" class="font-btn">가+</button>
+            </div>
+          </div>
+
+          <!-- 기도 소리 (종소리) -->
+          <div class="setting-row">
+            <span class="setting-label">기도 알림 소리 (종소리)</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="soundToggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <!-- 진동 (햅틱) 피드백 -->
+          <div class="setting-row">
+            <span class="setting-label">진동 피드백</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="hapticToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <!-- 구원을 비는 기도 (구원송) -->
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">구원을 비는 기도 (구원송)</div>
+              <small style="color: var(--text-muted); font-size: 0.74rem;">각 단 영광송 뒤에 바침</small>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="settingsFatimaToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <!-- 장미 꽃피움 연출 효과 -->
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">성모송 장미 꽃피움 연출</div>
+              <small style="color: var(--text-muted); font-size: 0.74rem;">성모송마다 피어나는 은총의 장미</small>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="roseBloomToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <!-- 묵주알 모양 -->
+          <div class="setting-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+            <span class="setting-label">묵주알 모양 선택</span>
+            <div style="display: flex; gap: 8px; width: 100%;">
+              <button type="button" id="btnStyleWood" class="action-pill-btn active" style="flex: 1; height: 36px; font-size: 0.8rem;">원목 묵주</button>
+              <button type="button" id="btnStyleRose" class="action-pill-btn" style="flex: 1; height: 36px; font-size: 0.8rem;">장미 화관</button>
+              <button type="button" id="btnStyleClassic" class="action-pill-btn" style="flex: 1; height: 36px; font-size: 0.8rem;">원형 알</button>
+            </div>
+          </div>
+
+          <!-- 기도 언어 -->
+          <div class="setting-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+            <span class="setting-label">기도 언어 (Language)</span>
+            <div style="display: flex; gap: 8px; width: 100%;">
+              <button type="button" id="btnLangKo" class="action-pill-btn active" style="flex: 1; height: 36px; font-size: 0.8rem;">한국어</button>
+              <button type="button" id="btnLangEn" class="action-pill-btn" style="flex: 1; height: 36px; font-size: 0.8rem;">English</button>
+            </div>
+          </div>
+
+          <!-- 기도 기록 백업 및 복원 -->
+          <div class="setting-row" style="padding-top: 14px;">
+            <div>
+              <div class="setting-label">💾 기도 기록 백업 및 복원</div>
+              <small style="color: var(--text-muted); font-size: 0.74rem;">소중한 기도 기록을 안전하게 보관</small>
+            </div>
+            <button type="button" id="btnSettingsOpenBackup" class="action-pill-btn gold" style="height: 32px; font-size: 0.78rem; padding: 0 12px;">백업/복원</button>
+          </div>
+
+          <!-- 바로가기 추가 안내 -->
+          <div class="setting-row">
+            <div>
+              <div class="setting-label">📲 바탕화면에 바로가기 추가</div>
+              <small style="color: var(--text-muted); font-size: 0.74rem;">홈 화면에서 바로 실행</small>
+            </div>
+            <button type="button" id="btnSettingsInstall" class="action-pill-btn" style="height: 32px; font-size: 0.78rem; padding: 0 12px;">안내</button>
+          </div>
+
+          <!-- 기도의 유래와 은총 -->
+          <div class="setting-row">
+            <div>
+              <div id="settingHistoryLabel" class="setting-label">📖 기도의 유래와 은총</div>
+              <small id="settingHistorySub" style="color: var(--text-muted); font-size: 0.74rem;">묵주기도 및 자비의 기도 역사와 약속된 은총</small>
+            </div>
+            <button type="button" id="btnSettingsOpenHistory" class="action-pill-btn" style="height: 32px; font-size: 0.78rem; padding: 0 12px;">보기</button>
+          </div>
+
+          <!-- 개발자 응원하기 -->
+          <div class="setting-row">
+            <div>
+              <div id="settingDonationLabel" class="setting-label">☕ 따뜻한 차 한 잔 후원하기</div>
+              <small id="settingDonationSub" style="color: var(--text-muted); font-size: 0.74rem;">광고 없는 무료 기도 앱 개발자 응원하기</small>
+            </div>
+            <button type="button" id="btnSettingsOpenDonation" class="action-pill-btn gold" style="height: 32px; font-size: 0.78rem; padding: 0 12px;">응원하기</button>
+          </div>
+
+          <div style="margin-top: 14px;">
+            <button type="button" onclick="directCloseSettings();" class="action-pill-btn" style="width: 100%; height: 42px; font-size: 0.9rem;">
+              닫기
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+<div id="mysteryModal" class="modal-backdrop">
       <div class="bottom-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-title">묵주기도 신비 선택</div>
@@ -11074,15 +11201,30 @@ window.addEventListener('DOMContentLoaded', () => {
 // [전역 원터치 언어 전환 함수]
 function toggleGlobalLanguage() {
   try {
-    if (!window.rosaryApp) return;
-    const cur = window.rosaryApp.settings.lang || 'ko';
-    const next = (cur === 'en') ? 'ko' : 'en';
-    window.rosaryApp.setLanguage(next);
+    var cur = (window.rosaryApp && window.rosaryApp.settings) ? (window.rosaryApp.settings.lang || 'ko') : (localStorage.getItem('rosary_prayer_lang') || 'ko');
+    var next = (cur === 'en') ? 'ko' : 'en';
     
-    // 버튼 텍스트 변경
-    const btn = document.getElementById('btnHeaderLangToggle');
+    if (window.rosaryApp && typeof window.rosaryApp.setLanguage === 'function') {
+      window.rosaryApp.setLanguage(next);
+    } else {
+      localStorage.setItem('rosary_prayer_lang', next);
+    }
+    
+    // 버튼 텍스트 즉시 변경
+    var btn = document.getElementById('btnHeaderLangToggle');
     if (btn) {
       btn.textContent = (next === 'en') ? '🌐 한' : '🌐 EN';
+    }
+    
+    // 화면 내 주요 텍스트 즉시 반영
+    var title = document.getElementById('introHeroTitle');
+    var startBtnTxt = document.getElementById('btnStartPrayerText');
+    if (next === 'en') {
+      if (title) title.textContent = 'The Holy Rosary';
+      if (startBtnTxt) startBtnTxt.textContent = 'Start Holy Rosary';
+    } else {
+      if (title) title.textContent = '거룩한 묵주기도';
+      if (startBtnTxt) startBtnTxt.textContent = '묵주기도 시작하기';
     }
   } catch(e) {
     console.error('toggleGlobalLanguage error:', e);
@@ -11109,58 +11251,46 @@ function closeSettingsDirect() {
 
 </script>
 
+
 <script>
-// [100% 보장] 묵주기도 시작 및 설정 열기 직통 함수
+// [초강력 즉시 실행] 묵주기도 시작 및 뷰 전환 직통 함수
 function directStartPrayerAction() {
   try {
-    if (window.rosaryApp) {
+    // 1. 만약 앱 인스턴스가 존재하면 공식 핸들러 실행
+    if (window.rosaryApp && typeof window.rosaryApp.handleStartPrayerRequest === 'function') {
       window.rosaryApp.handleStartPrayerRequest();
-    } else {
-      var iv = document.getElementById('introView');
-      var pv = document.getElementById('prayerView');
-      if (iv) iv.style.display = 'none';
-      if (pv) pv.style.display = 'flex';
+      return;
     }
   } catch(err) {
-    console.error('directStartPrayerAction fallback:', err);
+    console.warn('rosaryApp handler warning:', err);
+  }
+
+  // 2. 만약 앱 인스턴스에서 에러가 나거나 로딩 중이면 즉시 기도 화면(prayerView)으로 직통 진입
+  try {
+    var iv = document.getElementById('introView');
+    var pv = document.getElementById('prayerView');
+    var yv = document.getElementById('yeondoView');
+    if (iv) iv.style.setProperty('display', 'none', 'important');
+    if (yv) yv.style.setProperty('display', 'none', 'important');
+    if (pv) pv.style.setProperty('display', 'flex', 'important');
+
+    if (window.rosaryApp) {
+      if (typeof window.rosaryApp.startPrayer === 'function') {
+        window.rosaryApp.startPrayer(true);
+      } else if (typeof window.rosaryApp.goToStep === 'function') {
+        window.rosaryApp.goToStep(0, true);
+      }
+    }
+  } catch(e) {
+    console.error('directStartPrayerAction fallback error:', e);
     var iv = document.getElementById('introView');
     var pv = document.getElementById('prayerView');
     if (iv) iv.style.display = 'none';
     if (pv) pv.style.display = 'flex';
   }
 }
-
-function directOpenSettings() {
-  try {
-    var m = document.getElementById('settingsModal');
-    if (m) {
-      m.classList.add('show');
-      m.style.setProperty('display', 'flex', 'important');
-      m.style.setProperty('pointer-events', 'auto', 'important');
-      m.style.setProperty('opacity', '1', 'important');
-      m.style.setProperty('visibility', 'visible', 'important');
-      var s = m.querySelector('.bottom-sheet');
-      if (s) {
-        s.style.setProperty('transform', 'translateY(0)', 'important');
-        s.style.setProperty('opacity', '1', 'important');
-        s.style.setProperty('visibility', 'visible', 'important');
-      }
-    }
-  } catch(err) {
-    console.error('directOpenSettings error:', err);
-  }
-}
-
-function directCloseSettings() {
-  try {
-    var m = document.getElementById('settingsModal');
-    if (m) {
-      m.classList.remove('show');
-      m.style.setProperty('display', 'none', 'important');
-    }
-  } catch(err){}
-}
 </script>
+
 
 </body>
 </html>
