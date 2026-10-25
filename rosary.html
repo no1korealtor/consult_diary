@@ -4695,7 +4695,7 @@ try {
 
       <!-- 플로팅 하단 메인 기도 시작 CTA 버튼 -->
       <footer class="intro-bottom-bar">
-        <button type="button" id="btnStartPrayer" class="intro-main-start-btn">
+        <button type="button" id="btnStartPrayer" class="intro-main-start-btn" onclick="if(window.rosaryApp){window.rosaryApp.handleStartPrayerRequest();}">
           <span class="start-rose-icon">🌹</span>
           <span id="btnStartPrayerText">묵주기도 시작하기</span>
           <span class="start-arrow">❯</span>

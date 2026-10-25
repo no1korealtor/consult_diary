@@ -1,3 +1,3 @@
 @echo off
-python deploy_cache_wipe.py
+python deploy_start_prayer_fix.py
 pause
