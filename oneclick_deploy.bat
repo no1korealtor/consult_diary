@@ -1,3 +1,3 @@
 @echo off
-python deploy_absolute.py
+python deploy_intention.py
 pause
