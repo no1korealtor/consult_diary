@@ -1,3 +1,3 @@
 @echo off
-python destroy_touch_barrier.py
+python deploy_v100_complete.py
 pause
