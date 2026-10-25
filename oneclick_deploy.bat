@@ -1,3 +1,3 @@
 @echo off
-python eradicate_img.py
+python deploy_cache_wipe.py
 pause
