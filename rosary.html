@@ -4091,6 +4091,12 @@ input:checked + .toggle-slider:before {
 }
 
 </style>
+
+<style>
+#resumeConfirmModal { z-index: 10000 !important; }
+#crucifixKissOverlay { z-index: 9999 !important; }
+</style>
+
 </head>
 <body>
 
@@ -7092,8 +7098,7 @@ class RosaryApp {
   }
 
   saveProgress() {
-    // 기도 화면에 머물고 있을 때만 저장하며, 0단계(기도 시작 전)이거나 인트로 화면일 때는 이전 상태를 덮어쓰지 않음
-    if (this.currentView !== "prayer") return;
+    // 0단계 시작 전이더라도 인덱스가 0보다 크면 항상 안전하게 저장
     if (this.currentIndex <= 0) return;
 
     const cur = this.steps[this.currentIndex];
@@ -7371,11 +7376,14 @@ class RosaryApp {
   }
 
   showCrucifixKissOverlay(onComplete) {
-    const overlay = this.dom.crucifixKissOverlay;
+    const overlay = this.dom.crucifixKissOverlay || document.getElementById("crucifixKissOverlay");
     if (!overlay) {
       if (onComplete) onComplete();
       return;
     }
+    overlay.style.display = "flex";
+    overlay.classList.remove("kissed");
+    overlay.classList.add("active");
 
     // 언어 설정 반영
     const isEn = this.settings.lang === "en";

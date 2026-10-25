@@ -1,3 +1,3 @@
 @echo off
-python deploy_v2_purge.py
+python deploy_kiss_and_resume.py
 pause
