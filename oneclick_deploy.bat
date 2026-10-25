@@ -1,3 +1,3 @@
 @echo off
-python deploy_failsafe_actions.py
+python clean_syntax_and_deploy.py
 pause
