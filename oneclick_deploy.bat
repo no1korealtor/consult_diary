@@ -1,3 +1,3 @@
 @echo off
-python deploy_top_resume.py
+python deploy_kiss_fix.py
 pause
