@@ -1,3 +1,3 @@
 @echo off
-python deploy_intention.py
+python deploy_visible_card.py
 pause
