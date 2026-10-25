@@ -4093,6 +4093,19 @@ input:checked + .toggle-slider:before {
 </style>
 </head>
 <body>
+
+<script>
+// [버전 업데이트] 기존 예시 42명 샘플 지향 자동 정리 -> 정직한 초기 상태(0명/대기상태)로 전환
+try {
+  const cur = localStorage.getItem('rosary_community_intention_v1');
+  if (cur && cur.includes('int_sample_01')) {
+    localStorage.removeItem('rosary_community_intention_v1');
+    localStorage.removeItem('rosary_joined_intention_id_v1');
+  }
+} catch(e){}
+</script>
+
+
 <script>
 (function() {
   function fix() {

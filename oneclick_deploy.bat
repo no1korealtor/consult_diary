@@ -1,3 +1,3 @@
 @echo off
-python deploy_honest_zero.py
+python deploy_clear_sample.py
 pause
