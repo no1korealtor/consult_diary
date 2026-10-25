@@ -4097,6 +4097,44 @@ input:checked + .toggle-slider:before {
 #crucifixKissOverlay { z-index: 9999 !important; }
 </style>
 
+
+<style>
+/* 이어하기 확인 모달: 화면 중앙에 또렷하고 단정하게 즉시 나타나도록 완벽 스타일링 */
+#resumeConfirmModal.show {
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#resumeConfirmModal .bottom-sheet {
+  position: relative !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: 90% !important;
+  max-width: 380px !important;
+  margin: auto !important;
+  border-radius: 20px !important;
+  transform: scale(1) translateY(0) !important;
+  opacity: 1 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(243, 198, 105, 0.3) !important;
+  animation: popInModal 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+
+@keyframes popInModal {
+  0% { transform: scale(0.92) translateY(20px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* 십자가 친구 성화 오버레이가 정상적으로 나타나도록 스타일 보장 */
+#crucifixKissOverlay.active {
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+</style>
+
 </head>
 <body>
 

@@ -1,3 +1,3 @@
 @echo off
-python deploy_kiss_and_resume.py
+python deploy_center_modal.py
 pause
