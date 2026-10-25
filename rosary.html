@@ -4311,6 +4311,27 @@ html, body, #app, .intro-view, .prayer-view, button, a {
     </defs>
   </svg>
 
+  
+<script>
+// [시작 시 화면 가림 방지] 모든 모달 초기화
+(function() {
+  function hideAllModalsOnStart() {
+    document.querySelectorAll('.modal-backdrop').forEach(function(m) {
+      m.classList.remove('show');
+      m.style.display = 'none';
+    });
+    var ck = document.getElementById('crucifixKissOverlay');
+    if (ck) {
+      ck.classList.remove('show');
+      ck.style.display = 'none';
+    }
+  }
+  hideAllModalsOnStart();
+  document.addEventListener('DOMContentLoaded', hideAllModalsOnStart);
+  window.addEventListener('load', hideAllModalsOnStart);
+})();
+</script>
+
   <div id="app">
 
     <!-- ==============================================
@@ -4873,7 +4894,7 @@ html, body, #app, .intro-view, .prayer-view, button, a {
     <!-- 7. 신비 선택 모달 바텀시트 -->
     
     <!-- 8. 설정 모달 바텀시트 -->
-    <div id="settingsModal" class="modal-backdrop">
+    <div id="settingsModal" class="modal-backdrop" style="display: none;">
       <div class="bottom-sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-title-row" style="display: flex; align-items: center; justify-content: space-between;">
@@ -5009,7 +5030,7 @@ html, body, #app, .intro-view, .prayer-view, button, a {
     </div>
 
     <!-- 9. 주간 기도 기록 모달 바텀시트 -->
-    <div id="trackerModal" class="modal-backdrop">
+    <div id="trackerModal" class="modal-backdrop" style="display: none !important;" style="display: none;">
       <div class="bottom-sheet tracker-sheet">
         <div class="sheet-handle"></div>
         
