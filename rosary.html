@@ -4327,10 +4327,10 @@ html, body, #app, .intro-view, .prayer-view, button, a {
           <button id="btnHeaderLangToggle" type="button" class="action-pill-btn" onclick="toggleGlobalLanguage();" style="height: 32px; padding: 0 10px; font-size: 0.78rem; font-weight: 700; margin-right: 4px; background: rgba(243, 198, 105, 0.12); border: 1px solid rgba(243, 198, 105, 0.35); color: var(--gold-primary); border-radius: 16px;">
             🌐 EN
           </button>
-          <button id="btnIntroYeondoQuick" class="icon-btn yeondo-quick-header-btn" aria-label="연도 및 조문 예절" title="연도 및 조문 예절">
+          <button id="btnIntroYeondoQuick" class="icon-btn yeondo-quick-header-btn" onclick="if(window.rosaryApp){window.rosaryApp.switchView('yeondo');}else{var iv=document.getElementById('introView');var yv=document.getElementById('yeondoView');if(iv)iv.style.display='none';if(yv)yv.style.display='flex';}" aria-label="연도 및 조문 예절" title="연도 및 조문 예절">
             <span style="font-size: 1.05rem;">🕯️</span>
           </button>
-          <button id="btnIntroTracker" class="icon-btn" aria-label="주간 기도 기록" title="주간 기도 기록">
+          <button id="btnIntroTracker" class="icon-btn" onclick="if(window.rosaryApp){window.rosaryApp.trackerWeekOffset=0;window.rosaryApp.selectedTrackerDate=window.rosaryApp.getTodayStr();window.rosaryApp.renderWeeklyTracker();}var m=document.getElementById('trackerModal');if(m)m.classList.add('show');" aria-label="주간 기도 기록" title="주간 기도 기록">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="16" y1="2" x2="16" y2="6"></line>
@@ -4338,7 +4338,7 @@ html, body, #app, .intro-view, .prayer-view, button, a {
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
           </button>
-          <button id="btnIntroSettings" class="icon-btn" aria-label="설정" title="설정">
+          <button id="btnIntroSettings" class="icon-btn" onclick="directOpenSettings();" aria-label="설정" title="설정">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -4649,7 +4649,7 @@ html, body, #app, .intro-view, .prayer-view, button, a {
 
       <!-- 플로팅 하단 메인 기도 시작 CTA 버튼 -->
       <footer class="intro-bottom-bar">
-        <button type="button" id="btnStartPrayer" class="intro-main-start-btn">
+        <button type="button" id="btnStartPrayer" class="intro-main-start-btn" onclick="directStartPrayerAction();">
           <span class="start-rose-icon">🌹</span>
           <span id="btnStartPrayerText">묵주기도 시작하기</span>
           <span class="start-arrow">❯</span>
