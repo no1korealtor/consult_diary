@@ -9329,14 +9329,13 @@ showCrucifixKissOverlay(onComplete) {
       });
     }
 
-    // 0-5) 인트로 메인 '기도 시작하기' 버튼 클릭 -> 이어할 기록이 있으면 확인 모달, 없으면 시작
+    // 0-5) 인트로 메인 '기도 시작하기'는 directStartPrayerAction() 인라인 핸들러에서 100% 보장 처리
     if (this.dom.btnStartPrayer) {
-      const handleStart = (e) => {
-        if (e && e.cancelable) e.preventDefault();
-        this.handleStartPrayerRequest();
+      this.dom.btnStartPrayer.onclick = function(e) {
+        if (typeof directStartPrayerAction === 'function') {
+          directStartPrayerAction();
+        }
       };
-      this.dom.btnStartPrayer.addEventListener("click", handleStart);
-      this.dom.btnStartPrayer.addEventListener("touchend", handleStart);
     }
 
     // 0-5-1) 이어하기 덮어쓰기 확인 모달 버튼 이벤트
@@ -11297,6 +11296,17 @@ function directStartPrayerAction() {
     if (pv) pv.style.display = 'flex';
   }
 }
+</script>
+
+
+<script>
+// 모달 배경 클릭 시 100% 즉시 닫기
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('modal-backdrop')) {
+    e.target.classList.remove('show');
+    e.target.style.setProperty('display', 'none', 'important');
+  }
+});
 </script>
 
 
