@@ -1,3 +1,3 @@
 @echo off
-python deploy_kiss_fix.py
+python bundle_and_deploy_direct.py
 pause
