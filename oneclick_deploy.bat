@@ -1,3 +1,3 @@
 @echo off
-python deploy_v100_complete.py
+python deploy_cut_lang.py
 pause
