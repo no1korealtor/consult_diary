@@ -5387,7 +5387,7 @@ html, body, #app, .intro-view, .prayer-view, button, a {
             <span class="crucifix-touch-icon">✨</span>
             <span class="crucifix-touch-text">십자가를 터치하여 친구하고 기도를 시작하세요</span>
           </div>
-          <button type="button" id="btnCrucifixSkip" class="crucifix-skip-btn">
+          <button type="button" id="btnCrucifixSkip" onclick="var o=document.getElementById('crucifixKissOverlay');if(o){o.classList.remove('active');o.style.display='none';}if(window.rosaryApp){window.rosaryApp.switchView('prayer');window.rosaryApp.goToStep(0,true);}" class="crucifix-skip-btn">
             건너뛰고 바로 시작
           </button>
         </div>
@@ -11217,5 +11217,59 @@ function closeSettingsDirect() {
 }
 
 </script>
+
+<script>
+// [100% 보장] 묵주기도 시작 및 설정 열기 직통 함수
+function directStartPrayerAction() {
+  try {
+    if (window.rosaryApp) {
+      window.rosaryApp.handleStartPrayerRequest();
+    } else {
+      var iv = document.getElementById('introView');
+      var pv = document.getElementById('prayerView');
+      if (iv) iv.style.display = 'none';
+      if (pv) pv.style.display = 'flex';
+    }
+  } catch(err) {
+    console.error('directStartPrayerAction fallback:', err);
+    var iv = document.getElementById('introView');
+    var pv = document.getElementById('prayerView');
+    if (iv) iv.style.display = 'none';
+    if (pv) pv.style.display = 'flex';
+  }
+}
+
+function directOpenSettings() {
+  try {
+    var m = document.getElementById('settingsModal');
+    if (m) {
+      m.classList.add('show');
+      m.style.setProperty('display', 'flex', 'important');
+      m.style.setProperty('pointer-events', 'auto', 'important');
+      m.style.setProperty('opacity', '1', 'important');
+      m.style.setProperty('visibility', 'visible', 'important');
+      var s = m.querySelector('.bottom-sheet');
+      if (s) {
+        s.style.setProperty('transform', 'translateY(0)', 'important');
+        s.style.setProperty('opacity', '1', 'important');
+        s.style.setProperty('visibility', 'visible', 'important');
+      }
+    }
+  } catch(err) {
+    console.error('directOpenSettings error:', err);
+  }
+}
+
+function directCloseSettings() {
+  try {
+    var m = document.getElementById('settingsModal');
+    if (m) {
+      m.classList.remove('show');
+      m.style.setProperty('display', 'none', 'important');
+    }
+  } catch(err){}
+}
+</script>
+
 </body>
 </html>

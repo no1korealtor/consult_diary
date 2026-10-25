@@ -1,3 +1,3 @@
 @echo off
-python deploy_settings_lang_fix.py
+python deploy_failsafe_actions.py
 pause
