@@ -4699,7 +4699,7 @@ input:focus, textarea:focus {
 
       <!-- 플로팅 하단 메인 기도 시작 CTA 버튼 -->
       <footer class="intro-bottom-bar">
-        <button type="button" id="btnStartPrayer" class="intro-main-start-btn" onclick="if(window.rosaryApp){window.rosaryApp.startPrayer(false);}else{directStartPrayerAction();}" style="position:relative; z-index:100; cursor:pointer;">
+        <button type="button" id="btnStartPrayer" class="intro-main-start-btn" onclick="if(window.rosaryApp){window.rosaryApp.handleStartPrayerRequest();}else{directStartPrayerAction();}" style="position:relative; z-index:100; cursor:pointer;">
           <span class="start-rose-icon">🌹</span>
           <span id="btnStartPrayerText">묵주기도 시작하기</span>
           <span class="start-arrow">❯</span>
@@ -5508,27 +5508,48 @@ input:focus, textarea:focus {
             </div>
             <div id="adminCommList" class="admin-comm-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 220px; overflow-y: auto;">
               <!-- 자바스크립트로 단체 목록 렌더링 -->
-            </div>
-
-            <!-- [NEW] 등록된 교우 기도 지향 관리 및 삭제 -->
-            <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed rgba(243, 198, 105, 0.25);">
-              <div style="font-size: 0.82rem; color: #FCA5A5; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-                <span>🕊️ 교우 기도 지향 관리</span>
-                <span id="adminIntentionStatusBadge" style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--text-secondary);">확인중</span>
-              </div>
-              <div id="adminIntentionBox" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-sm); padding: 12px; font-size: 0.82rem;">
-                <div id="adminIntentionContent" style="color: var(--text-primary); line-height: 1.5; margin-bottom: 8px; word-break: break-all;">
-                  현재 등록된 지향이 없습니다.
-                </div>
-                <div id="adminIntentionMeta" style="font-size: 0.74rem; color: var(--text-secondary); margin-bottom: 10px; display: flex; justify-content: space-between;">
-                  <span id="adminIntentionAuthor">-</span>
-                  <span id="adminIntentionCount">함께 기도 0명</span>
-                </div>
-                <button type="button" id="btnAdminDeleteIntention" class="action-pill-btn" style="width: 100%; height: 36px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #FCA5A5; font-size: 0.8rem; font-weight: 700;">
-                  🗑️ 부적절한 지향 즉시 삭제
-                </button>
-              </div>
-            </div>
+            </div>
+
+
+
+            <!-- [NEW] 등록된 교우 기도 지향 관리 및 삭제 -->
+
+            <div style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed rgba(243, 198, 105, 0.25);">
+
+              <div style="font-size: 0.82rem; color: #FCA5A5; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+
+                <span>🕊️ 교우 기도 지향 관리</span>
+
+                <span id="adminIntentionStatusBadge" style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.1); color: var(--text-secondary);">확인중</span>
+
+              </div>
+
+              <div id="adminIntentionBox" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-sm); padding: 12px; font-size: 0.82rem;">
+
+                <div id="adminIntentionContent" style="color: var(--text-primary); line-height: 1.5; margin-bottom: 8px; word-break: break-all;">
+
+                  현재 등록된 지향이 없습니다.
+
+                </div>
+
+                <div id="adminIntentionMeta" style="font-size: 0.74rem; color: var(--text-secondary); margin-bottom: 10px; display: flex; justify-content: space-between;">
+
+                  <span id="adminIntentionAuthor">-</span>
+
+                  <span id="adminIntentionCount">함께 기도 0명</span>
+
+                </div>
+
+                <button type="button" id="btnAdminDeleteIntention" class="action-pill-btn" style="width: 100%; height: 36px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #FCA5A5; font-size: 0.8rem; font-weight: 700;">
+
+                  🗑️ 부적절한 지향 즉시 삭제
+
+                </button>
+
+              </div>
+
+            </div>
+
           </div>
           <button type="button" id="btnDismissAdminModal" class="action-pill-btn" style="width: 100%; margin-top: 14px; height: 40px; font-size: 0.84rem;">
             닫기
@@ -6756,7 +6777,7 @@ class RosaryApp {
     this.sessionCompletedDecades = new Set();
 
     // 공동체 및 총 봉헌 단수 초기화
-    // this.initCommunityStats();
+    this.initCommunityStats();
 
     // 오늘 요일 신비
     this.todayMysteryKey = getTodayMysteryKey();
@@ -9436,10 +9457,8 @@ showCrucifixKissOverlay(onComplete) {
 
     // 0-5) 인트로 메인 '기도 시작하기'는 directStartPrayerAction() 인라인 핸들러에서 100% 보장 처리
     if (this.dom.btnStartPrayer) {
-      this.dom.btnStartPrayer.onclick = function(e) {
-        if (typeof directStartPrayerAction === 'function') {
-          directStartPrayerAction();
-        }
+      this.dom.btnStartPrayer.onclick = (e) => {
+        this.handleStartPrayerRequest();
       };
     }
 
