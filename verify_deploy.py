@@ -157,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ]
 
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=15)
+        proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)
         stdout = proc.stdout
     except Exception as e:
         print(f"❌ 브라우저 실행 중 예외 발생: {e}")
