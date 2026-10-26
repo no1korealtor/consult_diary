@@ -4157,6 +4157,26 @@ html, body, #app, .intro-view, .prayer-view, button, a {
   visibility: visible !important;
   transform: translateY(0) !important;
 }
+
+/* ===================================================
+   [입력 및 가상키보드 100% 활성화] 모든 input / textarea 터치 및 타이핑 보장
+   =================================================== */
+input, textarea, select, [contenteditable="true"] {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  touch-action: auto !important;
+  pointer-events: auto !important;
+  cursor: text !important;
+}
+
+input:focus, textarea:focus {
+  outline: none !important;
+  border-color: #F3C669 !important;
+  box-shadow: 0 0 12px rgba(243, 198, 105, 0.6) !important;
+}
+
 </style>
 
 </head>
@@ -5322,7 +5342,7 @@ html, body, #app, .intro-view, .prayer-view, button, a {
             전국의 교우들과 성모님 품에 함께 봉헌하고 싶은 지향을 1~2문장으로 정갈하게 남겨주세요.
           </p>
 
-          <textarea id="inputIntentionText" maxlength="120" placeholder="예: 가족의 건강과 냉담 중인 자녀의 평안을 위해 함께 묵주기도 부탁드립니다." style="width: 100%; height: 90px; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(243, 198, 105, 0.3); border-radius: 8px; color: #FFF; padding: 10px; font-size: 0.9rem; resize: none; box-sizing: border-box; font-family: inherit; margin-bottom: 10px;"></textarea>
+          <textarea id="inputIntentionText" maxlength="120" placeholder="예: 가족의 건강과 냉담 중인 자녀의 평안을 위해 함께 묵주기도 부탁드립니다." style="width: 100%; height: 90px; background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(243, 198, 105, 0.5); border-radius: 8px; color: #FFF; padding: 12px; font-size: 1rem; resize: none; box-sizing: border-box; font-family: inherit; margin-bottom: 10px; -webkit-user-select: text !important; user-select: text !important; pointer-events: auto !important; cursor: text !important;"></textarea>
           
           <div style="display: flex; gap: 8px; margin-bottom: 14px;">
             <input type="text" id="inputIntentionAuthor" maxlength="12" placeholder="작성자 (예: 익명, 마리아, 베드로)" style="flex: 1; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #FFF; padding: 8px 10px; font-size: 0.82rem; box-sizing: border-box; font-family: inherit;">
@@ -11521,6 +11541,38 @@ function directGoHome() {
     if (iv) iv.style.display = 'flex';
   }
 }
+</script>
+
+
+<script>
+// [바텀시트 내부 터치/포커스 격리] 시트 내부를 누를 때 백드롭 닫기나 포커스 해제 방지
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.bottom-sheet').forEach(function(sheet) {
+    sheet.addEventListener('click', function(e) {
+      e.stopPropagation();
+    });
+    sheet.addEventListener('touchstart', function(e) {
+      e.stopPropagation();
+    }, { passive: true });
+  });
+
+  // 기도 지향 텍스트 영역 터치 시 명시적 포커스 및 키보드 호출
+  const inputTxt = document.getElementById('inputIntentionText');
+  const inputAuthor = document.getElementById('inputIntentionAuthor');
+  
+  [inputTxt, inputAuthor].forEach(function(el) {
+    if (el) {
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        el.focus();
+      });
+      el.addEventListener('touchend', function(e) {
+        e.stopPropagation();
+        el.focus();
+      });
+    }
+  });
+});
 </script>
 
 </body>
