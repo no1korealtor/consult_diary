@@ -1,10 +1,37 @@
 @echo off
-chcp 65001 >nul
+setlocal
 cd /d "%~dp0"
-git add -A
-git commit -m "fix: resolve start prayer button navigation and ensure 50 decades history v147"
+
+echo ======================================================
+echo  Rosary App Safe Deployment Process
+echo ======================================================
+
+echo [1/3] Verifying code integrity and button actions...
+python verify_deploy.py
+if errorlevel 1 (
+    echo.
+    echo [ERROR] Verification failed! Deployment aborted.
+    echo.
+    pause
+    exit /b 1
+)
+
+echo.
+echo [2/3] Verification passed! Adding files to git...
+git add rosary.html verify_deploy.py push.bat
+git commit -m "feat: add sacred crucifix art to prayer card and deploy verification pipeline"
+
+echo.
+echo [3/3] Pushing to GitHub origin main...
 git push origin main
-echo ====================================
-echo SUCCESSFUL_GIT_PUSH_DONE_V147!
-echo ====================================
-pause
+if errorlevel 1 (
+    echo.
+    echo [ERROR] Git push failed.
+    pause
+    exit /b 1
+)
+
+echo.
+echo ======================================================
+echo  Deployment completed safely and successfully!
+echo ======================================================

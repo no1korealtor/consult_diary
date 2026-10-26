@@ -4111,9 +4111,13 @@ input:checked + .toggle-slider:before {
   pointer-events: none !important;
 }
 
-#crucifixKissOverlay.active {
+#crucifixKissOverlay.active,
+#crucifixKissOverlay.show {
   display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
   pointer-events: auto !important;
+  z-index: 99999 !important;
 }
 
 /* 터치 반응 속도 극대화 */
@@ -9108,6 +9112,24 @@ showCrucifixKissOverlay(onComplete) {
   applyStepData(step) {
     this.dom.cardBadge.textContent = `${step.section} · ${step.badge}`;
     this.dom.cardCounter.textContent = `${this.currentIndex + 1} / ${this.steps.length}`;
+    // [거룩한 십자가 고상 성화] 시작 기도(성호경 및 사도신경)에서 거룩한 십자가 성화 표시
+    let crucifixCardArt = document.getElementById("crucifixCardArtBox");
+    if (step.beadType === "cross" || step.beadType === "crucifix") {
+      if (!crucifixCardArt) {
+        crucifixCardArt = document.createElement("div");
+        crucifixCardArt.id = "crucifixCardArtBox";
+        crucifixCardArt.style.cssText = "margin: 12px auto 8px; text-align: center; width: 100%; max-width: 220px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.6); border: 2px solid rgba(243,198,105,0.45); background: #0c111d;";
+        const guideEl = this.dom.prayerGuideText;
+        if (guideEl && guideEl.parentNode) {
+          guideEl.parentNode.insertBefore(crucifixCardArt, guideEl.nextSibling);
+        }
+      }
+      crucifixCardArt.style.display = "block";
+      crucifixCardArt.innerHTML = this.getSacredArtSvgForMystery(this.currentMysteryKey);
+    } else {
+      if (crucifixCardArt) crucifixCardArt.style.display = "none";
+    }
+
 
     // 신비 묵상 및 성경 구절 아코디언은 '단 시작 큰 알(Large Bead)'에서만 노출
     // (성모송 10알에서는 숨겨 기도문 본문 공간을 넓고 쾌적하게 확보)
