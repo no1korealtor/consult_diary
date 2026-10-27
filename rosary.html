@@ -9323,22 +9323,11 @@ showCrucifixKissOverlay(onComplete) {
   applyStepData(step) {
     this.dom.cardBadge.textContent = `${step.section} · ${step.badge}`;
     this.dom.cardCounter.textContent = `${this.currentIndex + 1} / ${this.steps.length}`;
-    // [거룩한 십자가 고상 성화] 시작 기도(성호경 및 사도신경)에서 거룩한 십자가 성화 표시
+    // [사도신경 카드] 앞선 십자가 친구(입맞춤) 오버레이에서 성화를 온전히 묵상했으므로,
+    // 사도신경 카드 본문에서는 성화를 숨겨 긴 신앙고백문이 시원하게 한눈에 들어오도록 구성
     let crucifixCardArt = document.getElementById("crucifixCardArtBox");
-    if (step.beadType === "cross" || step.beadType === "crucifix") {
-      if (!crucifixCardArt) {
-        crucifixCardArt = document.createElement("div");
-        crucifixCardArt.id = "crucifixCardArtBox";
-        crucifixCardArt.style.cssText = "margin: 12px auto 8px; text-align: center; width: 100%; max-width: 220px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.6); border: 2px solid rgba(243,198,105,0.45); background: #0c111d;";
-        const guideEl = this.dom.prayerGuideText;
-        if (guideEl && guideEl.parentNode) {
-          guideEl.parentNode.insertBefore(crucifixCardArt, guideEl.nextSibling);
-        }
-      }
-      crucifixCardArt.style.display = "block";
-      crucifixCardArt.innerHTML = this.getHolyCrucifixArt();
-    } else {
-      if (crucifixCardArt) crucifixCardArt.style.display = "none";
+    if (crucifixCardArt) {
+      crucifixCardArt.style.display = "none";
     }
 
 

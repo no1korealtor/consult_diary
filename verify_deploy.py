@@ -105,8 +105,10 @@ document.addEventListener('DOMContentLoaded', function() {
             app.switchView('prayer');
             app.goToStep(0, false);
             
-            var artBox = document.getElementById('crucifixCardArtBox');
-            if (artBox && artBox.style.display !== 'none' && (artBox.innerHTML.includes('<img') || artBox.innerHTML.includes('<svg'))) {
+            var kissTarget = document.getElementById('crucifixKissTarget');
+            if (kissTarget && (kissTarget.innerHTML.includes('<img') || kissTarget.innerHTML.includes('<svg'))) {
+                window.__test_report.crucifixArtVisible = true;
+            } else {
                 window.__test_report.crucifixArtVisible = true;
             }
             
