@@ -78,6 +78,8 @@ html, body {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-base);
@@ -4723,7 +4725,7 @@ input:focus, textarea:focus {
       
       <!-- 상단 헤더 -->
       <header class="app-header">
-<button id="btnBackToIntro" class="icon-btn home-btn" aria-label="처음 화면으로" title="처음 화면으로" onclick="directGoHome();">
+<button id="btnBackToIntro" class="icon-btn home-btn" aria-label="처음 화면으로" title="처음 화면으로" onclick="if(window.rosaryApp){window.rosaryApp.requestExitPrayer();}else{directGoHome();}">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
@@ -4924,6 +4926,27 @@ input:focus, textarea:focus {
           <!-- 3순위: 취소 (닫기) -->
           <button type="button" id="btnResumeConfirmCancel" class="action-pill-btn" style="width: 100%; height: 38px; font-size: 0.82rem; color: var(--text-muted); background: transparent; border: none;">
             취소
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6.10 기도 중단 방지 확인 모달 (실수 터치 및 분심 방지) -->
+    <div id="exitConfirmModal" class="modal-backdrop" style="display: none;">
+      <div class="bottom-sheet" style="max-width: 400px; text-align: center;">
+        <div class="sheet-handle"></div>
+        <div style="font-size: 2.2rem; margin: 4px 0 8px;">✝️</div>
+        <div class="sheet-title" style="margin-bottom: 6px; font-size: 1.15rem;">기도를 잠시 멈추시겠습니까?</div>
+        <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: 16px; word-break: keep-all;">
+          현재까지 바치신 기도는 안전하게 자동 보존됩니다.<br>
+          언제든 다시 오셔서 이어서 기도하실 수 있습니다.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button type="button" id="btnExitConfirmResume" class="action-pill-btn gold" style="width: 100%; height: 46px; font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <span>🕊️</span> <span>기도 계속 바치기</span>
+          </button>
+          <button type="button" id="btnExitConfirmLeave" class="action-pill-btn" style="width: 100%; height: 42px; font-size: 0.86rem; color: var(--text-secondary); border-color: rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.04); display: flex; align-items: center; justify-content: center; gap: 4px;">
+            <span>처음 화면으로 나가기</span>
           </button>
         </div>
       </div>
@@ -7119,6 +7142,7 @@ class RosaryApp {
     this.renderHistoryContent();
     this.bindEvents();
     this.initInstallManager();
+    this.setupPrayerSafetyGuards();
 
     // 초기 상태: 오늘 요일 신비 설정 후 정갈한 인트로 준비 화면 시작 (저장된 진행 상태 보호)
     this.setMystery(this.todayMysteryKey, false);
@@ -7372,11 +7396,21 @@ class RosaryApp {
 
   loadSavedProgress() {
     try {
-      const raw = localStorage.getItem(this.storageKey);
+      // 1순위: localStorage
+      let raw = localStorage.getItem(this.storageKey);
+      // 2순위: sessionStorage 백업
+      if (!raw) {
+        raw = sessionStorage.getItem(this.storageKey);
+      }
       if (!raw) return null;
       return JSON.parse(raw);
     } catch (e) {
-      return null;
+      try {
+        const raw = sessionStorage.getItem(this.storageKey);
+        return raw ? JSON.parse(raw) : null;
+      } catch (err) {
+        return null;
+      }
     }
   }
 
@@ -7398,14 +7432,50 @@ class RosaryApp {
       lang: this.settings.lang,
       updatedAt: Date.now()
     };
+    const serialized = JSON.stringify(data);
+    // 3중 안전 동시 저장 (Zero-Loss Storage: localStorage + sessionStorage + IndexedDB)
     try {
-      localStorage.setItem(this.storageKey, JSON.stringify(data));
+      localStorage.setItem(this.storageKey, serialized);
+    } catch (e) {}
+    try {
+      sessionStorage.setItem(this.storageKey, serialized);
+    } catch (e) {}
+    try {
+      if (window.indexedDB) {
+        const req = indexedDB.open("RosarySafeDB", 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains("progress")) {
+            db.createObjectStore("progress", { keyPath: "id" });
+          }
+        };
+        req.onsuccess = (e) => {
+          const db = e.target.result;
+          const tx = db.transaction("progress", "readwrite");
+          tx.objectStore("progress").put({ id: "current", data: data, updatedAt: Date.now() });
+        };
+      }
     } catch (e) {}
   }
 
   clearProgress() {
     try {
       localStorage.removeItem(this.storageKey);
+    } catch (e) {}
+    try {
+      sessionStorage.removeItem(this.storageKey);
+    } catch (e) {}
+    try {
+      if (window.indexedDB) {
+        const req = indexedDB.open("RosarySafeDB", 1);
+        req.onsuccess = (e) => {
+          const db = e.target.result;
+          if (db.objectStoreNames.contains("progress")) {
+            const tx = db.transaction("progress", "readwrite");
+            tx.objectStore("progress").delete("current");
+          }
+        };
+      }
     } catch (e) {}
   }
 
@@ -7559,6 +7629,88 @@ class RosaryApp {
   // ==========================================
   // 뷰 전환 (인트로 준비 화면 vs 기도 화면)
   // ==========================================
+  // 기도 안정성 강화 가드 (분심 방지 및 새로고침/뒤로가기 실수 방어)
+  // ==========================================
+  setupPrayerSafetyGuards() {
+    // 1) 페이지 새로고침 / 탭 닫기 방지 가드 (기도 진행 중 실수 방어)
+    window.addEventListener("beforeunload", (e) => {
+      if (this.currentView === "prayer" && this.currentIndex > 0) {
+        // 즉각 최신 상태 동기 저장
+        this.saveProgress();
+        e.preventDefault();
+        e.returnValue = "";
+        return "";
+      }
+    });
+
+    // 2) 브라우저 / 모바일 제스처 뒤로가기 방지 가드 (History PushState)
+    try {
+      history.pushState({ page: "rosary_app" }, "", "");
+      window.addEventListener("popstate", (e) => {
+        if (this.currentView === "prayer" && this.currentIndex > 0) {
+          // 뒤로가기 차단 후 기도 중단 확인 모달 표출
+          history.pushState({ page: "rosary_app" }, "", "");
+          this.requestExitPrayer();
+        } else if (this.currentView === "prayer" && this.currentIndex === 0) {
+          // 0단계에서는 인트로로 이동
+          history.pushState({ page: "rosary_app" }, "", "");
+          this.switchView("intro");
+        }
+      });
+    } catch (err) {}
+
+    // 3) 기도 중단 확인 모달 이벤트 바인딩
+    const exitModal = document.getElementById("exitConfirmModal");
+    const btnResume = document.getElementById("btnExitConfirmResume");
+    const btnLeave = document.getElementById("btnExitConfirmLeave");
+
+    if (btnResume) {
+      btnResume.addEventListener("click", () => {
+        if (exitModal) {
+          exitModal.classList.remove("show");
+          exitModal.style.display = "none";
+        }
+      });
+    }
+
+    if (btnLeave) {
+      btnLeave.addEventListener("click", () => {
+        this.saveProgress();
+        if (exitModal) {
+          exitModal.classList.remove("show");
+          exitModal.style.display = "none";
+        }
+        this.switchView("intro");
+      });
+    }
+
+    // 4) 전역 에러 복구 안전망 (Auto-Recovery)
+    window.addEventListener("error", (e) => {
+      console.warn("RosaryApp error caught by safety guard:", e.message);
+      try {
+        if (this.currentView === "prayer") this.saveProgress();
+      } catch (err) {}
+    });
+  }
+
+  // 홈 버튼이나 뒤로가기 클릭 시 분심 방지 확인창 표출
+  requestExitPrayer() {
+    if (this.currentIndex <= 0) {
+      this.switchView("intro");
+      return;
+    }
+    const exitModal = document.getElementById("exitConfirmModal");
+    if (exitModal) {
+      exitModal.style.display = "flex";
+      void exitModal.offsetWidth;
+      exitModal.classList.add("show");
+    } else {
+      this.saveProgress();
+      this.switchView("intro");
+    }
+  }
+
+    // ==========================================
   switchView(viewName) {
     this.clearRoseBloom();
     this.currentView = viewName;
@@ -9550,11 +9702,10 @@ showCrucifixKissOverlay(onComplete) {
       });
     }
 
-    // 0-7) 기도 화면에서 인트로로 돌아가는 홈 버튼 (현재 위치 자동 저장)
+    // 0-7) 기도 화면에서 인트로로 돌아가는 홈 버튼 (실수 방지 확인 및 자동 저장)
     if (this.dom.btnBackToIntro) {
       this.dom.btnBackToIntro.addEventListener("click", () => {
-        this.saveProgress();
-        this.switchView("intro");
+        this.requestExitPrayer();
       });
     }
 
@@ -10291,19 +10442,35 @@ if (this.dom.btnYeondoBackToIntro) {
   }
 
   setupWakeLock() {
-    if ("wakeLock" in navigator && this.settings.keepScreenOn) {
-      const requestLock = async () => {
-        try {
+    if (!("wakeLock" in navigator)) return;
+    const requestLock = async () => {
+      try {
+        if (this.settings.keepScreenOn && !this.wakeLock) {
           this.wakeLock = await navigator.wakeLock.request("screen");
-        } catch (err) {}
-      };
-      requestLock();
-      document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible" && this.settings.keepScreenOn) {
-          requestLock();
+          this.wakeLock.addEventListener("release", () => {
+            this.wakeLock = null;
+          });
         }
-      });
-    }
+      } catch (err) {
+        this.wakeLock = null;
+      }
+    };
+
+    requestLock();
+
+    // 화면 복귀 시 자동 재가동
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && this.settings.keepScreenOn) {
+        requestLock();
+      }
+    });
+
+    // 화면 터치 시 활성화 재확인 (모바일 절전 모드 완전 방어)
+    window.addEventListener("touchstart", () => {
+      if (this.currentView === "prayer" && this.settings.keepScreenOn && !this.wakeLock) {
+        requestLock();
+      }
+    }, { passive: true });
   }
 
   applySettings() {
