@@ -4656,7 +4656,7 @@ input:focus, textarea:focus {
             <span class="tracker-mini-icon">📅</span>
             <div class="tracker-mini-texts">
               <span id="introTrackerMiniTitle" class="tracker-mini-title">이번 주 봉헌한 장미</span>
-              <span id="introTrackerMiniCount" class="tracker-mini-count">50단 (500송이 🌹)</span>
+              <span id="introTrackerMiniCount" class="tracker-mini-count">0단 (0송이 🌹)</span>
             </div>
           </div>
           <button type="button" id="btnIntroOpenTracker" class="tracker-mini-btn" onclick="directOpenTracker();">기록장 ❯</button>
@@ -7326,20 +7326,9 @@ class RosaryApp {
       const raw = localStorage.getItem(this.historyKey);
       let hist = raw ? JSON.parse(raw) : {};
       if (!hist || typeof hist !== "object") hist = {};
-      const today = this.getTodayStr();
-      let total = 0;
-      for (const k in hist) {
-        if (hist[k] && typeof hist[k].decades === "number") total += hist[k].decades;
-      }
-      if (total < 50) {
-        hist[today] = { decades: 50, mysteries: ["joyful"], updatedAt: Date.now() };
-        try { localStorage.setItem(this.historyKey, JSON.stringify(hist)); } catch(e){}
-      }
       return hist;
     } catch (e) {
-      const fallback = {};
-      fallback[this.getTodayStr()] = { decades: 50, mysteries: ["joyful"], updatedAt: Date.now() };
-      return fallback;
+      return {};
     }
   }
 
@@ -10774,15 +10763,16 @@ if (this.dom.btnYeondoBackToIntro) {
 
   getUserLifetimeDecades() {
     try {
-      const hist = this.loadHistory();
+      const savedLife = parseInt(localStorage.getItem(this.userLifetimeDecadesKey) || "0", 10);
       let histTotal = 0;
+      const hist = this.loadHistory();
       Object.values(hist).forEach(v => {
         if (v && typeof v.decades === "number") histTotal += v.decades;
       });
-      const savedLife = parseInt(localStorage.getItem(this.userLifetimeDecadesKey) || "0", 10);
-      return Math.max(histTotal, savedLife);
+      // 최소 50단 기본 베이스라인 보장하되, 실제 누적 단수 반환
+      return Math.max(50, savedLife, histTotal);
     } catch (e) {
-      return 0;
+      return 50;
     }
   }
 
@@ -11292,32 +11282,19 @@ window.addEventListener('DOMContentLoaded', () => {
 (function() {
   function ensureBaselineOnce() {
     try {
-      const todayStr = (function() {
-        const d = new Date();
-        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-      })();
-
-      let hist = {};
-      const histRaw = localStorage.getItem('rosary_prayer_history_v1');
-      if (histRaw) {
-        try { hist = JSON.parse(histRaw) || {}; } catch(e){}
-      }
-      
-      let sumDecades = 0;
-      Object.keys(hist).forEach(k => {
-        if (hist[k] && typeof hist[k].decades === 'number') {
-          sumDecades += hist[k].decades;
-        }
-      });
-
-      // 기존 기록이 0인 경우에만 기본 50단을 베이스라인으로 시드
-      if (sumDecades === 0) {
-        hist[todayStr] = { decades: 50, mysteries: ['joyful'], updatedAt: Date.now() };
-        localStorage.setItem('rosary_prayer_history_v1', JSON.stringify(hist));
+      // 1. 총 봉헌 단수(누적) 기본 50단 보장
+      const savedLife = localStorage.getItem('rosary_user_lifetime_decades_v1');
+      if (!savedLife || parseInt(savedLife, 10) < 50) {
         localStorage.setItem('rosary_user_lifetime_decades_v1', '50');
       }
 
-      // 커뮤니티 기본 베이스 통계가 비어있으면 128단 설정
+      // 2. 주간 기록 저장소가 없으면 빈 객체로 초기화
+      const histRaw = localStorage.getItem('rosary_prayer_history_v1');
+      if (!histRaw) {
+        localStorage.setItem('rosary_prayer_history_v1', JSON.stringify({}));
+      }
+
+      // 3. 커뮤니티 기본 베이스 통계가 비어있으면 128단 설정
       const commStatsRaw = localStorage.getItem('rosary_community_stats_v1');
       if (!commStatsRaw) {
         localStorage.setItem('rosary_community_stats_v1', JSON.stringify({ global: 128, sungsan2: 128 }));
@@ -11649,17 +11626,11 @@ function directOpenTracker() {
   try {
     closeAllModalsDirect();
     
-    // 오늘 날짜 50단 보장 동기화
+    // 주간 기록 동기화 (임의의 50단 덮어쓰기 방지)
     try {
-      var todayStr = (function() {
-        var d = new Date();
-        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-      })();
       var histRaw = localStorage.getItem('rosary_prayer_history_v1');
-      var hist = histRaw ? JSON.parse(histRaw) : {};
-      if (!hist[todayStr] || (hist[todayStr].decades || 0) < 50) {
-        hist[todayStr] = { decades: 50, mysteries: ['joyful'], updatedAt: Date.now() };
-        localStorage.setItem('rosary_prayer_history_v1', JSON.stringify(hist));
+      if (!histRaw) {
+        localStorage.setItem('rosary_prayer_history_v1', JSON.stringify({}));
       }
     } catch(e) {}
 
@@ -11903,5 +11874,25 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+
+  <script>
+  // [일회성 데이터 정규화: 오늘 날짜에 50단이 강제 주입되어 있던 것 정리]
+  (function() {
+    try {
+      var d = new Date();
+      var todayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      var histRaw = localStorage.getItem('rosary_prayer_history_v1');
+      if (histRaw) {
+        var hist = JSON.parse(histRaw);
+        // 만약 오늘 날짜가 50단으로 딱 고정되어 있던 경우(과거 자동 주입 버그)
+        if (hist && hist[todayStr] && hist[todayStr].decades >= 50 && (!hist[todayStr].mysteries || hist[todayStr].mysteries.length <= 1)) {
+          // 오늘 실제 기도한 단수만 남기거나 0으로 정상화
+          delete hist[todayStr];
+          localStorage.setItem('rosary_prayer_history_v1', JSON.stringify(hist));
+        }
+      }
+    } catch(e) {}
+  })();
+  </script>
 </body>
 </html>
