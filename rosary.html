@@ -5610,9 +5610,8 @@ input:focus, textarea:focus {
         <!-- 상단 십자가 친구 및 성호경 안내 구절 -->
         <div class="crucifix-kiss-header">
           <div class="crucifix-kiss-latin">In nómine Patris, et Fílii, et Spíritus Sancti</div>
-          <h2 class="crucifix-kiss-title">거룩한 십자가에 친구(親吻)합니다</h2>
-          <p class="crucifix-kiss-prayer">† 성부와 성자와 성령의 이름으로. 아멘.</p>
-          <p class="crucifix-kiss-desc">십자가를 터치하여 입맞추고 묵주기도를 시작합니다</p>
+          <h2 class="crucifix-kiss-title">성호경을 하며 거룩한 십자가에 친구(親吻)합니다</h2>
+          <p class="crucifix-kiss-desc">십자가를 터치하여 입맞추고 사도신경으로 나아갑니다</p>
         </div>
 
         <!-- 성스러운 십자가 고상 비주얼 -->
@@ -7861,15 +7860,15 @@ showCrucifixKissOverlay(onComplete) {
 
     const prayerTextEl = overlay.querySelector(".crucifix-kiss-prayer");
     if (titleEl) {
-      titleEl.textContent = isEn ? "Venerating the Holy Cross" : "거룩한 십자가에 친구(親吻)합니다";
+      titleEl.textContent = isEn ? "Sign of the Cross & Venerating the Holy Cross" : "성호경을 하며 거룩한 십자가에 친구(親吻)합니다";
     }
     if (prayerTextEl) {
-      prayerTextEl.textContent = isEn ? "† In the name of the Father, and of the Son, and of the Holy Spirit. Amen." : "† 성부와 성자와 성령의 이름으로. 아멘.";
+      prayerTextEl.style.display = "none";
     }
     if (descEl) {
       descEl.textContent = isEn 
-        ? "Touch the Crucifix to kiss and begin the Holy Rosary"
-        : "십자가를 터치하여 입맞추고 묵주기도를 시작합니다";
+        ? "Touch the Crucifix to kiss and proceed to the Apostles' Creed"
+        : "십자가를 터치하여 입맞추고 사도신경으로 나아갑니다";
     }
     if (touchTextEl) {
       touchTextEl.textContent = isEn
