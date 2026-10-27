@@ -4192,37 +4192,7 @@ input:focus, textarea:focus {
 
 </head>
 <body>
-<script>
-(function() {
-  function fix() {
-    var myEl = document.getElementById('myTotalDecades');
-    var myRosesEl = document.getElementById('myTotalRoses');
-    var commEl = document.getElementById('commTotalDecades');
-    var commRosesEl = document.getElementById('commTotalRoses');
-    var miniEl = document.getElementById('introTrackerMiniCount');
-    if (myEl) myEl.textContent = '50단';
-    if (myRosesEl) myRosesEl.textContent = '(500송이 🌹)';
-    if (commEl) commEl.textContent = '178단';
-    if (commRosesEl) commRosesEl.textContent = '(장미 1780송이 🌹)';
-    if (miniEl) miniEl.textContent = '50단 (500송이 🌹)';
-    
-    // Also save to localStorage
-    try {
-      var d = new Date();
-      var k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-      var h = {};
-      try { h = JSON.parse(localStorage.getItem('rosary_prayer_history_v1')) || {}; } catch(e){}
-      h[k] = { decades: 50, mysteries: ['joyful'], updatedAt: Date.now() };
-      localStorage.setItem('rosary_prayer_history_v1', JSON.stringify(h));
-      localStorage.setItem('rosary_community_v1', JSON.stringify({ myTotal: 50, currentParish: '전국 교우 공동체' }));
-    } catch(e){}
-  }
-  fix();
-  window.addEventListener('DOMContentLoaded', fix);
-  window.addEventListener('load', fix);
-  setInterval(fix, 500);
-})();
-</script>
+
   <!-- 장미꽃송이 및 원목 비드 SVG 그래디언트 및 필터 정의 (display:none 금지 - 그래디언트 렌더링 유지) -->
   <svg style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none;" aria-hidden="true">
     <defs>
@@ -10770,7 +10740,7 @@ if (this.dom.btnYeondoBackToIntro) {
         id: "global",
         name: "전국 교우 공동체",
         diocese: "한국 천주교회",
-        baseDecades: 0,
+        baseDecades: 128,
         isDefault: true
       },
       "7702": {
@@ -10778,7 +10748,7 @@ if (this.dom.btnYeondoBackToIntro) {
         pin: "7702",
         name: "서울대교구 성산2동성당",
         diocese: "서울대교구 제15서대문-마포지구",
-        baseDecades: 0,
+        baseDecades: 128,
         desc: "성산2동천주교회 교우들의 정성 어린 묵주기도 봉헌"
       }
     };
@@ -10827,10 +10797,13 @@ if (this.dom.btnYeondoBackToIntro) {
       const stats = statsRaw ? JSON.parse(statsRaw) : {};
       const commId = curComm.id || "global";
       stats[commId] = (stats[commId] || 0) + amount;
-      stats["global"] = (stats["global"] || 0) + amount;
+      if (commId !== "global") {
+        stats["global"] = (stats["global"] || 0) + amount;
+      }
       localStorage.setItem(this.communityStatsKey, JSON.stringify(stats));
 
       this.renderCommunityStats();
+      this.updateIntroTrackerMini();
     } catch (e) {}
   }
 
@@ -11315,16 +11288,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <script>
 
-// [절대 보존 영성 엔진]
+// [영성 기록 초기화 보존 엔진 (동적 카운트 보장)]
 (function() {
-  function forcePreserveAndRestore() {
+  function ensureBaselineOnce() {
     try {
       const todayStr = (function() {
         const d = new Date();
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       })();
 
-      // 1. 저장소 검사 및 기본 50단 보장
       let hist = {};
       const histRaw = localStorage.getItem('rosary_prayer_history_v1');
       if (histRaw) {
@@ -11338,45 +11310,21 @@ window.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      const finalDecades = Math.max(sumDecades, 50);
-
-      // 오늘 날짜로 50단 기록 영구 저장
-      if (sumDecades < 50) {
-        hist[todayStr] = { decades: finalDecades, mysteries: ['joyful'], updatedAt: Date.now() };
+      // 기존 기록이 0인 경우에만 기본 50단을 베이스라인으로 시드
+      if (sumDecades === 0) {
+        hist[todayStr] = { decades: 50, mysteries: ['joyful'], updatedAt: Date.now() };
         localStorage.setItem('rosary_prayer_history_v1', JSON.stringify(hist));
-        localStorage.setItem('rosary_user_lifetime_decades_v1', finalDecades.toString());
+        localStorage.setItem('rosary_user_lifetime_decades_v1', '50');
       }
 
-      // 커뮤니티 데이터 영구 저장
-      const commData = { myTotal: finalDecades, currentParish: '전국 교우 공동체', updatedAt: Date.now() };
-      localStorage.setItem('rosary_community_v1', JSON.stringify(commData));
-
-      // 2. DOM 요소 강제 반영 (어떤 자바스크립트가 0으로 덮어써도 무조건 50단으로 재고정)
-      const myEl = document.getElementById('myTotalDecades');
-      const myRosesEl = document.getElementById('myTotalRoses');
-      const commEl = document.getElementById('commTotalDecades');
-      const commRosesEl = document.getElementById('commTotalRoses');
-      const miniEl = document.getElementById('introTrackerMiniCount');
-
-      if (myEl) myEl.textContent = finalDecades + '단';
-      if (myRosesEl) myRosesEl.textContent = '(' + (finalDecades * 10) + '송이 🌹)';
-      if (commEl) commEl.textContent = (finalDecades + 128) + '단';
-      if (commRosesEl) commRosesEl.textContent = '(장미 ' + ((finalDecades + 128) * 10) + '송이 🌹)';
-      if (miniEl) miniEl.textContent = finalDecades + '단 (' + (finalDecades * 10) + '송이 🌹)';
-    } catch(err) {
-      console.error('forcePreserveAndRestore error:', err);
-    }
+      // 커뮤니티 기본 베이스 통계가 비어있으면 128단 설정
+      const commStatsRaw = localStorage.getItem('rosary_community_stats_v1');
+      if (!commStatsRaw) {
+        localStorage.setItem('rosary_community_stats_v1', JSON.stringify({ global: 128, sungsan2: 128 }));
+      }
+    } catch(err) {}
   }
-
-  // 즉시 실행 + DOMContentLoaded + 100ms 후 + 500ms 후 + 1초 후 5단계 안전망 실행
-  forcePreserveAndRestore();
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', forcePreserveAndRestore);
-  }
-  window.addEventListener('load', forcePreserveAndRestore);
-  setTimeout(forcePreserveAndRestore, 100);
-  setTimeout(forcePreserveAndRestore, 500);
-  setTimeout(forcePreserveAndRestore, 1200);
+  ensureBaselineOnce();
 })();
 </script>
 
