@@ -6277,19 +6277,19 @@ function buildRosarySteps(mysteryKey, includeFatima = true, lang = "ko") {
   const isEn = currentLang === "en";
   const steps = [];
 
-  // 1. 시작 - 십자가 (성호경 및 사도신경) - 가톨릭 GoodNews 기준 일치
+  // 1. 시작 - 십자가 (사도신경) - 성호경은 앞선 십자가 친구(입맞춤)에서 정성껏 바치고 진입
   steps.push({
     index: steps.length,
     section: isEn ? "Introductory Prayers" : "시작 기도",
     sectionCode: "intro",
     beadType: "cross",
     beadLabel: isEn ? "Crucifix" : "십자가",
-    title: isEn ? "Sign of the Cross & Apostles' Creed" : "성호경 · 사도신경",
-    badge: isEn ? "Crucifix (Beginning)" : "십자가 (시작 기도)",
+    title: prayers.apostles_creed.name,
+    badge: isEn ? "Crucifix (Beginning)" : "십자가 (사도신경)",
     guide: isEn 
-      ? "Holding the crucifix, make the Sign of the Cross, then profess your faith with the Apostles' Creed." 
-      : "묵주기도의 첫 시작입니다. 십자가를 쥐고 성호경을 하고, 사도신경을 바칩니다.",
-    prayers: [prayers.sign_of_cross, prayers.apostles_creed]
+      ? "Holding the crucifix, profess your faith devoutly with the Apostles' Creed." 
+      : "십자가를 쥐고 온 마음을 다해 신앙을 고백하며 사도신경을 바칩니다.",
+    prayers: [prayers.apostles_creed]
   });
 
   // 2. 주님의 기도 (시작 첫 큰 알)
@@ -6466,19 +6466,19 @@ function buildDivineMercySteps(lang = "ko") {
   const isEn = currentLang === "en";
   const steps = [];
 
-  // 1. 시작 - 십자가 (성호경 및 시작 기도)
+  // 1. 시작 - 십자가 (자비의 기도 시작 기도) - 성호경은 앞선 십자가 친구에서 바치고 진입
   steps.push({
     index: steps.length,
     section: isEn ? "Introductory Prayers" : "시작 기도",
     sectionCode: "intro",
     beadType: "cross",
     beadLabel: isEn ? "Crucifix" : "십자가",
-    title: isEn ? "Sign of the Cross & Opening Prayer" : "성호경 · 시작 기도",
+    title: dm.opening.name,
     badge: isEn ? "Crucifix (Beginning)" : "십자가 (시작 기도)",
     guide: isEn 
-      ? "Holding the crucifix, make the Sign of the Cross and offer the opening prayer to the Divine Mercy." 
-      : "자비의 5단 기도의 첫 시작입니다. 십자가를 쥐고 성호경을 한 후, 자비의 시작 기도를 바칩니다.",
-    prayers: [prayers.sign_of_cross, dm.opening]
+      ? "Holding the crucifix, offer the opening prayer to the Divine Mercy." 
+      : "십자가를 쥐고 주님의 거룩한 자비를 청하며 시작 기도를 바칩니다.",
+    prayers: [dm.opening]
   });
 
   // 2. 주님의 기도 (첫 번째 큰 알)
