@@ -4777,7 +4777,7 @@ input:focus, textarea:focus {
 
               <!-- 각 단 성경 구절 묵상 (접기/펼치기 아코디언, 기본은 감춤) -->
               <div id="scriptureAccordion" class="scripture-accordion" style="display: none;">
-                <button type="button" id="scriptureToggleBtn" class="scripture-toggle-btn" aria-expanded="false">
+                <button type="button" id="scriptureToggleBtn" class="scripture-toggle-btn" aria-expanded="false" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation();">
                   <span class="scripture-btn-left">
                     <span class="scripture-book-icon">📖</span>
                     <span id="scriptureBtnTitle" class="scripture-btn-title">성경 구절 묵상</span>
@@ -9905,23 +9905,37 @@ if (this.dom.btnYeondoBackToIntro) {
 
     // 각 단 성경 구절 묵상 아코디언 토글 이벤트
     if (this.dom.scriptureToggleBtn && this.dom.scriptureContentPanel) {
-      this.dom.scriptureToggleBtn.addEventListener("click", () => {
-        const isCollapsed = this.dom.scriptureContentPanel.style.display === "none";
+      const handleScriptureToggle = (e) => {
+        if (e) {
+          if (e.stopPropagation) e.stopPropagation();
+        }
+        const panel = this.dom.scriptureContentPanel;
+        if (!panel) return;
+        const isCollapsed = panel.style.display === "none" || !panel.style.display;
         if (isCollapsed) {
-          this.dom.scriptureContentPanel.style.display = "block";
-          this.dom.scriptureToggleBtn.setAttribute("aria-expanded", "true");
+          panel.style.display = "block";
+          if (this.dom.scriptureToggleBtn) this.dom.scriptureToggleBtn.setAttribute("aria-expanded", "true");
           if (this.dom.scriptureToggleArrow) this.dom.scriptureToggleArrow.textContent = "▲";
+          this.saveProgress();
           setTimeout(() => {
             if (this.dom.prayerBodyScroll) {
-              this.dom.prayerBodyScroll.scrollBy({ top: 60, behavior: "smooth" });
+              this.dom.prayerBodyScroll.scrollBy({ top: 70, behavior: "smooth" });
             }
           }, 60);
         } else {
-          this.dom.scriptureContentPanel.style.display = "none";
-          this.dom.scriptureToggleBtn.setAttribute("aria-expanded", "false");
+          panel.style.display = "none";
+          if (this.dom.scriptureToggleBtn) this.dom.scriptureToggleBtn.setAttribute("aria-expanded", "false");
           if (this.dom.scriptureToggleArrow) this.dom.scriptureToggleArrow.textContent = "▼";
         }
-      });
+      };
+
+      this.dom.scriptureToggleBtn.addEventListener("click", handleScriptureToggle);
+      this.dom.scriptureToggleBtn.addEventListener("touchstart", (e) => {
+        if (e && e.stopPropagation) e.stopPropagation();
+      }, { passive: true });
+      this.dom.scriptureToggleBtn.addEventListener("touchend", (e) => {
+        if (e && e.stopPropagation) e.stopPropagation();
+      }, { passive: true });
     }
 
     // 11) 언어 선택 버튼 (설정 모달 내)
@@ -10018,6 +10032,11 @@ if (this.dom.btnYeondoBackToIntro) {
 
     targetEl.addEventListener("touchstart", (e) => {
       if (e.touches.length > 1) return;
+      // 버튼, 아코디언, 링크 등을 터치할 때는 스와이프 제스처 간섭 방지
+      if (e.target && e.target.closest("button, .scripture-accordion, .action-pill-btn, a, input, textarea")) {
+        isMoving = false;
+        return;
+      }
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       isMoving = true;
