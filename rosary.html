@@ -3031,7 +3031,7 @@ input:checked + .toggle-slider:before {
   transform: scale(0.97);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  padding: calc(var(--safe-top) + 16px) 20px calc(var(--safe-bottom) + 16px);
+  padding: calc(var(--safe-top) + 10px) 16px calc(var(--safe-bottom) + 14px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -3051,19 +3051,21 @@ input:checked + .toggle-slider:before {
 
 .crucifix-kiss-container {
   width: 100%;
-  max-width: 440px;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  min-height: 85vh;
+  min-height: 88vh;
   margin: auto;
   text-align: center;
+  gap: 10px;
 }
 
 /* 헤더 구절 */
 .crucifix-kiss-header {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  flex-shrink: 0;
   animation: kissFadeSlideDown 0.6s ease-out;
 }
 
@@ -3087,40 +3089,43 @@ input:checked + .toggle-slider:before {
 }
 
 .crucifix-kiss-rubric {
-  font-size: 0.82rem;
-  color: rgba(243, 198, 105, 0.85);
+  font-size: 0.8rem;
+  color: rgba(243, 198, 105, 0.9);
   font-weight: 500;
-  margin: 2px 0;
+  margin: 2px 0 3px;
 }
 .crucifix-kiss-prayer {
-  font-size: 1.08rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #FFFFFF;
-  margin: 4px 0 6px;
-  line-height: 1.45;
+  margin: 3px 0 6px;
+  line-height: 1.4;
   text-shadow: 0 1px 8px rgba(245, 158, 11, 0.4);
   letter-spacing: -0.2px;
 }
 .crucifix-kiss-desc {
-  font-size: 0.84rem;
+  font-size: 0.82rem;
   color: rgba(226, 232, 240, 0.85);
-  margin: 0;
+  margin: 0 0 8px;
   line-height: 1.4;
+  word-break: keep-all;
+  padding: 0 8px;
 }
 
 /* 성스러운 십자가 비주얼 */
 .crucifix-kiss-visual {
   position: relative;
   width: 100%;
-  max-width: 300px;
-  height: min(390px, 48vh);
+  max-width: 270px;
+  height: min(330px, 40vh);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
-  animation: kissCrossFloat 4s ease-in-out infinite;
+  animation: none; /* 오르내리는 흔들림 제거하여 정갈하게 고정 */
+  margin: 6px auto;
   transition: transform 0.18s ease;
 }
 
@@ -3161,8 +3166,8 @@ input:checked + .toggle-slider:before {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 290px;
-  max-height: 410px;
+  max-width: 270px;
+  max-height: min(330px, 40vh);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3181,7 +3186,7 @@ input:checked + .toggle-slider:before {
 .crucifix-art-img {
   width: 100%;
   height: auto;
-  max-height: 404px;
+  max-height: min(324px, 39vh);
   object-fit: cover;
   border-radius: 21px;
   display: block;
