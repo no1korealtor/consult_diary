@@ -579,7 +579,8 @@ html, body {
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
   touch-action: pan-y !important;
   padding: 10px 16px 20px;
 }
@@ -4422,7 +4423,7 @@ input:focus, textarea:focus {
             <span id="introResumeMystery" class="resume-mystery-text">환희의 신비</span>
             <span id="introResumeStep" class="resume-step-text">제1단 · 성모송 3/10</span>
           </div>
-          <button type="button" id="btnIntroContinue" class="intro-cta-btn resume" onclick="if(window.rosaryApp){window.rosaryApp.continuePrayer();}else{var iv=document.getElementById('introView');var pv=document.getElementById('prayerView');if(iv)iv.style.display='none';if(pv)pv.style.display='flex';}">
+          <button type="button" id="btnIntroContinue" class="intro-cta-btn resume" onclick="directContinuePrayerAction();">
             <span>🕊️</span>
             <span id="introContinueText">이어서 계속 기도하기</span>
           </button>
@@ -7947,7 +7948,7 @@ showCrucifixKissOverlay(onComplete) {
   continuePrayer() {
     try {
       const saved = this.loadSavedProgress();
-      if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0) {
+      if (saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0) {
         if (typeof saved.includeFatima === "boolean") {
           this.settings.includeFatima = saved.includeFatima;
           this.syncFatimaUI();
@@ -7969,15 +7970,13 @@ showCrucifixKissOverlay(onComplete) {
         this.renderDecadeProgressPills();
         this.sessionCompletedDecades = new Set();
 
-    // 공동체 및 총 봉헌 단수 초기화
-    // this.initCommunityStats();
         for (let i = 0; i <= saved.stepIndex; i++) {
           const s = this.steps[i];
           if (s && s.decadeNum && s.beadType === "connector") {
             this.sessionCompletedDecades.add(s.decadeNum);
           }
         }
-        const targetStep = Math.min(saved.stepIndex, this.steps.length - 1);
+        const targetStep = Math.min(Math.max(0, saved.stepIndex), this.steps.length - 1);
         this.switchView("prayer");
         this.goToStep(targetStep, false);
         return;
@@ -9600,7 +9599,6 @@ showCrucifixKissOverlay(onComplete) {
         this.continuePrayer();
       };
       this.dom.btnIntroContinue.addEventListener("click", handleContinue);
-      this.dom.btnIntroContinue.addEventListener("touchend", handleContinue);
     }
 
     const btnDismissResume = document.getElementById("btnIntroDismissResume");
@@ -11701,6 +11699,38 @@ function directStartPrayerAction() {
     var pv = document.getElementById('prayerView');
     if (iv) iv.style.display = 'none';
     if (pv) pv.style.display = 'flex';
+  }
+}
+
+function directContinuePrayerAction() {
+  try {
+    closeAllModalsDirect();
+    if (window.rosaryApp && typeof window.rosaryApp.continuePrayer === 'function') {
+      window.rosaryApp.continuePrayer();
+      return;
+    }
+    // 앱 인스턴스 지연 시 안전 복원
+    var iv = document.getElementById('introView');
+    var pv = document.getElementById('prayerView');
+    var yv = document.getElementById('yeondoView');
+    if (iv) {
+      iv.style.setProperty('display', 'none', 'important');
+      iv.style.setProperty('visibility', 'hidden', 'important');
+    }
+    if (yv) yv.style.setProperty('display', 'none', 'important');
+    if (pv) {
+      pv.style.setProperty('display', 'flex', 'important');
+      pv.style.setProperty('visibility', 'visible', 'important');
+      pv.style.setProperty('z-index', '999', 'important');
+    }
+    if (window.rosaryApp) {
+      window.rosaryApp.continuePrayer();
+    }
+  } catch(e) {
+    console.error('directContinuePrayerAction error:', e);
+    if (window.rosaryApp && typeof window.rosaryApp.continuePrayer === 'function') {
+      window.rosaryApp.continuePrayer();
+    }
   }
 }
 </script>
