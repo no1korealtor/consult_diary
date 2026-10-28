@@ -4896,17 +4896,17 @@ input:focus, textarea:focus {
 
         <div style="display: flex; flex-direction: column; gap: 8px;">
           <!-- 1순위: 이어서 계속하기 (추천) -->
-          <button type="button" id="btnResumeConfirmContinue" class="action-pill-btn gold" style="width: 100%; height: 46px; font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <button type="button" id="btnResumeConfirmContinue" class="action-pill-btn gold" onclick="directContinuePrayerAction();" style="width: 100%; height: 46px; font-size: 0.95rem; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 6px;">
             <span>🕊️</span> <span>이어서 계속 기도하기</span>
           </button>
           
           <!-- 2순위: 처음부터 새로 시작하기 -->
-          <button type="button" id="btnResumeConfirmRestart" class="action-pill-btn" style="width: 100%; height: 42px; font-size: 0.86rem; color: #EF4444; border-color: rgba(239, 68, 68, 0.35); background: rgba(239, 68, 68, 0.06); display: flex; align-items: center; justify-content: center; gap: 4px;">
+          <button type="button" id="btnResumeConfirmRestart" class="action-pill-btn" onclick="if(window.rosaryApp){window.rosaryApp.closeModals();window.rosaryApp.startPrayer();}else{directStartPrayerAction();}" style="width: 100%; height: 42px; font-size: 0.86rem; color: #EF4444; border-color: rgba(239, 68, 68, 0.35); background: rgba(239, 68, 68, 0.06); display: flex; align-items: center; justify-content: center; gap: 4px;">
             <span>↺</span> <span>기록 지우고 처음부터 시작</span>
           </button>
 
           <!-- 3순위: 취소 (닫기) -->
-          <button type="button" id="btnResumeConfirmCancel" class="action-pill-btn" style="width: 100%; height: 38px; font-size: 0.82rem; color: var(--text-muted); background: transparent; border: none;">
+          <button type="button" id="btnResumeConfirmCancel" class="action-pill-btn" onclick="closeAllModalsDirect();" style="width: 100%; height: 38px; font-size: 0.82rem; color: var(--text-muted); background: transparent; border: none;">
             취소
           </button>
         </div>
@@ -7365,17 +7365,18 @@ class RosaryApp {
 
   loadSavedProgress() {
     try {
-      // 1순위: localStorage
       let raw = localStorage.getItem(this.storageKey);
-      // 2순위: sessionStorage 백업
       if (!raw) {
         raw = sessionStorage.getItem(this.storageKey);
+      }
+      if (!raw) {
+        raw = localStorage.getItem(this.storageKey + "_backup");
       }
       if (!raw) return null;
       return JSON.parse(raw);
     } catch (e) {
       try {
-        const raw = sessionStorage.getItem(this.storageKey);
+        const raw = sessionStorage.getItem(this.storageKey) || localStorage.getItem(this.storageKey + "_backup");
         return raw ? JSON.parse(raw) : null;
       } catch (err) {
         return null;
@@ -7402,9 +7403,12 @@ class RosaryApp {
       updatedAt: Date.now()
     };
     const serialized = JSON.stringify(data);
-    // 3중 안전 동시 저장 (Zero-Loss Storage: localStorage + sessionStorage + IndexedDB)
+    // 4중 무결점 안전 동시 저장 (Zero-Loss Storage: localStorage + backupKey + sessionStorage + IndexedDB)
     try {
       localStorage.setItem(this.storageKey, serialized);
+    } catch (e) {}
+    try {
+      localStorage.setItem(this.storageKey + "_backup", serialized);
     } catch (e) {}
     try {
       sessionStorage.setItem(this.storageKey, serialized);
@@ -7601,10 +7605,25 @@ class RosaryApp {
   // 기도 안정성 강화 가드 (분심 방지 및 새로고침/뒤로가기 실수 방어)
   // ==========================================
   setupPrayerSafetyGuards() {
-    // 1) 페이지 새로고침 / 탭 닫기 방지 가드 (기도 진행 중 실수 방어)
+    // 1) 모바일 앱 전환/화면 꺼짐 시 즉각 저장 (visibilitychange & pagehide)
+    document.addEventListener("visibilitychange", () => {
+      try {
+        if (this.currentView === "prayer" && typeof this.currentIndex === "number" && this.currentIndex >= 0) {
+          this.saveProgress();
+        }
+      } catch (err) {}
+    });
+    window.addEventListener("pagehide", () => {
+      try {
+        if (this.currentView === "prayer" && typeof this.currentIndex === "number" && this.currentIndex >= 0) {
+          this.saveProgress();
+        }
+      } catch (err) {}
+    });
+
+    // 2) 페이지 새로고침 / 탭 닫기 방지 가드 (기도 진행 중 실수 방어)
     window.addEventListener("beforeunload", (e) => {
       if (this.currentView === "prayer" && this.currentIndex > 0) {
-        // 즉각 최신 상태 동기 저장
         this.saveProgress();
         e.preventDefault();
         e.returnValue = "";
@@ -7612,24 +7631,22 @@ class RosaryApp {
       }
     });
 
-    // 2) 브라우저 / 모바일 제스처 뒤로가기 방지 가드 (History PushState)
+    // 3) 브라우저 / 모바일 제스처 뒤로가기 방지 가드 (History PushState)
     try {
       if ("scrollRestoration" in history) {
         history.scrollRestoration = "manual";
       }
       history.pushState({ page: "rosary_app" }, "", "");
       window.addEventListener("popstate", (e) => {
-        // 기도 화면에 있을 때는 어떤 제스처/뒤로가기에도 절대 홈으로 튕기지 않고 현재 위치 방어!
         if (this.currentView === "prayer") {
           history.pushState({ page: "rosary_app" }, "", "");
           this.saveProgress();
-          // 사용자가 원하면 상단 홈(🏠) 버튼으로만 나갈 수 있도록 확인 모달 표출
           this.requestExitPrayer();
         }
       });
     } catch (err) {}
 
-    // 3) 기도 중단 확인 모달 이벤트 바인딩
+    // 4) 기도 중단 확인 모달 이벤트 바인딩
     const exitModal = document.getElementById("exitConfirmModal");
     const btnResume = document.getElementById("btnExitConfirmResume");
     const btnLeave = document.getElementById("btnExitConfirmLeave");
@@ -7654,7 +7671,7 @@ class RosaryApp {
       });
     }
 
-    // 4) 전역 에러 복구 안전망 (Auto-Recovery)
+    // 5) 전역 에러 복구 안전망 (Auto-Recovery)
     window.addEventListener("error", (e) => {
       console.warn("RosaryApp error caught by safety guard:", e.message);
       try {
@@ -7663,7 +7680,22 @@ class RosaryApp {
     });
   }
 
-  // 홈 버튼이나 뒤로가기 클릭 시 분심 방지 확인창 표출
+  requestExitPrayer() {
+    if (this.currentIndex <= 0) {
+      this.switchView("intro");
+      return;
+    }
+    const exitModal = document.getElementById("exitConfirmModal");
+    if (exitModal) {
+      exitModal.style.display = "flex";
+      void exitModal.offsetWidth;
+      exitModal.classList.add("show");
+    } else {
+      this.saveProgress();
+      this.switchView("intro");
+    }
+  }
+
   requestExitPrayer() {
     if (this.currentIndex <= 0) {
       this.switchView("intro");
@@ -7947,6 +7979,16 @@ showCrucifixKissOverlay(onComplete) {
 
   continuePrayer() {
     try {
+      this.closeModals();
+      const ko = document.getElementById("crucifixKissOverlay");
+      if (ko) {
+        ko.classList.remove("show", "fade-out");
+        ko.style.setProperty("display", "none", "important");
+        ko.style.setProperty("visibility", "hidden", "important");
+        ko.style.setProperty("pointer-events", "none", "important");
+        ko.style.setProperty("z-index", "-1", "important");
+      }
+
       const saved = this.loadSavedProgress();
       if (saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0) {
         if (typeof saved.includeFatima === "boolean") {
@@ -7970,13 +8012,15 @@ showCrucifixKissOverlay(onComplete) {
         this.renderDecadeProgressPills();
         this.sessionCompletedDecades = new Set();
 
-        for (let i = 0; i <= saved.stepIndex; i++) {
+        const maxIdx = (this.steps && this.steps.length > 0) ? this.steps.length - 1 : 0;
+        const targetStep = Math.min(Math.max(0, saved.stepIndex), maxIdx);
+
+        for (let i = 0; i <= targetStep; i++) {
           const s = this.steps[i];
           if (s && s.decadeNum && s.beadType === "connector") {
             this.sessionCompletedDecades.add(s.decadeNum);
           }
         }
-        const targetStep = Math.min(Math.max(0, saved.stepIndex), this.steps.length - 1);
         this.switchView("prayer");
         this.goToStep(targetStep, false);
         return;
@@ -7984,6 +8028,7 @@ showCrucifixKissOverlay(onComplete) {
     } catch (err) {
       console.error("continuePrayer error:", err);
     }
+    // 복원할 기록이 없을 때만 안전하게 시작
     this.startPrayer();
   }
 
@@ -10411,7 +10456,10 @@ if (this.dom.btnYeondoBackToIntro) {
   }
 
   closeModals() {
-    document.querySelectorAll(".modal-backdrop").forEach(m => m.classList.remove("show"));
+    document.querySelectorAll(".modal-backdrop").forEach(m => {
+      m.classList.remove("show");
+      m.style.setProperty("display", "none", "important");
+    });
   }
 
   showCompletionModal() {
@@ -11583,9 +11631,9 @@ function toggleGlobalLanguage() {
 }
 
 function closeAllModalsDirect() {
-  document.querySelectorAll('.modal-backdrop').forEach(function(m) {
-    m.classList.remove('show');
-    m.style.display = 'none';
+  document.querySelectorAll(".modal-backdrop").forEach(function(m) {
+    m.classList.remove("show");
+    m.style.setProperty("display", "none", "important");
   });
 }
 
@@ -11658,132 +11706,125 @@ function directCloseSettings() {
 function directStartPrayerAction() {
   try {
     closeAllModalsDirect();
-    
-    // 1. 인트로 뷰 즉시 숨기고 기도 뷰 즉시 노출
-    var iv = document.getElementById('introView');
-    var pv = document.getElementById('prayerView');
-    var yv = document.getElementById('yeondoView');
-    if (iv) iv.style.setProperty('display', 'none', 'important');
-    if (yv) yv.style.setProperty('display', 'none', 'important');
-    if (pv) pv.style.setProperty('display', 'flex', 'important');
-    if (iv) {
-      iv.style.setProperty('display', 'none', 'important');
-      iv.style.setProperty('visibility', 'hidden', 'important');
-      iv.style.setProperty('z-index', '-1', 'important');
+
+    var saved = null;
+    if (window.rosaryApp && typeof window.rosaryApp.loadSavedProgress === "function") {
+      saved = window.rosaryApp.loadSavedProgress();
+    } else {
+      try {
+        var raw = localStorage.getItem("rosary_prayer_progress_v1") || localStorage.getItem("rosary_prayer_progress_v1_backup") || sessionStorage.getItem("rosary_prayer_progress_v1");
+        if (raw) saved = JSON.parse(raw);
+      } catch(e) {}
     }
+
+    if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0) {
+      if (window.rosaryApp && typeof window.rosaryApp.showResumeConfirmModal === "function") {
+        window.rosaryApp.showResumeConfirmModal(saved);
+        return;
+      }
+      var rModal = document.getElementById("resumeConfirmModal");
+      if (rModal) {
+        rModal.classList.add("show");
+        rModal.style.setProperty("display", "flex", "important");
+        return;
+      }
+    }
+
+    // 1. 인트로 뷰 즉시 숨기고 기도 뷰 즉시 노출
+    var iv = document.getElementById("introView");
+    var pv = document.getElementById("prayerView");
+    var yv = document.getElementById("yeondoView");
+    if (iv) {
+      iv.style.setProperty("display", "none", "important");
+      iv.style.setProperty("visibility", "hidden", "important");
+      iv.style.setProperty("z-index", "-1", "important");
+    }
+    if (yv) yv.style.setProperty("display", "none", "important");
     if (pv) {
-      pv.style.setProperty('display', 'flex', 'important');
-      pv.style.setProperty('visibility', 'visible', 'important');
-      pv.style.setProperty('z-index', '999', 'important');
+      pv.style.setProperty("display", "flex", "important");
+      pv.style.setProperty("visibility", "visible", "important");
+      pv.style.setProperty("z-index", "999", "important");
     }
 
     // 2. 앱 인스턴스에 기도 시작 알림
     if (window.rosaryApp) {
-      window.rosaryApp.currentView = 'prayer';
-      if (typeof window.rosaryApp.clearProgress === 'function') {
+      window.rosaryApp.currentView = "prayer";
+      if (typeof window.rosaryApp.clearProgress === "function") {
         window.rosaryApp.clearProgress();
       }
-      if (typeof window.rosaryApp.buildCurrentSteps === 'function') {
+      if (typeof window.rosaryApp.buildCurrentSteps === "function") {
         window.rosaryApp.steps = window.rosaryApp.buildCurrentSteps();
       }
-      if (typeof window.rosaryApp.renderDecadeProgressPills === 'function') {
+      if (typeof window.rosaryApp.renderDecadeProgressPills === "function") {
         window.rosaryApp.renderDecadeProgressPills();
       }
-      if (typeof window.rosaryApp.goToStep === 'function') {
+      if (typeof window.rosaryApp.goToStep === "function") {
         window.rosaryApp.goToStep(0, false);
       }
     }
   } catch(e) {
-    console.error('directStartPrayerAction error:', e);
-    var iv = document.getElementById('introView');
-    var pv = document.getElementById('prayerView');
-    if (iv) iv.style.display = 'none';
-    if (pv) pv.style.display = 'flex';
+    console.error("directStartPrayerAction error:", e);
+    var iv = document.getElementById("introView");
+    var pv = document.getElementById("prayerView");
+    if (iv) iv.style.display = "none";
+    if (pv) pv.style.display = "flex";
   }
 }
 
 function directContinuePrayerAction() {
   try {
     closeAllModalsDirect();
-    if (window.rosaryApp && typeof window.rosaryApp.continuePrayer === 'function') {
+    var ko = document.getElementById("crucifixKissOverlay");
+    if (ko) {
+      ko.classList.remove("show", "fade-out");
+      ko.style.setProperty("display", "none", "important");
+      ko.style.setProperty("visibility", "hidden", "important");
+      ko.style.setProperty("pointer-events", "none", "important");
+      ko.style.setProperty("z-index", "-1", "important");
+    }
+
+    if (window.rosaryApp && typeof window.rosaryApp.continuePrayer === "function") {
       window.rosaryApp.continuePrayer();
       return;
     }
-    // 앱 인스턴스 지연 시 안전 복원
-    var iv = document.getElementById('introView');
-    var pv = document.getElementById('prayerView');
-    var yv = document.getElementById('yeondoView');
+
+    // 앱 인스턴스 지연 시 안전 DOM 전환
+    var iv = document.getElementById("introView");
+    var pv = document.getElementById("prayerView");
+    var yv = document.getElementById("yeondoView");
     if (iv) {
-      iv.style.setProperty('display', 'none', 'important');
-      iv.style.setProperty('visibility', 'hidden', 'important');
+      iv.style.setProperty("display", "none", "important");
+      iv.style.setProperty("visibility", "hidden", "important");
+      iv.style.setProperty("z-index", "-1", "important");
     }
-    if (yv) yv.style.setProperty('display', 'none', 'important');
+    if (yv) yv.style.setProperty("display", "none", "important");
     if (pv) {
-      pv.style.setProperty('display', 'flex', 'important');
-      pv.style.setProperty('visibility', 'visible', 'important');
-      pv.style.setProperty('z-index', '999', 'important');
+      pv.style.setProperty("display", "flex", "important");
+      pv.style.setProperty("visibility", "visible", "important");
+      pv.style.setProperty("z-index", "999", "important");
     }
     if (window.rosaryApp) {
       window.rosaryApp.continuePrayer();
     }
   } catch(e) {
-    console.error('directContinuePrayerAction error:', e);
-    if (window.rosaryApp && typeof window.rosaryApp.continuePrayer === 'function') {
+    console.error("directContinuePrayerAction error:", e);
+    if (window.rosaryApp && typeof window.rosaryApp.continuePrayer === "function") {
       window.rosaryApp.continuePrayer();
     }
   }
 }
-</script>
 
-
-<script>
-// 모달 배경 클릭 시 100% 즉시 닫기
-document.addEventListener('click', function(e) {
-  if (e.target.classList.contains('modal-backdrop')) {
-    e.target.classList.remove('show');
-    e.target.style.setProperty('display', 'none', 'important');
-    e.target.style.setProperty('pointer-events', 'none', 'important');
-  }
-});
-</script>
-
-
-<script>
-// 모달 배경 클릭 시 100% 즉시 닫기
-document.addEventListener('click', function(e) {
-  if (e.target.classList.contains('modal-backdrop')) {
-    e.target.classList.remove('show');
-    e.target.style.setProperty('display', 'none', 'important');
-    e.target.style.setProperty('pointer-events', 'none', 'important');
-  }
-});
-</script>
-
-
-<script>
-// 모달 배경 클릭 시 100% 즉시 닫기
-document.addEventListener('click', function(e) {
-  if (e.target.classList.contains('modal-backdrop')) {
-    e.target.classList.remove('show');
-    e.target.style.setProperty('display', 'none', 'important');
-    e.target.style.setProperty('pointer-events', 'none', 'important');
-  }
-});
-</script>
-
-
-<script>
 function directNextStep() {
   try {
-    var ko = document.getElementById('crucifixKissOverlay');
+    var ko = document.getElementById("crucifixKissOverlay");
     if (ko) {
-      ko.classList.remove('show', 'fade-out');
-      ko.style.setProperty('display', 'none', 'important');
-      ko.style.setProperty('pointer-events', 'none', 'important');
-      ko.style.setProperty('visibility', 'hidden', 'important');
-      ko.style.setProperty('z-index', '-1', 'important');
+      ko.classList.remove("show", "fade-out");
+      ko.style.setProperty("display", "none", "important");
+      ko.style.setProperty("pointer-events", "none", "important");
+      ko.style.setProperty("visibility", "hidden", "important");
+      ko.style.setProperty("z-index", "-1", "important");
     }
-    if (window.rosaryApp && typeof window.rosaryApp.nextStep === 'function') {
+    if (window.rosaryApp && typeof window.rosaryApp.nextStep === "function") {
       window.rosaryApp.nextStep();
     }
   } catch(e) { console.error(e); }
@@ -11791,15 +11832,15 @@ function directNextStep() {
 
 function directPrevStep() {
   try {
-    var ko = document.getElementById('crucifixKissOverlay');
+    var ko = document.getElementById("crucifixKissOverlay");
     if (ko) {
-      ko.classList.remove('show', 'fade-out');
-      ko.style.setProperty('display', 'none', 'important');
-      ko.style.setProperty('pointer-events', 'none', 'important');
-      ko.style.setProperty('visibility', 'hidden', 'important');
-      ko.style.setProperty('z-index', '-1', 'important');
+      ko.classList.remove("show", "fade-out");
+      ko.style.setProperty("display", "none", "important");
+      ko.style.setProperty("pointer-events", "none", "important");
+      ko.style.setProperty("visibility", "hidden", "important");
+      ko.style.setProperty("z-index", "-1", "important");
     }
-    if (window.rosaryApp && typeof window.rosaryApp.prevStep === 'function') {
+    if (window.rosaryApp && typeof window.rosaryApp.prevStep === "function") {
       window.rosaryApp.prevStep();
     }
   } catch(e) { console.error(e); }
@@ -11809,34 +11850,34 @@ function directGoHome() {
   try {
     closeAllModalsDirect();
     if (window.rosaryApp) {
-      if (typeof window.rosaryApp.saveProgress === 'function') window.rosaryApp.saveProgress();
-      if (typeof window.rosaryApp.switchView === 'function') window.rosaryApp.switchView('intro');
+      if (typeof window.rosaryApp.saveProgress === "function") window.rosaryApp.saveProgress();
+      if (typeof window.rosaryApp.switchView === "function") window.rosaryApp.switchView("intro");
     }
-    var pv = document.getElementById('prayerView');
-    var yv = document.getElementById('yeondoView');
-    var iv = document.getElementById('introView');
+    var pv = document.getElementById("prayerView");
+    var yv = document.getElementById("yeondoView");
+    var iv = document.getElementById("introView");
     if (pv) {
-      pv.style.setProperty('display', 'none', 'important');
-      pv.style.setProperty('visibility', 'hidden', 'important');
-      pv.style.setProperty('z-index', '-1', 'important');
+      pv.style.setProperty("display", "none", "important");
+      pv.style.setProperty("visibility", "hidden", "important");
+      pv.style.setProperty("z-index", "-1", "important");
     }
     if (yv) {
-      yv.style.setProperty('display', 'none', 'important');
-      yv.style.setProperty('visibility', 'hidden', 'important');
-      yv.style.setProperty('z-index', '-1', 'important');
+      yv.style.setProperty("display", "none", "important");
+      yv.style.setProperty("visibility", "hidden", "important");
+      yv.style.setProperty("z-index", "-1", "important");
     }
     if (iv) {
-      iv.style.setProperty('display', 'flex', 'important');
-      iv.style.setProperty('visibility', 'visible', 'important');
-      iv.style.setProperty('opacity', '1', 'important');
-      iv.style.setProperty('z-index', '999', 'important');
+      iv.style.setProperty("display", "flex", "important");
+      iv.style.setProperty("visibility", "visible", "important");
+      iv.style.setProperty("opacity", "1", "important");
+      iv.style.setProperty("z-index", "999", "important");
     }
   } catch(e) {
     console.error(e);
-    var iv = document.getElementById('introView');
-    var pv = document.getElementById('prayerView');
-    if (pv) pv.style.display = 'none';
-    if (iv) iv.style.display = 'flex';
+    var iv = document.getElementById("introView");
+    var pv = document.getElementById("prayerView");
+    if (pv) pv.style.display = "none";
+    if (iv) iv.style.display = "flex";
   }
 }
 </script>
