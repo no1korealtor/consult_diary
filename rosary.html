@@ -7383,9 +7383,9 @@ class RosaryApp {
   }
 
   saveProgress() {
-    // 기도 화면에 머물고 있을 때만 저장하며, 0단계(기도 시작 전)이거나 인트로 화면일 때는 이전 상태를 덮어쓰지 않음
+    // 기도 화면에 머물고 있을 때 실시간 즉각 저장
     if (this.currentView !== "prayer") return;
-    if (this.currentIndex <= 0) return;
+    if (typeof this.currentIndex !== "number" || this.currentIndex < 0) return;
 
     const cur = this.steps[this.currentIndex];
     if (!cur) return;
@@ -7613,16 +7613,17 @@ class RosaryApp {
 
     // 2) 브라우저 / 모바일 제스처 뒤로가기 방지 가드 (History PushState)
     try {
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+      }
       history.pushState({ page: "rosary_app" }, "", "");
       window.addEventListener("popstate", (e) => {
-        if (this.currentView === "prayer" && this.currentIndex > 0) {
-          // 뒤로가기 차단 후 기도 중단 확인 모달 표출
+        // 기도 화면에 있을 때는 어떤 제스처/뒤로가기에도 절대 홈으로 튕기지 않고 현재 위치 방어!
+        if (this.currentView === "prayer") {
           history.pushState({ page: "rosary_app" }, "", "");
+          this.saveProgress();
+          // 사용자가 원하면 상단 홈(🏠) 버튼으로만 나갈 수 있도록 확인 모달 표출
           this.requestExitPrayer();
-        } else if (this.currentView === "prayer" && this.currentIndex === 0) {
-          // 0단계에서는 인트로로 이동
-          history.pushState({ page: "rosary_app" }, "", "");
-          this.switchView("intro");
         }
       });
     } catch (err) {}
@@ -9297,7 +9298,7 @@ showCrucifixKissOverlay(onComplete) {
     this.updateDecadePillsState();
     this.updateButtonsState();
 
-    if (this.currentView === "prayer" && index > 0) {
+    if (this.currentView === "prayer") {
       this.saveProgress();
     }
 
@@ -10152,21 +10153,20 @@ if (this.dom.btnYeondoBackToIntro) {
     let startX = 0;
     let startY = 0;
     let isMoving = false;
-    let detectedDirection = null;
-
-    const scrollBox = this.dom.prayerBodyScroll;
+    let isHorizontalSwipe = false;
 
     targetEl.addEventListener("touchstart", (e) => {
       if (e.touches.length > 1) return;
-      // 버튼, 아코디언, 링크 등을 터치할 때는 스와이프 제스처 간섭 방지
-      if (e.target && e.target.closest("button, .scripture-accordion, .action-pill-btn, a, input, textarea")) {
+      // 기도문 본문 내부 스크롤, 아코디언, 버튼 터치 시에는 카드 전체 이동 간섭 원천 차단
+      if (e.target && e.target.closest("button, .scripture-accordion, .action-pill-btn, a, input, textarea, .prayer-body-scroll")) {
         isMoving = false;
+        isHorizontalSwipe = false;
         return;
       }
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       isMoving = true;
-      detectedDirection = null;
+      isHorizontalSwipe = false;
       targetEl.style.transition = "none";
     }, { passive: true });
 
@@ -10177,43 +10177,35 @@ if (this.dom.btnYeondoBackToIntro) {
       const deltaX = currentX - startX;
       const deltaY = currentY - startY;
 
-      if (detectedDirection === null) {
+      // 수평 스와이프 판단 (상하 스크롤 시 카드가 덜컥거리며 움직이지 않도록 완전 보호)
+      if (!isHorizontalSwipe) {
         const absX = Math.abs(deltaX);
         const absY = Math.abs(deltaY);
-        if (absX > 10 || absY > 10) {
-          if (absX > absY * 1.2) {
-            detectedDirection = "horizontal";
-          } else {
-            detectedDirection = "vertical";
-          }
+        if (absX > 15 && absX > absY * 2.0) {
+          isHorizontalSwipe = true;
+        } else if (absY > 15) {
+          isMoving = false;
+          return;
         }
       }
 
-      if (detectedDirection === "horizontal") {
+      if (isHorizontalSwipe) {
         const moveDistance = deltaX * 0.45;
         const rotate = deltaX * 0.02;
         targetEl.style.transform = `translateX(${moveDistance}px) rotate(${rotate}deg)`;
-      } else if (detectedDirection === "vertical") {
-        const isAtTop = scrollBox.scrollTop <= 0 && deltaY > 0;
-        const isAtBottom = (scrollBox.scrollTop + scrollBox.clientHeight >= scrollBox.scrollHeight - 1) && deltaY < 0;
-        
-        if (isAtTop || isAtBottom) {
-          const verticalBounce = deltaY * 0.2;
-          targetEl.style.transform = `translateY(${verticalBounce}px)`;
-        }
       }
     }, { passive: true });
 
     const onTouchEnd = (e) => {
-      if (!isMoving) return;
+      if (!isMoving && !isHorizontalSwipe) return;
       isMoving = false;
 
       targetEl.style.transition = "transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.2s ease";
 
-      if (detectedDirection === "horizontal") {
+      if (isHorizontalSwipe) {
         const endX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
         const deltaX = endX - startX;
-        const swipeThreshold = 50;
+        const swipeThreshold = 55;
 
         if (deltaX < -swipeThreshold) {
           this.nextStep();
@@ -10222,38 +10214,12 @@ if (this.dom.btnYeondoBackToIntro) {
         }
       }
 
-      targetEl.style.transform = "translateX(0px) translateY(0px) rotate(0deg)";
-      detectedDirection = null;
+      targetEl.style.transform = "translateX(0px) rotate(0deg)";
+      isHorizontalSwipe = false;
     };
 
     targetEl.addEventListener("touchend", onTouchEnd);
     targetEl.addEventListener("touchcancel", onTouchEnd);
-
-    let isMouseDown = false;
-    targetEl.addEventListener("mousedown", (e) => {
-      isMouseDown = true;
-      startX = e.clientX;
-      targetEl.style.transition = "none";
-    });
-
-    window.addEventListener("mousemove", (e) => {
-      if (!isMouseDown) return;
-      const deltaX = e.clientX - startX;
-      targetEl.style.transform = `translateX(${deltaX * 0.4}px)`;
-    });
-
-    window.addEventListener("mouseup", (e) => {
-      if (!isMouseDown) return;
-      isMouseDown = false;
-      targetEl.style.transition = "transform 0.25s ease";
-      const deltaX = e.clientX - startX;
-      if (deltaX < -50) {
-        this.nextStep();
-      } else if (deltaX > 50) {
-        this.prevStep();
-      }
-      targetEl.style.transform = "translateX(0px)";
-    });
   }
 
   // ==========================================
