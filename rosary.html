@@ -11353,14 +11353,29 @@ window.addEventListener('DOMContentLoaded', () => {
   const STORAGE_KEY = 'rosary_community_intention_v1';
   const JOINED_KEY = 'rosary_joined_intention_id_v1';
 
+  // 모든 기기(LG V50 포함)에서 기본으로 함께 묵상하는 이달의 보편 공통 기도 지향
+  const DEFAULT_INTENTION = {
+    id: 'int_universal_peace_2026',
+    text: '고통받는 이웃과 질병 중에 있는 이들에게 주님의 치유와 위로를 청하며, 우리 사회와 한반도에 참된 평화와 화해가 깃들기를 기도합니다.',
+    author: '공동체 공통 지향',
+    count: 28,
+    createdAt: 1730000000000,
+    active: true,
+    isDefault: true
+  };
+
   function getStoredIntention() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw || raw === 'NONE') return null;
-      const parsed = JSON.parse(raw);
-      return (parsed && parsed.active && parsed.text) ? parsed : null;
+      if (raw === 'NONE') return null;
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.active && parsed.text) return parsed;
+      }
+      // 기기에 아직 직접 등록한 지향이 없다면 성스러운 공통 공동체 지향을 기본 표출!
+      return DEFAULT_INTENTION;
     } catch(e) {
-      return null;
+      return DEFAULT_INTENTION;
     }
   }
 

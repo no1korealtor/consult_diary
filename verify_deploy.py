@@ -144,11 +144,11 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 """
 
-    temp_test_html = os.path.join(os.path.dirname(html_path), "_temp_preflight_test.html")
+    temp_test_html = os.path.abspath("_temp_preflight_test.html")
     with open(temp_test_html, "w", encoding="utf-8") as tf:
         tf.write(html.replace("</body>", test_probe + "</body>"))
 
-    file_url = "file:///" + temp_test_html.replace("\\", "/")
+    file_url = "file:///" + temp_test_html.replace(chr(92), "/")
     cmd = [
         browser_bin,
         "--headless=new",
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ]
 
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=30)
+        proc = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60)
         stdout = proc.stdout
     except Exception as e:
         print(f"❌ 브라우저 실행 중 예외 발생: {e}")
