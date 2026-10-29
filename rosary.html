@@ -7769,30 +7769,43 @@ class RosaryApp {
   }
 
   showResumeConfirmModal(saved) {
-    const isEn = this.settings.lang === "en";
-    const isDm = saved.prayerType === "divine_mercy";
+    try {
+      const isEn = this.settings.lang === "en";
+      const isDm = saved && saved.prayerType === "divine_mercy";
 
-    if (this.dom.resumeConfirmPrayerType) {
-      this.dom.resumeConfirmPrayerType.textContent = isDm
-        ? (isEn ? "Divine Mercy" : "하느님 자비의 기도")
-        : (isEn ? "Holy Rosary" : "성모 묵주기도");
-    }
-
-    if (this.dom.resumeConfirmMystery) {
-      if (isDm) {
-        this.dom.resumeConfirmMystery.textContent = isEn ? "Chaplet of Divine Mercy" : "하느님 자비를 구하는 기도";
-      } else {
-        const mysteries = MYSTERIES[this.settings.lang] || MYSTERIES.ko;
-        const mInfo = mysteries[saved.mysteryKey] || mysteries.joyful;
-        this.dom.resumeConfirmMystery.textContent = mInfo.name;
+      const rType = this.dom.resumeConfirmPrayerType || document.getElementById("resumeConfirmPrayerType");
+      if (rType) {
+        rType.textContent = isDm
+          ? (isEn ? "Divine Mercy" : "하느님 자비의 기도")
+          : (isEn ? "Holy Rosary" : "성모 묵주기도");
       }
-    }
 
-    if (this.dom.resumeConfirmStep) {
-      this.dom.resumeConfirmStep.textContent = `${saved.section} · ${saved.beadLabel}`;
-    }
+      const rMystery = this.dom.resumeConfirmMystery || document.getElementById("resumeConfirmMystery");
+      if (rMystery) {
+        if (isDm) {
+          rMystery.textContent = isEn ? "Chaplet of Divine Mercy" : "하느님 자비를 구하는 기도";
+        } else {
+          const mysteries = (typeof MYSTERIES !== "undefined" && (MYSTERIES[this.settings.lang] || MYSTERIES.ko)) || {};
+          const mInfo = (saved && saved.mysteryKey && mysteries[saved.mysteryKey]) || mysteries.joyful || { name: "환희의 신비" };
+          rMystery.textContent = mInfo.name || "환희의 신비";
+        }
+      }
 
-    this.openModal(this.dom.resumeConfirmModal);
+      const rStep = this.dom.resumeConfirmStep || document.getElementById("resumeConfirmStep");
+      if (rStep && saved) {
+        rStep.textContent = `${saved.section || ""} · ${saved.beadLabel || ""}`;
+      }
+
+      const modalEl = this.dom.resumeConfirmModal || document.getElementById("resumeConfirmModal");
+      if (modalEl) {
+        this.openModal(modalEl);
+      } else {
+        this.startPrayer();
+      }
+    } catch(err) {
+      console.error("showResumeConfirmModal error:", err);
+      this.startPrayer();
+    }
   }
 
   getSacredArtSvgForMystery(key) {
@@ -10453,7 +10466,17 @@ if (this.dom.btnYeondoBackToIntro) {
   }
 
   openModal(modal) {
-    if (modal) modal.classList.add("show");
+    if (modal) {
+      modal.classList.add("show");
+      modal.style.setProperty("display", "flex", "important");
+      modal.style.setProperty("opacity", "1", "important");
+      modal.style.setProperty("pointer-events", "auto", "important");
+      modal.style.setProperty("z-index", "99999", "important");
+      const sheet = modal.querySelector(".bottom-sheet");
+      if (sheet) {
+        sheet.style.setProperty("transform", "translateY(0)", "important");
+      }
+    }
   }
 
   closeModals() {
