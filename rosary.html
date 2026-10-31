@@ -422,6 +422,7 @@ html, body {
 
 /* 카드 상단 바 */
 .card-header-bar {
+  display: none !important;
   padding: 8px 14px 4px;
   display: flex;
   align-items: center;
@@ -7437,6 +7438,9 @@ class RosaryApp {
       localStorage.removeItem(this.storageKey);
     } catch (e) {}
     try {
+      localStorage.removeItem(this.storageKey + "_backup");
+    } catch (e) {}
+    try {
       sessionStorage.removeItem(this.storageKey);
     } catch (e) {}
     try {
@@ -7718,18 +7722,55 @@ class RosaryApp {
     this.clearRoseBloom();
     this.currentView = viewName;
     if (viewName === "prayer") {
-      if (this.dom.introView) this.dom.introView.style.display = "none";
-      if (this.dom.yeondoView) this.dom.yeondoView.style.display = "none";
-      if (this.dom.prayerView) this.dom.prayerView.style.display = "flex";
+      const iv = this.dom.introView || document.getElementById("introView");
+      const yv = this.dom.yeondoView || document.getElementById("yeondoView");
+      const pv = this.dom.prayerView || document.getElementById("prayerView");
+      if (iv) {
+        iv.style.removeProperty("display");
+        iv.style.removeProperty("visibility");
+        iv.style.removeProperty("opacity");
+        iv.style.removeProperty("z-index");
+        iv.style.display = "none";
+      }
+      if (yv) {
+        yv.style.removeProperty("display");
+        yv.style.removeProperty("visibility");
+        yv.style.removeProperty("z-index");
+        yv.style.display = "none";
+      }
+      if (pv) {
+        pv.style.removeProperty("z-index");
+        pv.style.setProperty("display", "flex", "important");
+        pv.style.setProperty("visibility", "visible", "important");
+        pv.style.setProperty("opacity", "1", "important");
+      }
       this.updateBeadChain();
       this.updateDecadePillsState();
       if (this.dom.prayerBodyScroll) {
         this.dom.prayerBodyScroll.scrollTop = 0;
       }
     } else if (viewName === "yeondo") {
-      if (this.dom.introView) this.dom.introView.style.display = "none";
-      if (this.dom.prayerView) this.dom.prayerView.style.display = "none";
-      if (this.dom.yeondoView) this.dom.yeondoView.style.display = "flex";
+      const iv = this.dom.introView || document.getElementById("introView");
+      const pv = this.dom.prayerView || document.getElementById("prayerView");
+      const yv = this.dom.yeondoView || document.getElementById("yeondoView");
+      if (iv) {
+        iv.style.removeProperty("display");
+        iv.style.removeProperty("visibility");
+        iv.style.removeProperty("opacity");
+        iv.style.removeProperty("z-index");
+        iv.style.display = "none";
+      }
+      if (pv) {
+        pv.style.removeProperty("display");
+        pv.style.removeProperty("visibility");
+        pv.style.removeProperty("z-index");
+        pv.style.display = "none";
+      }
+      if (yv) {
+        yv.style.setProperty("display", "flex", "important");
+        yv.style.setProperty("visibility", "visible", "important");
+        yv.style.setProperty("opacity", "1", "important");
+      }
       this.renderYeondoPrayer();
       if (this.dom.yeondoBodyScroll) {
         this.dom.yeondoBodyScroll.scrollTop = 0;
@@ -7738,9 +7779,22 @@ class RosaryApp {
       const pv = this.dom.prayerView || document.getElementById("prayerView");
       const yv = this.dom.yeondoView || document.getElementById("yeondoView");
       const iv = this.dom.introView || document.getElementById("introView");
-      if (pv) { pv.style.display = "none"; }
-      if (yv) { yv.style.display = "none"; }
+      if (pv) {
+        pv.style.removeProperty("display");
+        pv.style.removeProperty("visibility");
+        pv.style.removeProperty("opacity");
+        pv.style.removeProperty("z-index");
+        pv.style.display = "none";
+      }
+      if (yv) {
+        yv.style.removeProperty("display");
+        yv.style.removeProperty("visibility");
+        yv.style.removeProperty("opacity");
+        yv.style.removeProperty("z-index");
+        yv.style.display = "none";
+      }
       if (iv) {
+        iv.style.removeProperty("z-index");
         iv.style.setProperty("display", "flex", "important");
         iv.style.setProperty("opacity", "1", "important");
         iv.style.setProperty("visibility", "visible", "important");
@@ -7857,16 +7911,15 @@ showCrucifixKissOverlay(onComplete) {
       targetBox.innerHTML = this.getHolyCrucifixArt();
     }
     const overlay = this.dom.crucifixKissOverlay || document.getElementById("crucifixKissOverlay");
-    if (overlay) {
-      overlay.style.setProperty("display", "flex", "important");
-      overlay.style.setProperty("opacity", "1", "important");
-      overlay.style.setProperty("pointer-events", "auto", "important");
-      overlay.style.setProperty("z-index", "99999", "important");
-    }
     if (!overlay) {
       if (onComplete) onComplete();
       return;
     }
+    overlay.style.setProperty("display", "flex", "important");
+    overlay.style.setProperty("visibility", "visible", "important");
+    overlay.style.setProperty("opacity", "1", "important");
+    overlay.style.setProperty("pointer-events", "auto", "important");
+    overlay.style.setProperty("z-index", "99999", "important");
 
     // 언어 설정 반영
     const isEn = this.settings.lang === "en";
@@ -7949,6 +8002,11 @@ showCrucifixKissOverlay(onComplete) {
       overlay.classList.add("fade-out");
       setTimeout(() => {
         overlay.classList.remove("show", "fade-out");
+        overlay.style.removeProperty("display");
+        overlay.style.removeProperty("visibility");
+        overlay.style.removeProperty("opacity");
+        overlay.style.removeProperty("pointer-events");
+        overlay.style.removeProperty("z-index");
         overlay.style.display = "none";
         if (onComplete) onComplete();
       }, 350);
@@ -7966,6 +8024,11 @@ showCrucifixKissOverlay(onComplete) {
       if (isHandled) return;
       isHandled = true;
       overlay.classList.remove("show");
+      overlay.style.removeProperty("display");
+      overlay.style.removeProperty("visibility");
+      overlay.style.removeProperty("opacity");
+      overlay.style.removeProperty("pointer-events");
+      overlay.style.removeProperty("z-index");
       overlay.style.display = "none";
       if (onComplete) onComplete();
       cleanup();
@@ -9450,8 +9513,21 @@ showCrucifixKissOverlay(onComplete) {
       if (this.dom.scriptureAccordion) this.dom.scriptureAccordion.style.display = "none";
     }
 
-    this.dom.prayerMainTitle.textContent = step.title;
-    this.dom.prayerGuideText.textContent = step.guide;
+    // 성모송/자비간구 등 10개 작은 알 구간에서는 중복된 흰색 큰 제목과 가이드를 숨겨
+    // ✦ 성모송 본문이 위로 꽉 차게 표시되도록 최적화
+    if (step.beadType === 'small') {
+      if (this.dom.prayerMainTitle) this.dom.prayerMainTitle.style.display = 'none';
+      if (this.dom.prayerGuideText) this.dom.prayerGuideText.style.display = 'none';
+    } else {
+      if (this.dom.prayerMainTitle) {
+        this.dom.prayerMainTitle.style.display = 'block';
+        this.dom.prayerMainTitle.textContent = step.title;
+      }
+      if (this.dom.prayerGuideText) {
+        this.dom.prayerGuideText.style.display = 'block';
+        this.dom.prayerGuideText.textContent = step.guide;
+      }
+    }
 
     if (this.dom.startFatimaBox) {
       this.dom.startFatimaBox.style.display = this.currentIndex === 0 ? "flex" : "none";
@@ -10041,9 +10117,7 @@ if (this.dom.btnYeondoBackToIntro) {
         if (this.dom.completionModal) this.dom.completionModal.classList.remove("show");
         this.clearProgress();
         this.sessionCompletedDecades = new Set();
-
-    // 공동체 및 총 봉헌 단수 초기화
-    // this.initCommunityStats();
+        this.currentIndex = 0;
         this.switchView("intro");
       });
     }
