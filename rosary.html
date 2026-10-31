@@ -9513,9 +9513,11 @@ showCrucifixKissOverlay(onComplete) {
       if (this.dom.scriptureAccordion) this.dom.scriptureAccordion.style.display = "none";
     }
 
-    // 성모송/자비간구 등 10개 작은 알 구간에서는 중복된 흰색 큰 제목과 가이드를 숨겨
-    // ✦ 성모송 본문이 위로 꽉 차게 표시되도록 최적화
-    if (step.beadType === 'small') {
+    // 신비 묵상(meditation)이 있는 큰 알 구간 외에는
+    // 사도신경, 주님의 기도, 성모송 등 본문 소제목(✦ 기도명)과 중복되는 상단 큰 제목 및 가이드를 숨겨
+    // 기도문 본문이 화면 위로 꽉 차서 스크롤 없이 시원하게 보이도록 최적화
+    const hasMeditation = !!(step.meditation || (this.settings.devotion === 'rosary' && step.decadeNum));
+    if (!hasMeditation) {
       if (this.dom.prayerMainTitle) this.dom.prayerMainTitle.style.display = 'none';
       if (this.dom.prayerGuideText) this.dom.prayerGuideText.style.display = 'none';
     } else {
