@@ -7701,22 +7701,6 @@ class RosaryApp {
     }
   }
 
-  requestExitPrayer() {
-    if (this.currentIndex <= 0) {
-      this.switchView("intro");
-      return;
-    }
-    const exitModal = document.getElementById("exitConfirmModal");
-    if (exitModal) {
-      exitModal.style.display = "flex";
-      void exitModal.offsetWidth;
-      exitModal.classList.add("show");
-    } else {
-      this.saveProgress();
-      this.switchView("intro");
-    }
-  }
-
     // ==========================================
   switchView(viewName) {
     this.clearRoseBloom();
@@ -7811,7 +7795,7 @@ class RosaryApp {
       return;
     }
     const saved = this.loadSavedProgress();
-    const hasActiveProgress = saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length - 1 : 66);
+    const hasActiveProgress = saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length : 68);
 
     if (hasActiveProgress) {
       // 이어할 기록이 있다면 덮어쓰기 방지 확인 모달 띄우기
@@ -8066,8 +8050,8 @@ showCrucifixKissOverlay(onComplete) {
         ko.style.setProperty("z-index", "-1", "important");
       }
 
-      const saved = this.loadSavedProgress();
-      if (saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0) {
+      const maxStepIdx = (this.steps && this.steps.length > 0) ? this.steps.length - 1 : 67;
+      if (saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0 && saved.stepIndex <= maxStepIdx) {
         if (typeof saved.includeFatima === "boolean") {
           this.settings.includeFatima = saved.includeFatima;
           this.syncFatimaUI();
@@ -8098,8 +8082,8 @@ showCrucifixKissOverlay(onComplete) {
             this.sessionCompletedDecades.add(s.decadeNum);
           }
         }
-        this.switchView("prayer");
         this.goToStep(targetStep, false);
+        this.switchView("prayer");
         return;
       }
     } catch (err) {
@@ -8128,7 +8112,7 @@ showCrucifixKissOverlay(onComplete) {
 
     // 1. 지난 기도 이어하기 카드 상태 업데이트
     const saved = this.loadSavedProgress();
-    if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length - 1 : 66)) {
+    if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length : 68)) {
       if (this.dom.introResumeCard) {
         this.dom.introResumeCard.style.display = "flex";
       }
