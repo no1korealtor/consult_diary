@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -23,7 +23,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Nunito:wght@400;600;700&display=swap');
 
         body {
             font-family: 'Nunito', 'Jua', sans-serif;
@@ -613,15 +613,18 @@
             font-family: 'Nunito', 'Jua', sans-serif;
         }
 
-        .habit-date-bar {
+                .habit-date-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 6px;
             background: #fff0f5;
             border: 2px solid #ffd1dc;
             border-radius: 18px;
-            padding: 8px 12px;
+            padding: 8px 8px;
             margin-bottom: 18px;
+            box-sizing: border-box;
+            width: 100%;
         }
 
         .habit-date-btn {
@@ -629,13 +632,19 @@
             border: 1px solid #ffb8b8;
             color: #ff758c;
             border-radius: 12px;
-            padding: 6px 12px;
-            font-size: 13px;
+            padding: 6px 8px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             font-family: 'Nunito', 'Jua', sans-serif;
             transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
         }
 
         .habit-date-btn:hover {
@@ -643,15 +652,26 @@
             color: white;
         }
 
+        .habit-date-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
         .habit-date-picker {
             border: none;
             background: transparent;
             font-family: 'Jua', sans-serif;
-            font-size: 17px;
+            font-size: 14px;
             color: #2d3436;
             text-align: center;
             cursor: pointer;
             outline: none;
+            max-width: 100%;
+            padding: 0;
         }
 
         .habit-form-group {
@@ -1500,7 +1520,23 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.2);
             animation: popIn 0.3s ease;
         }
-    </style>
+        @media (max-width: 480px) {
+            .habit-card {
+                padding: 16px 12px;
+            }
+            .habit-date-bar {
+                padding: 8px 6px;
+                gap: 4px;
+            }
+            .habit-date-btn {
+                padding: 5px 6px;
+                font-size: 11px;
+            }
+            .habit-date-picker {
+                font-size: 13px;
+            }
+        }
+</style>
 </head>
 
 <body>
@@ -1539,7 +1575,7 @@
     </div>
 
     <script>
-        const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
+const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
         const supabaseKey = 'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k'
 
         const supabaseClient = window.supabase.createClient(
@@ -1954,7 +1990,11 @@
                 return
             }
             const youtubeLinks = data.filter(w => w.subject === 'YOUTUBE_LINK');
-            const studyData = data.filter(w => w.subject !== 'YOUTUBE_LINK' && w.subject !== 'DAILY_HABIT');
+                        const IGNORED_SUBJECTS = ['YOUTUBE_LINK', 'DAILY_HABIT', 'FAMILY_SCHEDULE'];
+            const studyData = data.filter(w => {
+                const s = (w.subject || '').trim().toUpperCase();
+                return !IGNORED_SUBJECTS.includes(s) && !s.includes('SCHEDULE') && !s.includes('HABIT');
+            });
 
             words = studyData.filter(w => !(w.memorized_users && w.memorized_users.includes(userNickname)))
             memorizedWords = studyData.filter(w => w.memorized_users && w.memorized_users.includes(userNickname))
@@ -2126,8 +2166,182 @@
                         setTimeout(() => {
                             renderMathInElement(document.getElementById('card-wrapper'), {
                                 delimiters: [
-                                    {left: '$$', right: '$$', display: true},
-                                    {left: '$', right: '$', display: false},
+                                    {left: '$', right: '$', display: true},
+                                    {left: '
+
+    <!-- 유튜브 링크 추가 모달 -->
+    <div class="modal-overlay hidden" id="youtube-modal-overlay">
+        <div class="name-modal">
+            <h2 style="font-size:22px; margin-bottom:15px;">📺 추천 링크 추가 📺</h2>
+            <input type="text" id="yt-title" class="name-input" placeholder="채널/영상 제목 (예: 과학드림)">
+            <input type="text" id="yt-url" class="name-input" placeholder="유튜브 링크 URL">
+            <input type="text" id="yt-icon" class="name-input" placeholder="이모지 하나 (기본값: 📺)" value="📺">
+            <div style="display:flex; gap:10px; margin-top: 20px;">
+                <button class="name-btn" onclick="submitYoutubeModal()">추가하기 💖</button>
+                <button class="name-btn" style="background: #dfe6e9; color: #636e72; box-shadow:none;" onclick="closeYoutubeModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 주요 일정 추가/관리 모달 -->
+    <div class="modal-overlay hidden" id="schedule-modal-overlay" onclick="if(event.target === this) closeScheduleModal()">
+        <div class="name-modal" style="max-width: 440px; width: 92%; padding: 22px; max-height: 88vh; overflow-y: auto; text-align: left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px dashed #ffd1dc; padding-bottom:8px;">
+                <h2 style="font-size:20px; color:#2d3436; margin:0; font-family:'Jua', sans-serif;">🗓️ 주요 일정 등록 & 관리</h2>
+                <button type="button" onclick="closeScheduleModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#94a3b8;">✕</button>
+            </div>
+
+            <!-- 새 일정 등록 폼 -->
+            <div style="background:#fff8f9; border:1.5px solid #ffe4e8; border-radius:16px; padding:14px; margin-bottom:16px;">
+                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#ff758c; margin-bottom:10px;">➕ 새로운 일정 등록</div>
+                
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">일정 제목</label>
+                <input type="text" id="sched-input-title" class="habit-memo-input" style="padding:8px 12px; margin-bottom:10px;" placeholder="예: 2학기 중간고사, 할아버지 제사, 가족여행 등" maxlength="40">
+
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">분류 / 이모지 선택</label>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:10px;" id="sched-category-selector">
+                    <button type="button" class="habit-cal-btn sched-cat-btn active" data-icon="📝" data-cat="EXAM" onclick="selectSchedCat(this)">📝 중간/기말고사</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🕯️" data-cat="FAMILY" onclick="selectSchedCat(this)">🕯️ 제사/가족행사</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🎂" data-cat="BIRTHDAY" onclick="selectSchedCat(this)">🎂 생일/기념일</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🎒" data-cat="SCHOOL" onclick="selectSchedCat(this)">🎒 학교행사/소풍</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="✈️" data-cat="VACATION" onclick="selectSchedCat(this)">✈️ 방학/여행/휴일</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="📌" data-cat="OTHER" onclick="selectSchedCat(this)">📌 기타 일정</button>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">시작일</label>
+                        <input type="date" id="sched-input-start" class="habit-date-picker" style="width:100%; box-sizing:border-box; padding:6px 10px;" onchange="syncSchedEndDate(this.value)">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">종료일</label>
+                        <input type="date" id="sched-input-end" class="habit-date-picker" style="width:100%; box-sizing:border-box; padding:6px 10px;">
+                    </div>
+                </div>
+
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">메모 / 준비사항 (선택)</label>
+                <input type="text" id="sched-input-memo" class="habit-memo-input" style="padding:8px 12px; margin-bottom:12px;" placeholder="예: 국어/수학 시험, 저녁 6시 큰집 등" maxlength="50">
+
+                <button type="button" id="sched-save-btn" onclick="saveNewSchedule()" style="width:100%; background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color:white; border:none; padding:10px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:14px; box-shadow:0 3px 8px rgba(255, 117, 140, 0.3);">
+                    💾 일정 추가하기 💖
+                </button>
+            </div>
+
+            <!-- 등록된 일정 목록 -->
+            <div>
+                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#475569; margin-bottom:8px;">📋 등록된 전체 일정 목록</div>
+                <div id="sched-modal-list" style="display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;">
+                    <!-- JS renders list here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+                <footer class="site-footer">
+        <div class="site-footer-inner">
+            <div class="footer-links">
+                <a href="#">회사소개</a>
+                <a href="#" style="color: #fca5a5;">개인정보처리방침</a>
+                <a href="#">이용약관</a>
+            </div>
+            <div class="footer-info">
+                <strong class="footer-strong">신대림공인중개사사무소 (제호: 공인중개사소식지)</strong>
+                <span>대표/발행·편집인: 조항준</span> <span>등록번호: 서울, 아53763</span> <span>등록일자: 2021년 06월 14일</span><br>
+                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 02-375-4489</span> <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>, right: '
+
+    <!-- 유튜브 링크 추가 모달 -->
+    <div class="modal-overlay hidden" id="youtube-modal-overlay">
+        <div class="name-modal">
+            <h2 style="font-size:22px; margin-bottom:15px;">📺 추천 링크 추가 📺</h2>
+            <input type="text" id="yt-title" class="name-input" placeholder="채널/영상 제목 (예: 과학드림)">
+            <input type="text" id="yt-url" class="name-input" placeholder="유튜브 링크 URL">
+            <input type="text" id="yt-icon" class="name-input" placeholder="이모지 하나 (기본값: 📺)" value="📺">
+            <div style="display:flex; gap:10px; margin-top: 20px;">
+                <button class="name-btn" onclick="submitYoutubeModal()">추가하기 💖</button>
+                <button class="name-btn" style="background: #dfe6e9; color: #636e72; box-shadow:none;" onclick="closeYoutubeModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 주요 일정 추가/관리 모달 -->
+    <div class="modal-overlay hidden" id="schedule-modal-overlay" onclick="if(event.target === this) closeScheduleModal()">
+        <div class="name-modal" style="max-width: 440px; width: 92%; padding: 22px; max-height: 88vh; overflow-y: auto; text-align: left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px dashed #ffd1dc; padding-bottom:8px;">
+                <h2 style="font-size:20px; color:#2d3436; margin:0; font-family:'Jua', sans-serif;">🗓️ 주요 일정 등록 & 관리</h2>
+                <button type="button" onclick="closeScheduleModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#94a3b8;">✕</button>
+            </div>
+
+            <!-- 새 일정 등록 폼 -->
+            <div style="background:#fff8f9; border:1.5px solid #ffe4e8; border-radius:16px; padding:14px; margin-bottom:16px;">
+                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#ff758c; margin-bottom:10px;">➕ 새로운 일정 등록</div>
+                
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">일정 제목</label>
+                <input type="text" id="sched-input-title" class="habit-memo-input" style="padding:8px 12px; margin-bottom:10px;" placeholder="예: 2학기 중간고사, 할아버지 제사, 가족여행 등" maxlength="40">
+
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">분류 / 이모지 선택</label>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:10px;" id="sched-category-selector">
+                    <button type="button" class="habit-cal-btn sched-cat-btn active" data-icon="📝" data-cat="EXAM" onclick="selectSchedCat(this)">📝 중간/기말고사</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🕯️" data-cat="FAMILY" onclick="selectSchedCat(this)">🕯️ 제사/가족행사</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🎂" data-cat="BIRTHDAY" onclick="selectSchedCat(this)">🎂 생일/기념일</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🎒" data-cat="SCHOOL" onclick="selectSchedCat(this)">🎒 학교행사/소풍</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="✈️" data-cat="VACATION" onclick="selectSchedCat(this)">✈️ 방학/여행/휴일</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="📌" data-cat="OTHER" onclick="selectSchedCat(this)">📌 기타 일정</button>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">시작일</label>
+                        <input type="date" id="sched-input-start" class="habit-date-picker" style="width:100%; box-sizing:border-box; padding:6px 10px;" onchange="syncSchedEndDate(this.value)">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">종료일</label>
+                        <input type="date" id="sched-input-end" class="habit-date-picker" style="width:100%; box-sizing:border-box; padding:6px 10px;">
+                    </div>
+                </div>
+
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">메모 / 준비사항 (선택)</label>
+                <input type="text" id="sched-input-memo" class="habit-memo-input" style="padding:8px 12px; margin-bottom:12px;" placeholder="예: 국어/수학 시험, 저녁 6시 큰집 등" maxlength="50">
+
+                <button type="button" id="sched-save-btn" onclick="saveNewSchedule()" style="width:100%; background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color:white; border:none; padding:10px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:14px; box-shadow:0 3px 8px rgba(255, 117, 140, 0.3);">
+                    💾 일정 추가하기 💖
+                </button>
+            </div>
+
+            <!-- 등록된 일정 목록 -->
+            <div>
+                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#475569; margin-bottom:8px;">📋 등록된 전체 일정 목록</div>
+                <div id="sched-modal-list" style="display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;">
+                    <!-- JS renders list here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+                <footer class="site-footer">
+        <div class="site-footer-inner">
+            <div class="footer-links">
+                <a href="#">회사소개</a>
+                <a href="#" style="color: #fca5a5;">개인정보처리방침</a>
+                <a href="#">이용약관</a>
+            </div>
+            <div class="footer-info">
+                <strong class="footer-strong">신대림공인중개사사무소 (제호: 공인중개사소식지)</strong>
+                <span>대표/발행·편집인: 조항준</span> <span>등록번호: 서울, 아53763</span> <span>등록일자: 2021년 06월 14일</span><br>
+                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 02-375-4489</span> <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>, display: false},
                                     {left: '\\(', right: '\\)', display: false},
                                     {left: '\\[', right: '\\]', display: true}
                                 ],
@@ -2190,8 +2404,182 @@
             if (window.renderMathInElement) {
                 renderMathInElement(cardContainer, {
                     delimiters: [
-                        {left: '$$', right: '$$', display: true},
-                        {left: '$', right: '$', display: false},
+                        {left: '$', right: '$', display: true},
+                        {left: '
+
+    <!-- 유튜브 링크 추가 모달 -->
+    <div class="modal-overlay hidden" id="youtube-modal-overlay">
+        <div class="name-modal">
+            <h2 style="font-size:22px; margin-bottom:15px;">📺 추천 링크 추가 📺</h2>
+            <input type="text" id="yt-title" class="name-input" placeholder="채널/영상 제목 (예: 과학드림)">
+            <input type="text" id="yt-url" class="name-input" placeholder="유튜브 링크 URL">
+            <input type="text" id="yt-icon" class="name-input" placeholder="이모지 하나 (기본값: 📺)" value="📺">
+            <div style="display:flex; gap:10px; margin-top: 20px;">
+                <button class="name-btn" onclick="submitYoutubeModal()">추가하기 💖</button>
+                <button class="name-btn" style="background: #dfe6e9; color: #636e72; box-shadow:none;" onclick="closeYoutubeModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 주요 일정 추가/관리 모달 -->
+    <div class="modal-overlay hidden" id="schedule-modal-overlay" onclick="if(event.target === this) closeScheduleModal()">
+        <div class="name-modal" style="max-width: 440px; width: 92%; padding: 22px; max-height: 88vh; overflow-y: auto; text-align: left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px dashed #ffd1dc; padding-bottom:8px;">
+                <h2 style="font-size:20px; color:#2d3436; margin:0; font-family:'Jua', sans-serif;">🗓️ 주요 일정 등록 & 관리</h2>
+                <button type="button" onclick="closeScheduleModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#94a3b8;">✕</button>
+            </div>
+
+            <!-- 새 일정 등록 폼 -->
+            <div style="background:#fff8f9; border:1.5px solid #ffe4e8; border-radius:16px; padding:14px; margin-bottom:16px;">
+                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#ff758c; margin-bottom:10px;">➕ 새로운 일정 등록</div>
+                
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">일정 제목</label>
+                <input type="text" id="sched-input-title" class="habit-memo-input" style="padding:8px 12px; margin-bottom:10px;" placeholder="예: 2학기 중간고사, 할아버지 제사, 가족여행 등" maxlength="40">
+
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">분류 / 이모지 선택</label>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:10px;" id="sched-category-selector">
+                    <button type="button" class="habit-cal-btn sched-cat-btn active" data-icon="📝" data-cat="EXAM" onclick="selectSchedCat(this)">📝 중간/기말고사</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🕯️" data-cat="FAMILY" onclick="selectSchedCat(this)">🕯️ 제사/가족행사</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🎂" data-cat="BIRTHDAY" onclick="selectSchedCat(this)">🎂 생일/기념일</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🎒" data-cat="SCHOOL" onclick="selectSchedCat(this)">🎒 학교행사/소풍</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="✈️" data-cat="VACATION" onclick="selectSchedCat(this)">✈️ 방학/여행/휴일</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="📌" data-cat="OTHER" onclick="selectSchedCat(this)">📌 기타 일정</button>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">시작일</label>
+                        <input type="date" id="sched-input-start" class="habit-date-picker" style="width:100%; box-sizing:border-box; padding:6px 10px;" onchange="syncSchedEndDate(this.value)">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">종료일</label>
+                        <input type="date" id="sched-input-end" class="habit-date-picker" style="width:100%; box-sizing:border-box; padding:6px 10px;">
+                    </div>
+                </div>
+
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">메모 / 준비사항 (선택)</label>
+                <input type="text" id="sched-input-memo" class="habit-memo-input" style="padding:8px 12px; margin-bottom:12px;" placeholder="예: 국어/수학 시험, 저녁 6시 큰집 등" maxlength="50">
+
+                <button type="button" id="sched-save-btn" onclick="saveNewSchedule()" style="width:100%; background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color:white; border:none; padding:10px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:14px; box-shadow:0 3px 8px rgba(255, 117, 140, 0.3);">
+                    💾 일정 추가하기 💖
+                </button>
+            </div>
+
+            <!-- 등록된 일정 목록 -->
+            <div>
+                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#475569; margin-bottom:8px;">📋 등록된 전체 일정 목록</div>
+                <div id="sched-modal-list" style="display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;">
+                    <!-- JS renders list here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+                <footer class="site-footer">
+        <div class="site-footer-inner">
+            <div class="footer-links">
+                <a href="#">회사소개</a>
+                <a href="#" style="color: #fca5a5;">개인정보처리방침</a>
+                <a href="#">이용약관</a>
+            </div>
+            <div class="footer-info">
+                <strong class="footer-strong">신대림공인중개사사무소 (제호: 공인중개사소식지)</strong>
+                <span>대표/발행·편집인: 조항준</span> <span>등록번호: 서울, 아53763</span> <span>등록일자: 2021년 06월 14일</span><br>
+                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 02-375-4489</span> <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>, right: '
+
+    <!-- 유튜브 링크 추가 모달 -->
+    <div class="modal-overlay hidden" id="youtube-modal-overlay">
+        <div class="name-modal">
+            <h2 style="font-size:22px; margin-bottom:15px;">📺 추천 링크 추가 📺</h2>
+            <input type="text" id="yt-title" class="name-input" placeholder="채널/영상 제목 (예: 과학드림)">
+            <input type="text" id="yt-url" class="name-input" placeholder="유튜브 링크 URL">
+            <input type="text" id="yt-icon" class="name-input" placeholder="이모지 하나 (기본값: 📺)" value="📺">
+            <div style="display:flex; gap:10px; margin-top: 20px;">
+                <button class="name-btn" onclick="submitYoutubeModal()">추가하기 💖</button>
+                <button class="name-btn" style="background: #dfe6e9; color: #636e72; box-shadow:none;" onclick="closeYoutubeModal()">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 주요 일정 추가/관리 모달 -->
+    <div class="modal-overlay hidden" id="schedule-modal-overlay" onclick="if(event.target === this) closeScheduleModal()">
+        <div class="name-modal" style="max-width: 440px; width: 92%; padding: 22px; max-height: 88vh; overflow-y: auto; text-align: left;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px dashed #ffd1dc; padding-bottom:8px;">
+                <h2 style="font-size:20px; color:#2d3436; margin:0; font-family:'Jua', sans-serif;">🗓️ 주요 일정 등록 & 관리</h2>
+                <button type="button" onclick="closeScheduleModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#94a3b8;">✕</button>
+            </div>
+
+            <!-- 새 일정 등록 폼 -->
+            <div style="background:#fff8f9; border:1.5px solid #ffe4e8; border-radius:16px; padding:14px; margin-bottom:16px;">
+                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#ff758c; margin-bottom:10px;">➕ 새로운 일정 등록</div>
+                
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">일정 제목</label>
+                <input type="text" id="sched-input-title" class="habit-memo-input" style="padding:8px 12px; margin-bottom:10px;" placeholder="예: 2학기 중간고사, 할아버지 제사, 가족여행 등" maxlength="40">
+
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">분류 / 이모지 선택</label>
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:10px;" id="sched-category-selector">
+                    <button type="button" class="habit-cal-btn sched-cat-btn active" data-icon="📝" data-cat="EXAM" onclick="selectSchedCat(this)">📝 중간/기말고사</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🕯️" data-cat="FAMILY" onclick="selectSchedCat(this)">🕯️ 제사/가족행사</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🎂" data-cat="BIRTHDAY" onclick="selectSchedCat(this)">🎂 생일/기념일</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🎒" data-cat="SCHOOL" onclick="selectSchedCat(this)">🎒 학교행사/소풍</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="✈️" data-cat="VACATION" onclick="selectSchedCat(this)">✈️ 방학/여행/휴일</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="📌" data-cat="OTHER" onclick="selectSchedCat(this)">📌 기타 일정</button>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">시작일</label>
+                        <input type="date" id="sched-input-start" class="habit-date-picker" style="width:100%; box-sizing:border-box; padding:6px 10px;" onchange="syncSchedEndDate(this.value)">
+                    </div>
+                    <div style="flex:1;">
+                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">종료일</label>
+                        <input type="date" id="sched-input-end" class="habit-date-picker" style="width:100%; box-sizing:border-box; padding:6px 10px;">
+                    </div>
+                </div>
+
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">메모 / 준비사항 (선택)</label>
+                <input type="text" id="sched-input-memo" class="habit-memo-input" style="padding:8px 12px; margin-bottom:12px;" placeholder="예: 국어/수학 시험, 저녁 6시 큰집 등" maxlength="50">
+
+                <button type="button" id="sched-save-btn" onclick="saveNewSchedule()" style="width:100%; background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color:white; border:none; padding:10px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:14px; box-shadow:0 3px 8px rgba(255, 117, 140, 0.3);">
+                    💾 일정 추가하기 💖
+                </button>
+            </div>
+
+            <!-- 등록된 일정 목록 -->
+            <div>
+                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#475569; margin-bottom:8px;">📋 등록된 전체 일정 목록</div>
+                <div id="sched-modal-list" style="display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;">
+                    <!-- JS renders list here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+                <footer class="site-footer">
+        <div class="site-footer-inner">
+            <div class="footer-links">
+                <a href="#">회사소개</a>
+                <a href="#" style="color: #fca5a5;">개인정보처리방침</a>
+                <a href="#">이용약관</a>
+            </div>
+            <div class="footer-info">
+                <strong class="footer-strong">신대림공인중개사사무소 (제호: 공인중개사소식지)</strong>
+                <span>대표/발행·편집인: 조항준</span> <span>등록번호: 서울, 아53763</span> <span>등록일자: 2021년 06월 14일</span><br>
+                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 02-375-4489</span> <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
+            </div>
+        </div>
+    </footer>
+</body>
+
+</html>, display: false},
                         {left: '\\(', right: '\\)', display: false},
                         {left: '\\[', right: '\\]', display: true}
                     ],
@@ -3159,7 +3547,7 @@
                 <div class="habit-week-wrap">
                     <div class="habit-week-nav">
                         <button type="button" class="habit-cal-btn" onclick="changeHabitWeek(-1)">◀ 지난주</button>
-                        <div style="display:flex; flex-direction:column; align-items:center;">
+                        <div class="habit-date-center">
                             <div class="habit-week-title">📅 ${weekTitle}</div>
                             ${habitWeekOffset !== 0 
                                 ? `<button type="button" onclick="resetHabitWeek()" class="habit-week-reset-btn">이번 주로 돌아가기</button>` 
@@ -3333,11 +3721,11 @@
                 <!-- 날짜 선택 바 -->
                 <div class="habit-date-bar">
                     <button class="habit-date-btn" onclick="stepHabitDate(-1)">◀ 어제</button>
-                    <div style="display:flex; flex-direction:column; align-items:center;">
+                    <div class="habit-date-center">
                         <input type="date" class="habit-date-picker" id="habit-date-input" value="${selectedHabitDate}" onchange="changeHabitDate(this.value)">
                         <span style="font-size:12px; color:#ff758c; font-weight:bold; font-family:'Nunito', sans-serif;">${formatFriendlyDate(selectedHabitDate)}</span>
                     </div>
-                    <div style="display:flex; gap:4px;">
+                    <div style="display:flex; gap:4px; flex-shrink:0;">
                         <button class="habit-date-btn" onclick="setHabitDateToToday()">오늘 📅</button>
                         <button class="habit-date-btn" onclick="stepHabitDate(1)">내일 ▶</button>
                     </div>
@@ -3940,7 +4328,7 @@
 
         initStats()
         loadWords()
-    </script>
+</script>
 
     <!-- 유튜브 링크 추가 모달 -->
     <div class="modal-overlay hidden" id="youtube-modal-overlay">
