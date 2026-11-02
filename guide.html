@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>중개노트 - 공식 사용자 매뉴얼 & 업데이트 소식</title>
+  <style>
+    :root {
+      --primary: #1d4ed8;
+      --primary-light: #eff6ff;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --sub: #475569;
+      --border: #e2e8f0;
+      --success: #15803d;
+      --accent: #2563eb;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Pretendard", sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; padding-bottom: 60px; }
+
+    /* Header */
+    header {
+      position: sticky; top: 0; z-index: 50; background: #ffffff;
+      border-bottom: 2px solid #e2e8f0; padding: 14px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .header-brand {
+      display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 900; color: #1e293b;
+    }
+    .version-tag {
+      background: #2563eb; color: white; font-size: 11.5px; font-weight: 800; padding: 3px 8px; border-radius: 12px;
+    }
+
+    .container {
+      max-width: 680px; margin: 0 auto; padding: 18px 16px;
+    }
+
+    /* Hero Banner */
+    .hero-box {
+      background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+      color: white; border-radius: 16px; padding: 22px 20px; margin-bottom: 22px;
+      box-shadow: 0 4px 16px rgba(29, 78, 216, 0.2);
+    }
+    .hero-title { font-size: 21px; font-weight: 900; margin-bottom: 6px; }
+    .hero-desc { font-size: 14px; opacity: 0.95; line-height: 1.5; }
+
+    /* Table of contents quick bar */
+    .toc-bar {
+      display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 20px;
+    }
+    .toc-pill {
+      background: white; border: 1.5px solid var(--border); border-radius: 20px;
+      padding: 6px 13px; font-size: 13px; font-weight: 700; color: #334155;
+      text-decoration: none; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    /* Section Card */
+    .guide-section {
+      background: var(--card); border-radius: 14px; border: 1.5px solid var(--border);
+      padding: 20px 18px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .section-title {
+      font-size: 17px; font-weight: 900; color: #1e293b; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9;
+    }
+    .step-box {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+      padding: 12px 14px; margin-bottom: 10px;
+    }
+    .step-title {
+      font-size: 14.5px; font-weight: 800; color: #1e40af; margin-bottom: 4px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .step-desc {
+      font-size: 13.5px; color: #475569; line-height: 1.55;
+    }
+    .tip-box {
+      background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
+      padding: 10px 12px; font-size: 13px; color: #92400e; margin-top: 10px;
+      display: flex; gap: 6px; align-items: flex-start;
+    }
+
+    /* Release Notes Section */
+    .release-item {
+      padding-left: 14px; border-left: 3px solid #3b82f6; margin-bottom: 16px;
+    }
+    .release-ver {
+      font-size: 15px; font-weight: 900; color: #1d4ed8; display: flex; align-items: center; gap: 6px;
+    }
+    .release-date { font-size: 12px; font-weight: normal; color: #94a3b8; }
+    .release-list {
+      list-style-type: none; margin-top: 6px; font-size: 13.5px; color: #334155;
+    }
+    .release-list li {
+      position: relative; padding-left: 14px; margin-bottom: 4px;
+    }
+    .release-list li::before {
+      content: "•"; position: absolute; left: 0; color: #2563eb; font-weight: 900;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center; margin-top: 30px; font-size: 12.5px; color: #94a3b8;
+    }
+  
+    /* OneStore Download Banner */
+    .onestore-banner {
+      background: linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%);
+      border: 2px solid #fda4af;
+      border-radius: 16px;
+      padding: 16px 18px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.08);
+    }
+    .onestore-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .onestore-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: #e11d48;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(225, 29, 72, 0.25);
+    }
+    .onestore-text-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: #9f1239;
+      margin-bottom: 2px;
+    }
+    .onestore-text-desc {
+      font-size: 12.5px;
+      color: #be123c;
+    }
+    .btn-onestore-download {
+      background: #e11d48;
+      color: white;
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 800;
+      padding: 10px 16px;
+      border-radius: 10px;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 3px 10px rgba(225, 29, 72, 0.3);
+      transition: transform 0.1s, background 0.1s;
+    }
+    .btn-onestore-download:active {
+      transform: scale(0.96);
+      background: #be123c;
+    }
+    @media (max-width: 460px) {
+      .onestore-banner {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      .onestore-info {
+        flex-direction: column;
+        justify-content: center;
+      }
+      .btn-onestore-download {
+        justify-content: center;
+      }
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="header-brand">
+      <span>🏡 중개노트</span>
+      <span class="version-tag">공식 매뉴얼</span>
+    </div>
+    <div style="font-size: 12.5px; font-weight: 700; color: #64748b;">
+      v1.0.3 최신판
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Hero Box -->
+    <div class="hero-box">
+      <div class="hero-title">공인중개사 현장 필수 수첩, 중개노트</div>
+      <div class="hero-desc">
+        현장에서 손님과 동행할 때 비밀번호를 1초 만에 확인하고, 거주자 직통 통화와 대단지 아파트 동·호수까지 완벽하게 관리하는 실전 활용 가이드입니다.
+      </div>
+    </div>
+
+    <!-- ONE Store Official Download Banner -->
+    <div class="onestore-banner">
+      <div class="onestore-info">
+        <div class="onestore-icon">📲</div>
+        <div>
+          <div class="onestore-text-title">원스토어(ONE store) 공식 앱 출시!</div>
+          <div class="onestore-text-desc">스마트폰에 중개노트 정식 앱을 무료로 다운로드 받으세요.</div>
+        </div>
+      </div>
+      <a href="onestore://common/product/0000788888" onclick="handleOneStoreDownload(event)" class="btn-onestore-download">
+        <span>🛒 원스토어 다운로드</span>
+        <span>→</span>
+      </a>
+    </div>
+
+    <!-- Quick Navigation Bar -->
+    <div class="toc-bar">
+      <a href="#sec-register" class="toc-pill" style="border-color: #2563eb; color: #1d4ed8; background: #eff6ff;">📍 1. 매물·주소 등록</a>
+      <a href="#sec-schedule" class="toc-pill" style="border-color: #2563eb; color: #1d4ed8; background: #eff6ff;">🗓️ 2. 약속&피드백</a>
+      <a href="#sec-search" class="toc-pill" style="border-color: #2563eb; color: #1d4ed8; background: #eff6ff;">🔍 3. 현장 1초 검색</a>
+      <a href="#sec-recovery" class="toc-pill" style="border-color: #059669; color: #047857; background: #ecfdf5;">🛡️ 앱 삭제/복구 방법</a>
+      <a href="#sec-donation" class="toc-pill" style="border-color: #d97706; color: #b45309; background: #fffbeb;">☕ 따뜻한 응원하기</a>
+      <a href="#sec-complex" class="toc-pill">🏢 아파트·빌라 묶음</a>
+      <a href="#sec-offline" class="toc-pill">⚡ 현장 무중단 기술</a>
+      <a href="#sec-tenant" class="toc-pill">📞 세입자 직통/메모</a>
+      <a href="#sec-security" class="toc-pill">🔒 암호 설정</a>
+      <a href="#sec-team-preview" class="toc-pill">👥 사무소 팀 공유(준비 중)</a>
+      <a href="#sec-release" class="toc-pill">🚀 업데이트 소식</a>
+    </div>
+
+    <!-- 📍 [실무 1단계] 주소지 & 도어락 등록하기 -->
+    <div class="guide-section" id="sec-register" style="border: 2px solid #3b82f6;">
+      <div class="section-title" style="color: #1d4ed8; border-bottom: 2px solid #dbeafe;">
+        <span>📍 1. 주소지 & 도어락 등록하기 (아파트 / 빌라)</span>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">1단계: 화면 상단 [➕ 새 매물 등록] 터치</div>
+        <div class="step-desc">
+          화면 오른쪽 위 파란색 <b>[➕ 새 매물 등록]</b> 버튼을 누르고 <b>건물명, 지번 주소, 공동현관 비밀번호</b>를 입력합니다.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">2단계: 아파트 vs 일반 빌라 구분 입력법</div>
+        <div class="step-desc">
+          • <b>대단지 아파트:</b> [건물 동] 입력란에 <code>101동</code>처럼 동을 입력하세요. 동별로 공동비번이 깔끔하게 따로 보존됩니다.<br>
+          • <b>일반 빌라/다가구:</b> [건물 동]을 <b>비워두세요!</b> 건물 카드 1장에 201호, 302호가 모이고 공동비번을 자동으로 공유합니다.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">3단계: 호수와 세대 도어락 번호 입력 후 저장</div>
+        <div class="step-desc">
+          <b>호수, 세대 도어락 비밀번호, 임대인/세입자 연락처</b>를 입력하고 <b>[저장하기]</b>를 누르면 메인 화면에 즉시 카드가 생성됩니다.
+        </div>
+      </div>
+
+      <div class="tip-box">
+        ⚡ <b>실무 3초 완성 꿀팁:</b> 이미 등록된 건물에 다른 호수가 나왔을 땐 상단 [새 매물]을 누르지 마시고, 해당 건물 카드의 <b>[➕ 신규 동·호수 추가]</b> 버튼을 누르세요. 지번과 건물명이 자동 채워져 3초 만에 끝납니다!
+      </div>
+    </div>
+
+    <!-- 🗓️ [실무 2단계] 손님 쇼잉 약속 & 브리핑 기록하기 -->
+    <div class="guide-section" id="sec-schedule" style="border: 2px solid #3b82f6;">
+      <div class="section-title" style="color: #1d4ed8; border-bottom: 2px solid #dbeafe;">
+        <span>🗓️ 2. 손님 쇼잉 약속 잡기 & 브리핑 기록하기</span>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">1단계: 해당 호수 카드 안의 [➕ 일정추가] 터치</div>
+        <div class="step-desc">
+          손님과 쇼잉 약속이 잡히면 해당 호수 카드 안의 <b>[➕ 일정추가]</b>를 눌러 <b>손님 이름, 연락처, 방문 시간</b>을 입력합니다.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">2단계: 오늘 쇼잉 일정 알림 뱃지 자동 표시</div>
+        <div class="step-desc">
+          오늘 약속이 잡힌 집은 메인 매물 카드 상단에 <b>[⏰ 오늘 14:00 (손님명)]</b> 주황색 알림 뱃지가 눈에 띄게 붙어, 바쁜 일정 중에도 약속을 놓치지 않습니다.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">3단계: 집 안내 후 [💬 브리핑/피드백] 바로 메모</div>
+        <div class="step-desc">
+          손님과 집을 보고 나온 직후 <b>[💬 브리핑/피드백]</b> 버튼을 눌러 손님 반응(예: <i>"채광 마음에 드나 안방 붙박이장 원함", "대출 조회 후 금요일 재연락"</i>)을 남겨두세요. 시간이 흘러도 손님과의 상담 히스토리가 철저히 관리됩니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 🔍 [실무 3단계] 현장 1초 검색 및 매물 화면 정리 -->
+    <div class="guide-section" id="sec-search" style="border: 2px solid #3b82f6;">
+      <div class="section-title" style="color: #1d4ed8; border-bottom: 2px solid #dbeafe;">
+        <span>🔍 3. 현장 1초 즉시 검색 & 매물 보관(숨기기)</span>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">1단계: 주소, 동·호수, 손님명 즉시 검색</div>
+        <div class="step-desc">
+          상단 검색창에 <b>'101동', '302호', '성산', '홍길동'</b> 등 단어 하나만 입력해도 0.001초 만에 해당 매물 카드가 눈앞에 즉시 정렬됩니다.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">2단계: 계약 완료된 집은 [📦 숨기기 / 계약완료 보관]</div>
+        <div class="step-desc">
+          계약이 완료된 매물은 지우지 마시고 <b>[📁 매물정리] ➔ [📦 숨기기 / 계약완료 보관]</b>을 누르세요.<br>
+          메인 화면에서는 사라져 깔끔해지고, 소중한 도어락 비밀번호와 임대인 연락처는 <b>[📦 보관·숨김] 필터</b>에 안전하게 보존되어 다음 재계약/임대 시 클릭 한 번으로 되살릴 수 있습니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 🛡️ [실무 복구] 실수로 앱을 지웠을 때 1초 만에 되살리는 방법 -->
+    <div class="guide-section" id="sec-recovery" style="border: 2px solid #10b981; background: #f0fdf4;">
+      <div class="section-title" style="color: #065f46; border-bottom: 2px solid #bbf7d0;">
+        <span>🛡️ 실수로 앱을 삭제했거나 스마트폰을 바꿨을 때 100% 되살리는 법</span>
+      </div>
+
+      <p style="font-size: 13.5px; color: #166534; margin-bottom: 12px; line-height: 1.6;">
+        중개노트는 스마트폰의 공용 문서 폴더(<code>내 파일 > Documents</code>)에 <b>군사급 자동 암호화 금고 파일(showing_note_vault.enc)</b>을 실시간으로 보관합니다. <b>앱을 실수로 삭제하더라도 금고 파일은 절대 지워지지 않습니다!</b>
+      </p>
+
+      <div class="step-box" style="background: #ffffff; border-color: #bbf7d0;">
+        <div class="step-title" style="color: #047857;">1단계: 원스토어에서 [중개노트] 앱을 다시 설치합니다</div>
+        <div class="step-desc">
+          원스토어 검색창에 '중개노트'를 입력하고 다시 다운로드받아 실행합니다.
+        </div>
+      </div>
+
+      <div class="step-box" style="background: #ffffff; border-color: #bbf7d0;">
+        <div class="step-title" style="color: #047857;">2단계: 앱을 켜고 [기존에 쓰던 4자리 암호]를 누릅니다</div>
+        <div class="step-desc">
+          앱을 처음 켜면 비밀번호 입력 화면이 나옵니다. 이때 <b>삭제 전에 쓰시던 4자리 암호</b>를 그대로 누르세요.
+        </div>
+      </div>
+
+      <div class="step-box" style="background: #ffffff; border-color: #bbf7d0;">
+        <div class="step-title" style="color: #047857;">3단계: 기적처럼 0.1초 만에 모든 매물과 비밀번호 복원 완료!</div>
+        <div class="step-desc">
+          앱이 공용 금고 파일을 감지하고 4자리 암호로 안전하게 금고를 열어, <b>이전에 기록해 두신 모든 지번, 도어락 비밀번호, 세입자 연락처, 메모를 흔적 없이 100% 원상복구</b>해 드립니다.
+        </div>
+      </div>
+
+      <div class="tip-box" style="background: #ecfdf5; border-color: #6ee7b7; color: #065f46;">
+        📱 <b>스마트폰 기기 변경 시:</b> 새 폰으로 바꾸셨다면, 예전 폰의 <code>내 파일 > Documents > showing_note_vault.enc</code> 파일만 새 폰의 같은 폴더로 복사해 두시면 새 폰에서도 이전 장부가 그대로 열립니다!
+      </div>
+    </div>
+
+    <!-- 4. 아파트 & 빌라 스마트 묶음 관리 -->
+    <div class="guide-section" id="sec-complex">
+      <div class="section-title">
+        <span>🏢 4. 스마트 지번·동·호수 묶음 관리 (상세 원리)</span>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">🔹 대단지 아파트 (같은 지번에 여러 동과 호수가 있을 때)</div>
+        <div class="step-desc">
+          성산시영아파트처럼 같은 지번에 101동, 102동 등 여러 동이 있다면, 매물 등록 시 <b>[건물 동]</b> 입력란에 <code>101동</code>을 입력하세요.<br>
+          동별로 헤더가 분리되며 <b>101동 공동현관 비밀번호</b>와 <b>102동 공동비번</b>이 서로 섞이지 않고 따로 완벽하게 보존됩니다.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">🔹 일반 빌라 / 다가구 / 단독 건물</div>
+        <div class="step-desc">
+          동 구분이 없는 일반 빌라는 <b>[건물 동]을 비워두시면</b> 프로그램이 알아서 가상의 기본동으로 처리합니다.<br>
+          한 건물에 나온 201호, 302호가 하나의 건물 카드 서랍 안에 쏙 모이고, <b>공동현관 비밀번호는 건물 전체에 1번만 입력하면 모든 호수가 자동 공유</b>합니다.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">⚡️ [➕ 신규 동·호수 추가] 1초 등록 꿀팁</div>
+        <div class="step-desc">
+          이미 등록된 건물에 새로운 호수가 나왔다면 상단 <code>[➕ 새 매물 등록]</code>을 누르실 필요가 없습니다.<br>
+          해당 건물 카드의 <b>[➕ 신규 동·호수 추가]</b> 버튼을 누르면 <b>지번, 건물명, 공동비번이 자동으로 채워진 채로</b> 등록창이 열립니다. 새로 나온 호수와 세대 비번만 입력하면 3초 만에 끝납니다!
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. 현장 사각지대 무중단 기술 (오프라인 퍼스트) -->
+    <div class="guide-section" id="sec-offline">
+      <div class="section-title">
+        <span>⚡ 5. 인터넷 먹통·지하 음영지역 무중단 기술 (Offline-First)</span>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">📶 지하 1층 상가, 두꺼운 철문 앞에서도 0.001초 즉시 확인</div>
+        <div class="step-desc">
+          손님을 모시고 엘리베이터 안이나 전파가 터지지 않는 반지하·신축 계단실 앞에 섰을 때, 앱이 로딩 중 멈추면 치명적인 사고가 됩니다.<br>
+          중개노트는 매번 서버 접속을 기다리는 웹페이지 방식이 아닌, <b>스마트폰 자체 고성능 내부 DB에서 0.001초 만에 즉시 열리는 '오프라인 퍼스트' 엔진</b>을 탑재했습니다.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">🛡️ 비행기 탑승 모드(오프라인)에서도 100% 정상 작동</div>
+        <div class="step-desc">
+          통신사 장애나 데이터 통신 불가 상태에서도 비밀번호 잠금 해제, 도어락 번호 확인, 신규 메모 입력 등 모든 기능을 평소와 똑같이 완벽하게 사용하실 수 있습니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. 세입자 직통 통화 & 물건지 메모 -->
+    <div class="guide-section" id="sec-tenant">
+      <div class="section-title">
+        <span>📞 6. 세입자 직통 통화 및 물건지 특이사항 메모</span>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">🔹 거주자 통화 직통 버튼 (하늘색)</div>
+        <div class="step-desc">
+          현재 세입자가 살고 있는 집을 보러 갈 때, 매물 카드에서 하늘색 <b>[📞 세입자 통화]</b> 버튼을 누르면 즉시 전화가 걸립니다. 임대인 번호와 명확하게 구분되어 현장에서 실수할 일이 없습니다.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">💡 물건지 특이사항 메모란</div>
+        <div class="step-desc">
+          방문 가능 시간대, 주차 1대 무료 규정, 반려견 유무, 보증금 만기일 등 잊지 말아야 할 메모를 남겨두세요.<br>
+          매물 카드에 <b>노란색 강조 박스(💡)</b>로 선명하게 표시되어 현장 방문 직전 한눈에 브리핑 포인트를 잡을 수 있습니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. 보안 암호(PIN) 설정 및 보호 -->
+    <div class="guide-section" id="sec-security">
+      <div class="section-title">
+        <span>🔒 7. 보안 암호(PIN) 설정 & 현장 잠금</span>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">🔹 초기 암호(0000) 변경 & 현장 잠금</div>
+        <div class="step-desc">
+          설치 초기 비밀번호는 <code>0000</code>입니다. 상단 배너의 <b>[변경하기 →]</b>나 <b>[⚙️ 설정]</b>에서 나만의 4자리 암호로 변경하세요.<br>
+          손님 앞에서 자리를 비우거나 앱을 잠글 때는 상단 <b>[🔒 잠금]</b>을 누르면 즉시 보안 키패드 화면으로 전환됩니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 8. [예고] 사무소 팀 공유 & 퇴사자 데이터 보안 관리 솔루션 -->
+    <div class="guide-section" id="sec-team-preview" style="border: 2px solid #93c5fd; background: #f8fafc;">
+      <div class="section-title" style="color: #1e40af;">
+        <span>👥 8. [출시 준비 중] 공인중개사 전용 사무소 팀 공유 & 퇴사자 보안 관리</span>
+      </div>
+
+      <div style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: white; border-radius: 12px; padding: 16px; margin-bottom: 14px;">
+        <div style="font-size: 16px; font-weight: 900; margin-bottom: 6px;">🏢 대표 공인중개사의 영업비밀을 완벽하게 수호합니다</div>
+        <div style="font-size: 13px; opacity: 0.95; line-height: 1.55;">
+          도어락 비밀번호, 임대인 개인 연락처, 수수료 협의 메모는 중개사무소의 가장 소중한 재산입니다.<br>
+          중개노트는 단순한 메모 공유를 넘어, <b>직원 퇴사 시 사무소 자산 유출을 원천 방어하는 전용 보안 솔루션</b>을 준비하고 있습니다.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">🔑 공인중개사(개설/사업자) 인증 마스터 권한</div>
+        <div class="step-desc">
+          정식 공인중개사 자격 및 사업자 인증을 마친 대표님께 전용 [마스터 라이선스 키]가 부여되며, 사무소 팀 생성 및 직원 초대 권한이 활성화됩니다.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">🚫 직원 기기 외부 영구 백업 원천 차단</div>
+        <div class="step-desc">
+          소속 직원 기기에서는 공용 문서 폴더 백업 생성을 원천 차단하여, 앱 삭제 후 재설치하더라도 대표님의 허가 없이 이전 장부를 절대 복원할 수 없습니다.
+        </div>
+      </div>
+
+      <div class="step-box">
+        <div class="step-title">⚡️ 퇴사 시 원격 접근 차단 & 데이터 즉시 파기 (Remote Wipe)</div>
+        <div class="step-desc">
+          직원 퇴사 시 대표님이 관리창에서 [권한 회수]를 누르면, 해당 직원 스마트폰에 저장된 사무소 매물과 도어락 비밀번호가 흔적 없이 100% 자동 파기됩니다.
+        </div>
+      </div>
+
+      <div class="tip-box" style="background: #eff6ff; border-color: #bfdbfe; color: #1e40af;">
+        ℹ️ <b>서비스 정책 안내:</b> 현재 현장 오프라인 안정성 테스트 및 공인중개사 협회 기준에 부합하는 세부 운영 정책(Policy)을 정밀하게 조율 중입니다. 세부 정책이 확정되는 대로 정식 가동될 예정입니다. 기대해 주세요!
+      </div>
+    </div>
+
+    <!-- ☕ 개발자 따뜻한 응원하기 (후원) -->
+    <div class="guide-section" id="sec-donation" style="border: 2px solid #f59e0b; background: #fffdf5;">
+      <div class="section-title" style="color: #b45309; border-bottom: 2px solid #fed7aa;">
+        <span>☕ 중개노트가 현장 업무에 도움이 되셨나요?</span>
+      </div>
+
+      <p style="font-size: 13.5px; color: #78350f; line-height: 1.6; margin-bottom: 14px;">
+        공인중개사 대표님들의 바쁜 현장 발걸음을 가볍게 해드리고자 진심을 담아 만들었습니다.<br>
+        유용하게 쓰고 계시다면 <b>따뜻한 커피 한 잔의 응원</b>으로 더 좋은 기능과 안전한 업데이트를 선물해 주세요! ☕️
+      </p>
+
+      <!-- 계좌 정보 카드 -->
+      <div style="background: #ffffff; border: 1.5px solid #fde68a; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.08);">
+        <div style="font-size: 12px; font-weight: 800; color: #d97706; margin-bottom: 4px;">💛 개발자 응원 계좌 (카카오뱅크)</div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap;">
+          <div>
+            <div style="font-size: 16px; font-weight: 900; color: #1e293b; letter-spacing: 0.5px;">카카오뱅크 3333-33-8298898</div>
+            <div style="font-size: 13px; font-weight: 700; color: #64748b; margin-top: 2px;">예금주: 조항준</div>
+          </div>
+          <button type="button" onclick="copyDonationAccount()" style="
+            background: #f59e0b; color: white; border: none; border-radius: 8px;
+            padding: 8px 14px; font-size: 13px; font-weight: 800; cursor: pointer;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.25);
+          ">
+            📋 계좌번호 복사
+          </button>
+        </div>
+        <div id="copyDonationMsg" style="display: none; font-size: 12.5px; color: #15803d; font-weight: 800; margin-top: 8px; text-align: center;">
+          ✓ 계좌번호가 복사되었습니다. 보내주신 따뜻한 마음에 진심으로 감사드립니다! 🙏
+        </div>
+      </div>
+
+      <a href="mailto:no1korealtor@naver.com?subject=%5B%EC%A4%91%EA%B0%9C%EB%85%B8%ED%8A%B8%5D%20%EA%B0%9C%EB%B0%9C%EC%9E%90%20%EC%9D%91%EC%9B%90%20%EB%B0%8F%20%EA%B8%B0%EB%8A%A5%20%EC%A0%9C%EC%95%88" style="
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        background: #fef3c7; border: 1.5px solid #fde68a; border-radius: 10px;
+        padding: 10px; font-size: 13px; font-weight: 800; color: #92400e; text-decoration: none;
+      ">
+        ✉️ 개발자에게 따뜻한 응원 한마디 / 기능 제안 보내기
+      </a>
+    </div>
+
+    <!-- 9. 버전별 업데이트 기록 -->
+    <div class="guide-section" id="sec-release">
+      <div class="section-title">
+        <span>🚀 9. 버전별 업데이트 소식 (Release Notes)</span>
+      </div>
+
+      <div class="release-item">
+        <div class="release-ver">
+          <span>v1.0.3 (최신 버전)</span>
+          <span class="release-date">2026.10</span>
+        </div>
+        <ul class="release-list">
+          <li><b>실무 중심 가이드 개편:</b> 주소지 등록, 쇼잉 약속, 1초 검색 및 앱 삭제 시 100% 복구 가이드 추가</li>
+          <li><b>개발자 커피 후원 & 응원하기:</b> 원클릭 계좌 복사 및 따뜻한 소통 창구 개설</li>
+          <li><b>아파트 & 빌라 스마트 계층형 서랍 관리:</b> 같은 지번에 여러 동과 호수가 있어도 카드 1장으로 묶음 관리</li>
+          <li><b>가상의 0동 지원:</b> 빌라는 심플하게 호수만, 아파트는 동별 공동비번 완벽 분리</li>
+          <li><b>[➕ 신규 동·호수 추가]:</b> 이미 등록된 건물에서 1초 만에 다음 호수 등록 기능</li>
+          <li><b>주소 가로 전폭 배치:</b> 동/지번/호수가 줄바꿈 없이 한 줄에 시원하게 표시</li>
+          <li><b>상시 플로팅 [📖 사용설명서] 버튼:</b> 언제든 궁금할 때 1초 만에 매뉴얼 확인 가능</li>
+        </ul>
+      </div>
+
+      <div class="release-item">
+        <div class="release-ver">
+          <span>v1.0.2</span>
+          <span class="release-date">2026.10</span>
+        </div>
+        <ul class="release-list">
+          <li><b>세입자(거주자) 직통 통화 버튼(하늘색)</b> 추가</li>
+          <li><b>물건지 특이사항 메모란(💡)</b> 지원</li>
+          <li>상단 스마트폰 상태바(시계/와이파이) 겹침 방지 여백 최적화</li>
+          <li>매물 카드 하단 <code>[📍 지도열기]</code> | <code>[✏️ 수정]</code> 1:1 대칭 바 정돈</li>
+        </ul>
+      </div>
+
+      <div class="release-item">
+        <div class="release-ver">
+          <span>v1.0.1</span>
+          <span class="release-date">2026.10</span>
+        </div>
+        <ul class="release-list">
+          <li><b>원스토어(ONE store)</b> 정식 출시</li>
+          <li><b>AES-256 자동 암호화 금고:</b> 앱 삭제 시에도 4자리 암호만 치면 100% 영구 복원</li>
+          <li><b>매물 자산 보호(보관/숨기기):</b> 계약완료 매물 안전 보관함 및 1초 복원 기능</li>
+          <li><b>실시간 무검증 OTA 자동 업데이트:</b> 앱 재설치 없이도 최신 기능 실시간 반영</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>© 중개노트 (Showing Note) - 공인중개사를 위한 현장 파트너</p>
+      <p style="margin-top: 4px;">공식 홈페이지: <a href="https://www.xn--h49ay03b72eh1d.kr/" target="_blank" style="color: #2563eb; text-decoration: none;">중개수첩.kr</a></p>
+    </footer>
+  </div>
+
+  <script>
+    function copyDonationAccount() {
+      const accountText = '카카오뱅크 3333-33-8298898 (조항준)';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(accountText).then(() => {
+          showCopyFeedback();
+        }).catch(() => {
+          fallbackCopyText(accountText);
+        });
+      } else {
+        fallbackCopyText(accountText);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showCopyFeedback();
+      } catch (err) {
+        alert('계좌번호: ' + text);
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function showCopyFeedback() {
+      const msg = document.getElementById('copyDonationMsg');
+      if (msg) {
+        msg.style.display = 'block';
+        setTimeout(() => {
+          msg.style.display = 'none';
+        }, 4000);
+      }
+    }
+
+    function handleOneStoreDownload(e) {
+      // 1. 모바일 원스토어 앱 스킴 시도
+      const onestoreAppUrl = 'onestore://common/product/search?query=' + encodeURIComponent('중개노트');
+      const onestoreWebUrl = 'https://m.onestore.co.kr/mobilepoc/apps/appsDetail.omp?prodId=0000788888';
+      const webSearchUrl = 'https://m.onestore.co.kr/mobilepoc/search/search.omp?searchType=total&searchTerm=' + encodeURIComponent('중개노트');
+
+      // Android 기기인지 확인
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      if (isAndroid) {
+        // 원스토어 앱 실행 시도, 없으면 원스토어 모바일 웹 검색으로 이동
+        location.href = webSearchUrl;
+      } else {
+        // PC 또는 기타 환경: 원스토어 모바일 웹 검색
+        window.open(webSearchUrl, '_blank');
+      }
+    }
+  </script>
+</body>
+</html>
