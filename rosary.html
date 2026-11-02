@@ -4548,20 +4548,6 @@ input:focus, textarea:focus {
           </div>
         </div>
 
-        <!-- 5. 기도 알림 소리 (종소리) 설정 카드 -->
-        <div class="intro-section-card">
-          <div class="intro-card-header">
-            <span class="intro-card-icon">🔔</span>
-            <span id="introSoundTitle" class="intro-card-title">기도 알림 소리 (종소리)</span>
-          </div>
-          <p id="introSoundSub" class="intro-card-desc">성당이나 조용한 곳에서는 무음으로 평화롭게 기도할 수 있습니다.</p>
-          <div class="intro-toggle-group">
-            <button type="button" id="btnIntroSoundOff" class="intro-toggle-btn active">🔇 무음 (기본)</button>
-            <button type="button" id="btnIntroSoundOn" class="intro-toggle-btn">🔔 은은한 종소리</button>
-          </div>
-        </div>
-
-        
         <!-- [SUB BANNER] 가톨릭 연도 & 조문 예절 안내 (필요할 때 바로 찾는 단정 배너) -->
         <div id="introYeondoBannerCard" class="intro-section-card yeondo-sub-banner-card">
           <div class="yeondo-banner-content">
@@ -4964,18 +4950,12 @@ input:focus, textarea:focus {
 
           <!-- 기도 소리 (종소리) -->
           <div class="setting-row">
-            <span class="setting-label">기도 알림 소리 (종소리)</span>
+            <div>
+              <div class="setting-label">🔔 기도 알림 소리 (종소리)</div>
+              <small style="color: var(--text-muted); font-size: 0.74rem;">단 전환 및 은은한 차임벨 소리</small>
+            </div>
             <label class="toggle-switch">
               <input type="checkbox" id="soundToggle">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <!-- 진동 (햅틱) 피드백 -->
-          <div class="setting-row">
-            <span class="setting-label">진동 피드백</span>
-            <label class="toggle-switch">
-              <input type="checkbox" id="hapticToggle" checked>
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -11727,57 +11707,66 @@ window.addEventListener('DOMContentLoaded', () => {
     // 관리자 콘솔 연동 지향 관리 및 삭제
     window.renderAdminIntentionSection = function() {
       const badge = document.getElementById('adminIntentionStatusBadge');
-      const content = document.getElementById('adminIntentionContent');
-      const authorEl = document.getElementById('adminIntentionAuthor');
-      const countEl = document.getElementById('adminIntentionCount');
-      const delBtn = document.getElementById('btnAdminDeleteIntention');
-
-      const data = getCurrentIntention();
+      const box = document.getElementById('adminIntentionBox');
       const list = getStoredList();
+      const userAdded = list.filter(it => it.isUserAdded);
 
-      if (!data || !data.active || !data.text) {
-        if (badge) {
-          badge.textContent = '지향 없음';
-          badge.style.background = 'rgba(255, 255, 255, 0.08)';
-          badge.style.color = '#94A3B8';
-        }
-        if (content) content.textContent = '현재 등록된 기도 지향이 없습니다.';
-        if (authorEl) authorEl.textContent = '-';
-        if (countEl) countEl.textContent = '함께 기도 0명';
-        if (delBtn) delBtn.disabled = true;
-      } else {
-        if (badge) {
-          badge.textContent = `게시 중 (${currentIndex + 1}/${list.length})`;
-          badge.style.background = 'rgba(34, 197, 94, 0.2)';
-          badge.style.color = '#4ADE80';
-        }
-        if (content) content.textContent = `"${data.text}"`;
-        if (authorEl) authorEl.textContent = `작성자: ${data.author || '익명'}`;
-        if (countEl) countEl.textContent = `함께 기도 ${data.count || 0}명`;
-        if (delBtn) delBtn.disabled = false;
+      if (badge) {
+        badge.textContent = `총 ${list.length}개 (교우 직접봉헌: ${userAdded.length}개)`;
+        badge.style.background = userAdded.length > 0 ? 'rgba(34, 197, 94, 0.2)' : 'rgba(255, 255, 255, 0.08)';
+        badge.style.color = userAdded.length > 0 ? '#4ADE80' : '#94A3B8';
       }
+
+      if (!box) return;
+
+      if (!list || list.length === 0) {
+        box.innerHTML = '<div style="color: #94A3B8; text-align: center; padding: 12px 0;">등록된 기도 지향이 없습니다.</div>';
+        return;
+      }
+
+      let html = '<div style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; padding-right: 4px;">';
+      list.forEach((data, i) => {
+        const isUser = !!data.isUserAdded;
+        const tag = isUser 
+          ? '<span style="background: rgba(243, 198, 105, 0.2); color: #FDC669; font-size: 0.7rem; font-weight: 700; padding: 1px 6px; border-radius: 4px;">교우 봉헌</span>' 
+          : '<span style="background: rgba(255, 255, 255, 0.08); color: #94A3B8; font-size: 0.7rem; padding: 1px 6px; border-radius: 4px;">공통 지향</span>';
+        html += `
+          <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid ${isUser ? 'rgba(243, 198, 105, 0.35)' : 'rgba(255, 255, 255, 0.08)'}; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 0.74rem; font-weight: 700; color: #94A3B8;">#${i + 1} ${tag}</span>
+              <span style="font-size: 0.72rem; color: #D4AF37;">함께 기도 ${data.count || 0}명</span>
+            </div>
+            <div style="color: #F8FAFC; font-size: 0.82rem; line-height: 1.45; word-break: break-all;">
+              &quot;${data.text}&quot;
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2px;">
+              <span style="font-size: 0.72rem; color: #94A3B8;">작성자: ${data.author || '익명의 교우'}</span>
+              <button type="button" onclick="window.adminDeleteSpecificIntention('${data.id}')" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #FCA5A5; font-size: 0.72rem; font-weight: 700; border-radius: 4px; padding: 2px 8px; cursor: pointer;">
+                🗑️ 삭제
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      box.innerHTML = html;
     };
 
-    const btnAdminDelete = document.getElementById('btnAdminDeleteIntention');
-    if (btnAdminDelete) {
-      btnAdminDelete.onclick = function() {
-        const list = getStoredList();
-        const data = getCurrentIntention();
-        if (!data) return;
-
-        if (confirm(`현재 화면에 표시 중인 기도 지향을 삭제하시겠습니까?
-"${data.text}"`)) {
-          const updated = list.filter(it => it.id !== data.id);
-          saveStoredList(updated.length > 0 ? updated : BASE_INTENTIONS);
-          currentIndex = 0;
-          renderIntentionCard();
-          if (typeof window.renderAdminIntentionSection === 'function') {
-            window.renderAdminIntentionSection();
-          }
-          alert('기도 지향이 정리되었습니다.');
+    window.adminDeleteSpecificIntention = function(id) {
+      const list = getStoredList();
+      const target = list.find(it => it.id === id);
+      if (!target) return;
+      if (confirm(`다음 기도 지향을 삭제하시겠습니까?\n\n"${target.text}"`)) {
+        const updated = list.filter(it => it.id !== id);
+        saveStoredList(updated.length > 0 ? updated : BASE_INTENTIONS);
+        currentIndex = 0;
+        renderIntentionCard();
+        if (typeof window.renderAdminIntentionSection === 'function') {
+          window.renderAdminIntentionSection();
         }
-      };
-    }
+        alert('해당 지향이 삭제되었습니다.');
+      }
+    };
   }
 
   // 초기 렌더링
