@@ -4412,7 +4412,7 @@ input:focus, textarea:focus {
         </div>
 
         <!-- 3. 지난 기도 이어하기 카드 (기록이 있을 때만 노출) -->
-        <div id="introResumeCard" class="intro-section-card resume-card" style="display: none;">
+        <div id="introResumeCard" class="intro-section-card resume-card" style="display: none !important;">
           <div class="intro-card-header" style="display: flex; justify-content: space-between; align-items: center;">
             <div style="display: flex; align-items: center; gap: 6px;">
               <span class="intro-card-icon">🕊️</span>
@@ -8140,7 +8140,7 @@ showCrucifixKissOverlay(onComplete) {
     const saved = this.loadSavedProgress();
     if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length : 68)) {
       if (this.dom.introResumeCard) {
-        this.dom.introResumeCard.style.display = "flex";
+        this.dom.introResumeCard.style.display = "none";
       }
       if (saved.prayerType === "divine_mercy") {
         if (this.dom.introResumeMystery) {
