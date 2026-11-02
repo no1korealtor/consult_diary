@@ -4368,7 +4368,7 @@ input:focus, textarea:focus {
           <button id="btnHeaderLangToggle" type="button" class="action-pill-btn" onclick="toggleGlobalLanguage();" style="height: 32px; padding: 0 10px; font-size: 0.78rem; font-weight: 700; margin-right: 4px; background: rgba(243, 198, 105, 0.12); border: 1px solid rgba(243, 198, 105, 0.35); color: var(--gold-primary); border-radius: 16px;">
             🌐 EN
           </button>
-          <button id="btnIntroYeondoQuick" class="icon-btn yeondo-quick-header-btn" onclick="if(window.rosaryApp){window.rosaryApp.switchView('yeondo');}else{var iv=document.getElementById('introView');var yv=document.getElementById('yeondoView');if(iv)iv.style.display='none';if(yv)yv.style.display='flex';}" aria-label="연도 및 조문 예절" title="연도 및 조문 예절">
+          <button id="btnIntroYeondoQuick" class="icon-btn yeondo-quick-header-btn" onclick="if(window.rosaryApp){window.rosaryApp.switchView('yeondo');}else{var iv=document.getElementById('introView');var yv=document.getElementById('yeondoView');if(iv)iv.style.display='none';if(yv)yv.style.display='flex';}" aria-label="짧은 연도 (약식 위령기도)" title="짧은 연도 (약식 위령기도 · 조문 예절)">
             <span style="font-size: 1.05rem;">🕯️</span>
           </button>
           <button id="btnIntroTracker" class="icon-btn" onclick="directOpenTracker();" aria-label="주간 기도 기록" title="주간 기도 기록">
@@ -4838,8 +4838,8 @@ input:focus, textarea:focus {
         </button>
 
         <div class="prayer-header-title-box">
-          <span id="yeondoHeaderTitle" class="prayer-header-mystery">가톨릭 연도 (위령기도)</span>
-          <span class="prayer-header-day">천주교 상장예식</span>
+          <span id="yeondoHeaderTitle" class="prayer-header-mystery">짧은 연도 (약식 위령기도)</span>
+          <span class="prayer-header-day" style="color: var(--gold-primary); font-weight: 700;">조문객 · 가족 위령 (약 5분)</span>
         </div>
 
         <div class="header-actions">
@@ -4851,8 +4851,14 @@ input:focus, textarea:focus {
       <main id="yeondoBodyScroll" class="yeondo-body-scroll">
         <div class="yeondo-card-container">
           <div class="yeondo-candle-emblem">🕯️🕊️</div>
-          <h1 class="yeondo-main-title">위령 기도 (연도, 連禱)</h1>
-          <p class="yeondo-sub-desc">주님, 세상을 떠난 모든 이에게 영원한 안식을 주소서.</p>
+          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 14px; background: rgba(243, 198, 105, 0.15); border: 1px solid rgba(243, 198, 105, 0.4); margin-bottom: 8px;">
+            <span style="font-size: 0.76rem; font-weight: 800; color: var(--gold-light); letter-spacing: -0.2px;">📖 짧은 연도 (약식 위령기도 · 소요시간 약 5분)</span>
+          </div>
+          <h1 class="yeondo-main-title" style="margin-top: 2px;">가톨릭 짧은 연도 (위령기도)</h1>
+          <p class="yeondo-sub-desc" style="line-height: 1.5; margin-bottom: 12px;">
+            상가 빈소 조문객이나 가족이 <strong>시편 130편과 핵심 성인 호칭 기도</strong>로<br>
+            고인의 영원한 안식을 정성껏 청하는 표준 약식 위령기도입니다.
+          </p>
 
           <!-- 고인 세례명 입력 간이 바 -->
           <div class="yeondo-deceased-input-bar">
@@ -6686,8 +6692,8 @@ const YEONDO_DATA = {
 
   // 2. 가톨릭 연도 (위령기도 핵심 상장예식)
   yeondoPrayer: {
-    title: "가톨릭 위령기도 (연도, 連禱)",
-    subtitle: "한국 천주교 주교회의 공인 상장예식 · 전통 메김과 받음 가락",
+    title: "가톨릭 짧은 연도 (약식 위령기도)",
+    subtitle: "상가 빈소 조문 및 가족 위령기도 · 한국 천주교 주교회의 공인 표준 가락",
     sections: [
       {
         sectionId: "start",
