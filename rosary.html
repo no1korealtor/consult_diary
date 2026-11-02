@@ -7808,7 +7808,7 @@ class RosaryApp {
       this.showResumeConfirmModal(saved);
     } else {
       // 이어할 기록이 없으면 곧바로 시작
-      this.startPrayer();
+      this.startPrayer(true);
     }
   }
 
@@ -7844,11 +7844,11 @@ class RosaryApp {
       if (modalEl) {
         this.openModal(modalEl);
       } else {
-        this.startPrayer();
+        this.startPrayer(true);
       }
     } catch(err) {
       console.error("showResumeConfirmModal error:", err);
-      this.startPrayer();
+      this.startPrayer(true);
     }
   }
 
@@ -8057,47 +8057,66 @@ showCrucifixKissOverlay(onComplete) {
       }
 
       const saved = this.loadSavedProgress();
-      const maxStepIdx = (this.steps && this.steps.length > 0) ? this.steps.length - 1 : 67;
-      if (saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0 && saved.stepIndex <= maxStepIdx) {
-        if (typeof saved.includeFatima === "boolean") {
-          this.settings.includeFatima = saved.includeFatima;
-          this.syncFatimaUI();
-        }
-        if (saved.lang) {
-          this.settings.lang = saved.lang;
-          this.syncLanguageUI();
-        }
-        if (saved.prayerType === "divine_mercy") {
-          this.currentPrayerType = "divine_mercy";
-          this.syncPrayerTypeUI();
-        } else {
-          this.currentPrayerType = "rosary";
-          this.currentMysteryKey = saved.mysteryKey || this.todayMysteryKey;
-          this.syncPrayerTypeUI();
-          this.syncHeaderMysteryUI();
-        }
-        this.steps = this.buildCurrentSteps();
-        this.renderDecadeProgressPills();
-        this.sessionCompletedDecades = new Set();
-
-        const maxIdx = (this.steps && this.steps.length > 0) ? this.steps.length - 1 : 0;
-        const targetStep = Math.min(Math.max(0, saved.stepIndex), maxIdx);
-
-        for (let i = 0; i <= targetStep; i++) {
-          const s = this.steps[i];
-          if (s && s.decadeNum && s.beadType === "connector") {
-            this.sessionCompletedDecades.add(s.decadeNum);
-          }
-        }
-        this.goToStep(targetStep, false);
-        this.switchView("prayer");
+      if (!saved) {
+        this.startPrayer(true);
         return;
       }
+
+      // 1. restore settings
+      if (typeof saved.includeFatima === "boolean") {
+        this.settings.includeFatima = saved.includeFatima;
+        this.syncFatimaUI();
+      }
+      if (saved.lang) {
+        this.settings.lang = saved.lang;
+        this.syncLanguageUI();
+      }
+      if (saved.prayerType === "divine_mercy") {
+        this.currentPrayerType = "divine_mercy";
+        this.syncPrayerTypeUI();
+      } else {
+        this.currentPrayerType = "rosary";
+        this.currentMysteryKey = saved.mysteryKey || this.todayMysteryKey;
+        this.syncPrayerTypeUI();
+        this.syncHeaderMysteryUI();
+      }
+
+      // 2. build steps first
+      this.steps = this.buildCurrentSteps();
+      this.renderDecadeProgressPills();
+      this.sessionCompletedDecades = new Set();
+
+      // 3. safe index parsing
+      const parsedIdx = parseInt(saved.stepIndex, 10);
+      const safeIdx = isNaN(parsedIdx) ? 0 : parsedIdx;
+      const maxIdx = (this.steps && this.steps.length > 0) ? this.steps.length - 1 : 0;
+      const targetStep = Math.min(Math.max(0, safeIdx), maxIdx);
+
+      for (let i = 0; i <= targetStep; i++) {
+        const s = this.steps[i];
+        if (s && s.decadeNum && s.beadType === "connector") {
+          this.sessionCompletedDecades.add(s.decadeNum);
+        }
+      }
+
+      // 4. switch view then goToStep
+      this.switchView("prayer");
+      this.goToStep(targetStep, false);
+      this.saveProgress();
+      return;
     } catch (err) {
       console.error("continuePrayer error:", err);
+      try {
+        this.switchView("prayer");
+        if (!this.steps || this.steps.length === 0) {
+          this.steps = this.buildCurrentSteps();
+        }
+        const fallbackSaved = this.loadSavedProgress();
+        const fallbackIdx = fallbackSaved ? parseInt(fallbackSaved.stepIndex, 10) : 0;
+        const maxIdx = (this.steps && this.steps.length > 0) ? this.steps.length - 1 : 0;
+        this.goToStep(Math.min(Math.max(0, isNaN(fallbackIdx) ? 0 : fallbackIdx), maxIdx), false);
+      } catch (e) {}
     }
-    // 복원할 기록이 없을 때만 안전하게 시작
-    this.startPrayer();
   }
 
   updateIntroView() {
@@ -9755,7 +9774,7 @@ showCrucifixKissOverlay(onComplete) {
     if (this.dom.btnResumeConfirmRestart) {
       this.dom.btnResumeConfirmRestart.addEventListener("click", () => {
         this.closeModals();
-        this.startPrayer();
+        this.startPrayer(true);
       });
     }
     if (this.dom.btnResumeConfirmCancel) {
