@@ -8056,6 +8056,7 @@ showCrucifixKissOverlay(onComplete) {
         ko.style.setProperty("z-index", "-1", "important");
       }
 
+      const saved = this.loadSavedProgress();
       const maxStepIdx = (this.steps && this.steps.length > 0) ? this.steps.length - 1 : 67;
       if (saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0 && saved.stepIndex <= maxStepIdx) {
         if (typeof saved.includeFatima === "boolean") {
