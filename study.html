@@ -1,12 +1,12 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>?ㅻ뒛 怨듬?</title>
+    <title>오늘 공부</title>
 
-    <!-- PWA / 諛붾줈媛湲??꾩씠肄??ㅼ젙 -->
+    <!-- PWA / 바로가기 아이콘 설정 -->
     <link rel="icon" type="image/png" href="study_icon.png">
     <link rel="apple-touch-icon" href="study_icon.png">
     <link rel="manifest" href="study_manifest.json">
@@ -17,7 +17,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     
-    <!-- KaTeX ?섑븰 ?섏떇 ?뚮뜑留??쇱씠釉뚮윭由?-->
+    <!-- KaTeX 수학 수식 렌더링 라이브러리 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
@@ -575,7 +575,7 @@
         }
 
         /* ===================================================
-           Daily Habit (吏媛???곴났遺 泥댄겕 & 罹섎┛?? Styles
+           Daily Habit (지각/저녁공부 체크 & 캘린더) Styles
            =================================================== */
         .habit-card {
             background: rgba(255, 255, 255, 0.95);
@@ -613,7 +613,7 @@
             font-family: 'Nunito', 'Jua', sans-serif;
         }
 
-        .habit-date-bar { gap: 4px; box-sizing: border-box; 
+        .habit-date-bar {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -1500,44 +1500,46 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.2);
             animation: popIn 0.3s ease;
         }
-            @media (max-width: 480px) {
+    
+        @media (max-width: 480px) {
             .habit-card { padding: 16px 10px !important; }
-            .habit-date-bar { padding: 6px 4px !important; gap: 2px !important; }
+            .habit-date-bar { padding: 6px 4px !important; gap: 2px !important; box-sizing: border-box !important; }
             .habit-date-btn { padding: 4px 6px !important; font-size: 11px !important; }
             .habit-date-picker { font-size: 13px !important; }
         }
     </style>
+
 </head>
 
 <body>
 
     <div class="header-container">
-        <h1>?뙵 ?ㅻ뒛???⑥뼱???뙵</h1>
-        <div class="greeting" id="greeting-text">?섏쁺?댁슂! ?뮇</div>
+        <h1>🌸 오늘의 단어장 🌸</h1>
+        <div class="greeting" id="greeting-text">환영해요! 💖</div>
         <div class="date-stats" id="date-stats-text"></div>
     </div>
     
     <div class="stats-bar" id="stats-bar">
-        <div class="combo-badge hidden" id="combo-badge">?뵦 0 Combo!</div>
+        <div class="combo-badge hidden" id="combo-badge">🔥 0 Combo!</div>
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar"></div>
-            <div class="progress-text" id="progress-text">?ㅻ뒛??紐⑺몴: 0 / 5</div>
+            <div class="progress-text" id="progress-text">오늘의 목표: 0 / 5</div>
         </div>
     </div>
 
     <div id="card-wrapper"></div>
     <div id="last-updated" class="last-updated"></div>
     
-    <!-- 留ㅼ씪 異쒖꽍 & ???怨듬? 泥댄겕 / ?꾪솴??-->
+    <!-- 매일 출석 & 저녁 공부 체크 / 현황판 -->
     <div id="habit-container" class="habit-card hidden"></div>
 
     <div id="history-container" class="history-section hidden"></div>
 
-    <!-- ?좏뒠釉?異붿쿇 留곹겕 ?뱀뀡 -->
+    <!-- 유튜브 추천 링크 섹션 -->
     <div id="youtube-container" class="history-section">
-        <div class="history-title">?벟 異붿쿇 ?좏뒠釉??숈뒿 梨꾨꼸 ?벟</div>
+        <div class="history-title">📺 추천 유튜브 학습 채널 📺</div>
         <div style="text-align:center; color:#636e72; font-size:14px; margin-bottom: 15px; font-family:'Jua', sans-serif;">
-            ?꾨엺?댁쓽 怨듬?瑜??꾩?以?轅??梨꾨꼸?ㅼ씠?먯슂! ?뮇
+            아람이의 공부를 도와줄 꿀잼 채널들이에요! 💖
         </div>
         <div id="youtube-list" style="display:flex; flex-direction:column; gap:12px;"></div>
         <div id="youtube-btn-container"></div>
@@ -1597,9 +1599,9 @@
                     let text = match[2];
                     let isCorrect = false;
                     
-                    if (text.includes('(?뺣떟') || text.includes('?뺣떟!') || text.includes('?뺣떟')) {
+                    if (text.includes('(정답') || text.includes('정답!') || text.includes('정답')) {
                         isCorrect = true;
-                        text = text.replace(/\(?뺣떟.*?\)/g, '').replace(/?뺣떟.*/g, '').trim();
+                        text = text.replace(/\(정답.*?\)/g, '').replace(/정답.*/g, '').trim();
                         text = text.replace(/[\(\)\!\s]+$/, '').trim();
                     }
                     
@@ -1622,7 +1624,7 @@
             }
             
             if (options.length > 0) {
-                // If correct option is not explicitly marked with "(?뺣떟)", check if option matches currentWord.word
+                // If correct option is not explicitly marked with "(정답)", check if option matches currentWord.word
                 if (correctIndex === -1 && typeof currentWord !== 'undefined' && currentWord) {
                     const cleanTarget = cleanWord(currentWord.word).toLowerCase();
                     for (let i = 0; i < options.length; i++) {
@@ -1681,7 +1683,7 @@
                 
                 // Mark correct option
                 clickedBtn.classList.add('mc-correct');
-                feedbackEl.innerHTML = "?뺣떟?댁뿉?? ?럦";
+                feedbackEl.innerHTML = "정답이에요! 🎉";
                 feedbackEl.className = "mc-feedback success";
                 feedbackEl.classList.remove('hidden');
                 
@@ -1731,7 +1733,7 @@
                 }
                 
                 await updateMemorizedState();
-                await insertStudyLog(currentWord.subject || '?곸뼱', cleanWord(currentWord.word), '媛앷????댁쫰 ?뺣떟 ?꾨즺');
+                await insertStudyLog(currentWord.subject || '영어', cleanWord(currentWord.word), '객관식 퀴즈 정답 완료');
                 
                 setTimeout(() => {
                     const memorizedWord = currentWord;
@@ -1755,7 +1757,7 @@
                 comboCount = 0;
                 saveStats();
                 
-                feedbackEl.innerHTML = "?? ??몄뼱?? ?ㅻⅨ ?듭쓣 怨⑤씪蹂댁꽭?? ?삂";
+                feedbackEl.innerHTML = "앗, 틀렸어요! 다른 답을 골라보세요! 😉";
                 feedbackEl.className = "mc-feedback fail";
                 feedbackEl.classList.remove('hidden');
             }
@@ -1787,10 +1789,10 @@
             const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
             userNickname = localStorage.getItem('study_currentUser') || '';
             
-            // 湲곗〈 '?곕━?? 怨꾩젙紐낆쓣 '?꾨엺'?쇰줈 留덉씠洹몃젅?댁뀡
-            if (userNickname === '?곕━??) {
-                userNickname = '?꾨엺';
-                localStorage.setItem('study_currentUser', '?꾨엺');
+            // 기존 '우리딸' 계정명을 '아람'으로 마이그레이션
+            if (userNickname === '우리딸') {
+                userNickname = '아람';
+                localStorage.setItem('study_currentUser', '아람');
             }
 
             if (!userNickname) {
@@ -1805,24 +1807,24 @@
         }
 
         function loadStats() {
-            // 怨쇨굅 踰꾩쟾 ?곗씠??studyStats, geminiApiKey) ?뺣━ 諛?留덉씠洹몃젅?댁뀡
+            // 과거 버전 데이터(studyStats, geminiApiKey) 정리 및 마이그레이션
             const oldDataStr = localStorage.getItem('studyStats');
             if (oldDataStr) {
                 try {
                     const oldData = JSON.parse(oldDataStr);
-                    // 湲곗〈 ?됰꽕?꾧낵 ??濡쒓렇??怨꾩젙???곌??깆씠 ?덉쑝硫??곗씠??蹂듭썝
+                    // 기존 닉네임과 새 로그인 계정이 연관성이 있으면 데이터 복원
                     if (oldData.nickname && (
-                        (userNickname === '?꾨튌' && oldData.nickname.includes('?꾨튌')) ||
-                        (userNickname === '?꾨엺' && (oldData.nickname.includes('??) || oldData.nickname.includes('?꾨엺'))) ||
-                        (userNickname === '移쒓뎄' && oldData.nickname.includes('移쒓뎄'))
+                        (userNickname === '아빠' && oldData.nickname.includes('아빠')) ||
+                        (userNickname === '아람' && (oldData.nickname.includes('딸') || oldData.nickname.includes('아람'))) ||
+                        (userNickname === '친구' && oldData.nickname.includes('친구'))
                     )) {
                         localStorage.setItem('studyStats_' + userNickname, oldDataStr);
                     }
                 } catch(e) {}
-                // 留덉씠洹몃젅?댁뀡 ??怨쇨굅 ?곗씠?곕뒗 源붾걫?섍쾶 ??젣
+                // 마이그레이션 후 과거 데이터는 깔끔하게 삭제
                 localStorage.removeItem('studyStats');
             }
-            // ?댁젣 ?꾩슂 ?녿뒗 API ?ㅻ룄 源붾걫?섍쾶 ??젣
+            // 이제 필요 없는 API 키도 깔끔하게 삭제
             localStorage.removeItem('geminiApiKey');
 
             const savedData = JSON.parse(localStorage.getItem('studyStats_' + userNickname)) || {};
@@ -1839,9 +1841,9 @@
             const modalHtml = `
                 <div class="modal-overlay" id="name-modal-overlay">
                     <div class="name-modal">
-                        <h2>鍮꾨?踰덊샇瑜??낅젰?댁＜?몄슂 ?뵏</h2>
-                        <input type="password" id="nickname-input" class="name-input" placeholder="鍮꾨?踰덊샇 4?먮━" onkeypress="if(event.key === 'Enter') saveNickname()">
-                        <button class="name-btn" onclick="saveNickname()">濡쒓렇???뮇</button>
+                        <h2>비밀번호를 입력해주세요 🔒</h2>
+                        <input type="password" id="nickname-input" class="name-input" placeholder="비밀번호 4자리" onkeypress="if(event.key === 'Enter') saveNickname()">
+                        <button class="name-btn" onclick="saveNickname()">로그인 💖</button>
                     </div>
                 </div>
             `;
@@ -1854,13 +1856,13 @@
             if(!input) return;
             
             if (input === '4321') {
-                userNickname = '?꾨튌';
+                userNickname = '아빠';
             } else if (input === '1234') {
-                userNickname = '?꾨엺';
+                userNickname = '아람';
             } else if (input === '0000') {
-                userNickname = '?쒕졊';
+                userNickname = '혜령';
             } else {
-                alert('鍮꾨?踰덊샇媛 ??몄뒿?덈떎! ?ㅼ떆 ?낅젰?댁＜?몄슂. ?삃');
+                alert('비밀번호가 틀렸습니다! 다시 입력해주세요. 😊');
                 document.getElementById('nickname-input').value = '';
                 return;
             }
@@ -1891,13 +1893,13 @@
 
         function updateHeader(dateStr) {
             let habitNavBtn = '';
-            if (userNickname === '?꾨튌') {
-                habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">?뱥 異쒖꽍쨌怨듬? 泥댄겕</button>`;
+            if (userNickname === '아빠') {
+                habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">📋 출석·공부 체크</button>`;
             } else if (userNickname) {
-                habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">?뙚 ??異쒖꽍쨌怨듬? ?щ젰</button>`;
+                habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">🌟 내 출석·공부 달력</button>`;
             }
-            document.getElementById('greeting-text').innerHTML = `?섏쁺?댁슂, ${userNickname}?? ?뮇 ${habitNavBtn} <button onclick="logout()" style="background:rgba(255,255,255,0.3); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:14px; font-weight:bold; margin-left:8px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); font-family:'Nunito', sans-serif;">濡쒓렇?꾩썐</button>`;
-            document.getElementById('date-stats-text').innerText = `${dateStr} | ?ㅻ뒛 ?붽린: ${dailyProgress}媛?;
+            document.getElementById('greeting-text').innerHTML = `환영해요, ${userNickname}님! 💖 ${habitNavBtn} <button onclick="logout()" style="background:rgba(255,255,255,0.3); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:14px; font-weight:bold; margin-left:8px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); font-family:'Nunito', sans-serif;">로그아웃</button>`;
+            document.getElementById('date-stats-text').innerText = `${dateStr} | 오늘 암기: ${dailyProgress}개`;
         }
 
         function saveStats() {
@@ -1917,7 +1919,7 @@
             const comboEl = document.getElementById('combo-badge');
             if (comboCount >= 2) {
                 comboEl.classList.remove('hidden');
-                comboEl.innerHTML = `?뵦 ${comboCount} Combo!`;
+                comboEl.innerHTML = `🔥 ${comboCount} Combo!`;
                 // Re-trigger animation
                 comboEl.style.animation = 'none';
                 setTimeout(() => comboEl.style.animation = '', 10);
@@ -1930,21 +1932,21 @@
             const percent = Math.min((dailyProgress / dailyGoal) * 100, 100);
             progressEl.style.width = `${percent}%`;
             
-            // 洹몃옒??蹂댁꽍)?쇰줈 紐⑺몴 ?쒖떆 (以? 留욎땄???섏뒪???ㅽ???
+            // 그래픽(보석)으로 목표 표시 (중2 맞춤형 퀘스트 스타일)
             let graphicGoal = '';
             for(let i = 0; i < dailyGoal; i++) {
                 if (i < dailyProgress) {
-                    graphicGoal += '<span style="display:inline-block; margin: 0 2px; transform:scale(1.1); text-shadow: 0 0 5px rgba(0,0,0,0.2); transition:all 0.3s;">?뭿</span>';
+                    graphicGoal += '<span style="display:inline-block; margin: 0 2px; transform:scale(1.1); text-shadow: 0 0 5px rgba(0,0,0,0.2); transition:all 0.3s;">💎</span>';
                 } else {
-                    graphicGoal += '<span style="display:inline-block; margin: 0 2px; opacity:0.35; filter:grayscale(100%); transition:all 0.3s;">?뭿</span>';
+                    graphicGoal += '<span style="display:inline-block; margin: 0 2px; opacity:0.35; filter:grayscale(100%); transition:all 0.3s;">💎</span>';
                 }
             }
             
             if (dailyProgress >= dailyGoal) {
-                textEl.innerHTML = `?럦 ?섏뒪???대━?? ${graphicGoal} ?몣`;
+                textEl.innerHTML = `🎉 퀘스트 클리어! ${graphicGoal} 👑`;
                 progressEl.style.background = 'linear-gradient(90deg, #f6d365 0%, #fda085 100%)';
             } else {
-                textEl.innerHTML = `?쇱씪 ?섏뒪?? ${graphicGoal}`;
+                textEl.innerHTML = `일일 퀘스트: ${graphicGoal}`;
                 progressEl.style.background = 'linear-gradient(90deg, #84fab0 0%, #8fd3f4 100%)';
             }
         }
@@ -1968,13 +1970,13 @@
             if (studyData.length > 0) {
                 const latestDate = new Date(studyData[0]?.created_at || data[0].created_at);
                 document.getElementById('last-updated').innerHTML = `
-                    理쒓렐 ?낅뜲?댄듃: ${latestDate.toLocaleDateString()} ${latestDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}<br>
+                    최근 업데이트: ${latestDate.toLocaleDateString()} ${latestDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}<br>
                     <span style="font-weight: bold; color: rgba(255,255,255,0.9); display: inline-block; margin-top: 5px;">
-                        ??λ맂 ?⑥뼱: 珥?${studyData.length}媛?(?⑥? ?⑥뼱: ${words.length}媛?
+                        저장된 단어: 총 ${studyData.length}개 (남은 단어: ${words.length}개)
                     </span>
                 `;
             } else {
-                document.getElementById('last-updated').innerHTML = `??λ맂 ?⑥뼱媛 ?놁뒿?덈떎.`;
+                document.getElementById('last-updated').innerHTML = `저장된 단어가 없습니다.`;
             }
 
             renderYoutubeLinks(youtubeLinks);
@@ -1984,7 +1986,7 @@
         function setupSubjects() {
             wordsBySubject = {}
             words.forEach(w => {
-                const subj = w.subject || '湲고?'
+                const subj = w.subject || '기타'
                 if (!wordsBySubject[subj]) {
                     wordsBySubject[subj] = []
                 }
@@ -2003,9 +2005,9 @@
             if (words.length === 0) {
                 cardContainer.innerHTML = `
                     <div class="card empty-state">
-                        ?럦 紐⑤뱺 ?⑥뼱瑜????몄썱?댁슂! 理쒓퀬?? ?뮇
+                        🎉 모든 단어를 다 외웠어요! 최고야! 💖
                         <br><br>
-                        <button class="btn-quiz" onclick="startQuiz()">?렜 蹂듭뒿 ?댁쫰 ?湲?/button>
+                        <button class="btn-quiz" onclick="startQuiz()">🎮 복습 퀴즈 풀기</button>
                     </div>
                 `;
                 return
@@ -2016,7 +2018,7 @@
             if (isTestMode) {
                 cardContainer.innerHTML = `
                     <div class="card test-mode">
-                        <div class="test-title">?뮕 ?붽린 ?뺤씤 ?뚯뒪???뮕</div>
+                        <div class="test-title">💡 암기 확인 테스트 💡</div>
                         ${word.image_url ? `<img src="${word.image_url}" class="word-image" onerror="this.onerror=null; this.src='https://placehold.co/400x200/ffeaa7/ff758c?text=Image+Load+Error';" />` : ''}
                         
                         <div class="tags">
@@ -2024,19 +2026,19 @@
                             <div class="category">${word.category}</div>
                         </div>
                         
-                        <div class="meaning-hint">${word.meaning || '?살씠 ?깅줉?섏? ?딆? ?⑥뼱?낅땲??'}</div>
+                        <div class="meaning-hint">${word.meaning || '뜻이 등록되지 않은 단어입니다.'}</div>
                         
                         <div style="text-align: center;">
-                            ${word.irregular ? `<div class="irregular-hint">遺덇퇋移??먰삎 ?뚰듃: ${word.irregular}</div>` : ''}
+                            ${word.irregular ? `<div class="irregular-hint">불규칙/원형 힌트: ${word.irregular}</div>` : ''}
                         </div>
                         
                         <div class="input-group">
-                            <input type="text" id="test-input" placeholder="?ㅽ렆留곸쓣 ?낅젰?대킄?? ?랃툘" autocomplete="off" onkeypress="if(event.key === 'Enter') checkTest()">
+                            <input type="text" id="test-input" placeholder="스펠링을 입력해봐요! ✍️" autocomplete="off" onkeypress="if(event.key === 'Enter') checkTest()">
                         </div>
 
                         <div class="buttons">
-                            <button class="btn-submit" onclick="checkTest()">?뺣떟 ?쒖텧 ?뮇</button>
-                            <button class="btn-cancel" onclick="cancelTest()">痍⑥냼 ?リ린</button>
+                            <button class="btn-submit" onclick="checkTest()">정답 제출 💖</button>
+                            <button class="btn-cancel" onclick="cancelTest()">취소 닫기</button>
                         </div>
                     </div>
                 `
@@ -2047,22 +2049,22 @@
             if (isIrregularTestMode) {
                 cardContainer.innerHTML = `
                     <div class="card test-mode">
-                        <div class="test-title">?뵦 遺덇퇋移?蹂???뚯뒪???뵦</div>
+                        <div class="test-title">🔥 불규칙 변화 테스트 🔥</div>
                         
                         <div class="meaning-hint" style="font-size: 32px; color: #ff758c; border-color: #ff758c;">${cleanWord(word.word)}</div>
                         <div style="text-align: center; color: #636e72; margin-bottom: 20px; font-weight: bold;">(${word.meaning || ''})</div>
                         
                         <div style="text-align: center; font-size: 16px; color: #b2bec3; margin-bottom: 10px;">
-                            怨쇨굅/怨쇨굅遺꾩궗?뺤쓣 ?낅젰?댁＜?몄슂! (?쇳몴???꾩뼱?곌린??臾댁떆?⑸땲??
+                            과거/과거분사형을 입력해주세요! (쉼표나 띄어쓰기는 무시됩니다)
                         </div>
                         
                         <div class="input-group">
-                            <input type="text" id="irregular-test-input" placeholder="遺덇퇋移??뺥깭 ?낅젰! ?랃툘" autocomplete="off" onkeypress="if(event.key === 'Enter') checkIrregularTest()">
+                            <input type="text" id="irregular-test-input" placeholder="불규칙 형태 입력! ✍️" autocomplete="off" onkeypress="if(event.key === 'Enter') checkIrregularTest()">
                         </div>
 
                         <div class="buttons">
-                            <button class="btn-submit" onclick="checkIrregularTest()">?뺣떟 ?쒖텧 ?뮇</button>
-                            <button class="btn-cancel" onclick="cancelTest()">痍⑥냼 ?リ린</button>
+                            <button class="btn-submit" onclick="checkIrregularTest()">정답 제출 💖</button>
+                            <button class="btn-cancel" onclick="cancelTest()">취소 닫기</button>
                         </div>
                     </div>
                 `;
@@ -2073,9 +2075,9 @@
             if (isQuizMode) {
                 cardContainer.innerHTML = `
                     <div class="card test-mode">
-                        <div class="test-title">?렜 蹂듭뒿 ?댁쫰 ?렜</div>
-                        <div class="meaning-hint" style="border-color:#f6d365;">${quizTargetWord.meaning || '?섎? ?놁쓬'}</div>
-                        <div style="text-align:center; color:#636e72; margin-bottom: 20px; font-weight: bold;">???살쓣 媛吏??⑥뼱??臾댁뾿?쇨퉴??</div>
+                        <div class="test-title">🎮 복습 퀴즈 🎮</div>
+                        <div class="meaning-hint" style="border-color:#f6d365;">${quizTargetWord.meaning || '의미 없음'}</div>
+                        <div style="text-align:center; color:#636e72; margin-bottom: 20px; font-weight: bold;">이 뜻을 가진 단어는 무엇일까요?</div>
                         
                         <div class="quiz-options">
                             ${quizOptions.map(opt => `
@@ -2084,7 +2086,7 @@
                         </div>
 
                         <div class="buttons">
-                            <button class="btn-cancel" onclick="cancelQuiz()">痍⑥냼 ?リ린</button>
+                            <button class="btn-cancel" onclick="cancelQuiz()">취소 닫기</button>
                         </div>
                     </div>
                 `;
@@ -2095,39 +2097,39 @@
                 if (isMathLoading) {
                     cardContainer.innerHTML = `
                         <div class="card test-mode">
-                            <div class="test-title">?쨼 AI ?섑븰 ?좎깮???쨼</div>
+                            <div class="test-title">🤖 AI 수학 선생님 🤖</div>
                             <div class="empty-state">
-                                <div>${cleanWord(word.word)} 湲곗큹 臾몄젣瑜?留뚮뱾怨??덉뼱??..</div>
-                                <div style="font-size: 40px; margin-top: 20px; animation: popIn 1s infinite;">??/div>
+                                <div>${cleanWord(word.word)} 기초 문제를 만들고 있어요...</div>
+                                <div style="font-size: 40px; margin-top: 20px; animation: popIn 1s infinite;">⏳</div>
                             </div>
                         </div>
                     `;
                 } else if (mathAiResult) {
                     cardContainer.innerHTML = `
                         <div class="card test-mode">
-                            <div class="test-title">?쨼 AI 湲곗큹 ?꾪깂 臾몄젣 ?쨼</div>
+                            <div class="test-title">🤖 AI 기초 탄탄 문제 🤖</div>
                             <div style="font-family:'Jua', sans-serif; font-size: 22px; color:#2d3436; text-align:center; margin-bottom:20px; line-height: 1.5; padding: 20px; background:#fff9e6; border-radius:20px; border:2px solid #ffeaa7;">
                                 ${mathAiResult.problem}
                             </div>
                             
                             <div id="math-solution-area" class="hidden">
-                                <div style="font-weight:bold; color:#ff758c; font-size: 24px; text-align:center; margin-bottom: 10px;">?뺣떟: ${mathAiResult.answer}</div>
+                                <div style="font-weight:bold; color:#ff758c; font-size: 24px; text-align:center; margin-bottom: 10px;">정답: ${mathAiResult.answer}</div>
                                 <div style="font-size: 16px; color:#636e72; background:#f8f9fa; padding:15px; border-radius:15px; line-height:1.6; white-space: pre-wrap;">${mathAiResult.solution}</div>
                             </div>
 
                             <div class="buttons" id="math-actions-1">
-                                <button class="btn-meaning" onclick="document.getElementById('math-solution-area').classList.remove('hidden'); document.getElementById('math-actions-1').classList.add('hidden'); document.getElementById('math-actions-2').classList.remove('hidden');">?? ?뺣떟 諛????蹂닿린</button>
-                                <button class="btn-cancel" onclick="nextWord()">?ㅼ쓬???湲?/button>
+                                <button class="btn-meaning" onclick="document.getElementById('math-solution-area').classList.remove('hidden'); document.getElementById('math-actions-1').classList.add('hidden'); document.getElementById('math-actions-2').classList.remove('hidden');">👀 정답 및 풀이 보기</button>
+                                <button class="btn-cancel" onclick="nextWord()">다음에 풀기</button>
                             </div>
                             
                             <div class="buttons hidden" id="math-actions-2">
-                                <button class="btn-submit" style="width:100%" onclick="finishMathAi()">?댄빐?덉뼱?? (?꾨즺) ?뮇</button>
-                                <button class="btn-cancel" onclick="nextWord()">?ㅼ떆 怨듬??좉쾶??/button>
+                                <button class="btn-submit" style="width:100%" onclick="finishMathAi()">이해했어요! (완료) 💖</button>
+                                <button class="btn-cancel" onclick="nextWord()">다시 공부할게요</button>
                             </div>
                         </div>
                     `;
                     
-                    // ?섏떇(LaTeX) ?뚮뜑留??곸슜 (AI 臾몄젣 ?붾㈃??
+                    // 수식(LaTeX) 렌더링 적용 (AI 문제 화면용)
                     if (window.renderMathInElement) {
                         setTimeout(() => {
                             renderMathInElement(document.getElementById('card-wrapper'), {
@@ -2139,27 +2141,28 @@
                                 ],
                                 throwOnError: false
                             });
-                        }, 50); // DOM ?낅뜲?댄듃 吏곹썑 ?뚮뜑留곷릺?꾨줉 ?쎄컙??吏???쒓컙 遺??                    }
+                        }, 50); // DOM 업데이트 직후 렌더링되도록 약간의 지연 시간 부여
+                    }
                 }
                 return;
             }
 
-            const isMath = word.subject && word.subject.includes('?섑븰');
+            const isMath = word.subject && word.subject.includes('수학');
             const isMc = !!parseMultipleChoice(word.example);
 
             cardContainer.innerHTML = `
         <div class="card">
           ${word.image_url ? `<img src="${word.image_url}" class="word-image" onerror="this.onerror=null; this.src='https://placehold.co/400x200/ffeaa7/ff758c?text=Image+Load+Error';" />` : ''}
           <div class="word">
-              <span id="secret-word-display" style="${isMc ? 'color: #ffb8b8; font-size: 0.8em;' : ''}">${isMc ? '?볛쓶?? : cleanWord(word.word)}</span>
-              ${/[a-zA-Z]/.test(cleanWord(word.word)) ? `<span id="secret-speaker-icon" class="speaker-icon ${isMc ? 'hidden' : ''}" onclick="speakWord('${cleanWord(word.word).replace(/'/g, "\\'")}')" title="諛쒖쓬 ?ｊ린">?뵄</span>` : ''}
+              <span id="secret-word-display" style="${isMc ? 'color: #ffb8b8; font-size: 0.8em;' : ''}">${isMc ? '❓❓❓' : cleanWord(word.word)}</span>
+              ${/[a-zA-Z]/.test(cleanWord(word.word)) ? `<span id="secret-speaker-icon" class="speaker-icon ${isMc ? 'hidden' : ''}" onclick="speakWord('${cleanWord(word.word).replace(/'/g, "\\'")}')" title="발음 듣기">🔊</span>` : ''}
           </div>
           
           <div style="text-align: center;">
               ${word.irregular ? `
                   <div class="irregular" style="display: inline-flex; align-items: center; gap: 8px;">
                       ${word.irregular}
-                      ${/[a-zA-Z]/.test(word.irregular) ? `<span class="speaker-icon" onclick="speakWord('${word.irregular.replace(/'/g, "\\'")}')" title="遺덇퇋移?蹂??諛쒖쓬 ?ｊ린" style="font-size: 22px; padding: 4px;">?뵄</span>` : ''}
+                      ${/[a-zA-Z]/.test(word.irregular) ? `<span class="speaker-icon" onclick="speakWord('${word.irregular.replace(/'/g, "\\'")}')" title="불규칙 변화 발음 듣기" style="font-size: 22px; padding: 4px;">🔊</span>` : ''}
                   </div>
               ` : ''}
           </div>
@@ -2177,21 +2180,21 @@
 
           <div class="buttons">
             ${isMath ? 
-              `<button class="btn-meaning" onclick="toggleMeaning()">???뺣떟 蹂닿린</button>
-               <button class="btn-test" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white;" onclick="startMathAiMode()">?쨼 AI 留욎땄 臾몄젣</button>` 
+              `<button class="btn-meaning" onclick="toggleMeaning()">✨ 정답 보기</button>
+               <button class="btn-test" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white;" onclick="startMathAiMode()">🤖 AI 맞춤 문제</button>` 
               :
-              `<button class="btn-meaning" onclick="toggleMeaning()">????蹂닿린</button>
-               <button class="btn-test" onclick="toggleTestMode()">?뱷 ?ㅽ렆留??뚯뒪??/button>
-               ${word.irregular ? `<button class="btn-test" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:white;" onclick="toggleIrregularTestMode()">?뱷 遺덇퇋移??뚯뒪??/button>` : ''}`
+              `<button class="btn-meaning" onclick="toggleMeaning()">✨ 뜻 보기</button>
+               <button class="btn-test" onclick="toggleTestMode()">📝 스펠링 테스트</button>
+               ${word.irregular ? `<button class="btn-test" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:white;" onclick="toggleIrregularTestMode()">📝 불규칙 테스트</button>` : ''}`
             }
-            <button class="btn-next" onclick="nextWord()">?ㅼ쓬 ??</button>
-            ${!isMath ? `<button class="btn-quiz" style="width: 100%;" onclick="startQuiz()">?렜 蹂듭뒿 ?댁쫰 ?湲?/button>` : ''}
+            <button class="btn-next" onclick="nextWord()">다음 🚀</button>
+            ${!isMath ? `<button class="btn-quiz" style="width: 100%;" onclick="startQuiz()">🎮 복습 퀴즈 풀기</button>` : ''}
           </div>
 
         </div>
       `
             
-            // ?섏떇(LaTeX) ?뚮뜑留??곸슜
+            // 수식(LaTeX) 렌더링 적용
             if (window.renderMathInElement) {
                 renderMathInElement(cardContainer, {
                     delimiters: [
@@ -2218,7 +2221,7 @@
             if (isSubmitting) return;
             isSubmitting = true;
             await updateMemorizedState();
-            await insertStudyLog(currentWord.subject || '湲고?', currentWord.word, '吏곸젒 ?꾨즺 泥섎━');
+            await insertStudyLog(currentWord.subject || '기타', currentWord.word, '직접 완료 처리');
             finalizeTest();
             isSubmitting = false;
         }
@@ -2235,8 +2238,8 @@
                 .eq('id', currentWord.id);
                 
             if (error) {
-                console.error("DB ?낅뜲?댄듃 ?먮윭:", error);
-                alert("?쒕쾭 ???以??ㅻ쪟媛 諛쒖깮?덉뼱?? ?ㅼ떆 ?쒕룄?댁＜?몄슂! ?삦");
+                console.error("DB 업데이트 에러:", error);
+                alert("서버 저장 중 오류가 발생했어요. 다시 시도해주세요! 😥");
                 return false;
             }
             return true;
@@ -2295,7 +2298,7 @@
                 const success = await updateMemorizedState();
                 if(!success) { isSubmitting = false; return; }
 
-                await insertStudyLog(currentWord.subject || '?곸뼱', cleanWord(currentWord.word), '?ㅽ렆留??뚯뒪???꾨즺');
+                await insertStudyLog(currentWord.subject || '영어', cleanWord(currentWord.word), '스펠링 테스트 완료');
                 finalizeTest();
                 isSubmitting = false;
             } else {
@@ -2303,7 +2306,7 @@
                 comboCount = 0;
                 saveStats();
 
-                alert("?? ??몄뼱?? ?ㅼ떆 ??踰??쒕룄?대낵源뚯슂? ?삂");
+                alert("앗, 틀렸어요! 다시 한 번 시도해볼까요? 😉");
                 const inputEl = document.getElementById('test-input');
                 inputEl.value = '';
                 inputEl.focus();
@@ -2314,7 +2317,7 @@
             if (isSubmitting) return;
             const inputVal = document.getElementById('irregular-test-input').value.trim();
             
-            // 怨듬갚, ?쇳몴, ?섏씠????湲고샇 臾댁떆?섍퀬 ?뚮Ц?먮줈 ?뚰뙆踰노쭔 鍮꾧탳 (?먮뒗 ?쒓????ы븿)
+            // 공백, 쉼표, 하이픈 등 기호 무시하고 소문자로 알파벳만 비교 (또는 한글도 포함)
             const normalizedInput = inputVal.toLowerCase().replace(/[\s\-\,\.]/g, '');
             const normalizedTarget = currentWord.irregular.toLowerCase().replace(/[\s\-\,\.]/g, '');
 
@@ -2323,14 +2326,14 @@
                 const success = await updateMemorizedState();
                 if(!success) { isSubmitting = false; return; }
 
-                await insertStudyLog(currentWord.subject || '?곸뼱', cleanWord(currentWord.word), '遺덇퇋移?蹂???뚯뒪???꾨즺');
+                await insertStudyLog(currentWord.subject || '영어', cleanWord(currentWord.word), '불규칙 변화 테스트 완료');
                 finalizeTest();
                 isSubmitting = false;
             } else {
                 comboCount = 0;
                 saveStats();
 
-                alert("?? ??몄뼱?? 遺덇퇋移??뺥깭瑜??ㅼ떆 ??踰??뺤씤?대낵源뚯슂? ?삂");
+                alert("앗, 틀렸어요! 불규칙 형태를 다시 한 번 확인해볼까요? 😉");
                 const inputEl = document.getElementById('irregular-test-input');
                 inputEl.value = '';
                 inputEl.focus();
@@ -2339,7 +2342,7 @@
 
         function startQuiz() {
             if (memorizedWords.length < 4) {
-                alert("?? ?댁쫰瑜???ㅻ㈃ 理쒖냼 4媛쒖쓽 ?⑥뼱瑜??붽린?댁빞 ?댁슂! (?꾩옱 ?붽린?꾨즺: " + memorizedWords.length + "媛?");
+                alert("앗! 퀴즈를 풀려면 최소 4개의 단어를 암기해야 해요! (현재 암기완료: " + memorizedWords.length + "개)");
                 return;
             }
             isQuizMode = true;
@@ -2383,14 +2386,14 @@
                     spread: 60,
                     origin: { y: 0.6 }
                 });
-                await insertStudyLog(quizTargetWord.subject || '蹂듭뒿', quizTargetWord.word, '蹂듭뒿 ?댁쫰 ?뺣떟');
-                alert("?뺣떟?댁뿉?? ?럦 硫뗭졇??");
+                await insertStudyLog(quizTargetWord.subject || '복습', quizTargetWord.word, '복습 퀴즈 정답');
+                alert("정답이에요! 🎉 멋져요!");
                 setTimeout(() => {
                     isSubmitting = false;
                     startQuiz();
                 }, 500);
             } else {
-                alert(`?? ??몄뼱?? ?삦 ?뺣떟? '${quizTargetWord.word}' ??댁슂.`);
+                alert(`앗, 틀렸어요! 😥 정답은 '${quizTargetWord.word}' 였어요.`);
             }
         }
 
@@ -2428,13 +2431,13 @@
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    throw new Error(`?곹깭 肄붾뱶: ${response.status}, ?댁슜: ${errorText}`);
+                    throw new Error(`상태 코드: ${response.status}, 내용: ${errorText}`);
                 }
 
                 mathAiResult = await response.json();
             } catch (err) {
                 console.error(err);
-                alert("AI 臾몄젣 ?앹꽦???ㅽ뙣?덉뒿?덈떎.\n?ъ쑀: " + err.message);
+                alert("AI 문제 생성에 실패했습니다.\n사유: " + err.message);
                 isMathAiMode = false;
             } finally {
                 isMathLoading = false;
@@ -2448,7 +2451,7 @@
             const success = await updateMemorizedState();
             if(!success) { isSubmitting = false; return; }
             
-            await insertStudyLog(currentWord.subject || '?섑븰', cleanWord(currentWord.word), 'AI 留욎땄 ?섑븰 臾몄젣 ????꾨즺');
+            await insertStudyLog(currentWord.subject || '수학', cleanWord(currentWord.word), 'AI 맞춤 수학 문제 풀이 완료');
             finalizeTest();
             isSubmitting = false;
         }
@@ -2463,17 +2466,17 @@
         function speakWord(text) {
             text = cleanWord(text);
             if ('speechSynthesis' in window) {
-                // 湲곗〈 ?ъ깮以묒씤 ?뚯꽦 痍⑥냼
+                // 기존 재생중인 음성 취소
                 window.speechSynthesis.cancel();
                 
-                // ?쒓? ?쒓굅 (?곸뼱 諛쒖쓬 湲고샇??湲고? ?띿뒪?몃쭔 ?④?)
-                const englishOnly = text.replace(/[????????媛-??/g, '').trim();
+                // 한글 제거 (영어 발음 기호나 기타 텍스트만 남김)
+                const englishOnly = text.replace(/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/g, '').trim();
                 
                 if (!englishOnly) return;
                 
                 const utterance = new SpeechSynthesisUtterance(englishOnly);
                 
-                // 以묓븰???숈뒿??異붿쿇 紐⑹냼由??곸슜 (?먮룞)
+                // 중학생 학습용 추천 목소리 적용 (자동)
                 const voices = window.speechSynthesis.getVoices();
                 const recommendedVoices = ['Google US English', 'Samantha', 'Microsoft Zira - English (United States)', 'Microsoft Zira', 'Alex'];
                 
@@ -2481,7 +2484,8 @@
                 if (bestVoice) {
                     utterance.voice = bestVoice;
                 } else {
-                    // 異붿쿇 紐⑹냼由ш? ?놁쑝硫?湲곕낯 ?곸뼱 紐⑹냼由?                    const fallbackVoice = voices.find(v => v.lang.startsWith('en') && v.default) || voices.find(v => v.lang.startsWith('en'));
+                    // 추천 목소리가 없으면 기본 영어 목소리
+                    const fallbackVoice = voices.find(v => v.lang.startsWith('en') && v.default) || voices.find(v => v.lang.startsWith('en'));
                     if (fallbackVoice) {
                         utterance.voice = fallbackVoice;
                     } else {
@@ -2489,12 +2493,12 @@
                     }
                 }
 
-                utterance.rate = 0.85;    // ?쎄컙 泥쒖쿇??(?꾩씠?ㅼ씠 ?ｊ린 ?명븯寃?
-                utterance.pitch = 1.1;    // ?댁쭩 ?믪? ?ㅼ쑝濡?諛앷쾶
+                utterance.rate = 0.85;    // 약간 천천히 (아이들이 듣기 편하게)
+                utterance.pitch = 1.1;    // 살짝 높은 톤으로 밝게
                 
                 window.speechSynthesis.speak(utterance);
             } else {
-                alert("?? 吏湲??ъ슜 以묒씤 釉뚮씪?곗??먯꽌??諛쒖쓬 ?ｊ린媛 ???쇱슂. ?삦 (?щ＼/?ы뙆由щ? 異붿쿇?댁슂)");
+                alert("앗! 지금 사용 중인 브라우저에서는 발음 듣기가 안 돼요. 😥 (크롬/사파리를 추천해요)");
             }
         }
 
@@ -2514,11 +2518,12 @@
                 .order('created_at', { ascending: false });
 
             if (error) {
-                console.error("DB 濡쒕뱶 ?먮윭:", error);
+                console.error("DB 로드 에러:", error);
                 return;
             }
 
-            // DAILY_HABIT 湲곕줉? ?⑥뼱 ?붽린 洹몃옒?꾩뿉 ?ы븿?섏? ?딅룄濡??꾪꽣留?            const wordLogs = (data || []).filter(log => log.subject !== 'DAILY_HABIT');
+            // DAILY_HABIT 기록은 단어 암기 그래프에 포함되지 않도록 필터링
+            const wordLogs = (data || []).filter(log => log.subject !== 'DAILY_HABIT');
             renderHistory(wordLogs);
         }
 
@@ -2528,8 +2533,8 @@
             
             if (logs.length === 0) {
                 container.innerHTML = `
-                    <div class="history-title">?뱢 ?섏쓽 ?쇱＜??怨듬? 湲곕줉</div>
-                    <div style="text-align:center; color:#636e72; font-size:14px; padding: 20px 0; font-family:'Jua', sans-serif;">?꾩쭅 理쒓렐 湲곕줉???놁뼱?? ?ㅻ뒛???뚯씠?? ?뮇</div>
+                    <div class="history-title">📈 나의 일주일 공부 기록</div>
+                    <div style="text-align:center; color:#636e72; font-size:14px; padding: 20px 0; font-family:'Jua', sans-serif;">아직 최근 기록이 없어요. 오늘도 파이팅! 💖</div>
                 `;
                 container.classList.remove('hidden');
                 return;
@@ -2553,7 +2558,7 @@
                 }
             });
 
-            let html = `<div class="history-title">?뱢 ?섏쓽 ?쇱＜??怨듬? 湲곕줉</div>`;
+            let html = `<div class="history-title">📈 나의 일주일 공부 기록</div>`;
             html += `<div style="display:flex; flex-direction:column; gap:4px; margin-top: 15px;">`;
 
             // Max value for bar chart scaling (minimum 10)
@@ -2570,7 +2575,7 @@
                         <div class="history-chart-bar-bg">
                             <div class="history-chart-bar-fill" style="width: ${barWidth}%; ${isToday ? 'background: linear-gradient(90deg, #84fab0 0%, #8fd3f4 100%);' : ''}"></div>
                         </div>
-                        <div class="history-chart-count" style="${isToday ? 'color:#ff758c;' : ''}">${count.total}媛?/div>
+                        <div class="history-chart-count" style="${isToday ? 'color:#ff758c;' : ''}">${count.total}개</div>
                     </div>
                 `;
             });
@@ -2588,28 +2593,28 @@
             
             // Default links
             const defaultLinks = [
-                { url: 'https://www.youtube.com/@ebs_middle', icon: '?럲', title: 'EBS 以묓븰 (援먭낵??湲곗큹 ?꾪깂)' },
-                { url: 'https://www.youtube.com/@hongong', icon: '?뵥', title: '?쇨났TV (?쎄퀬 ?щ컡???곷Ц踰?' },
-                { url: 'https://www.youtube.com/@jungseungje', icon: '?뱪', title: '?뺤듅???앹꽑??(?섑븰 ?ш린 湲덉?!)' },
-                { url: 'https://www.youtube.com/@science_dream', icon: '?뵮', title: '怨쇳븰?쒕┝ (?λ?吏꾩쭊??怨쇳븰 ?댁빞湲?' },
-                { url: 'https://www.youtube.com/@1minuteinfo', icon: '?쭬', title: '1遺꾨?留?(吏㏐퀬 ?좎씡???곸떇)' },
-                { url: 'https://youtu.be/tedqdAiXBCk?si=cTraohne85P4HqTv', icon: '?뱰', title: '?곸뼱?숉솕 紐⑥븘?ｊ린 (?ㅻ젮?쒕━由щ굹)' }
+                { url: 'https://www.youtube.com/@ebs_middle', icon: '🎒', title: 'EBS 중학 (교과서 기초 탄탄)' },
+                { url: 'https://www.youtube.com/@hongong', icon: '🔤', title: '혼공TV (쉽고 재밌는 영문법)' },
+                { url: 'https://www.youtube.com/@jungseungje', icon: '📐', title: '정승제 생선님 (수학 포기 금지!)' },
+                { url: 'https://www.youtube.com/@science_dream', icon: '🔬', title: '과학드림 (흥미진진한 과학 이야기)' },
+                { url: 'https://www.youtube.com/@1minuteinfo', icon: '🧠', title: '1분미만 (짧고 유익한 상식)' },
+                { url: 'https://youtu.be/tedqdAiXBCk?si=cTraohne85P4HqTv', icon: '📖', title: '영어동화 모아듣기 (들려드리리나)' }
             ];
 
             const allLinks = [...defaultLinks, ...links.map(l => ({
                 id: l.id,
                 url: l.meaning,
-                icon: l.example || '?벟',
+                icon: l.example || '📺',
                 title: l.word
             }))];
 
             allLinks.forEach(link => {
                 html += `
                     <div style="position:relative; display:flex; align-items:center;">
-                        <a href="${link.url}" target="_blank" class="youtube-link" style="flex-grow:1; padding-right:${link.id && userNickname === '?꾨튌' ? '40px' : '16px'};">
+                        <a href="${link.url}" target="_blank" class="youtube-link" style="flex-grow:1; padding-right:${link.id && userNickname === '아빠' ? '40px' : '16px'};">
                             <span style="font-size:24px; margin-right:12px;">${link.icon}</span> ${link.title}
                         </a>
-                        ${userNickname === '?꾨튌' && link.id ? `<button onclick="deleteYoutubeLink('${link.id}')" style="position:absolute; right:10px; background:white; border:2px solid #ff758c; border-radius:50%; padding:5px 8px; color:#ff758c; font-size:12px; cursor:pointer;">??/button>` : ''}
+                        ${userNickname === '아빠' && link.id ? `<button onclick="deleteYoutubeLink('${link.id}')" style="position:absolute; right:10px; background:white; border:2px solid #ff758c; border-radius:50%; padding:5px 8px; color:#ff758c; font-size:12px; cursor:pointer;">❌</button>` : ''}
                     </div>
                 `;
             });
@@ -2618,8 +2623,8 @@
             
             const btnContainer = document.getElementById('youtube-admin-actions');
             if (btnContainer) {
-                if (userNickname === '?꾨튌') {
-                    btnContainer.innerHTML = `<button onclick="showAddYoutubeModal()" style="width:100%; margin-top:16px; background:linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); color:#4a69bd; font-family:'Jua', sans-serif;">???꾨튌??異붿쿇 留곹겕 異붽??섍린</button>`;
+                if (userNickname === '아빠') {
+                    btnContainer.innerHTML = `<button onclick="showAddYoutubeModal()" style="width:100%; margin-top:16px; background:linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); color:#4a69bd; font-family:'Jua', sans-serif;">➕ 아빠의 추천 링크 추가하기</button>`;
                 } else {
                     btnContainer.innerHTML = '';
                 }
@@ -2627,13 +2632,13 @@
         }
         
         async function deleteYoutubeLink(id) {
-            if(!confirm('??異붿쿇 留곹겕瑜???젣?좉퉴??')) return;
+            if(!confirm('이 추천 링크를 삭제할까요?')) return;
             const { error } = await supabaseClient.from('study_words').delete().eq('id', id);
             if (!error) {
-                alert('??젣?섏뿀?듬땲??');
+                alert('삭제되었습니다!');
                 loadWords();
             } else {
-                alert('??젣???ㅽ뙣?덉뒿?덈떎.');
+                alert('삭제에 실패했습니다.');
             }
         }
 
@@ -2643,7 +2648,7 @@
                 overlay.classList.remove('hidden');
                 document.getElementById('yt-title').value = '';
                 document.getElementById('yt-url').value = '';
-                document.getElementById('yt-icon').value = '?벟';
+                document.getElementById('yt-icon').value = '📺';
                 document.getElementById('yt-title').focus();
             }
         }
@@ -2656,10 +2661,10 @@
         function submitYoutubeModal() {
             const title = document.getElementById('yt-title').value.trim();
             const url = document.getElementById('yt-url').value.trim();
-            const icon = document.getElementById('yt-icon').value.trim() || '?벟';
+            const icon = document.getElementById('yt-icon').value.trim() || '📺';
 
-            if (!title) { alert('?쒕ぉ???낅젰?댁＜?몄슂!'); return; }
-            if (!url) { alert('?좏뒠釉?留곹겕瑜??낅젰?댁＜?몄슂!'); return; }
+            if (!title) { alert('제목을 입력해주세요!'); return; }
+            if (!url) { alert('유튜브 링크를 입력해주세요!'); return; }
 
             addYoutubeLink(title, url, icon);
             closeYoutubeModal();
@@ -2674,15 +2679,15 @@
             }]);
             
             if (error) {
-                alert('??μ뿉 ?ㅽ뙣?덉뒿?덈떎.');
+                alert('저장에 실패했습니다.');
             } else {
-                alert('異붿쿇 留곹겕媛 異붽??섏뿀?듬땲?? ?뮇');
+                alert('추천 링크가 추가되었습니다! 💖');
                 loadWords();
             }
         }
 
         // ===================================================
-        // Daily Habit State & Logic (吏媛?/ ???怨듬? 愿由?
+        // Daily Habit State & Logic (지각 / 저녁 공부 관리)
         // ===================================================
         let habitRecordsMap = {};
         let selectedHabitDate = getLocalDateStr(new Date());
@@ -2690,8 +2695,9 @@
         let habitCalMonth = new Date().getMonth(); // 0-indexed
         let isHabitSaving = false;
         let isDadPreviewMode = false;
-        let habitWeekOffset = 0; // 0 = ?대쾲 二? -1 = 吏?쒖＜, +1 = ?ㅼ쓬二?        let isHabitMonthExpanded = false; // ?붽컙 ?щ젰 ?꾩껜蹂닿린 ?묎린/?쇱튂湲??щ?
-        let familySchedules = []; // ?꾨튌媛 ?깅줉??二쇱슂 ?쇱젙 (以묎컙怨좎궗, ?쒖궗, 湲곕뀗????
+        let habitWeekOffset = 0; // 0 = 이번 주, -1 = 지난주, +1 = 다음주
+        let isHabitMonthExpanded = false; // 월간 달력 전체보기 접기/펼치기 여부
+        let familySchedules = []; // 아빠가 등록한 주요 일정 (중간고사, 제사, 기념일 등)
 
         let draftAttendance = null; // 'ON_TIME' | 'LATE' | 'HOLIDAY' | null
         let draftEveningStudy = null; // true | false | null
@@ -2711,15 +2717,15 @@
             if (!endDate || startDate === endDate) {
                 const parts = startDate.split('-').map(Number);
                 const d = new Date(parts[0], parts[1] - 1, parts[2]);
-                const dayNames = ['??, '??, '??, '??, '紐?, '湲?, '??];
-                return `${parts[1]}??${parts[2]}??${dayNames[d.getDay()]})`;
+                const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+                return `${parts[1]}월 ${parts[2]}일(${dayNames[d.getDay()]})`;
             }
             const p1 = startDate.split('-').map(Number);
             const d1 = new Date(p1[0], p1[1] - 1, p1[2]);
             const p2 = endDate.split('-').map(Number);
             const d2 = new Date(p2[0], p2[1] - 1, p2[2]);
-            const dayNames = ['??, '??, '??, '??, '紐?, '湲?, '??];
-            return `${p1[1]}??${p1[2]}??${dayNames[d1.getDay()]}) ~ ${p2[1]}??${p2[2]}??${dayNames[d2.getDay()]})`;
+            const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+            return `${p1[1]}월 ${p1[2]}일(${dayNames[d1.getDay()]}) ~ ${p2[1]}월 ${p2[2]}일(${dayNames[d2.getDay()]})`;
         }
 
         function getScheduleDDayInfo(startDate, endDate) {
@@ -2727,7 +2733,7 @@
 
             if (todayStr >= startDate && todayStr <= (endDate || startDate)) {
                 return {
-                    label: (startDate === endDate) ? '?ㅻ뒛 D-Day! ?뙚' : '吏꾪뻾 以? ?뵦',
+                    label: (startDate === endDate) ? '오늘 D-Day! 🌟' : '진행 중! 🔥',
                     className: 'active',
                     isOngoing: true,
                     isUpcoming: false,
@@ -2758,7 +2764,7 @@
                 const endDateObj = new Date(endParts[0], endParts[1] - 1, endParts[2]);
                 const pastDays = Math.round((todayDate - endDateObj) / (1000 * 60 * 60 * 24));
                 return {
-                    label: '醫낅즺',
+                    label: '종료',
                     className: 'passed',
                     isOngoing: false,
                     isUpcoming: false,
@@ -2789,14 +2795,14 @@
             if (displayList.length === 0) {
                 itemsHtml = `
                     <div style="text-align:center; padding:12px; color:#94a3b8; font-size:13px; font-family:'Jua', sans-serif;">
-                        ${isDad ? '?깅줉???쒗뿕?대굹 媛議??쇱젙???놁뒿?덈떎. ?곗륫 踰꾪듉???뚮윭 ?쇱젙???깅줉?대낫?몄슂! ?삃' : '?깅줉??二쇱슂 ?쇱젙???놁뒿?덈떎 ?뮇'}
+                        ${isDad ? '등록된 시험이나 가족 일정이 없습니다. 우측 버튼을 눌러 일정을 등록해보세요! 😊' : '등록된 주요 일정이 없습니다 💖'}
                     </div>
                 `;
             } else {
                 itemsHtml = displayList.slice(0, 4).map(ev => {
                     const rangeStr = formatScheduleRange(ev.startDate, ev.endDate);
                     const deleteBtn = isDad 
-                        ? `<button type="button" onclick="deleteSchedule(${ev.id}, '${escapeHtml(ev.title)}')" style="background:none; border:none; color:#cbd5e1; cursor:pointer; font-size:14px; padding:2px 4px;" title="?쇱젙 ??젣" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">?뿊截?/button>` 
+                        ? `<button type="button" onclick="deleteSchedule(${ev.id}, '${escapeHtml(ev.title)}')" style="background:none; border:none; color:#cbd5e1; cursor:pointer; font-size:14px; padding:2px 4px;" title="일정 삭제" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">🗑️</button>` 
                         : '';
                     const activeClass = ev.info.isOngoing ? 'active-now' : '';
                     return `
@@ -2805,8 +2811,8 @@
                                 <div class="schedule-icon-badge">${ev.icon}</div>
                                 <div class="schedule-info">
                                     <div class="schedule-name">${escapeHtml(ev.title)}</div>
-                                    <div class="schedule-dates">?뱟 ${rangeStr}</div>
-                                    ${ev.memo ? `<div class="schedule-memo-text">?뮠 ${escapeHtml(ev.memo)}</div>` : ''}
+                                    <div class="schedule-dates">📅 ${rangeStr}</div>
+                                    ${ev.memo ? `<div class="schedule-memo-text">💬 ${escapeHtml(ev.memo)}</div>` : ''}
                                 </div>
                             </div>
                             <div class="schedule-item-right">
@@ -2819,14 +2825,14 @@
             }
 
             const manageBtn = isDad
-                ? `<button type="button" class="schedule-add-btn" onclick="openScheduleModal()">???쇱젙 ?깅줉 / 愿由?/button>`
-                : (familySchedules.length > 0 ? `<button type="button" class="habit-cal-btn" onclick="openScheduleModal()" style="font-size:11px; padding:3px 8px;">?꾩껜 (${familySchedules.length})</button>` : '');
+                ? `<button type="button" class="schedule-add-btn" onclick="openScheduleModal()">➕ 일정 등록 / 관리</button>`
+                : (familySchedules.length > 0 ? `<button type="button" class="habit-cal-btn" onclick="openScheduleModal()" style="font-size:11px; padding:3px 8px;">전체 (${familySchedules.length})</button>` : '');
 
             return `
                 <div class="schedule-section-card">
                     <div class="schedule-header">
                         <div class="schedule-title">
-                            <span>?뿎截??곕━ 吏?二쇱슂 ?쇱젙 & D-Day</span>
+                            <span>🗓️ 우리 집 주요 일정 & D-Day</span>
                         </div>
                         ${manageBtn}
                     </div>
@@ -2884,12 +2890,12 @@
             const memo = (memoInput?.value || '').trim();
 
             if (!title) {
-                alert("?쇱젙 ?쒕ぉ???낅젰?댁＜?몄슂! (?? 2?숆린 以묎컙怨좎궗, ?좎븘踰꾩? ?쒖궗 ??");
+                alert("일정 제목을 입력해주세요! (예: 2학기 중간고사, 할아버지 제사 등)");
                 titleInput?.focus();
                 return;
             }
             if (!startDate) {
-                alert("?쒖옉 ?좎쭨瑜??좏깮?댁＜?몄슂!");
+                alert("시작 날짜를 선택해주세요!");
                 startInput?.focus();
                 return;
             }
@@ -2898,7 +2904,7 @@
             }
 
             const selectedCatBtn = document.querySelector('.sched-cat-btn.active');
-            const icon = selectedCatBtn ? selectedCatBtn.getAttribute('data-icon') : '?뱦';
+            const icon = selectedCatBtn ? selectedCatBtn.getAttribute('data-icon') : '📌';
             const category = selectedCatBtn ? selectedCatBtn.getAttribute('data-cat') : 'OTHER';
 
             const schedObj = {
@@ -2908,13 +2914,13 @@
                 icon,
                 category,
                 memo,
-                author: userNickname || '?꾨튌',
+                author: userNickname || '아빠',
                 created_at: new Date().toISOString()
             };
 
             if (saveBtn) {
                 saveBtn.disabled = true;
-                saveBtn.innerText = "???以?.. ??;
+                saveBtn.innerText = "저장 중... ⏳";
             }
 
             try {
@@ -2925,8 +2931,8 @@
                         word: schedKey,
                         meaning: JSON.stringify(schedObj),
                         subject: 'FAMILY_SCHEDULE',
-                        category: '?꾨엺',
-                        example: userNickname || '?꾨튌'
+                        category: '아람',
+                        example: userNickname || '아빠'
                     }]);
 
                 if (error) throw error;
@@ -2937,7 +2943,7 @@
                     origin: { y: 0.5 }
                 });
 
-                alert(`?뮇 [${icon} ${title}] ?쇱젙???깅줉?섏뿀?듬땲??`);
+                alert(`💖 [${icon} ${title}] 일정이 등록되었습니다!`);
                 
                 await loadHabitRecords();
                 
@@ -2948,17 +2954,17 @@
                 
             } catch(err) {
                 console.error("Save schedule error:", err);
-                alert("?쇱젙 ???以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎: " + (err.message || err));
+                alert("일정 저장 중 오류가 발생했습니다: " + (err.message || err));
             } finally {
                 if (saveBtn) {
                     saveBtn.disabled = false;
-                    saveBtn.innerText = "?뮶 ?쇱젙 異붽??섍린 ?뮇";
+                    saveBtn.innerText = "💾 일정 추가하기 💖";
                 }
             }
         }
 
         async function deleteSchedule(id, title) {
-            if (!confirm(`[${title}] ?쇱젙????젣?섏떆寃좎뒿?덇퉴?`)) return;
+            if (!confirm(`[${title}] 일정을 삭제하시겠습니까?`)) return;
 
             try {
                 const { error } = await supabaseClient
@@ -2968,12 +2974,12 @@
 
                 if (error) throw error;
 
-                alert(`[${title}] ?쇱젙????젣?섏뿀?듬땲??`);
+                alert(`[${title}] 일정이 삭제되었습니다.`);
                 await loadHabitRecords();
                 renderScheduleModalList();
             } catch(err) {
                 console.error("Delete schedule error:", err);
-                alert("??젣 以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎: " + (err.message || err));
+                alert("삭제 중 오류가 발생했습니다: " + (err.message || err));
             }
         }
 
@@ -2982,16 +2988,16 @@
             if (!container) return;
 
             if (!familySchedules || familySchedules.length === 0) {
-                container.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:12px; padding:16px;">?깅줉???쇱젙???놁뒿?덈떎.</div>`;
+                container.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:12px; padding:16px;">등록된 일정이 없습니다.</div>`;
                 return;
             }
 
-            const isDad = (userNickname === '?꾨튌');
+            const isDad = (userNickname === '아빠');
             let html = '';
             familySchedules.forEach(ev => {
                 const dday = getScheduleDDayInfo(ev.startDate, ev.endDate);
                 const delBtn = isDad 
-                    ? `<button type="button" onclick="deleteSchedule(${ev.id}, '${escapeHtml(ev.title)}')" style="background:#fee2e2; color:#ef4444; border:none; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">?뿊截???젣</button>` 
+                    ? `<button type="button" onclick="deleteSchedule(${ev.id}, '${escapeHtml(ev.title)}')" style="background:#fee2e2; color:#ef4444; border:none; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🗑️ 삭제</button>` 
                     : '';
                 html += `
                     <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:8px 12px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
@@ -3000,7 +3006,7 @@
                             <div>
                                 <div style="font-size:13px; font-weight:bold; color:#1e293b;">${escapeHtml(ev.title)}</div>
                                 <div style="font-size:11px; color:#64748b;">${formatScheduleRange(ev.startDate, ev.endDate)} <span style="font-weight:bold; color:#6366f1;">(${dday.label})</span></div>
-                                ${ev.memo ? `<div style="font-size:11px; color:#8b5cf6;">?뮠 ${escapeHtml(ev.memo)}</div>` : ''}
+                                ${ev.memo ? `<div style="font-size:11px; color:#8b5cf6;">💬 ${escapeHtml(ev.memo)}</div>` : ''}
                             </div>
                         </div>
                         ${delBtn}
@@ -3053,11 +3059,11 @@
 
             if (y1 === y2) {
                 if (m1 === m2) {
-                    return `${y1}??${m1}??${d1}??~ ${d2}??;
+                    return `${y1}년 ${m1}월 ${d1}일 ~ ${d2}일`;
                 }
-                return `${y1}??${m1}??${d1}??~ ${m2}??${d2}??;
+                return `${y1}년 ${m1}월 ${d1}일 ~ ${m2}월 ${d2}일`;
             }
-            return `${y1}??${m1}??${d1}??~ ${y2}??${m2}??${d2}??;
+            return `${y1}년 ${m1}월 ${d1}일 ~ ${y2}년 ${m2}월 ${d2}일`;
         }
 
         function getWeeklyHabitStats(weekDays) {
@@ -3104,7 +3110,7 @@
 
             const weekStats = getWeeklyHabitStats(weekDays);
             const weekTitle = getWeekRangeTitle(monday, sunday);
-            const dayNames = ['??, '??, '??, '紐?, '湲?, '??, '??];
+            const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
 
             let daysHtml = '';
             weekDays.forEach((d, idx) => {
@@ -3115,14 +3121,14 @@
 
                 let badgesHtml = '';
                 if (rec) {
-                    if (rec.attendance === 'ON_TIME') badgesHtml += '<span title="?뺤긽 ?깃탳">?截?/span>';
-                    else if (rec.attendance === 'LATE') badgesHtml += '<span title="吏媛?>??/span>';
-                    else if (rec.attendance === 'HOLIDAY') badgesHtml += '<span title="?댁씪/二쇰쭚">?룚截?/span>';
+                    if (rec.attendance === 'ON_TIME') badgesHtml += '<span title="정상 등교">☀️</span>';
+                    else if (rec.attendance === 'LATE') badgesHtml += '<span title="지각">⏰</span>';
+                    else if (rec.attendance === 'HOLIDAY') badgesHtml += '<span title="휴일/주말">🏖️</span>';
 
-                    if (rec.evening_study === true) badgesHtml += '<span title="???怨듬? ?꾨즺">?뱰</span>';
-                    else if (rec.evening_study === false) badgesHtml += '<span title="怨듬? ??>?뮘</span>';
+                    if (rec.evening_study === true) badgesHtml += '<span title="저녁 공부 완료">📖</span>';
+                    else if (rec.evening_study === false) badgesHtml += '<span title="공부 쉼">💤</span>';
 
-                    if (rec.memo) badgesHtml += '<span title="?꾨튌 ?묒썝">?뭽</span>';
+                    if (rec.memo) badgesHtml += '<span title="아빠 응원">💌</span>';
                 }
 
                 const dayEvents = getSchedulesForDate(dateStr);
@@ -3148,10 +3154,10 @@
 
                 daysHtml += `
                     <div class="habit-week-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" onclick="${clickHandler}" title="${dateStr}">
-                        ${isToday ? '<span class="habit-today-tag">?ㅻ뒛</span>' : ''}
+                        ${isToday ? '<span class="habit-today-tag">오늘</span>' : ''}
                         <div class="habit-week-weekday ${weekdayClass}">${dayNames[idx]}</div>
                         <div class="habit-week-date-num">${d.getDate()}</div>
-                        <div class="habit-week-badges">${badgesHtml || '<span class="habit-badge-empty">쨌</span>'}</div>
+                        <div class="habit-week-badges">${badgesHtml || '<span class="habit-badge-empty">·</span>'}</div>
                         ${eventPillsHtml}
                     </div>
                 `;
@@ -3160,31 +3166,31 @@
             return `
                 <div class="habit-week-wrap">
                     <div class="habit-week-nav">
-                        <button type="button" class="habit-cal-btn" onclick="changeHabitWeek(-1)">? 吏?쒖＜</button>
+                        <button type="button" class="habit-cal-btn" onclick="changeHabitWeek(-1)">◀ 지난주</button>
                         <div style="display:flex; flex-direction:column; align-items:center;">
-                            <div class="habit-week-title">?뱟 ${weekTitle}</div>
+                            <div class="habit-week-title">📅 ${weekTitle}</div>
                             ${habitWeekOffset !== 0 
-                                ? `<button type="button" onclick="resetHabitWeek()" class="habit-week-reset-btn">?대쾲 二쇰줈 ?뚯븘媛湲?/button>` 
-                                : `<span class="habit-week-current-pill">?대쾲 二?/span>`}
+                                ? `<button type="button" onclick="resetHabitWeek()" class="habit-week-reset-btn">이번 주로 돌아가기</button>` 
+                                : `<span class="habit-week-current-pill">이번 주</span>`}
                         </div>
-                        <button type="button" class="habit-cal-btn" onclick="changeHabitWeek(1)">?ㅼ쓬二???/button>
+                        <button type="button" class="habit-cal-btn" onclick="changeHabitWeek(1)">다음주 ▶</button>
                     </div>
 
-                    <!-- 二쇨컙 ?깆랬 ?붿빟 諛?-->
+                    <!-- 주간 성취 요약 바 -->
                     <div class="habit-week-stats-bar">
-                        <span>???대쾲 二??깆랬:</span>
-                        <strong>?뱰 ???怨듬? <span style="color:#6366f1;">${weekStats.studyCount}??/span></strong>
-                        <span style="color:#cbd5e1;">쨌</span>
-                        <strong>?截??뺤긽 ?깃탳 <span style="color:#059669;">${weekStats.onTimeCount}??/span></strong>
-                        ${weekStats.lateCount > 0 ? `<span style="color:#cbd5e1;">쨌</span> <strong>??吏媛?<span style="color:#ef4444;">${weekStats.lateCount}??/span></strong>` : ''}
+                        <span>✨ 이번 주 성취:</span>
+                        <strong>📖 저녁 공부 <span style="color:#6366f1;">${weekStats.studyCount}일</span></strong>
+                        <span style="color:#cbd5e1;">·</span>
+                        <strong>☀️ 정상 등교 <span style="color:#059669;">${weekStats.onTimeCount}일</span></strong>
+                        ${weekStats.lateCount > 0 ? `<span style="color:#cbd5e1;">·</span> <strong>⏰ 지각 <span style="color:#ef4444;">${weekStats.lateCount}일</span></strong>` : ''}
                     </div>
 
-                    <!-- 二쇨컙 7???ㅽ듃由?-->
+                    <!-- 주간 7일 스트립 -->
                     <div class="habit-week-grid">
                         ${daysHtml}
                     </div>
                     <div style="font-size:11px; color:#888; text-align:center; margin-top:10px;">
-                        ?截??뺤긽?깃탳 쨌 ??吏媛?쨌 ?룚截?二쇰쭚/?댁씪 쨌 ?뱰 ??곴났遺 쨌 ?뮘 ?댁떇 쨌 ?뭽 ?묒썝
+                        ☀️ 정상등교 · ⏰ 지각 · 🏖️ 주말/휴일 · 📖 저녁공부 · 💤 휴식 · 💌 응원
                     </div>
                 </div>
             `;
@@ -3201,9 +3207,9 @@
             if (!dateStr) return '';
             const parts = dateStr.split('-').map(Number);
             const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
-            const days = ['??, '??, '??, '??, '紐?, '湲?, '??];
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
             const dayName = days[dateObj.getDay()];
-            return `${parts[0]}??${parts[1]}??${parts[2]}??(${dayName}?붿씪)`;
+            return `${parts[0]}년 ${parts[1]}월 ${parts[2]}일 (${dayName}요일)`;
         }
 
         function escapeHtml(str) {
@@ -3266,10 +3272,10 @@
                                 title: detail.title || item.word,
                                 startDate: detail.startDate,
                                 endDate: detail.endDate || detail.startDate,
-                                icon: detail.icon || '?뱦',
+                                icon: detail.icon || '📌',
                                 category: detail.category || 'OTHER',
                                 memo: detail.memo || '',
-                                author: detail.author || item.example || '?꾨튌'
+                                author: detail.author || item.example || '아빠'
                             });
                         } catch(e) {
                             console.error("Schedule parse error:", e);
@@ -3303,7 +3309,7 @@
             const container = document.getElementById('habit-container');
             if (!container) return;
 
-            if (userNickname === '?꾨튌' && !isDadPreviewMode) {
+            if (userNickname === '아빠' && !isDadPreviewMode) {
                 renderDadHabitView(container);
             } else {
                 renderChildHabitView(container);
@@ -3324,107 +3330,107 @@
 
             let html = `
                 <div class="habit-header">
-                    <div class="habit-title">?뫅?랅윉??꾨엺??異쒖꽍 & ???怨듬? 愿由?/div>
-                    <div class="habit-subtitle">留ㅼ씪 吏媛??щ?? ???怨듬?瑜?泥댄겕?댁＜?몄슂! ?뮇</div>
-                    <button onclick="toggleDadPreview(true)" style="margin-top:10px; background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white; border:none; padding:6px 14px; border-radius:14px; font-size:13px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif; box-shadow:0 2px 6px rgba(0,0,0,0.1);">?? ?꾨엺???붾㈃(?щ젰) 誘몃━蹂닿린</button>
+                    <div class="habit-title">👨‍👧 아람이 출석 & 저녁 공부 관리</div>
+                    <div class="habit-subtitle">매일 지각 여부와 저녁 공부를 체크해주세요! 💖</div>
+                    <button onclick="toggleDadPreview(true)" style="margin-top:10px; background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white; border:none; padding:6px 14px; border-radius:14px; font-size:13px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif; box-shadow:0 2px 6px rgba(0,0,0,0.1);">👀 아람이 화면(달력) 미리보기</button>
                 </div>
 
-                <!-- 二쇱슂 ?쇱젙 & D-Day 移대뱶 -->
+                <!-- 주요 일정 & D-Day 카드 -->
                 ${generateScheduleCardHtml(true)}
 
-                <!-- ?좎쭨 ?좏깮 諛?-->
+                <!-- 날짜 선택 바 -->
                 <div class="habit-date-bar">
-                    <button class="habit-date-btn" onclick="stepHabitDate(-1)">? ?댁젣</button>
+                    <button class="habit-date-btn" onclick="stepHabitDate(-1)">◀ 어제</button>
                     <div style="display:flex; flex-direction:column; align-items:center;">
                         <input type="date" class="habit-date-picker" id="habit-date-input" value="${selectedHabitDate}" onchange="changeHabitDate(this.value)">
                         <span style="font-size:12px; color:#ff758c; font-weight:bold; font-family:'Nunito', sans-serif;">${formatFriendlyDate(selectedHabitDate)}</span>
                     </div>
                     <div style="display:flex; gap:4px;">
-                        <button class="habit-date-btn" onclick="setHabitDateToToday()">?ㅻ뒛 ?뱟</button>
-                        <button class="habit-date-btn" onclick="stepHabitDate(1)">?댁씪 ??/button>
+                        <button class="habit-date-btn" onclick="setHabitDateToToday()">오늘 📅</button>
+                        <button class="habit-date-btn" onclick="stepHabitDate(1)">내일 ▶</button>
                     </div>
                 </div>
 
-                <!-- 1) ?꾩묠 ?깃탳 / 吏媛?泥댄겕 -->
+                <!-- 1) 아침 등교 / 지각 체크 -->
                 <div class="habit-form-group">
                     <div class="habit-form-label">
-                        <span>???꾩묠 ?깃탳 泥댄겕</span>
-                        <span style="font-size:12px; color:#94a3b8; font-weight:normal;">(?대┃?섏뿬 ?좏깮/?댁젣)</span>
+                        <span>⏰ 아침 등교 체크</span>
+                        <span style="font-size:12px; color:#94a3b8; font-weight:normal;">(클릭하여 선택/해제)</span>
                     </div>
                     <div class="habit-toggle-grid">
                         <button type="button" class="habit-toggle-btn ${isOntimeActive}" onclick="setHabitAttendance('ON_TIME')">
-                            <span>?截?/span> ?뺤긽 ?깃탳 (吏媛?No!)
+                            <span>☀️</span> 정상 등교 (지각 No!)
                         </button>
                         <button type="button" class="habit-toggle-btn ${isLateActive}" onclick="setHabitAttendance('LATE')">
-                            <span>??/span> 吏媛곹븿
+                            <span>⏰</span> 지각함
                         </button>
                         <button type="button" class="habit-toggle-btn ${isHolidayActive}" onclick="setHabitAttendance('HOLIDAY')">
-                            <span>?룚截?/span> 二쇰쭚 / ?댁씪
+                            <span>🏖️</span> 주말 / 휴일
                         </button>
                     </div>
                 </div>
 
-                <!-- 2) ???怨듬? 泥댄겕 -->
+                <!-- 2) 저녁 공부 체크 -->
                 <div class="habit-form-group">
                     <div class="habit-form-label">
-                        <span>?뱰 ???怨듬? 泥댄겕</span>
-                        <span style="font-size:12px; color:#94a3b8; font-weight:normal;">(?대┃?섏뿬 ?좏깮/?댁젣)</span>
+                        <span>📖 저녁 공부 체크</span>
+                        <span style="font-size:12px; color:#94a3b8; font-weight:normal;">(클릭하여 선택/해제)</span>
                     </div>
                     <div class="habit-toggle-grid" style="grid-template-columns: 1fr 1fr;">
                         <button type="button" class="habit-toggle-btn ${isStudyActive}" onclick="setHabitEveningStudy(true)">
-                            <span>??/span> ???怨듬? ?꾨즺! ?몣
+                            <span>✨</span> 저녁 공부 완료! 👑
                         </button>
                         <button type="button" class="habit-toggle-btn ${isNoStudyActive}" onclick="setHabitEveningStudy(false)">
-                            <span>?뮘</span> 怨듬? ??(誘몄셿猷?
+                            <span>💤</span> 공부 쉼 (미완료)
                         </button>
                     </div>
                 </div>
 
-                <!-- 3) 移?갔 硫붾え / ?뱀씠?ы빆 -->
+                <!-- 3) 칭찬 메모 / 특이사항 -->
                 <div class="habit-form-group">
                     <div class="habit-form-label">
-                        <span>?뭽 ?꾨엺?댁뿉寃??꾪븷 ?묒썝 ?쒕쭏??/ 硫붾え</span>
+                        <span>💌 아람이에게 전할 응원 한마디 / 메모</span>
                     </div>
-                    <input type="text" id="habit-memo-input" class="habit-memo-input" placeholder="?? ?ㅼ뒪濡??곸뼱 ?⑥뼱 10媛??꾨꼍 ?붽린! 理쒓퀬???뮆" value="${escapeHtml(draftMemo)}" oninput="draftMemo = this.value" maxlength="80">
+                    <input type="text" id="habit-memo-input" class="habit-memo-input" placeholder="예: 스스로 영어 단어 10개 완벽 암기! 최고야 💕" value="${escapeHtml(draftMemo)}" oninput="draftMemo = this.value" maxlength="80">
                 </div>
 
-                <!-- ???諛???젣 ?≪뀡 諛?-->
+                <!-- 저장 및 삭제 액션 바 -->
                 <div class="habit-action-bar">
                     <button type="button" id="habit-save-btn" class="habit-save-btn" onclick="saveHabitRecord()">
-                        ?뮶 ${hasRecord ? '湲곕줉 ?섏젙?섍린' : '湲곕줉 ??ν븯湲?} ?뮇
+                        💾 ${hasRecord ? '기록 수정하기' : '기록 저장하기'} 💖
                     </button>
-                    ${hasRecord ? `<button type="button" class="habit-delete-btn" onclick="deleteHabitRecord()" title="湲곕줉 ??젣">?뿊截???젣</button>` : ''}
+                    ${hasRecord ? `<button type="button" class="habit-delete-btn" onclick="deleteHabitRecord()" title="기록 삭제">🗑️ 삭제</button>` : ''}
                 </div>
 
-                <!-- 二쇨컙 ?щ젰 ?ㅽ듃由?(湲곕낯 1二쇱씪 ?⑥쐞) -->
+                <!-- 주간 달력 스트립 (기본 1주일 단위) -->
                 ${generateHabitWeekStripHtml(true)}
 
-                <!-- ?꾩슂???뚮쭔 ?붽컙 ?щ젰 ?꾩껜蹂닿린 ?좉? 踰꾪듉 -->
+                <!-- 필요할 때만 월간 달력 전체보기 토글 버튼 -->
                 <div style="text-align:center; margin-top:16px;">
                     <button type="button" class="habit-toggle-month-btn" onclick="toggleHabitMonthCalendar()">
-                        ${isHabitMonthExpanded ? '???붽컙 ?щ젰 ?묎린' : '?뱟 ?붽컙 ?щ젰 ?꾩껜蹂닿린 ??}
+                        ${isHabitMonthExpanded ? '▲ 월간 달력 접기' : '📅 월간 달력 전체보기 ▾'}
                     </button>
                 </div>
 
-                <!-- ?붽컙 ?щ젰 (?쇱낀???뚮쭔 ?쒖떆) -->
+                <!-- 월간 달력 (펼쳤을 때만 표시) -->
                 ${isHabitMonthExpanded ? `
                 <div id="habit-dad-month-section" style="margin-top:14px;">
                     <div style="margin-top:10px; padding-top:14px; border-top: 1px dashed #ffd1dc;">
                         <div style="font-family:'Jua', sans-serif; font-size:15px; color:#2d3436; text-align:center;">
-                            ?뱤 ${habitCalYear}??${habitCalMonth + 1}???꾪솴 ?붿빟
+                            📊 ${habitCalYear}년 ${habitCalMonth + 1}월 현황 요약
                         </div>
                         <div class="habit-stats-row">
                             <div class="habit-stat-badge">
-                                <div class="habit-stat-label">?截??뺤긽 ?깃탳</div>
-                                <div class="habit-stat-value" style="color:#059669;">${stats.onTimeCount}??/div>
+                                <div class="habit-stat-label">☀️ 정상 등교</div>
+                                <div class="habit-stat-value" style="color:#059669;">${stats.onTimeCount}일</div>
                             </div>
                             <div class="habit-stat-badge">
-                                <div class="habit-stat-label">??吏媛?/div>
-                                <div class="habit-stat-value" style="color:#ef4444;">${stats.lateCount}??/div>
+                                <div class="habit-stat-label">⏰ 지각</div>
+                                <div class="habit-stat-value" style="color:#ef4444;">${stats.lateCount}일</div>
                             </div>
                             <div class="habit-stat-badge highlight">
-                                <div class="habit-stat-label">?뱰 ???怨듬? ?꾨즺</div>
-                                <div class="habit-stat-value" style="color:#6366f1;">${stats.studyCount}??/div>
+                                <div class="habit-stat-label">📖 저녁 공부 완료</div>
+                                <div class="habit-stat-value" style="color:#6366f1;">${stats.studyCount}일</div>
                             </div>
                         </div>
                     </div>
@@ -3443,99 +3449,99 @@
             const streak = calculateStudyStreak();
 
             let previewBanner = '';
-            if (userNickname === '?꾨튌' && isDadPreviewMode) {
+            if (userNickname === '아빠' && isDadPreviewMode) {
                 previewBanner = `
                     <div style="background:#eef2ff; border:2px solid #818cf8; border-radius:16px; padding:10px; margin-bottom:16px; text-align:center;">
-                        <span style="font-size:13px; color:#3730a3; font-weight:bold;">[?꾩씠(?꾨엺?? ?붾㈃ 誘몃━蹂닿린 紐⑤뱶?낅땲??</span><br>
-                        <button onclick="toggleDadPreview(false)" style="margin-top:6px; background:#4f46e5; color:white; border:none; padding:5px 14px; border-radius:10px; font-size:13px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif;">?륅툘 ?꾨튌 泥댄겕 ?붾㈃?쇰줈 ?뚯븘媛湲?/button>
+                        <span style="font-size:13px; color:#3730a3; font-weight:bold;">[아이(아람이) 화면 미리보기 모드입니다]</span><br>
+                        <button onclick="toggleDadPreview(false)" style="margin-top:6px; background:#4f46e5; color:white; border:none; padding:5px 14px; border-radius:10px; font-size:13px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif;">✏️ 아빠 체크 화면으로 돌아가기</button>
                     </div>
                 `;
             }
 
-            // ?꾩묠 ?깃탳 ?곹깭 諛뺤뒪
+            // 아침 등교 상태 박스
             let attendanceHtml = '';
             if (todayRecord && todayRecord.attendance === 'ON_TIME') {
                 attendanceHtml = `
                     <div class="child-item-box ontime">
-                        <div class="child-item-icon">?截?/div>
+                        <div class="child-item-icon">☀️</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">?꾩묠 ?깃탳</div>
-                            <div class="child-item-text">吏媛????? 硫뗭?寃??뺤떆 ?깃탳 ?꾨즺 ??(移?갔?댁슂!)</div>
+                            <div class="child-item-title">아침 등교</div>
+                            <div class="child-item-text">지각 안 함! 멋지게 정시 등교 완료 ✨ (칭찬해요!)</div>
                         </div>
                     </div>
                 `;
             } else if (todayRecord && todayRecord.attendance === 'LATE') {
                 attendanceHtml = `
                     <div class="child-item-box late">
-                        <div class="child-item-icon">??/div>
+                        <div class="child-item-icon">⏰</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">?꾩묠 ?깃탳</div>
-                            <div class="child-item-text">?ㅻ뒛? 議곌툑 ??뿀?댁슂! ?댁씪? 10遺??쇱컢 異쒕컻?대킄???뮞</div>
+                            <div class="child-item-title">아침 등교</div>
+                            <div class="child-item-text">오늘은 조금 늦었어요! 내일은 10분 일찍 출발해봐요 💪</div>
                         </div>
                     </div>
                 `;
             } else if (todayRecord && todayRecord.attendance === 'HOLIDAY') {
                 attendanceHtml = `
                     <div class="child-item-box holiday">
-                        <div class="child-item-icon">?룚截?/div>
+                        <div class="child-item-icon">🏖️</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">?꾩묠 ?깃탳</div>
-                            <div class="child-item-text">利먭굅??二쇰쭚 / ?댁씪?댁뿉?? ???ш퀬 ?ъ땐?꾪빐???삃</div>
+                            <div class="child-item-title">아침 등교</div>
+                            <div class="child-item-text">즐거운 주말 / 휴일이에요! 푹 쉬고 재충전해요 😊</div>
                         </div>
                     </div>
                 `;
             } else {
                 attendanceHtml = `
                     <div class="child-item-box waiting">
-                        <div class="child-item-icon">??/div>
+                        <div class="child-item-icon">⏳</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">?꾩묠 ?깃탳</div>
-                            <div class="child-item-text">?ㅻ뒛 異쒖꽍 泥댄겕 ?湲?以묒씠?먯슂 ?삃</div>
+                            <div class="child-item-title">아침 등교</div>
+                            <div class="child-item-text">오늘 출석 체크 대기 중이에요 😊</div>
                         </div>
                     </div>
                 `;
             }
 
-            // ???怨듬? ?곹깭 諛뺤뒪
+            // 저녁 공부 상태 박스
             let studyHtml = '';
             if (todayRecord && todayRecord.evening_study === true) {
                 studyHtml = `
                     <div class="child-item-box study-done">
-                        <div class="child-item-icon">?뱰</div>
+                        <div class="child-item-icon">📖</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">???怨듬?</div>
-                            <div class="child-item-text">???怨듬? ?꾨즺! ?ㅻ뒛????嫄몄쓬 ???깆옣?덉뼱?? ?몣</div>
+                            <div class="child-item-title">저녁 공부</div>
+                            <div class="child-item-text">저녁 공부 완료! 오늘도 한 걸음 더 성장했어요! 👑</div>
                         </div>
                     </div>
                 `;
             } else if (todayRecord && todayRecord.evening_study === false) {
                 studyHtml = `
                     <div class="child-item-box study-rest">
-                        <div class="child-item-icon">?뮘</div>
+                        <div class="child-item-icon">💤</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">???怨듬?</div>
-                            <div class="child-item-text">?ㅻ뒛? ?ъ뼱媛???좎씠?먯슂 ??/div>
+                            <div class="child-item-title">저녁 공부</div>
+                            <div class="child-item-text">오늘은 쉬어가는 날이에요 ☕</div>
                         </div>
                     </div>
                 `;
             } else {
                 studyHtml = `
                     <div class="child-item-box waiting">
-                        <div class="child-item-icon">??/div>
+                        <div class="child-item-icon">⏳</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">???怨듬?</div>
-                            <div class="child-item-text">???怨듬? 泥댄겕 ?湲?以묒씠?먯슂 ?뙔</div>
+                            <div class="child-item-title">저녁 공부</div>
+                            <div class="child-item-text">저녁 공부 체크 대기 중이에요 🌙</div>
                         </div>
                     </div>
                 `;
             }
 
-            // 移?갔 硫붾え
+            // 칭찬 메모
             let memoHtml = '';
             if (todayRecord && todayRecord.memo) {
                 memoHtml = `
                     <div class="child-memo-box">
-                        ?뭽 ?꾨튌???묒썝: "${escapeHtml(todayRecord.memo)}" ?뮇
+                        💌 아빠의 응원: "${escapeHtml(todayRecord.memo)}" 💖
                     </div>
                 `;
             }
@@ -3543,51 +3549,51 @@
             let html = `
                 ${previewBanner}
                 <div class="habit-header">
-                    <div class="habit-title">?뙚 ?섏쓽 留ㅼ씪 異쒖꽍 & ?닿났 ?꾪솴???뙚</div>
-                    <div class="habit-subtitle">?꾨튌媛 留ㅼ씪 ?묒썝?섎ŉ 梨숆꺼二쇱떆???섏쓽 異쒖꽍怨?怨듬? 湲곕줉?댁뿉?? ?뮇</div>
+                    <div class="habit-title">🌟 나의 매일 출석 & 열공 현황판 🌟</div>
+                    <div class="habit-subtitle">아빠가 매일 응원하며 챙겨주시는 나의 출석과 공부 기록이에요! 💖</div>
                 </div>
 
-                <!-- ?ㅻ뒛???꾪솴 移대뱶 -->
+                <!-- 오늘의 현황 카드 -->
                 <div class="child-today-card">
                     <div class="child-today-header">
-                        <div class="child-today-date">?뱟 ?ㅻ뒛: ${formatFriendlyDate(todayStr)}</div>
-                        <span style="font-size:12px; background:#ffe4e8; color:#ff758c; padding:3px 8px; border-radius:10px; font-weight:bold;">?ㅼ떆媛?/span>
+                        <div class="child-today-date">📅 오늘: ${formatFriendlyDate(todayStr)}</div>
+                        <span style="font-size:12px; background:#ffe4e8; color:#ff758c; padding:3px 8px; border-radius:10px; font-weight:bold;">실시간</span>
                     </div>
                     ${attendanceHtml}
                     ${studyHtml}
                     ${memoHtml}
                 </div>
 
-                <!-- 二쇱슂 ?쇱젙 & D-Day 移대뱶 -->
+                <!-- 주요 일정 & D-Day 카드 -->
                 ${generateScheduleCardHtml(false)}
 
-                <!-- 二쇨컙 ?щ젰 ?ㅽ듃由?(?앺솢?⑦꽩??留욎텣 1二쇱씪 ?⑥쐞 湲곕낯 酉? -->
+                <!-- 주간 달력 스트립 (생활패턴에 맞춘 1주일 단위 기본 뷰) -->
                 ${generateHabitWeekStripHtml(false)}
 
-                <!-- ?깆랬 ?붿빟 諭껋? -->
+                <!-- 성취 요약 뱃지 -->
                 <div class="habit-stats-row" style="margin-top:16px;">
                     <div class="habit-stat-badge highlight">
-                        <div class="habit-stat-label">?룇 ?대쾲 ?????怨듬?</div>
-                        <div class="habit-stat-value" style="color:#6366f1;">${stats.studyCount}??/div>
+                        <div class="habit-stat-label">🏆 이번 달 저녁 공부</div>
+                        <div class="habit-stat-value" style="color:#6366f1;">${stats.studyCount}일</div>
                     </div>
                     <div class="habit-stat-badge">
-                        <div class="habit-stat-label">?截??뺤떆 ?깃탳</div>
-                        <div class="habit-stat-value" style="color:#059669;">${stats.onTimeCount}??/div>
+                        <div class="habit-stat-label">☀️ 정시 등교</div>
+                        <div class="habit-stat-value" style="color:#059669;">${stats.onTimeCount}일</div>
                     </div>
                     <div class="habit-stat-badge">
-                        <div class="habit-stat-label">?뵦 ?곗냽 ?닿났</div>
-                        <div class="habit-stat-value" style="color:#f59e0b;">${streak}?쇱㎏!</div>
+                        <div class="habit-stat-label">🔥 연속 열공</div>
+                        <div class="habit-stat-value" style="color:#f59e0b;">${streak}일째!</div>
                     </div>
                 </div>
 
-                <!-- ?꾩슂???뚮쭔 ?붽컙 ?щ젰 ?꾩껜蹂닿린 ?좉? 踰꾪듉 -->
+                <!-- 필요할 때만 월간 달력 전체보기 토글 버튼 -->
                 <div style="text-align:center; margin-top:16px;">
                     <button type="button" class="habit-toggle-month-btn" onclick="toggleHabitMonthCalendar()">
-                        ${isHabitMonthExpanded ? '???붽컙 ?щ젰 ?묎린' : '?뱟 ?대쾲 ???꾩껜 ?щ젰 蹂닿린 ??}
+                        ${isHabitMonthExpanded ? '▲ 월간 달력 접기' : '📅 이번 달 전체 달력 보기 ▾'}
                     </button>
                 </div>
 
-                <!-- ?붽컙 ?щ젰 (?쇱낀???뚮쭔 ?쒖떆) -->
+                <!-- 월간 달력 (펼쳤을 때만 표시) -->
                 ${isHabitMonthExpanded ? `
                 <div id="child-habit-month-section" style="margin-top:14px;">
                     ${generateHabitCalendarHtml(habitCalYear, habitCalMonth, false)}
@@ -3599,7 +3605,7 @@
         }
 
         function generateHabitCalendarHtml(year, month, isDad) {
-            const monthNames = ['1??, '2??, '3??, '4??, '5??, '6??, '7??, '8??, '9??, '10??, '11??, '12??];
+            const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const todayStr = getLocalDateStr(new Date());
@@ -3607,18 +3613,18 @@
             let html = `
                 <div class="habit-calendar-wrap">
                     <div class="habit-cal-nav">
-                        <button type="button" class="habit-cal-btn" onclick="changeHabitCalMonth(-1)">? ?댁쟾 ??/button>
-                        <div class="habit-cal-title">?뱟 ${year}??${monthNames[month]}</div>
-                        <button type="button" class="habit-cal-btn" onclick="changeHabitCalMonth(1)">?ㅼ쓬 ????/button>
+                        <button type="button" class="habit-cal-btn" onclick="changeHabitCalMonth(-1)">◀ 이전 달</button>
+                        <div class="habit-cal-title">📅 ${year}년 ${monthNames[month]}</div>
+                        <button type="button" class="habit-cal-btn" onclick="changeHabitCalMonth(1)">다음 달 ▶</button>
                     </div>
                     <div class="habit-cal-grid">
-                        <div class="habit-cal-weekday sun">??/div>
-                        <div class="habit-cal-weekday">??/div>
-                        <div class="habit-cal-weekday">??/div>
-                        <div class="habit-cal-weekday">??/div>
-                        <div class="habit-cal-weekday">紐?/div>
-                        <div class="habit-cal-weekday">湲?/div>
-                        <div class="habit-cal-weekday sat">??/div>
+                        <div class="habit-cal-weekday sun">일</div>
+                        <div class="habit-cal-weekday">월</div>
+                        <div class="habit-cal-weekday">화</div>
+                        <div class="habit-cal-weekday">수</div>
+                        <div class="habit-cal-weekday">목</div>
+                        <div class="habit-cal-weekday">금</div>
+                        <div class="habit-cal-weekday sat">토</div>
             `;
 
             for (let i = 0; i < firstDay; i++) {
@@ -3633,20 +3639,20 @@
 
                 let badgesHtml = '';
                 if (rec) {
-                    if (rec.attendance === 'ON_TIME') badgesHtml += '<span title="?뺤긽 ?깃탳">?截?/span>';
-                    else if (rec.attendance === 'LATE') badgesHtml += '<span title="吏媛?>??/span>';
-                    else if (rec.attendance === 'HOLIDAY') badgesHtml += '<span title="?댁씪/二쇰쭚">?룚截?/span>';
+                    if (rec.attendance === 'ON_TIME') badgesHtml += '<span title="정상 등교">☀️</span>';
+                    else if (rec.attendance === 'LATE') badgesHtml += '<span title="지각">⏰</span>';
+                    else if (rec.attendance === 'HOLIDAY') badgesHtml += '<span title="휴일/주말">🏖️</span>';
 
-                    if (rec.evening_study === true) badgesHtml += '<span title="???怨듬? ?꾨즺">?뱰</span>';
-                    else if (rec.evening_study === false) badgesHtml += '<span title="怨듬? ??>?뮘</span>';
+                    if (rec.evening_study === true) badgesHtml += '<span title="저녁 공부 완료">📖</span>';
+                    else if (rec.evening_study === false) badgesHtml += '<span title="공부 쉼">💤</span>';
 
-                    if (rec.memo) badgesHtml += '<span title="?꾨튌 ?묒썝">?뭽</span>';
+                    if (rec.memo) badgesHtml += '<span title="아빠 응원">💌</span>';
                 }
 
                 const dayEvents = getSchedulesForDate(dateStr);
                 if (dayEvents && dayEvents.length > 0) {
                     dayEvents.forEach(ev => {
-                        badgesHtml += `<span title="?쇱젙: ${escapeHtml(ev.title)}">${ev.icon}</span>`;
+                        badgesHtml += `<span title="일정: ${escapeHtml(ev.title)}">${ev.icon}</span>`;
                     });
                 }
 
@@ -3673,7 +3679,7 @@
             html += `
                     </div>
                     <div style="font-size:11px; color:#888; text-align:center; margin-top:10px;">
-                        ?截??뺤긽?깃탳 쨌 ??吏媛?쨌 ?룚截?二쇰쭚/?댁씪 쨌 ?뱰 ??곴났遺 쨌 ?뮘 ?댁떇 쨌 ?뭽 ?묒썝 쨌 ?뿎截?二쇱슂?쇱젙
+                        ☀️ 정상등교 · ⏰ 지각 · 🏖️ 주말/휴일 · 📖 저녁공부 · 💤 휴식 · 💌 응원 · 🗓️ 주요일정
                     </div>
                 </div>
             `;
@@ -3792,7 +3798,7 @@
             if (isHabitSaving) return;
 
             if (!draftAttendance && draftEveningStudy === null && !draftMemo.trim()) {
-                alert("?깃탳 ?щ??????怨듬? ?щ?瑜?理쒖냼 ?섎굹 ?좏깮?댁＜?몄슂! ?삃");
+                alert("등교 여부나 저녁 공부 여부를 최소 하나 선택해주세요! 😊");
                 return;
             }
 
@@ -3800,7 +3806,7 @@
             const saveBtn = document.getElementById('habit-save-btn');
             if (saveBtn) {
                 saveBtn.disabled = true;
-                saveBtn.innerText = "???以?.. ??;
+                saveBtn.innerText = "저장 중... ⏳";
             }
 
             const memoVal = (document.getElementById('habit-memo-input')?.value || draftMemo || '').trim();
@@ -3809,21 +3815,21 @@
                 attendance: draftAttendance,
                 evening_study: draftEveningStudy,
                 memo: memoVal,
-                student: '?꾨엺',
-                recorded_by: userNickname || '?꾨튌',
+                student: '아람',
+                recorded_by: userNickname || '아빠',
                 updated_at: new Date().toISOString()
             };
 
             try {
-                // Supabase upsert瑜??ъ슜?섏뿬 以묐났 ??異⑸룎(unique_word violation)???먯쿇 諛⑹?
+                // Supabase upsert를 사용하여 중복 키 충돌(unique_word violation)을 원천 방지
                 const { data: upsertData, error: upsertErr } = await supabaseClient
                     .from('study_words')
                     .upsert({
                         word: selectedHabitDate,
                         meaning: JSON.stringify(detailObj),
                         subject: 'DAILY_HABIT',
-                        category: '?꾨엺',
-                        example: userNickname || '?꾨튌'
+                        category: '아람',
+                        example: userNickname || '아빠'
                     }, { onConflict: 'word' })
                     .select();
 
@@ -3843,24 +3849,24 @@
                     colors: ['#ffc3a0', '#ffafbd', '#84fab0', '#8fd3f4', '#a18cd1']
                 });
 
-                alert(`?뮇 ${selectedHabitDate} ?꾨엺?댁쓽 異쒖꽍쨌怨듬? 湲곕줉????λ릺?덉뒿?덈떎!`);
+                alert(`💖 ${selectedHabitDate} 아람이의 출석·공부 기록이 저장되었습니다!`);
                 renderHabitSection();
 
             } catch (err) {
                 console.error("Save habit record error:", err);
-                alert("???以??ㅻ쪟媛 諛쒖깮?덉뒿?덈떎: " + (err.message || err));
+                alert("저장 중 오류가 발생했습니다: " + (err.message || err));
             } finally {
                 isHabitSaving = false;
                 if (saveBtn) {
                     saveBtn.disabled = false;
                     const hasRecord = !!habitRecordsMap[selectedHabitDate];
-                    saveBtn.innerHTML = `?뮶 ${hasRecord ? '湲곕줉 ?섏젙?섍린' : '湲곕줉 ??ν븯湲?} ?뮇`;
+                    saveBtn.innerHTML = `💾 ${hasRecord ? '기록 수정하기' : '기록 저장하기'} 💖`;
                 }
             }
         }
 
         async function deleteHabitRecord() {
-            if (!confirm(`${selectedHabitDate}??湲곕줉????젣?섏떆寃좎뒿?덇퉴?`)) return;
+            if (!confirm(`${selectedHabitDate}의 기록을 삭제하시겠습니까?`)) return;
 
             try {
                 const { error } = await supabaseClient
@@ -3874,10 +3880,10 @@
                 delete habitRecordsMap[selectedHabitDate];
                 syncDraftWithSelectedDate();
                 renderHabitSection();
-                alert(`${selectedHabitDate} 湲곕줉????젣?섏뿀?듬땲??`);
+                alert(`${selectedHabitDate} 기록이 삭제되었습니다.`);
             } catch(err) {
                 console.error("Delete habit record error:", err);
-                alert("??젣 ?ㅽ뙣: " + err.message);
+                alert("삭제 실패: " + err.message);
             }
         }
 
@@ -3885,18 +3891,18 @@
             const rec = habitRecordsMap[dateStr];
             const friendlyDate = formatFriendlyDate(dateStr);
             
-            let attendanceText = '湲곕줉 ?놁쓬 (誘몄껜??';
-            if (rec && rec.attendance === 'ON_TIME') attendanceText = '?截??뺤긽 ?깃탳 (吏媛???????';
-            else if (rec && rec.attendance === 'LATE') attendanceText = '??吏媛곹븿';
-            else if (rec && rec.attendance === 'HOLIDAY') attendanceText = '?룚截?二쇰쭚 / ?댁씪';
+            let attendanceText = '기록 없음 (미체크)';
+            if (rec && rec.attendance === 'ON_TIME') attendanceText = '☀️ 정상 등교 (지각 안 함 ✨)';
+            else if (rec && rec.attendance === 'LATE') attendanceText = '⏰ 지각함';
+            else if (rec && rec.attendance === 'HOLIDAY') attendanceText = '🏖️ 주말 / 휴일';
 
-            let studyText = '湲곕줉 ?놁쓬 (誘몄껜??';
-            if (rec && rec.evening_study === true) studyText = '?뱰 ???怨듬? ?꾨즺! ?몣';
-            else if (rec && rec.evening_study === false) studyText = '?뮘 怨듬? ??/ ?댁떇';
+            let studyText = '기록 없음 (미체크)';
+            if (rec && rec.evening_study === true) studyText = '📖 저녁 공부 완료! 👑';
+            else if (rec && rec.evening_study === false) studyText = '💤 공부 쉼 / 휴식';
 
             let memoHtml = '';
             if (rec && rec.memo) {
-                memoHtml = `<div class="child-memo-box" style="margin-top:12px;">?뭽 ?꾨튌???묒썝: "${escapeHtml(rec.memo)}" ?뮇</div>`;
+                memoHtml = `<div class="child-memo-box" style="margin-top:12px;">💌 아빠의 응원: "${escapeHtml(rec.memo)}" 💖</div>`;
             }
 
             const dayEvents = getSchedulesForDate(dateStr);
@@ -3905,13 +3911,13 @@
                 const items = dayEvents.map(ev => `
                     <div style="background:#ffffff; border:1px solid #c7d2fe; border-radius:10px; padding:8px 10px; margin-top:4px;">
                         <div style="font-weight:bold; color:#3730a3; font-size:13px;">${ev.icon} ${escapeHtml(ev.title)}</div>
-                        <div style="font-size:12px; color:#64748b;">湲곌컙: ${formatScheduleRange(ev.startDate, ev.endDate)}</div>
-                        ${ev.memo ? `<div style="font-size:11px; color:#6366f1; margin-top:2px;">?뮠 ${escapeHtml(ev.memo)}</div>` : ''}
+                        <div style="font-size:12px; color:#64748b;">기간: ${formatScheduleRange(ev.startDate, ev.endDate)}</div>
+                        ${ev.memo ? `<div style="font-size:11px; color:#6366f1; margin-top:2px;">💬 ${escapeHtml(ev.memo)}</div>` : ''}
                     </div>
                 `).join('');
                 eventsModalHtml = `
                     <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #cbd5e1; text-align:left;">
-                        <strong style="color:#4338ca; font-size:13px;">?뿎截??대궇??二쇱슂 ?쇱젙:</strong>
+                        <strong style="color:#4338ca; font-size:13px;">🗓️ 이날의 주요 일정:</strong>
                         ${items}
                     </div>
                 `;
@@ -3920,15 +3926,15 @@
             const modalHtml = `
                 <div class="child-detail-modal" id="child-day-modal" onclick="if(event.target === this) closeChildDayDetail()">
                     <div class="child-modal-body">
-                        <div style="font-size: 32px; margin-bottom: 8px;">?뱟</div>
+                        <div style="font-size: 32px; margin-bottom: 8px;">📅</div>
                         <div style="font-family:'Jua', sans-serif; font-size:20px; color:#2d3436; margin-bottom:14px;">${friendlyDate}</div>
                         <div style="background:#f8fafc; border-radius:16px; padding:14px; text-align:left; font-size:14px; display:flex; flex-direction:column; gap:8px;">
-                            <div><strong>?깃탳 ?곹깭:</strong> ${attendanceText}</div>
-                            <div><strong>???怨듬?:</strong> ${studyText}</div>
+                            <div><strong>등교 상태:</strong> ${attendanceText}</div>
+                            <div><strong>저녁 공부:</strong> ${studyText}</div>
                         </div>
                         ${eventsModalHtml}
                         ${memoHtml}
-                        <button onclick="closeChildDayDetail()" style="margin-top:16px; width:100%; background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color:white; border:none; padding:10px 18px; border-radius:14px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer;">?뺤씤 ?뮇</button>
+                        <button onclick="closeChildDayDetail()" style="margin-top:16px; width:100%; background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color:white; border:none; padding:10px 18px; border-radius:14px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer;">확인 💖</button>
                     </div>
                 </div>
             `;
@@ -3944,67 +3950,67 @@
         loadWords()
     </script>
 
-    <!-- ?좏뒠釉?留곹겕 異붽? 紐⑤떖 -->
+    <!-- 유튜브 링크 추가 모달 -->
     <div class="modal-overlay hidden" id="youtube-modal-overlay">
         <div class="name-modal">
-            <h2 style="font-size:22px; margin-bottom:15px;">?벟 異붿쿇 留곹겕 異붽? ?벟</h2>
-            <input type="text" id="yt-title" class="name-input" placeholder="梨꾨꼸/?곸긽 ?쒕ぉ (?? 怨쇳븰?쒕┝)">
-            <input type="text" id="yt-url" class="name-input" placeholder="?좏뒠釉?留곹겕 URL">
-            <input type="text" id="yt-icon" class="name-input" placeholder="?대え吏 ?섎굹 (湲곕낯媛? ?벟)" value="?벟">
+            <h2 style="font-size:22px; margin-bottom:15px;">📺 추천 링크 추가 📺</h2>
+            <input type="text" id="yt-title" class="name-input" placeholder="채널/영상 제목 (예: 과학드림)">
+            <input type="text" id="yt-url" class="name-input" placeholder="유튜브 링크 URL">
+            <input type="text" id="yt-icon" class="name-input" placeholder="이모지 하나 (기본값: 📺)" value="📺">
             <div style="display:flex; gap:10px; margin-top: 20px;">
-                <button class="name-btn" onclick="submitYoutubeModal()">異붽??섍린 ?뮇</button>
-                <button class="name-btn" style="background: #dfe6e9; color: #636e72; box-shadow:none;" onclick="closeYoutubeModal()">痍⑥냼</button>
+                <button class="name-btn" onclick="submitYoutubeModal()">추가하기 💖</button>
+                <button class="name-btn" style="background: #dfe6e9; color: #636e72; box-shadow:none;" onclick="closeYoutubeModal()">취소</button>
             </div>
         </div>
     </div>
 
-    <!-- 二쇱슂 ?쇱젙 異붽?/愿由?紐⑤떖 -->
+    <!-- 주요 일정 추가/관리 모달 -->
     <div class="modal-overlay hidden" id="schedule-modal-overlay" onclick="if(event.target === this) closeScheduleModal()">
         <div class="name-modal" style="max-width: 440px; width: 92%; padding: 22px; max-height: 88vh; overflow-y: auto; text-align: left;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px dashed #ffd1dc; padding-bottom:8px;">
-                <h2 style="font-size:20px; color:#2d3436; margin:0; font-family:'Jua', sans-serif;">?뿎截?二쇱슂 ?쇱젙 ?깅줉 & 愿由?/h2>
-                <button type="button" onclick="closeScheduleModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#94a3b8;">??/button>
+                <h2 style="font-size:20px; color:#2d3436; margin:0; font-family:'Jua', sans-serif;">🗓️ 주요 일정 등록 & 관리</h2>
+                <button type="button" onclick="closeScheduleModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#94a3b8;">✕</button>
             </div>
 
-            <!-- ???쇱젙 ?깅줉 ??-->
+            <!-- 새 일정 등록 폼 -->
             <div style="background:#fff8f9; border:1.5px solid #ffe4e8; border-radius:16px; padding:14px; margin-bottom:16px;">
-                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#ff758c; margin-bottom:10px;">???덈줈???쇱젙 ?깅줉</div>
+                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#ff758c; margin-bottom:10px;">➕ 새로운 일정 등록</div>
                 
-                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">?쇱젙 ?쒕ぉ</label>
-                <input type="text" id="sched-input-title" class="habit-memo-input" style="padding:8px 12px; margin-bottom:10px;" placeholder="?? 2?숆린 以묎컙怨좎궗, ?좎븘踰꾩? ?쒖궗, 媛議깆뿬???? maxlength="40">
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">일정 제목</label>
+                <input type="text" id="sched-input-title" class="habit-memo-input" style="padding:8px 12px; margin-bottom:10px;" placeholder="예: 2학기 중간고사, 할아버지 제사, 가족여행 등" maxlength="40">
 
-                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">遺꾨쪟 / ?대え吏 ?좏깮</label>
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">분류 / 이모지 선택</label>
                 <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:10px;" id="sched-category-selector">
-                    <button type="button" class="habit-cal-btn sched-cat-btn active" data-icon="?뱷" data-cat="EXAM" onclick="selectSchedCat(this)">?뱷 以묎컙/湲곕쭚怨좎궗</button>
-                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="?빉截? data-cat="FAMILY" onclick="selectSchedCat(this)">?빉截??쒖궗/媛議깊뻾??/button>
-                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="?럟" data-cat="BIRTHDAY" onclick="selectSchedCat(this)">?럟 ?앹씪/湲곕뀗??/button>
-                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="?럲" data-cat="SCHOOL" onclick="selectSchedCat(this)">?럲 ?숆탳?됱궗/?뚰뭾</button>
-                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="?덌툘" data-cat="VACATION" onclick="selectSchedCat(this)">?덌툘 諛⑺븰/?ы뻾/?댁씪</button>
-                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="?뱦" data-cat="OTHER" onclick="selectSchedCat(this)">?뱦 湲고? ?쇱젙</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn active" data-icon="📝" data-cat="EXAM" onclick="selectSchedCat(this)">📝 중간/기말고사</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🕯️" data-cat="FAMILY" onclick="selectSchedCat(this)">🕯️ 제사/가족행사</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🎂" data-cat="BIRTHDAY" onclick="selectSchedCat(this)">🎂 생일/기념일</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="🎒" data-cat="SCHOOL" onclick="selectSchedCat(this)">🎒 학교행사/소풍</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="✈️" data-cat="VACATION" onclick="selectSchedCat(this)">✈️ 방학/여행/휴일</button>
+                    <button type="button" class="habit-cal-btn sched-cat-btn" data-icon="📌" data-cat="OTHER" onclick="selectSchedCat(this)">📌 기타 일정</button>
                 </div>
 
                 <div style="display:flex; gap:8px; margin-bottom:10px;">
                     <div style="flex:1;">
-                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">?쒖옉??/label>
+                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">시작일</label>
                         <input type="date" id="sched-input-start" class="habit-date-picker" style="width:100%; box-sizing:border-box; padding:6px 10px;" onchange="syncSchedEndDate(this.value)">
                     </div>
                     <div style="flex:1;">
-                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">醫낅즺??/label>
+                        <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">종료일</label>
                         <input type="date" id="sched-input-end" class="habit-date-picker" style="width:100%; box-sizing:border-box; padding:6px 10px;">
                     </div>
                 </div>
 
-                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">硫붾え / 以鍮꾩궗??(?좏깮)</label>
-                <input type="text" id="sched-input-memo" class="habit-memo-input" style="padding:8px 12px; margin-bottom:12px;" placeholder="?? 援?뼱/?섑븰 ?쒗뿕, ???6???곗쭛 ?? maxlength="50">
+                <label style="font-size:12px; font-weight:bold; color:#475569; display:block; margin-bottom:4px;">메모 / 준비사항 (선택)</label>
+                <input type="text" id="sched-input-memo" class="habit-memo-input" style="padding:8px 12px; margin-bottom:12px;" placeholder="예: 국어/수학 시험, 저녁 6시 큰집 등" maxlength="50">
 
                 <button type="button" id="sched-save-btn" onclick="saveNewSchedule()" style="width:100%; background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color:white; border:none; padding:10px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:14px; box-shadow:0 3px 8px rgba(255, 117, 140, 0.3);">
-                    ?뮶 ?쇱젙 異붽??섍린 ?뮇
+                    💾 일정 추가하기 💖
                 </button>
             </div>
 
-            <!-- ?깅줉???쇱젙 紐⑸줉 -->
+            <!-- 등록된 일정 목록 -->
             <div>
-                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#475569; margin-bottom:8px;">?뱥 ?깅줉???꾩껜 ?쇱젙 紐⑸줉</div>
+                <div style="font-family:'Jua', sans-serif; font-size:14px; color:#475569; margin-bottom:8px;">📋 등록된 전체 일정 목록</div>
                 <div id="sched-modal-list" style="display:flex; flex-direction:column; gap:6px; max-height:200px; overflow-y:auto;">
                     <!-- JS renders list here -->
                 </div>
@@ -4016,14 +4022,14 @@
                 <footer class="site-footer">
         <div class="site-footer-inner">
             <div class="footer-links">
-                <a href="#">?뚯궗?뚭컻</a>
-                <a href="#" style="color: #fca5a5;">媛쒖씤?뺣낫泥섎━諛⑹묠</a>
-                <a href="#">?댁슜?쎄?</a>
+                <a href="#">회사소개</a>
+                <a href="#" style="color: #fca5a5;">개인정보처리방침</a>
+                <a href="#">이용약관</a>
             </div>
             <div class="footer-info">
-                <strong class="footer-strong">?좊?由쇨났?몄쨷媛쒖궗?щТ??(?쒗샇: 怨듭씤以묎컻?ъ냼?앹?)</strong>
-                <span>???諛쒗뻾쨌?몄쭛?? 議고빆以</span> <span>?깅줉踰덊샇: ?쒖슱, ??3763</span> <span>?깅줉?쇱옄: 2021??06??14??/span><br>
-                <span>?ъ뾽?먮벑濡앸쾲?? 219-01-50737</span> <span>?꾪솕踰덊샇: 02-375-4489</span> <span>二쇱냼: ?쒖슱?밸퀎??留덊룷援?紐⑤옒?대줈7湲?52 (?깆궛??</span>
+                <strong class="footer-strong">신대림공인중개사사무소 (제호: 공인중개사소식지)</strong>
+                <span>대표/발행·편집인: 조항준</span> <span>등록번호: 서울, 아53763</span> <span>등록일자: 2021년 06월 14일</span><br>
+                <span>사업자등록번호: 219-01-50737</span> <span>전화번호: 02-375-4489</span> <span>주소: 서울특별시 마포구 모래내로7길 52 (성산동)</span>
             </div>
         </div>
     </footer>
