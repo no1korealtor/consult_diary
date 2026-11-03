@@ -9443,16 +9443,9 @@ showCrucifixKissOverlay(onComplete) {
       this.dom.meditationTitle.textContent = step.title;
       this.dom.meditationText.textContent = `"${step.meditation}"`;
       let artEl = document.getElementById("mysterySacredArtBox");
-      if (!artEl) {
-        artEl = document.createElement("div");
-        artEl.id = "mysterySacredArtBox";
-        artEl.style.cssText = "margin: 8px auto 6px; text-align: center; width: 100%; max-width: 260px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.5); border: 2px solid rgba(243,198,105,0.45); background: #0c111d;";
-        this.dom.meditationBox.insertBefore(artEl, this.dom.meditationText);
+      if (artEl) {
+        artEl.style.display = "none";
       }
-      artEl.style.display = "block";
-      const mKey = (this.currentPrayerType === "divine_mercy") ? "divine_mercy" : (this.currentMysteryKey || "joyful");
-      const b64 = (typeof SACRED_ARTS !== "undefined" && SACRED_ARTS[mKey]) ? SACRED_ARTS[mKey] : "";
-      artEl.innerHTML = `<img src="data:image/webp;base64,${b64}" style="width:100%; height:auto; display:block;" alt="${step.title}" />`;
       this.dom.meditationFruit.textContent = step.fruit ? (this.settings.lang === "en" ? `Fruit: ${step.fruit}` : `열매: ${step.fruit}`) : "";
 
       // 각 단 성경 구절 묵상 (단 시작 큰 알에서 묵상 후 성모송 10알 진입)
