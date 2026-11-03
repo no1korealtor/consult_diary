@@ -7598,7 +7598,7 @@ class RosaryApp {
 
     // 2) 페이지 새로고침 / 탭 닫기 방지 가드 (기도 진행 중 실수 방어)
     window.addEventListener("beforeunload", (e) => {
-      if (this.currentView === "prayer" && this.currentIndex > 0) {
+      if (this.currentView === "prayer" && this.currentIndex >= 0) {
         this.saveProgress();
         e.preventDefault();
         e.returnValue = "";
@@ -7656,17 +7656,13 @@ class RosaryApp {
   }
 
   requestExitPrayer() {
-    if (this.currentIndex <= 0) {
-      this.switchView("intro");
-      return;
-    }
+    this.saveProgress();
     const exitModal = document.getElementById("exitConfirmModal");
     if (exitModal) {
       exitModal.style.display = "flex";
       void exitModal.offsetWidth;
       exitModal.classList.add("show");
     } else {
-      this.saveProgress();
       this.switchView("intro");
     }
   }
@@ -7765,7 +7761,7 @@ class RosaryApp {
       return;
     }
     const saved = this.loadSavedProgress();
-    const hasActiveProgress = saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length : 68);
+    const hasActiveProgress = saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0 && saved.stepIndex < (this.steps ? this.steps.length : 68);
 
     if (hasActiveProgress) {
       // 이어할 기록이 있다면 덮어쓰기 방지 확인 모달 띄우기
@@ -11879,7 +11875,7 @@ function directStartPrayerAction() {
       } catch(e) {}
     }
 
-    if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0) {
+    if (saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0) {
       if (window.rosaryApp && typeof window.rosaryApp.showResumeConfirmModal === "function") {
         window.rosaryApp.showResumeConfirmModal(saved);
         return;
