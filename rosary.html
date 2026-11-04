@@ -4411,6 +4411,26 @@ input:focus, textarea:focus {
             </div>
         </div>
 
+        <!-- 기도 방식 선택 카드 (실물 묵주 모드 vs 터치 카운트 모드) -->
+        <div id="introPrayerModeCard" class="intro-section-card" style="background: linear-gradient(135deg, rgba(243, 198, 105, 0.14) 0%, rgba(22, 31, 51, 0.85) 100%); border: 1.2px solid rgba(243, 198, 105, 0.4);">
+          <div class="intro-card-header">
+            <span class="intro-card-icon">📿</span>
+            <span id="introPrayerModeTitle" class="intro-card-title">묵주기도 진행 방식</span>
+            <span class="intro-today-badge" style="background: rgba(243, 198, 105, 0.2); color: var(--gold-light); font-size: 0.7rem; padding: 2px 7px;">분심 방지</span>
+          </div>
+          <p id="introPrayerModeSub" class="intro-card-desc">실물 묵주를 손에 쥐고 기도하실 때 추천합니다. 성모송을 매번 누르지 않고 묵주알에 온전히 집중할 수 있습니다.</p>
+          <div class="intro-toggle-group">
+            <button type="button" id="btnIntroModePhysical" class="intro-toggle-btn active" style="flex: 1.2;">
+              <span>📿 실물 묵주 모드</span>
+              <small style="display: block; font-size: 0.68rem; opacity: 0.85; margin-top: 2px;">단위별 안내 · 추천</small>
+            </button>
+            <button type="button" id="btnIntroModeDigital" class="intro-toggle-btn" style="flex: 1;">
+              <span>📱 터치 모드</span>
+              <small style="display: block; font-size: 0.68rem; opacity: 0.85; margin-top: 2px;">화면 알 하나씩</small>
+            </button>
+          </div>
+        </div>
+
         <!-- 3. 지난 기도 이어하기 카드 (기록이 있을 때만 노출) -->
         <div id="introResumeCard" class="intro-section-card resume-card" style="display: none !important;">
           <div class="intro-card-header" style="display: flex; justify-content: space-between; align-items: center;">
@@ -4531,26 +4551,6 @@ input:focus, textarea:focus {
                 <small>시편 130편 · 성인호칭기도 · 메김과 받음</small>
               </div>
               <span class="yeondo-sub-arrow">❯</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- 기도 방식 선택 카드 (실물 묵주 모드 vs 터치 카운트 모드) -->
-        <div id="introPrayerModeCard" class="intro-section-card" style="background: linear-gradient(135deg, rgba(243, 198, 105, 0.14) 0%, rgba(22, 31, 51, 0.85) 100%); border: 1.2px solid rgba(243, 198, 105, 0.4);">
-          <div class="intro-card-header">
-            <span class="intro-card-icon">📿</span>
-            <span id="introPrayerModeTitle" class="intro-card-title">묵주기도 진행 방식</span>
-            <span class="intro-today-badge" style="background: rgba(243, 198, 105, 0.2); color: var(--gold-light); font-size: 0.7rem; padding: 2px 7px;">분심 방지</span>
-          </div>
-          <p id="introPrayerModeSub" class="intro-card-desc">손에 실물 묵주를 쥐고 계신가요? 성모송을 매번 누르지 않는 편안한 가이드를 제공합니다.</p>
-          <div class="intro-toggle-group">
-            <button type="button" id="btnIntroModePhysical" class="intro-toggle-btn active" style="flex: 1.2;">
-              <span>📿 실물 묵주 모드</span>
-              <small style="display: block; font-size: 0.68rem; opacity: 0.85; margin-top: 2px;">단위별 안내 · 추천</small>
-            </button>
-            <button type="button" id="btnIntroModeDigital" class="intro-toggle-btn" style="flex: 1;">
-              <span>📱 터치 모드</span>
-              <small style="display: block; font-size: 0.68rem; opacity: 0.85; margin-top: 2px;">화면 알 하나씩</small>
             </button>
           </div>
         </div>
