@@ -7352,6 +7352,21 @@ class RosaryApp {
 
   syncPrayerModeUI() {
     const isPhysical = this.settings.prayerMode === "physical";
+    const isEn = this.settings.lang === "en";
+
+    // 설명 문구 동적 업데이트
+    if (this.dom.introPrayerModeSub) {
+      if (isPhysical) {
+        this.dom.introPrayerModeSub.textContent = isEn
+          ? "Holding your physical rosary? Enjoy peaceful decade-by-decade guidance without counting every screen tap."
+          : "실물 묵주를 손에 쥐고 기도하실 때 추천합니다. 성모송을 매번 누르지 않고 묵주알에 온전히 집중할 수 있습니다.";
+      } else {
+        this.dom.introPrayerModeSub.textContent = isEn
+          ? "No physical rosary or praying on the go? Count each bead easily on screen one by one."
+          : "실물 묵주가 없거나 이동 중일 때 유용합니다. 화면 속 묵주알을 하나씩 터치하며 횟수를 세어줍니다.";
+      }
+    }
+
     if (this.dom.btnIntroModePhysical && this.dom.btnIntroModeDigital) {
       if (isPhysical) {
         this.dom.btnIntroModePhysical.classList.add("active");
@@ -8408,11 +8423,7 @@ showCrucifixKissOverlay(onComplete) {
     if (this.dom.introPrayerModeTitle) {
       this.dom.introPrayerModeTitle.textContent = isEn ? "Prayer Flow Mode" : "묵주기도 진행 방식";
     }
-    if (this.dom.introPrayerModeSub) {
-      this.dom.introPrayerModeSub.textContent = isEn
-        ? "Holding your physical rosary? Enjoy peaceful step-by-step guidance without counting each tap."
-        : "손에 실물 묵주를 쥐고 계신가요? 성모송을 매번 누르지 않는 편안한 가이드를 제공합니다.";
-    }
+    this.syncPrayerModeUI();
     if (this.dom.introFatimaSub) {
       this.dom.introFatimaSub.textContent = isEn 
         ? "Recited at the end of each decade after the Glory Be." 
