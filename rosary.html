@@ -4411,6 +4411,26 @@ input:focus, textarea:focus {
             </div>
         </div>
 
+        <!-- 기도 방식 선택 카드 (실물 묵주 모드 vs 터치 카운트 모드) -->
+        <div id="introPrayerModeCard" class="intro-section-card" style="background: linear-gradient(135deg, rgba(243, 198, 105, 0.14) 0%, rgba(22, 31, 51, 0.85) 100%); border: 1.2px solid rgba(243, 198, 105, 0.4);">
+          <div class="intro-card-header">
+            <span class="intro-card-icon">📿</span>
+            <span id="introPrayerModeTitle" class="intro-card-title">묵주기도 진행 방식</span>
+            <span class="intro-today-badge" style="background: rgba(243, 198, 105, 0.2); color: var(--gold-light); font-size: 0.7rem; padding: 2px 7px;">분심 방지</span>
+          </div>
+          <p id="introPrayerModeSub" class="intro-card-desc">실물 묵주를 손에 쥐고 기도하실 때 추천합니다. 성모송을 매번 누르지 않고 묵주알에 온전히 집중할 수 있습니다.</p>
+          <div class="intro-toggle-group">
+            <button type="button" id="btnIntroModePhysical" class="intro-toggle-btn active" style="flex: 1.2;">
+              <span>📿 실물 묵주 모드</span>
+              <small style="display: block; font-size: 0.68rem; opacity: 0.85; margin-top: 2px;">단위별 안내 · 추천</small>
+            </button>
+            <button type="button" id="btnIntroModeDigital" class="intro-toggle-btn" style="flex: 1;">
+              <span>📱 터치 모드</span>
+              <small style="display: block; font-size: 0.68rem; opacity: 0.85; margin-top: 2px;">화면 알 하나씩</small>
+            </button>
+          </div>
+        </div>
+
         <!-- 3. 지난 기도 이어하기 카드 (기록이 있을 때만 노출) -->
         <div id="introResumeCard" class="intro-section-card resume-card" style="display: none !important;">
           <div class="intro-card-header" style="display: flex; justify-content: space-between; align-items: center;">
@@ -4601,7 +4621,14 @@ input:focus, textarea:focus {
               <span style="font-size: 1.05rem;">🕊️</span>
               <span style="font-weight: 700; font-size: 0.88rem; color: var(--gold-primary); letter-spacing: -0.2px;">함께 바치는 교우들의 지향</span>
             </div>
-            <button type="button" id="btnNextIntention" title="다른 지향 보기 (순환)" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(243,198,105,0.25); color: var(--gold-light); border-radius: 50%; width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.7rem; cursor: pointer; padding: 0; margin-left: 2px;">🔄</button></div><div style="display: flex; align-items: center; gap: 6px;"><span id="intentionBadgeAuthor" style="font-size: 0.68rem; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;"></span><button type="button" id="btnOpenAddIntention" style="background: none; border: 1px solid rgba(243,198,105,0.3); color: var(--gold-light); font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; cursor: pointer;">+ 새 지향 올리기</button>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <button type="button" id="btnNextIntention" title="다른 지향 보기 (순환)" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(243,198,105,0.25); color: var(--gold-light); border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; cursor: pointer; padding: 0;">🔄</button>
+              <button type="button" id="btnDeleteCurrentIntention" title="이 지향 삭제" style="display: none; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.35); color: #FCA5A5; font-size: 0.68rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; cursor: pointer;">🗑️ 삭제</button>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <span id="intentionBadgeAuthor" style="font-size: 0.68rem; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;"></span>
+            <button type="button" id="btnOpenAddIntention" style="background: none; border: 1px solid rgba(243,198,105,0.3); color: var(--gold-light); font-size: 0.72rem; padding: 2px 8px; border-radius: 12px; cursor: pointer;">+ 새 지향 올리기</button>
           </div>
           
           <p id="intentionBodyText" style="font-size: 0.92rem; color: #F8FAFC; line-height: 1.55; margin: 0 0 10px 0; word-break: keep-all; font-style: italic; background: rgba(15, 23, 42, 0.5); padding: 10px 12px; border-radius: 8px; border-left: 3px solid var(--gold-primary);">
@@ -4688,7 +4715,6 @@ input:focus, textarea:focus {
         </div>
 
         <div class="header-actions">
-          <button id="langToggleBtn" class="icon-btn" onclick="if(window.rosaryApp){var n=window.rosaryApp.settings.lang==='en'?'ko':'en';window.rosaryApp.setLanguage(n);}" aria-label="언어 변경" style="font-size: 0.8rem; font-weight: 800; width: auto; padding: 0 11px; border-radius: 18px; color: var(--gold-primary); border-color: rgba(243,198,105,0.4);">EN</button>
           <button id="openTrackerBtn" class="icon-btn" onclick="directOpenTracker();" aria-label="주간 기도 기록" title="주간 기도 기록">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -4939,6 +4965,18 @@ input:focus, textarea:focus {
               <input type="checkbox" id="soundToggle">
               <span class="toggle-slider"></span>
             </label>
+          </div>
+
+          <!-- 진행 방식 선택 -->
+          <div class="setting-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+            <div>
+              <div class="setting-label">📿 묵주기도 진행 방식</div>
+              <small style="color: var(--text-muted); font-size: 0.74rem;">실물 묵주가 있을 때는 성모송을 매번 누르지 않는 모드를 추천합니다.</small>
+            </div>
+            <div style="display: flex; gap: 8px; width: 100%;">
+              <button type="button" id="btnSettingsModePhysical" class="action-pill-btn active" style="flex: 1; height: 38px; font-size: 0.8rem;">📿 실물 묵주 모드</button>
+              <button type="button" id="btnSettingsModeDigital" class="action-pill-btn" style="flex: 1; height: 38px; font-size: 0.8rem;">📱 터치 카운트 모드</button>
+            </div>
           </div>
 
           <!-- 구원을 비는 기도 (구원송) -->
@@ -6250,13 +6288,15 @@ function getTodayMysteryKey(date = new Date()) {
  * @param {string} mysteryKey - 'joyful' | 'luminous' | 'sorrowful' | 'glorious'
  * @param {boolean} includeFatima - 구원의 기도(구원송) 포함 여부
  * @param {string} lang - 'ko' | 'en'
+ * @param {string} prayerMode - 'physical' (실물 묵주 모드 - 분심 없는 절차 안내) | 'digital' (화면 묵주알 카운트)
  */
-function buildRosarySteps(mysteryKey, includeFatima = true, lang = "ko") {
+function buildRosarySteps(mysteryKey, includeFatima = true, lang = "ko", prayerMode = "physical") {
   const currentLang = (lang === "en") ? "en" : "ko";
   const prayers = PRAYERS[currentLang];
   const mysteries = MYSTERIES[currentLang];
   const mystery = mysteries[mysteryKey] || mysteries.joyful;
   const isEn = currentLang === "en";
+  const isPhysical = prayerMode === "physical";
   const steps = [];
 
   // 1. 시작 - 십자가 (사도신경) - 성호경은 앞선 십자가 친구(입맞춤)에서 정성껏 바치고 진입
@@ -6287,40 +6327,52 @@ function buildRosarySteps(mysteryKey, includeFatima = true, lang = "ko") {
     prayers: [prayers.our_father]
   });
 
-  // 4~6. 성모송 3번 (작은 알 3개: 믿음, 희망, 사랑)
-  const introIntentionsKo = [
-    { title: "성모송 (첫 번째)", intent: "믿음을 더하기 위하여" },
-    { title: "성모송 (두 번째)", intent: "희망을 굳세게 하기 위하여" },
-    { title: "성모송 (세 번째)", intent: "사랑을 북돋우기 위하여" }
-  ];
-  const introIntentionsEn = [
-    { title: "Hail Mary (1st)", intent: "For an increase in Faith" },
-    { title: "Hail Mary (2nd)", intent: "For an increase in Hope" },
-    { title: "Hail Mary (3rd)", intent: "For an increase in Charity" }
-  ];
-  const introIntentions = isEn ? introIntentionsEn : introIntentionsKo;
-
-  // 6. 시작 성모송 3번 (작은 알 3개: 믿음, 희망, 사랑)
-  // 스마트폰 화면의 쾌적한 가독성과 기도의 자연스러운 호흡을 위해
-  // 시작 성모송 3알은 성모송 본문에만 집중하도록 단독 구성합니다.
-  for (let i = 0; i < 3; i++) {
+  if (isPhysical) {
+    // [실물 묵주 모드]: 시작 성모송 3번을 1개 단계로 묶어 안내 (분심 방지)
     steps.push({
       index: steps.length,
       section: isEn ? "Introductory Prayers" : "시작 기도",
       sectionCode: "intro",
-      introIndex: i + 1,
       beadType: "small",
-      beadLabel: isEn ? `Hail Mary ${i + 1}/3` : `시작 성모송 ${i + 1}/3`,
-      title: introIntentions[i].title,
-      badge: introIntentions[i].intent,
-      guide: isEn ? `Praying for the theological virtue: ${introIntentions[i].intent}.` : `향주삼덕(${introIntentions[i].intent})을 청하며 바칩니다.`,
+      beadLabel: isEn ? "3 Small Beads" : "시작 작은 알 3개",
+      title: isEn ? "Hail Mary (3 Times)" : "성모송 3번 바치기",
+      badge: isEn ? "Faith · Hope · Charity" : "향주삼덕 (믿음 · 희망 · 사랑)",
+      guide: isEn 
+        ? "Holding your physical rosary, move through 3 small beads praying for Faith, Hope, and Charity." 
+        : "실물 묵주의 작은 알 3개를 하나씩 넘기며 믿음, 희망, 사랑을 청하며 성모송 3번을 바치세요.",
       prayers: [prayers.hail_mary]
     });
+  } else {
+    // [터치 카운트 모드]: 기존대로 성모송 3알 각각 개별 진행
+    const introIntentionsKo = [
+      { title: "성모송 (첫 번째)", intent: "믿음을 더하기 위하여" },
+      { title: "성모송 (두 번째)", intent: "희망을 굳세게 하기 위하여" },
+      { title: "성모송 (세 번째)", intent: "사랑을 북돋우기 위하여" }
+    ];
+    const introIntentionsEn = [
+      { title: "Hail Mary (1st)", intent: "For an increase in Faith" },
+      { title: "Hail Mary (2nd)", intent: "For an increase in Hope" },
+      { title: "Hail Mary (3rd)", intent: "For an increase in Charity" }
+    ];
+    const introIntentions = isEn ? introIntentionsEn : introIntentionsKo;
+
+    for (let i = 0; i < 3; i++) {
+      steps.push({
+        index: steps.length,
+        section: isEn ? "Introductory Prayers" : "시작 기도",
+        sectionCode: "intro",
+        introIndex: i + 1,
+        beadType: "small",
+        beadLabel: isEn ? `Hail Mary ${i + 1}/3` : `시작 성모송 ${i + 1}/3`,
+        title: introIntentions[i].title,
+        badge: introIntentions[i].intent,
+        guide: isEn ? `Praying for the theological virtue: ${introIntentions[i].intent}.` : `향주삼덕(${introIntentions[i].intent})을 청하며 바칩니다.`,
+        prayers: [prayers.hail_mary]
+      });
+    }
   }
 
-  // 7. 시작 영광송 & 구원의 기도 (선택 옵션 반영) - 작은 연결 알 (줄 / 간격)
-  // 스마트폰 작은 화면에서 영광송과 구원의 기도가 독립 화면으로 시원하게 노출되어
-  // 삼위일체 찬미와 연옥 영혼을 위한 전구를 바치고 다음 1단 큰 알로 진입합니다.
+  // 시작 영광송 & 구원의 기도
   const introConnectorPrayers = includeFatima 
     ? [prayers.glory_be, prayers.fatima_prayer] 
     : [prayers.glory_be];
@@ -6361,25 +6413,45 @@ function buildRosarySteps(mysteryKey, includeFatima = true, lang = "ko") {
       fruit: decade.fruit,
       scripture: decade.scripture,
       badge: isEn ? "Mystery & Our Father" : "신비 묵상 및 주님의 기도",
-      guide: isEn ? "Meditate on the mystery, then recite the Lord's Prayer on the large bead." : "신비를 깊이 묵상한 후, 큰 알을 잡고 주님의 기도를 바칩니다.",
+      guide: isEn 
+        ? "Meditate on the mystery, then hold the large bead and recite the Lord's Prayer." 
+        : "신비를 깊이 묵상한 후, 실물 묵주의 큰 알을 잡고 주님의 기도를 바칩니다.",
       prayers: [prayers.our_father]
     });
 
-    // (2) 성모송 10번 (작은 알 10개)
-    for (let b = 1; b <= 10; b++) {
+    if (isPhysical) {
+      // [실물 묵주 모드]: 성모송 10번을 1개 단계로 묶어 안내! (매번 터치할 필요 없음)
       steps.push({
         index: steps.length,
         section: secTitle,
         sectionCode: secCode,
         decadeNum: dIdx + 1,
         beadType: "small",
-        beadNumber: b,
-        beadLabel: isEn ? `Decade ${dIdx + 1} Hail Mary ${b}/10` : `${dIdx + 1}단 성모송 ${b}/10`,
-        title: isEn ? `Hail Mary (${b}/10)` : `성모송 (${b}/10)`,
-        badge: isEn ? `Decade ${dIdx + 1} · Bead ${b}` : `${dIdx + 1}단 ${b}번째 알`,
-        guide: isEn ? `Keeping ${decade.title} in your heart, recite with devotion.` : `${decade.title}을 마음에 품고 정성껏 바칩니다.`,
+        beadLabel: isEn ? `Decade ${dIdx + 1} (10 Hail Marys)` : `${dIdx + 1}단 성모송 10번`,
+        title: isEn ? `Hail Mary (10 Times)` : `${decade.title} 성모송 10번`,
+        badge: isEn ? `10 Beads Guide` : `작은 알 10개 굴리기`,
+        guide: isEn 
+          ? `Keeping ${decade.title} in your heart, gently count your 10 physical beads while praying the Hail Mary.` 
+          : `실물 묵주의 작은 알 10개를 손가락으로 하나씩 굴리며, ${decade.title}의 신비를 묵상하고 성모송을 10번 바치세요.`,
         prayers: [prayers.hail_mary]
       });
+    } else {
+      // [터치 카운트 모드]: 알마다 하나씩 10번 터치
+      for (let b = 1; b <= 10; b++) {
+        steps.push({
+          index: steps.length,
+          section: secTitle,
+          sectionCode: secCode,
+          decadeNum: dIdx + 1,
+          beadType: "small",
+          beadNumber: b,
+          beadLabel: isEn ? `Decade ${dIdx + 1} Hail Mary ${b}/10` : `${dIdx + 1}단 성모송 ${b}/10`,
+          title: isEn ? `Hail Mary (${b}/10)` : `성모송 (${b}/10)`,
+          badge: isEn ? `Decade ${dIdx + 1} · Bead ${b}` : `${dIdx + 1}단 ${b}번째 알`,
+          guide: isEn ? `Keeping ${decade.title} in your heart, recite with devotion.` : `${decade.title}을 마음에 품고 정성껏 바칩니다.`,
+          prayers: [prayers.hail_mary]
+        });
+      }
     }
 
     // (3) 각 단 마무리 - 영광송 & 구원송
@@ -6886,6 +6958,15 @@ class RosaryApp {
       introDmGuideSmall: document.getElementById("introDmGuideSmall"),
       introDmGuideEnd: document.getElementById("introDmGuideEnd"),
 
+      // 인트로 진행 방식 (실물 묵주 vs 터치 모드)
+      introPrayerModeCard: document.getElementById("introPrayerModeCard"),
+      introPrayerModeTitle: document.getElementById("introPrayerModeTitle"),
+      introPrayerModeSub: document.getElementById("introPrayerModeSub"),
+      btnIntroModePhysical: document.getElementById("btnIntroModePhysical"),
+      btnIntroModeDigital: document.getElementById("btnIntroModeDigital"),
+      btnSettingsModePhysical: document.getElementById("btnSettingsModePhysical"),
+      btnSettingsModeDigital: document.getElementById("btnSettingsModeDigital"),
+
       // 인트로 6. 구원을 비는 기도 (구원송)
       introFatimaCard: document.getElementById("introFatimaCard"),
       introFatimaTitle: document.getElementById("introFatimaTitle"),
@@ -7077,7 +7158,7 @@ class RosaryApp {
     if (this.currentPrayerType === "divine_mercy") {
       return buildDivineMercySteps(this.settings.lang);
     } else {
-      return buildRosarySteps(this.currentMysteryKey, this.settings.includeFatima, this.settings.lang);
+      return buildRosarySteps(this.currentMysteryKey, this.settings.includeFatima, this.settings.lang, this.settings.prayerMode || "physical");
     }
   }
 
@@ -7085,6 +7166,7 @@ class RosaryApp {
     this.setupWakeLock();
     this.applySettings();
     this.syncLanguageUI();
+    this.syncPrayerModeUI();
     this.syncPrayerTypeUI();
     this.syncFatimaUI();
     this.syncSoundUI();
@@ -7144,6 +7226,9 @@ class RosaryApp {
     }
     if (this.dom.introFatimaCard) {
       this.dom.introFatimaCard.style.display = isDm ? "none" : "block";
+    }
+    if (this.dom.introPrayerModeCard) {
+      this.dom.introPrayerModeCard.style.display = isDm ? "none" : "block";
     }
     if (this.dom.introDivineMercyCard) {
       this.dom.introDivineMercyCard.style.display = isDm ? "block" : "none";
@@ -7248,6 +7333,66 @@ class RosaryApp {
     if (this.dom.introContinueText) this.dom.introContinueText.textContent = isEn ? "Continue Praying" : "이어서 계속 기도하기";
   }
 
+  setPrayerMode(mode) {
+    if (mode !== "physical" && mode !== "digital") return;
+    this.settings.prayerMode = mode;
+    this.saveSettings();
+    this.syncPrayerModeUI();
+
+    // 현재 스텝 위치 유지하며 스텝 재생성
+    const curStep = this.steps[this.currentIndex];
+    this.steps = this.buildCurrentSteps();
+
+    let newIndex = 0;
+    if (curStep) {
+      const found = this.steps.findIndex(s => s.sectionCode === curStep.sectionCode && s.beadType === curStep.beadType && s.beadNumber === curStep.beadNumber);
+      newIndex = found !== -1 ? found : Math.min(this.currentIndex, this.steps.length - 1);
+    }
+    this.renderDecadeProgressPills();
+    if (this.currentView === "prayer") {
+      this.goToStep(newIndex, true);
+    } else {
+      this.currentIndex = newIndex;
+    }
+  }
+
+  syncPrayerModeUI() {
+    const isPhysical = this.settings.prayerMode === "physical";
+    const isEn = this.settings.lang === "en";
+
+    // 설명 문구 동적 업데이트
+    if (this.dom.introPrayerModeSub) {
+      if (isPhysical) {
+        this.dom.introPrayerModeSub.textContent = isEn
+          ? "Holding your physical rosary? Enjoy peaceful decade-by-decade guidance without counting every screen tap."
+          : "실물 묵주를 손에 쥐고 기도하실 때 추천합니다. 성모송을 매번 누르지 않고 묵주알에 온전히 집중할 수 있습니다.";
+      } else {
+        this.dom.introPrayerModeSub.textContent = isEn
+          ? "No physical rosary or praying on the go? Count each bead easily on screen one by one."
+          : "실물 묵주가 없거나 이동 중일 때 유용합니다. 화면 속 묵주알을 하나씩 터치하며 횟수를 세어줍니다.";
+      }
+    }
+
+    if (this.dom.btnIntroModePhysical && this.dom.btnIntroModeDigital) {
+      if (isPhysical) {
+        this.dom.btnIntroModePhysical.classList.add("active");
+        this.dom.btnIntroModeDigital.classList.remove("active");
+      } else {
+        this.dom.btnIntroModePhysical.classList.remove("active");
+        this.dom.btnIntroModeDigital.classList.add("active");
+      }
+    }
+    if (this.dom.btnSettingsModePhysical && this.dom.btnSettingsModeDigital) {
+      if (isPhysical) {
+        this.dom.btnSettingsModePhysical.classList.add("active");
+        this.dom.btnSettingsModeDigital.classList.remove("active");
+      } else {
+        this.dom.btnSettingsModePhysical.classList.remove("active");
+        this.dom.btnSettingsModeDigital.classList.add("active");
+      }
+    }
+  }
+
   // ==========================================
   // 1. 날짜 및 주간 기록 저장소
   // ==========================================
@@ -7273,6 +7418,7 @@ class RosaryApp {
       soundEnabled: false, // 기본값: 무음 (옵션으로 켜지 않는 한 무음 유지)
       keepScreenOn: true,
       includeFatima: true, // 구원송 기본 포함
+      prayerMode: "physical", // 'physical' (실물 묵주 모드 - 기본 추천) | 'digital' (터치 카운트 모드)
       beadStyle: "wood",   // 'wood' (따뜻한 원목 & 목각 장미 기본) | 'rose' (황금·백장미) | 'classic' (원형)
       lang: "ko",          // 'ko' (한국어) | 'en' (English)
       roseBloomEffect: true, // 성모송 장미 꽃피움 & 천상 봉헌 승화 연출
@@ -7370,6 +7516,7 @@ class RosaryApp {
       section: cur.section,
       title: cur.title,
       beadLabel: cur.beadLabel,
+      prayerMode: this.settings.prayerMode || "physical",
       includeFatima: this.settings.includeFatima,
       lang: this.settings.lang,
       updatedAt: Date.now()
@@ -7598,7 +7745,7 @@ class RosaryApp {
 
     // 2) 페이지 새로고침 / 탭 닫기 방지 가드 (기도 진행 중 실수 방어)
     window.addEventListener("beforeunload", (e) => {
-      if (this.currentView === "prayer" && this.currentIndex > 0) {
+      if (this.currentView === "prayer" && this.currentIndex >= 0) {
         this.saveProgress();
         e.preventDefault();
         e.returnValue = "";
@@ -7656,17 +7803,13 @@ class RosaryApp {
   }
 
   requestExitPrayer() {
-    if (this.currentIndex <= 0) {
-      this.switchView("intro");
-      return;
-    }
+    this.saveProgress();
     const exitModal = document.getElementById("exitConfirmModal");
     if (exitModal) {
       exitModal.style.display = "flex";
       void exitModal.offsetWidth;
       exitModal.classList.add("show");
     } else {
-      this.saveProgress();
       this.switchView("intro");
     }
   }
@@ -7765,7 +7908,7 @@ class RosaryApp {
       return;
     }
     const saved = this.loadSavedProgress();
-    const hasActiveProgress = saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length : 68);
+    const hasActiveProgress = saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0 && saved.stepIndex < (this.steps ? this.steps.length : 68);
 
     if (hasActiveProgress) {
       // 이어할 기록이 있다면 덮어쓰기 방지 확인 모달 띄우기
@@ -8027,6 +8170,10 @@ showCrucifixKissOverlay(onComplete) {
       }
 
       // 1. restore settings
+      if (typeof saved.prayerMode === "string") {
+        this.settings.prayerMode = saved.prayerMode;
+        this.syncPrayerModeUI();
+      }
       if (typeof saved.includeFatima === "boolean") {
         this.settings.includeFatima = saved.includeFatima;
         this.syncFatimaUI();
@@ -8224,10 +8371,11 @@ showCrucifixKissOverlay(onComplete) {
   syncLanguageUI() {
     const isEn = this.settings.lang === "en";
     
-    // 헤더 언어 토글 버튼
-    if (this.dom.langToggleBtn) {
-      this.dom.langToggleBtn.textContent = isEn ? "한" : "EN";
-      this.dom.langToggleBtn.title = isEn ? "한국어로 변경" : "Switch to English";
+    // 인트로 헤더 언어 토글 버튼 동기화
+    var headerLangBtn = document.getElementById("btnHeaderLangToggle");
+    if (headerLangBtn) {
+      headerLangBtn.textContent = isEn ? "🌐 한" : "🌐 EN";
+      headerLangBtn.title = isEn ? "한국어로 변경" : "Switch to English";
     }
 
     // 인트로 언어 버튼
@@ -8279,6 +8427,10 @@ showCrucifixKissOverlay(onComplete) {
     if (this.dom.introFatimaTitle) {
       this.dom.introFatimaTitle.textContent = isEn ? "Fatima Prayer (구원을 비는 기도)" : "구원을 비는 기도 (구원송)";
     }
+    if (this.dom.introPrayerModeTitle) {
+      this.dom.introPrayerModeTitle.textContent = isEn ? "Prayer Flow Mode" : "묵주기도 진행 방식";
+    }
+    this.syncPrayerModeUI();
     if (this.dom.introFatimaSub) {
       this.dom.introFatimaSub.textContent = isEn 
         ? "Recited at the end of each decade after the Glory Be." 
@@ -9475,10 +9627,9 @@ showCrucifixKissOverlay(onComplete) {
       if (this.dom.scriptureAccordion) this.dom.scriptureAccordion.style.display = "none";
     }
 
-    // 신비 묵상(meditation)이 있는 큰 알 구간 외에는
-    // 사도신경, 주님의 기도, 성모송 등 본문 소제목(✦ 기도명)과 중복되는 상단 큰 제목 및 가이드를 숨겨
-    // 기도문 본문이 화면 위로 꽉 차서 스크롤 없이 시원하게 보이도록 최적화
-    const hasMeditation = !!(step.meditation || (this.settings.devotion === 'rosary' && step.decadeNum));
+    // 신비 묵상(meditation)이 있는 큰 알 구간 및 실물 묵주 성모송 안내 구간
+    const isPhysicalGuide = this.settings.prayerMode === 'physical' && step.beadType === 'small' && (step.badge.includes('10개') || step.badge.includes('10 Beads') || step.badge.includes('향주삼덕'));
+    const hasMeditation = !!(step.meditation || (this.settings.devotion === 'rosary' && step.decadeNum) || isPhysicalGuide);
     if (!hasMeditation) {
       if (this.dom.prayerMainTitle) this.dom.prayerMainTitle.style.display = 'none';
       if (this.dom.prayerGuideText) this.dom.prayerGuideText.style.display = 'none';
@@ -9516,11 +9667,16 @@ showCrucifixKissOverlay(onComplete) {
 
   updateButtonsState() {
     const isEn = this.settings.lang === "en";
+    const curStep = this.steps[this.currentIndex];
+    const isPhysical10 = this.settings.prayerMode === 'physical' && curStep && curStep.beadType === 'small' && (curStep.badge.includes('10개') || curStep.badge.includes('10 Beads'));
+
     this.dom.prevBtn.disabled = this.currentIndex <= 0;
-    this.dom.prevBtn.innerHTML = `❮ <span>${isEn ? 'Previous' : '이전 알'}</span>`;
+    this.dom.prevBtn.innerHTML = `❮ <span>${isEn ? 'Previous' : '이전 기도'}</span>`;
 
     if (this.currentIndex >= this.steps.length - 1) {
       this.dom.nextBtn.innerHTML = `<span>${isEn ? 'Finished' : '기도 완료'}</span> ✝`;
+    } else if (isPhysical10) {
+      this.dom.nextBtn.innerHTML = `<span>${isEn ? '10 Completed (Next)' : '성모송 10번 완료 (다음)'}</span> ❯`;
     } else {
       this.dom.nextBtn.innerHTML = `<span>${isEn ? 'Next Prayer' : '다음 기도'}</span> ❯`;
     }
@@ -9735,6 +9891,20 @@ showCrucifixKissOverlay(onComplete) {
       this.dom.btnResumeConfirmCancel.addEventListener("click", () => {
         this.closeModals();
       });
+    }
+
+    // 0-4-3) 진행 방식 선택 토글 이벤트 (실물 묵주 vs 터치 카운트)
+    if (this.dom.btnIntroModePhysical) {
+      this.dom.btnIntroModePhysical.addEventListener("click", () => this.setPrayerMode("physical"));
+    }
+    if (this.dom.btnIntroModeDigital) {
+      this.dom.btnIntroModeDigital.addEventListener("click", () => this.setPrayerMode("digital"));
+    }
+    if (this.dom.btnSettingsModePhysical) {
+      this.dom.btnSettingsModePhysical.addEventListener("click", () => this.setPrayerMode("physical"));
+    }
+    if (this.dom.btnSettingsModeDigital) {
+      this.dom.btnSettingsModeDigital.addEventListener("click", () => this.setPrayerMode("digital"));
     }
 
     // 0-6) 인트로 헤더 버튼 (바로가기, 주간기록, 설정)
@@ -11475,6 +11645,21 @@ window.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
       }
+
+      // [클린업] 테스트용으로 등록되었던 지향 자동 정리 ("멈춤없는" 등)
+      const cleaned = list.filter(item => {
+        if (!item || !item.text) return false;
+        if (item.text.indexOf('멈춤없는') !== -1 || item.text.indexOf('테스트') !== -1) {
+          return false;
+        }
+        return true;
+      });
+      if (cleaned.length !== list.length) {
+        list = cleaned.length > 0 ? cleaned : JSON.parse(JSON.stringify(BASE_INTENTIONS));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+        try { localStorage.removeItem(OLD_STORAGE_KEY); } catch(e){}
+      }
+
       return list.filter(item => item && item.active);
     } catch(e) {
       return BASE_INTENTIONS;
@@ -11532,6 +11717,16 @@ window.addEventListener('DOMContentLoaded', () => {
     const joinText = document.getElementById('btnJoinIntentionText');
     const authorBadge = document.getElementById('intentionBadgeAuthor');
 
+    const deleteBtn = document.getElementById('btnDeleteCurrentIntention');
+    if (deleteBtn) {
+      // 사용자가 직접 등록한 지향(isUserAdded)이거나 테스트 지향일 경우 삭제 버튼 노출
+      if (data.isUserAdded || !data.isSystem) {
+        deleteBtn.style.display = 'inline-flex';
+      } else {
+        deleteBtn.style.display = 'none';
+      }
+    }
+
     if (bodyEl) {
       bodyEl.textContent = `"${data.text}"`;
     }
@@ -11573,6 +11768,30 @@ window.addEventListener('DOMContentLoaded', () => {
       nextBtn.onclick = function(e) {
         e.stopPropagation();
         nextIntention();
+      };
+    }
+
+    // 1-1. 내 지향 즉시 삭제 버튼
+    const deleteBtn = document.getElementById('btnDeleteCurrentIntention');
+    if (deleteBtn) {
+      deleteBtn.onclick = function(e) {
+        e.stopPropagation();
+        const data = getCurrentIntention();
+        if (!data) return;
+        if (confirm(`이 기도 지향을 삭제하시겠습니까?\n\n"${data.text}"`)) {
+          const list = getStoredList();
+          const updated = list.filter(it => it.id !== data.id);
+          saveStoredList(updated.length > 0 ? updated : BASE_INTENTIONS);
+          currentIndex = 0;
+          try {
+            sessionStorage.setItem(CURRENT_INDEX_KEY, '0');
+          } catch(e){}
+          renderIntentionCard();
+          if (typeof window.renderAdminIntentionSection === 'function') {
+            window.renderAdminIntentionSection();
+          }
+          alert('기도 지향이 삭제되었습니다.');
+        }
       };
     }
 
@@ -11879,7 +12098,7 @@ function directStartPrayerAction() {
       } catch(e) {}
     }
 
-    if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0) {
+    if (saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0) {
       if (window.rosaryApp && typeof window.rosaryApp.showResumeConfirmModal === "function") {
         window.rosaryApp.showResumeConfirmModal(saved);
         return;
@@ -11890,11 +12109,6 @@ function directStartPrayerAction() {
         rModal.style.setProperty("display", "flex", "important");
         return;
       }
-    }
-
-    if (window.rosaryApp && typeof window.rosaryApp.startPrayer === "function") {
-      window.rosaryApp.startPrayer(false);
-      return;
     }
 
     // 1. 인트로 뷰 즉시 숨기고 기도 뷰 즉시 노출
