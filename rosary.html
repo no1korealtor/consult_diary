@@ -4885,13 +4885,28 @@ input:focus, textarea:focus {
         </p>
 
         <!-- 이전 기도 정보 박스 -->
-        <div style="background: rgba(243, 198, 105, 0.08); border: 1px solid rgba(243, 198, 105, 0.28); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 18px; text-align: left;">
+        <div style="background: rgba(243, 198, 105, 0.08); border: 1px solid rgba(243, 198, 105, 0.28); border-radius: var(--radius-md); padding: 12px 14px; margin-bottom: 14px; text-align: left;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
             <span style="font-size: 0.76rem; color: var(--gold-primary); font-weight: 700;">기존 진행 기록</span>
             <span id="resumeConfirmPrayerType" style="font-size: 0.72rem; color: var(--text-muted);">성모 묵주기도</span>
           </div>
           <div id="resumeConfirmMystery" style="font-weight: 700; color: var(--text-primary); font-size: 0.95rem; margin-bottom: 2px;">환희의 신비</div>
           <div id="resumeConfirmStep" style="font-size: 0.82rem; color: var(--text-secondary);">제1단 · 성모송 3/10</div>
+        </div>
+
+        <!-- 이어하기 묵주 상태 선택 (실물 묵주 vs 터치 모드 전환) -->
+        <div id="resumeModeSelectorBox" style="margin-bottom: 16px; text-align: left;">
+          <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600;">
+            이어할 기도 방식 선택:
+          </div>
+          <div class="intro-toggle-group" style="background: rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 3px; display: flex; gap: 4px;">
+            <button type="button" id="btnResumeModePhysical" class="intro-toggle-btn active" style="flex: 1; padding: 8px 4px; font-size: 0.82rem; border-radius: 9px; min-height: 42px;">
+              <span>📿 실물 묵주 있음</span>
+            </button>
+            <button type="button" id="btnResumeModeDigital" class="intro-toggle-btn" style="flex: 1; padding: 8px 4px; font-size: 0.82rem; border-radius: 9px; min-height: 42px;">
+              <span>📱 묵주 없음 (터치)</span>
+            </button>
+          </div>
         </div>
 
         <div style="display: flex; flex-direction: column; gap: 14px; margin-top: 6px;">
@@ -6998,6 +7013,9 @@ class RosaryApp {
       btnResumeConfirmContinue: document.getElementById("btnResumeConfirmContinue"),
       btnResumeConfirmRestart: document.getElementById("btnResumeConfirmRestart"),
       btnResumeConfirmCancel: document.getElementById("btnResumeConfirmCancel"),
+      resumeModeSelectorBox: document.getElementById("resumeModeSelectorBox"),
+      btnResumeModePhysical: document.getElementById("btnResumeModePhysical"),
+      btnResumeModeDigital: document.getElementById("btnResumeModeDigital"),
 
       // 십자가 친구(親吻) 오버레이
       crucifixKissOverlay: document.getElementById("crucifixKissOverlay"),
@@ -7947,6 +7965,29 @@ class RosaryApp {
         rStep.textContent = `${saved.section || ""} · ${saved.beadLabel || ""}`;
       }
 
+      // 묵주 모드 선택 토글 UI 동기화 (자비의 기도는 모드 구분 없으므로 숨김, 묵주기도만 노출)
+      const modeBox = this.dom.resumeModeSelectorBox || document.getElementById("resumeModeSelectorBox");
+      const btnPhysical = this.dom.btnResumeModePhysical || document.getElementById("btnResumeModePhysical");
+      const btnDigital = this.dom.btnResumeModeDigital || document.getElementById("btnResumeModeDigital");
+
+      if (modeBox) {
+        modeBox.style.display = isDm ? "none" : "block";
+      }
+
+      // 현재 선택된 기도 모드 (사용자의 현재 앱 설정 우선, 없으면 저장되었던 모드)
+      const curMode = this.settings.prayerMode || (saved && saved.prayerMode) || "physical";
+      this.resumeSelectedMode = curMode;
+
+      if (btnPhysical && btnDigital) {
+        if (curMode === "physical") {
+          btnPhysical.classList.add("active");
+          btnDigital.classList.remove("active");
+        } else {
+          btnPhysical.classList.remove("active");
+          btnDigital.classList.add("active");
+        }
+      }
+
       const modalEl = this.dom.resumeConfirmModal || document.getElementById("resumeConfirmModal");
       if (modalEl) {
         this.openModal(modalEl);
@@ -8151,7 +8192,7 @@ showCrucifixKissOverlay(onComplete) {
     }
   }
 
-  continuePrayer() {
+  continuePrayer(targetPrayerMode = null) {
     try {
       this.closeModals();
       const ko = document.getElementById("crucifixKissOverlay");
@@ -8169,11 +8210,15 @@ showCrucifixKissOverlay(onComplete) {
         return;
       }
 
+      const origSavedMode = saved.prayerMode || "physical";
+      const chosenMode = (targetPrayerMode === "physical" || targetPrayerMode === "digital")
+        ? targetPrayerMode
+        : (this.resumeSelectedMode || origSavedMode);
+
       // 1. restore settings
-      if (typeof saved.prayerMode === "string") {
-        this.settings.prayerMode = saved.prayerMode;
-        this.syncPrayerModeUI();
-      }
+      this.settings.prayerMode = chosenMode;
+      this.syncPrayerModeUI();
+
       if (typeof saved.includeFatima === "boolean") {
         this.settings.includeFatima = saved.includeFatima;
         this.syncFatimaUI();
@@ -8192,16 +8237,61 @@ showCrucifixKissOverlay(onComplete) {
         this.syncHeaderMysteryUI();
       }
 
-      // 2. build steps first
+      // 2. build steps
       this.steps = this.buildCurrentSteps();
       this.renderDecadeProgressPills();
       this.sessionCompletedDecades = new Set();
 
-      // 3. safe index parsing
+      // 3. safe index parsing & mode-aware step mapping
       const parsedIdx = parseInt(saved.stepIndex, 10);
       const safeIdx = isNaN(parsedIdx) ? 0 : parsedIdx;
+      let targetStep = safeIdx;
+
+      // 모드가 달라진 경우 (실물 묵주 <-> 터치 모드 간 전환) 지능형 위치 매핑
+      if (this.currentPrayerType === "rosary" && origSavedMode !== chosenMode) {
+        const origSteps = buildRosarySteps(this.currentMysteryKey, this.settings.includeFatima, this.settings.lang, origSavedMode);
+        const origStepObj = origSteps[Math.min(Math.max(0, safeIdx), origSteps.length - 1)];
+
+        if (origStepObj) {
+          let foundIdx = -1;
+          if (origStepObj.sectionCode === "intro") {
+            if (origStepObj.beadType === "cross") {
+              foundIdx = this.steps.findIndex(s => s.sectionCode === "intro" && s.beadType === "cross");
+            } else if (origStepObj.beadType === "large") {
+              foundIdx = this.steps.findIndex(s => s.sectionCode === "intro" && s.beadType === "large");
+            } else if (origStepObj.beadType === "small") {
+              // 시작 성모송: 실물->터치(첫번째 성모송), 터치->실물(성모송 3개 묶음)
+              foundIdx = this.steps.findIndex(s => s.sectionCode === "intro" && s.beadType === "small");
+            } else if (origStepObj.beadType === "connector") {
+              foundIdx = this.steps.findIndex(s => s.sectionCode === "intro" && s.beadType === "connector");
+            }
+          } else if (origStepObj.sectionCode === "outro") {
+            foundIdx = this.steps.findIndex(s => s.sectionCode === "outro" && s.beadType === origStepObj.beadType);
+          } else if (origStepObj.decadeNum) {
+            const dNum = origStepObj.decadeNum;
+            if (origStepObj.beadType === "large") {
+              foundIdx = this.steps.findIndex(s => s.decadeNum === dNum && s.beadType === "large");
+            } else if (origStepObj.beadType === "connector") {
+              foundIdx = this.steps.findIndex(s => s.decadeNum === dNum && s.beadType === "connector");
+            } else if (origStepObj.beadType === "small") {
+              if (chosenMode === "digital") {
+                // 실물 -> 터치: 해당 단의 첫 번째 성모송 알로 이동
+                foundIdx = this.steps.findIndex(s => s.decadeNum === dNum && s.beadType === "small" && s.beadNumber === 1);
+              } else {
+                // 터치 -> 실물: 해당 단의 성모송 10번 묶음 안내로 이동
+                foundIdx = this.steps.findIndex(s => s.decadeNum === dNum && s.beadType === "small");
+              }
+            }
+          }
+
+          if (foundIdx !== -1) {
+            targetStep = foundIdx;
+          }
+        }
+      }
+
       const maxIdx = (this.steps && this.steps.length > 0) ? this.steps.length - 1 : 0;
-      const targetStep = Math.min(Math.max(0, safeIdx), maxIdx);
+      targetStep = Math.min(Math.max(0, targetStep), maxIdx);
 
       for (let i = 0; i <= targetStep; i++) {
         const s = this.steps[i];
@@ -9875,10 +9965,26 @@ showCrucifixKissOverlay(onComplete) {
     }
 
     // 0-5-1) 이어하기 덮어쓰기 확인 모달 버튼 이벤트
+    if (this.dom.btnResumeModePhysical) {
+      this.dom.btnResumeModePhysical.addEventListener("click", () => {
+        this.resumeSelectedMode = "physical";
+        if (this.dom.btnResumeModePhysical) this.dom.btnResumeModePhysical.classList.add("active");
+        if (this.dom.btnResumeModeDigital) this.dom.btnResumeModeDigital.classList.remove("active");
+      });
+    }
+    if (this.dom.btnResumeModeDigital) {
+      this.dom.btnResumeModeDigital.addEventListener("click", () => {
+        this.resumeSelectedMode = "digital";
+        if (this.dom.btnResumeModePhysical) this.dom.btnResumeModePhysical.classList.remove("active");
+        if (this.dom.btnResumeModeDigital) this.dom.btnResumeModeDigital.classList.add("active");
+      });
+    }
+
     if (this.dom.btnResumeConfirmContinue) {
       this.dom.btnResumeConfirmContinue.addEventListener("click", () => {
+        const mode = this.resumeSelectedMode || this.settings.prayerMode || "physical";
         this.closeModals();
-        this.continuePrayer();
+        this.continuePrayer(mode);
       });
     }
     if (this.dom.btnResumeConfirmRestart) {
@@ -12154,6 +12260,9 @@ function directStartPrayerAction() {
 
 function directContinuePrayerAction() {
   try {
+    var mode = (window.rosaryApp && window.rosaryApp.resumeSelectedMode) 
+      ? window.rosaryApp.resumeSelectedMode 
+      : (window.rosaryApp && window.rosaryApp.settings ? window.rosaryApp.settings.prayerMode : "physical");
     closeAllModalsDirect();
     var ko = document.getElementById("crucifixKissOverlay");
     if (ko) {
@@ -12165,7 +12274,7 @@ function directContinuePrayerAction() {
     }
 
     if (window.rosaryApp && typeof window.rosaryApp.continuePrayer === "function") {
-      window.rosaryApp.continuePrayer();
+      window.rosaryApp.continuePrayer(mode);
       return;
     }
 
@@ -12185,12 +12294,12 @@ function directContinuePrayerAction() {
       pv.style.setProperty("z-index", "999", "important");
     }
     if (window.rosaryApp) {
-      window.rosaryApp.continuePrayer();
+      window.rosaryApp.continuePrayer(mode);
     }
   } catch(e) {
     console.error("directContinuePrayerAction error:", e);
     if (window.rosaryApp && typeof window.rosaryApp.continuePrayer === "function") {
-      window.rosaryApp.continuePrayer();
+      window.rosaryApp.continuePrayer(mode);
     }
   }
 }
