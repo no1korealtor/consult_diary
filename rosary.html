@@ -9117,14 +9117,8 @@ showCrucifixKissOverlay(onComplete) {
     }
     this.saveSettings();
     this.syncBgmUI();
-    if (this.isBgmPlaying) {
-      this.stopBgmAudio(true);
-      setTimeout(() => {
-        if (this.settings.bgmEnabled) this.startBgmAudio();
-      }, 200);
-    } else {
-      this.startBgmAudio();
-    }
+    // 프리셋 변경 시 즉시 새 프리셋 음향으로 전환
+    this.startBgmAudio(true);
   }
 
   setBgmVolume(vol) {
@@ -9221,21 +9215,22 @@ showCrucifixKissOverlay(onComplete) {
     }
   }
 
-  startBgmAudio() {
+  startBgmAudio(instant = true) {
     try {
       this.initBgmContext();
       if (!this.bgmCtx) return;
-      this.stopBgmAudio();
+      this.stopBgmAudio(true);
 
       this.bgmGainNode = this.bgmCtx.createGain();
       const targetVol = this.settings.bgmVolume || 0.08;
-      // 부드러운 페이드 인 (Fade In 2초)
+      // 시작 시 즉각적으로 들리도록 어택 시간을 0.15초로 단축하여 즉시 재생 체감 제공
+      const attackTime = instant ? 0.15 : 1.0;
       this.bgmGainNode.gain.setValueAtTime(0.0001, this.bgmCtx.currentTime);
-      this.bgmGainNode.gain.linearRampToValueAtTime(targetVol, this.bgmCtx.currentTime + 2.0);
+      this.bgmGainNode.gain.linearRampToValueAtTime(targetVol, this.bgmCtx.currentTime + attackTime);
       this.bgmGainNode.connect(this.bgmCtx.destination);
 
       this.isBgmPlaying = true;
-      this.scheduleNextBgmChord(0);
+      this.scheduleNextBgmChord(0, true);
     } catch (e) {
       console.warn("BGM start error:", e);
     }
@@ -9250,7 +9245,7 @@ showCrucifixKissOverlay(onComplete) {
     }
     if (this.bgmGainNode && this.bgmCtx) {
       try {
-        const fadeTime = fast ? 0.3 : 1.5;
+        const fadeTime = fast ? 0.08 : 1.2;
         this.bgmGainNode.gain.cancelScheduledValues(this.bgmCtx.currentTime);
         this.bgmGainNode.gain.linearRampToValueAtTime(0.0001, this.bgmCtx.currentTime + fadeTime);
       } catch (e) {}
@@ -9263,10 +9258,10 @@ showCrucifixKissOverlay(onComplete) {
         } catch (e) {}
       });
       this.bgmVoices = [];
-    }, (fast ? 350 : 1600));
+    }, (fast ? 100 : 1300));
   }
 
-  scheduleNextBgmChord(chordIndex) {
+  scheduleNextBgmChord(chordIndex, isFirst = false) {
     if (!this.isBgmPlaying || !this.bgmCtx || !this.bgmGainNode) return;
 
     // 성스럽고 평온한 초저속 화음 진행 (마치 성당에 울려 퍼지는 오르간 / 그레고리오 성가)
@@ -9283,7 +9278,9 @@ showCrucifixKissOverlay(onComplete) {
     const preset = this.settings.bgmPreset || "organ";
     const now = this.bgmCtx.currentTime;
     const chordDur = curChord.dur;
-    const crossFadeTime = 4.0; // 4초 동안 이전 화음과 겹쳐지며 부드럽게 변환 (초자연스러운 흐름)
+    // 첫 시작은 0.15초 만에 즉시 소리가 나고, 이후 화음 순환 시에는 4.0초 동안 부드럽게 크로스페이드
+    const fadeInTime = isFirst ? 0.15 : 4.0;
+    const crossFadeTime = 4.0;
 
     curChord.freqs.forEach((freq, fIdx) => {
       try {
@@ -9310,7 +9307,7 @@ showCrucifixKissOverlay(onComplete) {
         // 화음 진입(Fade In) -> 유지 -> 퇴장(Fade Out)
         const voiceBaseGain = (0.2 / curChord.freqs.length) * (fIdx === 0 ? 1.3 : 1.0); // 베이스 약간 강조
         vGain.gain.setValueAtTime(0.0001, now);
-        vGain.gain.linearRampToValueAtTime(voiceBaseGain, now + crossFadeTime);
+        vGain.gain.linearRampToValueAtTime(voiceBaseGain, now + fadeInTime);
         vGain.gain.setValueAtTime(voiceBaseGain, now + chordDur - crossFadeTime);
         vGain.gain.linearRampToValueAtTime(0.0001, now + chordDur);
 
