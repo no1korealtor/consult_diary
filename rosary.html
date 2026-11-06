@@ -1419,6 +1419,14 @@ input:checked + .toggle-slider:before {
   transition: all 0.15s ease;
 }
 
+.action-pill-btn.active {
+  background: rgba(243, 198, 105, 0.25) !important;
+  border-color: var(--gold-primary) !important;
+  color: var(--gold-primary) !important;
+  box-shadow: 0 0 10px rgba(243, 198, 105, 0.4) !important;
+  font-weight: 800 !important;
+}
+
 .action-pill-btn:active {
   transform: scale(0.96);
 }
@@ -12434,6 +12442,18 @@ function directToggleBgm() {
 
 // [BGM 프리셋 직접 선택]
 function directSelectBgmPreset(preset) {
+  // 1. UI 시각적 버튼 즉각 하이라이트 전환
+  var organBtn = document.getElementById('btnIntroBgmOrgan');
+  var choirBtn = document.getElementById('btnIntroBgmChoir');
+  var bellsBtn = document.getElementById('btnIntroBgmBells');
+  if (organBtn) organBtn.classList.toggle('active', preset === 'organ');
+  if (choirBtn) choirBtn.classList.toggle('active', preset === 'choir');
+  if (bellsBtn) bellsBtn.classList.toggle('active', preset === 'bells');
+
+  var switchEl = document.getElementById('introBgmSwitch');
+  if (switchEl) switchEl.checked = true;
+
+  // 2. 앱 인스턴스에 전달하여 사운드 재생
   if (window.rosaryApp) {
     window.rosaryApp.setBgmPreset(preset);
   }
@@ -12441,6 +12461,11 @@ function directSelectBgmPreset(preset) {
 
 // [BGM 볼륨 직접 조절]
 function directChangeBgmVolume(val) {
+  var introLbl = document.getElementById('introBgmVolLabel');
+  if (introLbl) introLbl.textContent = Math.round(val * 100) + '%';
+  var modalLbl = document.getElementById('bgmVolumeLabel');
+  if (modalLbl) modalLbl.textContent = Math.round(val * 100) + '%';
+
   if (window.rosaryApp) {
     window.rosaryApp.setBgmVolume(val);
   }
