@@ -4365,6 +4365,9 @@ input:focus, textarea:focus {
           <span class="intro-brand-name">묵주기도</span>
         </div>
         <div class="intro-top-actions">
+          <button id="btnHeaderBgmToggle" type="button" class="icon-btn" onclick="if(window.rosaryApp){window.rosaryApp.toggleBgm();}else{directToggleBgm();}" aria-label="배경음악 토글" title="은은한 성당 배경음악 (BGM)">
+            <span id="btnHeaderBgmIcon" style="font-size: 1.05rem;">🎵</span>
+          </button>
           <button id="btnHeaderLangToggle" type="button" class="action-pill-btn" onclick="toggleGlobalLanguage();" style="height: 32px; padding: 0 10px; font-size: 0.78rem; font-weight: 700; margin-right: 4px; background: rgba(243, 198, 105, 0.12); border: 1px solid rgba(243, 198, 105, 0.35); color: var(--gold-primary); border-radius: 16px;">
             🌐 EN
           </button>
@@ -4397,6 +4400,36 @@ input:focus, textarea:focus {
           <h1 id="introHeroTitle" class="intro-hero-title">거룩한 묵주기도</h1>
           <p id="introHeroDate" class="intro-hero-date">10월 14일 수요일</p>
           <p id="introHeroQuote" class="intro-hero-quote">"성모님과 함께 바치는 거룩한 장미 화관"</p>
+        </div>
+
+        <!-- 2. 은은한 묵상 배경음악 (BGM) 컨트롤 카드 -->
+        <div id="introBgmCard" class="intro-section-card" style="background: linear-gradient(135deg, rgba(243, 198, 105, 0.12) 0%, rgba(22, 31, 51, 0.9) 100%); border: 1.2px solid rgba(243, 198, 105, 0.35);">
+          <div class="intro-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="intro-card-icon" style="font-size: 1.15rem;">🎵</span>
+              <div>
+                <span class="intro-card-title" style="font-size: 0.92rem; font-weight: 800;">은은한 묵상 배경음악 (BGM)</span>
+                <small style="display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 1px;">박자 없이 서두르지 않는 성당 오르간/성가</small>
+              </div>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="introBgmSwitch" onchange="if(window.rosaryApp){window.rosaryApp.setBgmEnabled(this.checked);}">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div id="introBgmDetailControls" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+            <div style="display: flex; gap: 6px; width: 100%;">
+              <button type="button" id="btnIntroBgmOrgan" class="action-pill-btn active" style="flex: 1; height: 34px; font-size: 0.76rem;" onclick="if(window.rosaryApp){window.rosaryApp.setBgmPreset('organ');}">🎹 파이프 오르간</button>
+              <button type="button" id="btnIntroBgmChoir" class="action-pill-btn" style="flex: 1; height: 34px; font-size: 0.76rem;" onclick="if(window.rosaryApp){window.rosaryApp.setBgmPreset('choir');}">🕊️ 수도원 성가</button>
+              <button type="button" id="btnIntroBgmBells" class="action-pill-btn" style="flex: 1; height: 34px; font-size: 0.76rem;" onclick="if(window.rosaryApp){window.rosaryApp.setBgmPreset('bells');}">✨ 평화의 종소리</button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 2px 4px 0;">
+              <span style="font-size: 0.74rem; color: var(--text-muted); font-weight: 600;">음량 조절</span>
+              <input type="range" id="introBgmSlider" min="0.01" max="0.30" step="0.01" value="0.08" style="flex: 1; accent-color: var(--gold-primary); cursor: pointer;" oninput="if(window.rosaryApp){window.rosaryApp.setBgmVolume(parseFloat(this.value));}">
+              <span id="introBgmVolLabel" style="font-size: 0.75rem; color: var(--gold-primary); font-weight: 700; width: 32px; text-align: right;">8%</span>
+            </div>
+          </div>
         </div>
 
         <!-- 2. 기도 종류 선택 카드 (묵주기도 vs 하느님 자비를 구하는 기도) -->
@@ -4715,6 +4748,9 @@ input:focus, textarea:focus {
         </div>
 
         <div class="header-actions">
+          <button id="btnPrayerBgmToggle" class="icon-btn" onclick="if(window.rosaryApp){window.rosaryApp.toggleBgm();}else{directToggleBgm();}" aria-label="배경음악 토글" title="은은한 성당 배경음악 (BGM)">
+            <span id="btnPrayerBgmIcon" style="font-size: 1.05rem;">🎵</span>
+          </button>
           <button id="openTrackerBtn" class="icon-btn" onclick="directOpenTracker();" aria-label="주간 기도 기록" title="주간 기도 기록">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -4967,6 +5003,32 @@ input:focus, textarea:focus {
             <div class="font-size-controls">
               <button type="button" id="fontSmallerBtn" class="font-btn">가-</button>
               <button type="button" id="fontBiggerBtn" class="font-btn">가+</button>
+            </div>
+          </div>
+
+          <!-- 은은한 기도 배경음악 (BGM) -->
+          <div class="setting-row" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <div>
+                <div class="setting-label">🎵 은은한 묵상 배경음악 (BGM)</div>
+                <small style="color: var(--text-muted); font-size: 0.74rem;">박자 없는 초저속 성당 오르간/성가 앰비언트</small>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settingsBgmToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div id="settingsBgmControls" style="display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 4px;">
+              <div style="display: flex; gap: 6px; width: 100%;">
+                <button type="button" id="btnBgmPresetOrgan" class="action-pill-btn active" style="flex: 1; height: 32px; font-size: 0.76rem;" onclick="if(window.rosaryApp){window.rosaryApp.setBgmPreset('organ');}">🎹 파이프 오르간</button>
+                <button type="button" id="btnBgmPresetChoir" class="action-pill-btn" style="flex: 1; height: 32px; font-size: 0.76rem;" onclick="if(window.rosaryApp){window.rosaryApp.setBgmPreset('choir');}">🕊️ 수도원 성가</button>
+                <button type="button" id="btnBgmPresetBells" class="action-pill-btn" style="flex: 1; height: 32px; font-size: 0.76rem;" onclick="if(window.rosaryApp){window.rosaryApp.setBgmPreset('bells');}">✨ 평화의 종소리</button>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px; padding: 0 4px;">
+                <span style="font-size: 0.72rem; color: var(--text-muted);">음량</span>
+                <input type="range" id="bgmVolumeSlider" min="0.01" max="0.30" step="0.01" value="0.08" style="flex: 1; accent-color: var(--gold-primary); cursor: pointer;" oninput="if(window.rosaryApp){window.rosaryApp.setBgmVolume(parseFloat(this.value));}">
+                <span id="bgmVolumeLabel" style="font-size: 0.72rem; color: var(--gold-primary); width: 28px; text-align: right;">8%</span>
+              </div>
             </div>
           </div>
 
@@ -7168,6 +7230,11 @@ class RosaryApp {
     this.isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     this.currentView = "intro";
     this.currentHistoryTab = "dm";
+    this.bgmCtx = null;
+    this.bgmGainNode = null;
+    this.bgmVoices = [];
+    this.bgmTimer = null;
+    this.isBgmPlaying = false;
 
     this.init();
   }
@@ -7188,6 +7255,7 @@ class RosaryApp {
     this.syncPrayerTypeUI();
     this.syncFatimaUI();
     this.syncSoundUI();
+    this.syncBgmUI();
     this.syncBeadStyleUI();
     this.renderMysteryOptions();
     this.renderDecadeProgressPills();
@@ -7440,7 +7508,10 @@ class RosaryApp {
       beadStyle: "wood",   // 'wood' (따뜻한 원목 & 목각 장미 기본) | 'rose' (황금·백장미) | 'classic' (원형)
       lang: "ko",          // 'ko' (한국어) | 'en' (English)
       roseBloomEffect: true, // 성모송 장미 꽃피움 & 천상 봉헌 승화 연출
-      soundPrefSet: false   // 사용자가 소리 설정을 직접 변경했는지 여부
+      soundPrefSet: false,   // 사용자가 소리 설정을 직접 변경했는지 여부
+      bgmEnabled: false,    // 은은한 묵상 배경음악 (BGM) 기본 꺼짐
+      bgmPreset: "organ",   // 'organ' (파이프 오르간) | 'choir' (수도원 성가) | 'bells' (평화의 종소리)
+      bgmVolume: 0.08       // 기본 약 8% 볼륨 (아주 은은함)
     };
     try {
       const stored = localStorage.getItem(this.settingsKey);
@@ -9011,6 +9082,260 @@ showCrucifixKissOverlay(onComplete) {
   }
 
   // ==========================================
+  // 은은한 기도 배경음악 (BGM - Web Audio API 실시간 합성)
+  // 박자(비트) 없는 초저속 성당 오르간/수도원 성가 사운드스케이프
+  // ==========================================
+  toggleBgm() {
+    this.setBgmEnabled(!this.settings.bgmEnabled);
+  }
+
+  setBgmEnabled(enabled) {
+    this.settings.bgmEnabled = !!enabled;
+    this.saveSettings();
+    this.syncBgmUI();
+    if (this.settings.bgmEnabled) {
+      this.startBgmAudio();
+    } else {
+      this.stopBgmAudio();
+    }
+  }
+
+  setBgmPreset(preset) {
+    if (!["organ", "choir", "bells"].includes(preset)) return;
+    this.settings.bgmPreset = preset;
+    this.saveSettings();
+    this.syncBgmUI();
+    if (this.isBgmPlaying) {
+      // 새로운 프리셋으로 부드럽게 재시작
+      this.stopBgmAudio(true);
+      setTimeout(() => {
+        if (this.settings.bgmEnabled) this.startBgmAudio();
+      }, 300);
+    }
+  }
+
+  setBgmVolume(vol) {
+    this.settings.bgmVolume = Math.max(0.01, Math.min(0.5, vol));
+    this.saveSettings();
+    const lbl = document.getElementById("bgmVolumeLabel");
+    if (lbl) lbl.textContent = Math.round(this.settings.bgmVolume * 100) + "%";
+    const introLbl = document.getElementById("introBgmVolLabel");
+    if (introLbl) introLbl.textContent = Math.round(this.settings.bgmVolume * 100) + "%";
+    const introSlider = document.getElementById("introBgmSlider");
+    if (introSlider) introSlider.value = this.settings.bgmVolume;
+    const settingsSlider = document.getElementById("bgmVolumeSlider");
+    if (settingsSlider) settingsSlider.value = this.settings.bgmVolume;
+
+    if (this.bgmGainNode && this.bgmCtx) {
+      try {
+        this.bgmGainNode.gain.cancelScheduledValues(this.bgmCtx.currentTime);
+        this.bgmGainNode.gain.linearRampToValueAtTime(this.settings.bgmVolume, this.bgmCtx.currentTime + 0.3);
+      } catch (e) {}
+    }
+  }
+
+  syncBgmUI() {
+    const isBgm = !!this.settings.bgmEnabled;
+    const preset = this.settings.bgmPreset || "organ";
+    const vol = this.settings.bgmVolume || 0.08;
+
+    // 1) 인트로 메인 화면 BGM 카드 UI 동기화
+    const introSwitch = document.getElementById("introBgmSwitch");
+    if (introSwitch) introSwitch.checked = isBgm;
+
+    const btnIntroOrgan = document.getElementById("btnIntroBgmOrgan");
+    const btnIntroChoir = document.getElementById("btnIntroBgmChoir");
+    const btnIntroBells = document.getElementById("btnIntroBgmBells");
+    if (btnIntroOrgan) btnIntroOrgan.classList.toggle("active", preset === "organ");
+    if (btnIntroChoir) btnIntroChoir.classList.toggle("active", preset === "choir");
+    if (btnIntroBells) btnIntroBells.classList.toggle("active", preset === "bells");
+
+    const introSlider = document.getElementById("introBgmSlider");
+    if (introSlider) introSlider.value = vol;
+    const introVolLbl = document.getElementById("introBgmVolLabel");
+    if (introVolLbl) introVolLbl.textContent = Math.round(vol * 100) + "%";
+
+    // 2) 헤더 BGM 토글 버튼 상태 (인트로 헤더 & 기도화면 헤더)
+    const headerBgmBtn = document.getElementById("btnHeaderBgmToggle");
+    const prayerBgmBtn = document.getElementById("btnPrayerBgmToggle");
+    const headerBgmIcon = document.getElementById("btnHeaderBgmIcon");
+    const prayerBgmIcon = document.getElementById("btnPrayerBgmIcon");
+
+    [headerBgmBtn, prayerBgmBtn].forEach(btn => {
+      if (btn) {
+        if (isBgm) {
+          btn.classList.add("highlight-btn");
+          btn.style.borderColor = "var(--gold-primary)";
+          btn.style.color = "var(--gold-primary)";
+        } else {
+          btn.classList.remove("highlight-btn");
+          btn.style.borderColor = "";
+          btn.style.color = "";
+        }
+      }
+    });
+
+    [headerBgmIcon, prayerBgmIcon].forEach(icon => {
+      if (icon) {
+        icon.textContent = isBgm ? "🎵" : "🔇";
+      }
+    });
+
+    // 3) 설정 모달 토글 스위치 및 프리셋/슬라이더 동기화
+    const settingsToggle = document.getElementById("settingsBgmToggle");
+    if (settingsToggle) settingsToggle.checked = isBgm;
+
+    const btnOrgan = document.getElementById("btnBgmPresetOrgan");
+    const btnChoir = document.getElementById("btnBgmPresetChoir");
+    const btnBells = document.getElementById("btnBgmPresetBells");
+    if (btnOrgan) btnOrgan.classList.toggle("active", preset === "organ");
+    if (btnChoir) btnChoir.classList.toggle("active", preset === "choir");
+    if (btnBells) btnBells.classList.toggle("active", preset === "bells");
+
+    const slider = document.getElementById("bgmVolumeSlider");
+    if (slider) slider.value = vol;
+    const lbl = document.getElementById("bgmVolumeLabel");
+    if (lbl) lbl.textContent = Math.round(vol * 100) + "%";
+  }
+
+  initBgmContext() {
+    if (!this.bgmCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      this.bgmCtx = new AudioContext();
+    }
+    if (this.bgmCtx.state === "suspended") {
+      this.bgmCtx.resume();
+    }
+  }
+
+  startBgmAudio() {
+    try {
+      this.initBgmContext();
+      if (!this.bgmCtx) return;
+      this.stopBgmAudio();
+
+      this.bgmGainNode = this.bgmCtx.createGain();
+      const targetVol = this.settings.bgmVolume || 0.08;
+      // 부드러운 페이드 인 (Fade In 2초)
+      this.bgmGainNode.gain.setValueAtTime(0.0001, this.bgmCtx.currentTime);
+      this.bgmGainNode.gain.linearRampToValueAtTime(targetVol, this.bgmCtx.currentTime + 2.0);
+      this.bgmGainNode.connect(this.bgmCtx.destination);
+
+      this.isBgmPlaying = true;
+      this.scheduleNextBgmChord(0);
+    } catch (e) {
+      console.warn("BGM start error:", e);
+    }
+  }
+
+  stopBgmAudio(fast = false) {
+    if (!this.isBgmPlaying && this.bgmVoices.length === 0) return;
+    this.isBgmPlaying = false;
+    if (this.bgmTimer) {
+      clearTimeout(this.bgmTimer);
+      this.bgmTimer = null;
+    }
+    if (this.bgmGainNode && this.bgmCtx) {
+      try {
+        const fadeTime = fast ? 0.3 : 1.5;
+        this.bgmGainNode.gain.cancelScheduledValues(this.bgmCtx.currentTime);
+        this.bgmGainNode.gain.linearRampToValueAtTime(0.0001, this.bgmCtx.currentTime + fadeTime);
+      } catch (e) {}
+    }
+    setTimeout(() => {
+      this.bgmVoices.forEach(v => {
+        try {
+          v.osc.stop();
+          v.osc.disconnect();
+        } catch (e) {}
+      });
+      this.bgmVoices = [];
+    }, (fast ? 350 : 1600));
+  }
+
+  scheduleNextBgmChord(chordIndex) {
+    if (!this.isBgmPlaying || !this.bgmCtx || !this.bgmGainNode) return;
+
+    // 성스럽고 평온한 초저속 화음 진행 (마치 성당에 울려 퍼지는 오르간 / 그레고리오 성가)
+    // C major 9 -> F major 7 -> A minor 7 -> G sus4 -> C (각 화음 14~18초 동안 아주 길고 느리게 머뭄)
+    const chords = [
+      { name: "Cmaj9", freqs: [130.81, 164.81, 196.00, 246.94, 293.66], dur: 16 }, // C3, E3, G3, B3, D4
+      { name: "Fmaj7", freqs: [130.81, 174.61, 220.00, 261.63, 329.63], dur: 18 }, // C3, F3, A3, C4, E4
+      { name: "Am7",   freqs: [110.00, 164.81, 220.00, 261.63, 329.63], dur: 16 }, // A2, E3, A3, C4, E4
+      { name: "Gsus4", freqs: [98.00, 146.83, 196.00, 246.94, 293.66], dur: 18 }  // G2, D3, G3, B3, D4
+    ];
+
+    const idx = chordIndex % chords.length;
+    const curChord = chords[idx];
+    const preset = this.settings.bgmPreset || "organ";
+    const now = this.bgmCtx.currentTime;
+    const chordDur = curChord.dur;
+    const crossFadeTime = 4.0; // 4초 동안 이전 화음과 겹쳐지며 부드럽게 변환 (초자연스러운 흐름)
+
+    curChord.freqs.forEach((freq, fIdx) => {
+      try {
+        const osc = this.bgmCtx.createOscillator();
+        const vGain = this.bgmCtx.createGain();
+
+        // 프리셋별 음색 특성
+        if (preset === "organ") {
+          // 따뜻한 파이프 오르간 (Sine + 저음 Triangle 조합)
+          osc.type = (fIdx % 2 === 0) ? "triangle" : "sine";
+        } else if (preset === "choir") {
+          // 수도원 성가 패드 (순수하고 맑은 코랄 허밍 Sine)
+          osc.type = "sine";
+        } else {
+          // 평화의 종소리/차임 (미세한 비브라토가 섞인 맑은 사인파)
+          osc.type = "sine";
+        }
+
+        // 미세 디튠 (Detune)으로 자연스러운 성당 공명(리버브/코러스) 느낌 부여
+        const detuneCents = (fIdx - 2) * 4;
+        osc.detune.setValueAtTime(detuneCents, now);
+        osc.frequency.setValueAtTime(freq, now);
+
+        // 화음 진입(Fade In) -> 유지 -> 퇴장(Fade Out)
+        const voiceBaseGain = (0.2 / curChord.freqs.length) * (fIdx === 0 ? 1.3 : 1.0); // 베이스 약간 강조
+        vGain.gain.setValueAtTime(0.0001, now);
+        vGain.gain.linearRampToValueAtTime(voiceBaseGain, now + crossFadeTime);
+        vGain.gain.setValueAtTime(voiceBaseGain, now + chordDur - crossFadeTime);
+        vGain.gain.linearRampToValueAtTime(0.0001, now + chordDur);
+
+        // 프리셋이 bells(종소리)인 경우 4초 주기로 은은한 고음 딩~ 펄스 추가
+        if (preset === "bells" && fIdx === curChord.freqs.length - 1) {
+          const lfo = this.bgmCtx.createOscillator();
+          const lfoGain = this.bgmCtx.createGain();
+          lfo.frequency.value = 0.25; // 4초에 1번 호흡하듯 잔잔한 울림
+          lfoGain.gain.value = voiceBaseGain * 0.4;
+          lfo.connect(lfoGain.gain);
+          lfo.start(now);
+          lfo.stop(now + chordDur);
+        }
+
+        osc.connect(vGain);
+        vGain.connect(this.bgmGainNode);
+
+        osc.start(now);
+        osc.stop(now + chordDur + 0.1);
+
+        const voiceRef = { osc, vGain };
+        this.bgmVoices.push(voiceRef);
+
+        setTimeout(() => {
+          const pos = this.bgmVoices.indexOf(voiceRef);
+          if (pos !== -1) this.bgmVoices.splice(pos, 1);
+        }, (chordDur + 0.5) * 1000);
+      } catch (err) {}
+    });
+
+    // 다음 화음은 현재 화음이 끝나기 3.8초 전에 오버랩 예약
+    const nextInterval = (chordDur - crossFadeTime) * 1000;
+    this.bgmTimer = setTimeout(() => {
+      this.scheduleNextBgmChord(chordIndex + 1);
+    }, nextInterval);
+  }
+
+  // ==========================================
   // 묵주알 모양(장미꽃 vs 원형) 설정 변경
   // ==========================================
   setBeadStyle(style) {
@@ -10298,6 +10623,13 @@ if (this.dom.btnYeondoBackToIntro) {
     }
 
     // 5-9) 백업 & 복원 모달 이벤트
+    const settingsBgmToggle = document.getElementById("settingsBgmToggle");
+    if (settingsBgmToggle) {
+      settingsBgmToggle.addEventListener("change", (e) => {
+        this.setBgmEnabled(e.target.checked);
+      });
+    }
+
     if (this.dom.btnSettingsOpenBackup) {
       this.dom.btnSettingsOpenBackup.addEventListener("click", () => {
         this.closeModals();
@@ -12088,6 +12420,13 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script>
+// [BGM 빠른 토글]
+function directToggleBgm() {
+  if (window.rosaryApp) {
+    window.rosaryApp.toggleBgm();
+  }
+}
+
 // [원터치 언어 전환]
 function toggleGlobalLanguage() {
   try {
