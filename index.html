@@ -5275,9 +5275,6 @@ input:focus, textarea:focus {
         <button id="completionRestartBtn" class="action-pill-btn gold" style="width: 100%; min-height: 56px; padding: 12px 16px; font-size: 1.05rem; font-weight: 800; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(243, 198, 105, 0.28); border: 2px solid rgba(243, 198, 105, 0.7); cursor: pointer;">
           <span style="font-size: 1.25rem;">↺</span> <span>처음부터 다시 바치기</span>
         </button>
-        <button id="completionReviewBtn" type="button" class="action-pill-btn" style="width: 100%; min-height: 50px; padding: 10px 16px; font-size: 0.95rem; font-weight: 700; background: rgba(255, 255, 255, 0.08); border: 1.5px solid rgba(255, 255, 255, 0.18); border-radius: 14px; color: #E2E8F0; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
-          <span>마침기도 본문 다시 보기</span>
-        </button>
       </div>
     </div>
 
@@ -7820,7 +7817,40 @@ class RosaryApp {
   // ==========================================
   // 기도 안정성 강화 가드 (분심 방지 및 새로고침/뒤로가기 실수 방어)
   // ==========================================
+  // 자고 일어나거나 날짜가 바뀌었을 때 오늘 요일과 신비 자동 갱신
+  refreshTodayIfChanged() {
+    try {
+      const newTodayKey = getTodayMysteryKey();
+      const newTodayStr = this.getTodayStr();
+      if (this.todayMysteryKey !== newTodayKey || this.selectedTrackerDate !== newTodayStr) {
+        this.todayMysteryKey = newTodayKey;
+        this.selectedTrackerDate = newTodayStr;
+        if (this.currentPrayerType === "rosary" && this.currentView === "intro") {
+          this.currentMysteryKey = newTodayKey;
+        }
+        if (typeof this.updateIntroView === "function") this.updateIntroView();
+        if (typeof this.renderWeeklyTracker === "function") this.renderWeeklyTracker();
+        if (typeof this.syncHeaderMysteryUI === "function") this.syncHeaderMysteryUI();
+      }
+    } catch (e) {
+      console.error("refreshTodayIfChanged error:", e);
+    }
+  }
+
   setupPrayerSafetyGuards() {
+    // 0) 날짜 변경 자동 감지 (자고 일어나거나 화면 복귀 시 오늘의 신비 자동 갱신)
+    document.addEventListener("visibilitychange", () => {
+      try {
+        if (document.visibilityState === "visible") {
+          this.refreshTodayIfChanged();
+        }
+      } catch (err) {}
+    });
+    window.addEventListener("focus", () => {
+      try {
+        this.refreshTodayIfChanged();
+      } catch (err) {}
+    });
     // 1) 모바일 앱 전환/화면 꺼짐 시 즉각 저장 (visibilitychange & pagehide)
     document.addEventListener("visibilitychange", () => {
       try {
@@ -8009,7 +8039,7 @@ class RosaryApp {
       this.showResumeConfirmModal(saved);
     } else {
       // 이어할 기록이 없으면 곧바로 시작
-      this.startPrayer(true);
+      this.startPrayer(false);
     }
   }
 
@@ -12612,6 +12642,10 @@ function directStartPrayerAction() {
 
     // 2. 앱 인스턴스에 기도 시작 알림
     if (window.rosaryApp) {
+      if (typeof window.rosaryApp.startPrayer === "function") {
+        window.rosaryApp.startPrayer(false);
+        return;
+      }
       window.rosaryApp.currentView = "prayer";
       if (typeof window.rosaryApp.clearProgress === "function") {
         window.rosaryApp.clearProgress();
