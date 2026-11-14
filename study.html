@@ -3048,6 +3048,8 @@
             }
             return null;
         }
+
+        function getSchedulesForDate(dateStr) {
             if (!familySchedules || !familySchedules.length) return [];
             return familySchedules.filter(s => {
                 const start = s.startDate;
