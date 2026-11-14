@@ -734,6 +734,27 @@
             box-shadow: 0 4px 12px rgba(100, 116, 139, 0.35);
         }
 
+        .habit-toggle-btn.active-exam {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-color: #d97706;
+            color: white;
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+        }
+
+        .habit-toggle-btn.active-sick {
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+            border-color: #e11d48;
+            color: white;
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);
+        }
+
+        .habit-toggle-btn.active-travel {
+            background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%);
+            border-color: #0284c7;
+            color: white;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+        }
+
         .habit-memo-input {
             width: 100%;
             padding: 12px 16px;
@@ -1444,6 +1465,24 @@
             color: #475569;
         }
 
+        .child-item-box.study-exam {
+            background: #fffbeb;
+            border: 1.5px solid #fde68a;
+            color: #92400e;
+        }
+
+        .child-item-box.study-sick {
+            background: #fff1f2;
+            border: 1.5px solid #fecdd3;
+            color: #9f1239;
+        }
+
+        .child-item-box.study-travel {
+            background: #ecfeff;
+            border: 1.5px solid #a5f3fc;
+            color: #155e75;
+        }
+
         .child-item-icon {
             font-size: 26px;
             flex-shrink: 0;
@@ -1506,6 +1545,186 @@
             .habit-date-bar { padding: 6px 4px !important; gap: 2px !important; box-sizing: border-box !important; }
             .habit-date-btn { padding: 4px 6px !important; font-size: 11px !important; }
             .habit-date-picker { font-size: 13px !important; }
+            .main-mode-btn { font-size: 14px !important; padding: 10px 14px !important; }
+        }
+
+        /* ===== 상단 모드 전환 탭 (학습 vs 생활/과제 관리) ===== */
+        .main-mode-nav {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 580px;
+            margin: 0 auto 20px auto;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            padding: 6px;
+            border-radius: 20px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            box-sizing: border-box;
+        }
+
+        .main-mode-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            color: #475569;
+            font-family: 'Jua', sans-serif;
+            font-size: 16px;
+            padding: 12px 18px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .main-mode-btn:hover {
+            background: rgba(255, 255, 255, 0.6);
+            color: #1e293b;
+        }
+
+        .main-mode-btn.active {
+            background: white;
+            color: #ff6b81;
+            font-weight: bold;
+            box-shadow: 0 4px 14px rgba(255, 107, 129, 0.25);
+            transform: translateY(-1px);
+        }
+
+        /* ===== 과제 & 약속 리스트 스타일 ===== */
+        .coaching-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 16px;
+            margin-top: 14px;
+        }
+
+        .coaching-section-title {
+            font-family: 'Jua', sans-serif;
+            font-size: 15px;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .task-item.completed {
+            background: #f1f5f9;
+            opacity: 0.75;
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: #ff758c;
+            cursor: pointer;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 14px;
+            color: #1e293b;
+            font-family: 'Nunito', 'Jua', sans-serif;
+            word-break: break-word;
+        }
+
+        .task-due-badge {
+            font-size: 11px;
+            background: #ffe4e6;
+            color: #e11d48;
+            padding: 3px 7px;
+            border-radius: 8px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .task-del-btn {
+            background: none;
+            border: none;
+            color: #cbd5e1;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .task-del-btn:hover {
+            color: #ef4444;
+            background: #fee2e2;
+        }
+
+        .task-input-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .task-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: 'Nunito', 'Jua', sans-serif;
+            outline: none;
+        }
+
+        .task-input:focus {
+            border-color: #ff758c;
+        }
+
+        .task-add-btn {
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-family: 'Jua', sans-serif;
+            font-size: 13px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        /* 출결 상태 버튼 색상 커스텀 */
+        .active-early {
+            background: #fff7ed !important;
+            border-color: #f97316 !important;
+            color: #c2410c !important;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(249, 115, 22, 0.25) !important;
+        }
+        .active-absent {
+            background: #fef2f2 !important;
+            border-color: #ef4444 !important;
+            color: #b91c1c !important;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25) !important;
         }
     </style>
 
@@ -1518,6 +1737,16 @@
         <div class="greeting" id="greeting-text">환영해요! 💖</div>
         <div class="date-stats" id="date-stats-text"></div>
     </div>
+
+    <!-- 상단 대메뉴: [📖 학습 모드] vs [📋 출결·생활·과제 관리] -->
+    <nav class="main-mode-nav">
+        <button type="button" id="nav-btn-study" class="main-mode-btn active" onclick="switchMainTab('study')">
+            <span>📖</span> 학습 (단어·수학)
+        </button>
+        <button type="button" id="nav-btn-life" class="main-mode-btn" onclick="switchMainTab('life')">
+            <span>📋</span> 생활·출결·과제 코칭
+        </button>
+    </nav>
     
     <div class="stats-bar" id="stats-bar">
         <div class="combo-badge hidden" id="combo-badge">🔥 0 Combo!</div>
@@ -1803,6 +2032,7 @@
                 updateStatsUI();
                 loadMyHistory();
                 loadHabitRecords();
+                switchMainTab(currentMainTab);
             }
         }
 
@@ -1879,6 +2109,7 @@
             loadMyHistory();
             loadWords();
             loadHabitRecords();
+            switchMainTab(currentMainTab);
         }
 
         function logout() {
@@ -2687,8 +2918,9 @@
         }
 
         // ===================================================
-        // Daily Habit State & Logic (지각 / 저녁 공부 관리)
+        // Daily Habit & Life State (출결 / 태도 / 사유 / 과제 / 약속)
         // ===================================================
+        let currentMainTab = localStorage.getItem('study_app_main_tab') || 'study';
         let habitRecordsMap = {};
         let selectedHabitDate = getLocalDateStr(new Date());
         let habitCalYear = new Date().getFullYear();
@@ -2697,13 +2929,125 @@
         let isDadPreviewMode = false;
         let habitWeekOffset = 0; // 0 = 이번 주, -1 = 지난주, +1 = 다음주
         let isHabitMonthExpanded = false; // 월간 달력 전체보기 접기/펼치기 여부
-        let familySchedules = []; // 아빠가 등록한 주요 일정 (중간고사, 제사, 기념일 등)
+        let familySchedules = []; // 주요 일정 (중간고사, 제사, 기념일 등)
 
-        let draftAttendance = null; // 'ON_TIME' | 'LATE' | 'HOLIDAY' | null
+        let draftAttendance = null; // 'ON_TIME' | 'LATE' | 'EARLY_LEAVE' | 'ABSENT' | 'HOLIDAY' | null
+        let draftAttendanceReason = null; // 'SICK' | 'EXPERIENCE' | 'FAMILY' | 'CUSTOM' | null
+        let draftAttendanceReasonText = ''; // 결석/조퇴 구체적인 사유
         let draftEveningStudy = null; // true | false | null
+        let draftStudyAttitude = null; // 'EXCELLENT' | 'GOOD' | 'NEEDS_FOCUS' | null
+        let draftAbsenceReason = null; // 'REST_SICK' | 'REST_EXAM' | 'REST_TRAVEL' | 'REST_FATIGUE' | 'REST_CUSTOM' | null
+        let draftReasonText = ''; // 사유 상세 텍스트
+        let draftAssignments = []; // [{ id, text, dueDate, done }]
+        let draftPromises = []; // [{ id, text, done }]
         let draftMemo = '';
 
-        function getSchedulesForDate(dateStr) {
+        // 메인 모드 탭 전환 (학습 vs 생활/출결/과제 코칭)
+        function switchMainTab(tab) {
+            currentMainTab = tab;
+            try {
+                localStorage.setItem('study_app_main_tab', tab);
+            } catch(e) {}
+
+            const btnStudy = document.getElementById('nav-btn-study');
+            const btnLife = document.getElementById('nav-btn-life');
+            if (btnStudy && btnLife) {
+                if (tab === 'study') {
+                    btnStudy.classList.add('active');
+                    btnLife.classList.remove('active');
+                } else {
+                    btnLife.classList.add('active');
+                    btnStudy.classList.remove('active');
+                }
+            }
+
+            const statsBar = document.getElementById('stats-bar');
+            const cardWrapper = document.getElementById('card-wrapper');
+            const lastUpdated = document.getElementById('last-updated');
+            const historyContainer = document.getElementById('history-container');
+            const youtubeContainer = document.getElementById('youtube-container');
+            const habitContainer = document.getElementById('habit-container');
+
+            if (tab === 'study') {
+                if (statsBar) statsBar.style.display = 'flex';
+                if (cardWrapper) cardWrapper.style.display = 'block';
+                if (lastUpdated) lastUpdated.style.display = 'block';
+                if (historyContainer && !historyContainer.classList.contains('hidden-manual')) {
+                    historyContainer.style.display = 'block';
+                }
+                if (youtubeContainer) youtubeContainer.style.display = 'block';
+                if (habitContainer) habitContainer.classList.add('hidden');
+            } else {
+                if (statsBar) statsBar.style.display = 'none';
+                if (cardWrapper) cardWrapper.style.display = 'none';
+                if (lastUpdated) lastUpdated.style.display = 'none';
+                if (historyContainer) historyContainer.style.display = 'none';
+                if (youtubeContainer) youtubeContainer.style.display = 'none';
+                if (habitContainer) {
+                    habitContainer.classList.remove('hidden');
+                    renderHabitSection();
+                }
+            }
+        }
+
+        function getStudyStatusInfo(val) {
+            if (val === true) {
+                return {
+                    badge: '📖',
+                    title: '저녁 공부 완료',
+                    childClass: 'study-done',
+                    icon: '📖',
+                    childTitle: '저녁 공부',
+                    childText: '저녁 공부 완료! 오늘도 한 걸음 더 성장했어요! 👑',
+                    modalText: '📖 저녁 공부 완료! 👑'
+                };
+            }
+            if (val === 'REST_EXAM') {
+                return {
+                    badge: '📝',
+                    title: '공부 쉼 (수행평가)',
+                    childClass: 'study-exam',
+                    icon: '📝',
+                    childTitle: '공부 쉼 (수행평가)',
+                    childText: '수행평가 준비로 저녁 공부를 쉬어갑니다 📝 화이팅!',
+                    modalText: '📝 공부 쉼 (수행평가 집중)'
+                };
+            }
+            if (val === 'REST_SICK') {
+                return {
+                    badge: '🤒',
+                    title: '공부 쉼 (질병/아픔)',
+                    childClass: 'study-sick',
+                    icon: '🤒',
+                    childTitle: '공부 쉼 (질병/아픔)',
+                    childText: '몸이 아파서 푹 쉬고 회복하는 중이에요 💊 얼른 나아요!',
+                    modalText: '🤒 공부 쉼 (질병 / 건강 회복)'
+                };
+            }
+            if (val === 'REST_TRAVEL') {
+                return {
+                    badge: '✈️',
+                    title: '공부 쉼 (여행/외출)',
+                    childClass: 'study-travel',
+                    icon: '✈️',
+                    childTitle: '공부 쉼 (여행/외출)',
+                    childText: '즐거운 여행·일정 중이에요! 좋은 추억 만들어요 🎈',
+                    modalText: '✈️ 공부 쉼 (여행 / 가족 일정)'
+                };
+            }
+            if (val === false || val === 'REST_NORMAL') {
+                return {
+                    badge: '💤',
+                    title: '공부 쉼 (일반 휴식)',
+                    childClass: 'study-rest',
+                    icon: '💤',
+                    childTitle: '저녁 공부',
+                    childText: '오늘은 편안하게 쉬어가는 날이에요 ☕',
+                    modalText: '💤 공부 쉼 / 일반 휴식'
+                };
+            }
+            return null;
+        }
             if (!familySchedules || !familySchedules.length) return [];
             return familySchedules.filter(s => {
                 const start = s.startDate;
@@ -3121,14 +3465,28 @@
 
                 let badgesHtml = '';
                 if (rec) {
-                    if (rec.attendance === 'ON_TIME') badgesHtml += '<span title="정상 등교">☀️</span>';
+                    if (rec.attendance === 'ON_TIME') badgesHtml += '<span title="정상 출석">☀️</span>';
                     else if (rec.attendance === 'LATE') badgesHtml += '<span title="지각">⏰</span>';
+                    else if (rec.attendance === 'EARLY_LEAVE') badgesHtml += '<span title="조퇴">🚪</span>';
+                    else if (rec.attendance === 'ABSENT') badgesHtml += '<span title="결석">🚫</span>';
                     else if (rec.attendance === 'HOLIDAY') badgesHtml += '<span title="휴일/주말">🏖️</span>';
 
-                    if (rec.evening_study === true) badgesHtml += '<span title="저녁 공부 완료">📖</span>';
-                    else if (rec.evening_study === false) badgesHtml += '<span title="공부 쉼">💤</span>';
+                    if (rec.evening_study === true) {
+                        if (rec.study_attitude === 'EXCELLENT') badgesHtml += '<span title="공부 완료 (최고 열공!)">🌟</span>';
+                        else badgesHtml += '<span title="공부 완료">📖</span>';
+                    } else if (rec.evening_study === false) {
+                        badgesHtml += '<span title="공부 쉼">💤</span>';
+                    } else {
+                        const studyInfo = getStudyStatusInfo(rec.evening_study);
+                        if (studyInfo) badgesHtml += `<span title="${studyInfo.title}">${studyInfo.badge}</span>`;
+                    }
 
-                    if (rec.memo) badgesHtml += '<span title="아빠 응원">💌</span>';
+                    if (Array.isArray(rec.assignments) && rec.assignments.length > 0) {
+                        const allDone = rec.assignments.every(a => a.done);
+                        badgesHtml += `<span title="과제: ${allDone ? '완료' : '진행중'}">${allDone ? '✅' : '📝'}</span>`;
+                    }
+
+                    if (rec.memo) badgesHtml += '<span title="코칭/응원">💌</span>';
                 }
 
                 const dayEvents = getSchedulesForDate(dateStr);
@@ -3190,7 +3548,7 @@
                         ${daysHtml}
                     </div>
                     <div style="font-size:11px; color:#888; text-align:center; margin-top:10px;">
-                        ☀️ 정상등교 · ⏰ 지각 · 🏖️ 주말/휴일 · 📖 저녁공부 · 💤 휴식 · 💌 응원
+                        ☀️ 정상등교 · ⏰ 지각 · 🏖️ 주말/휴일 · 📖 저녁공부 · 📝 수행평가 · 🤒 질병 · ✈️ 여행 · 💤 휴식 · 💌 응원
                     </div>
                 </div>
             `;
@@ -3225,7 +3583,11 @@
         async function loadHabitRecords() {
             const container = document.getElementById('habit-container');
             if (!container || !userNickname) return;
-            container.classList.remove('hidden');
+            if (currentMainTab === 'life') {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+            }
 
             try {
                 const [habitRes, schedRes] = await Promise.all([
@@ -3296,11 +3658,25 @@
             const existing = habitRecordsMap[selectedHabitDate];
             if (existing) {
                 draftAttendance = existing.attendance || null;
+                draftAttendanceReason = existing.attendance_reason || null;
+                draftAttendanceReasonText = existing.attendance_reason_text || '';
                 draftEveningStudy = (existing.evening_study !== undefined && existing.evening_study !== null) ? existing.evening_study : null;
+                draftStudyAttitude = existing.study_attitude || null;
+                draftAbsenceReason = existing.absence_reason || null;
+                draftReasonText = existing.reason_text || '';
+                draftAssignments = Array.isArray(existing.assignments) ? JSON.parse(JSON.stringify(existing.assignments)) : [];
+                draftPromises = Array.isArray(existing.promises) ? JSON.parse(JSON.stringify(existing.promises)) : [];
                 draftMemo = existing.memo || '';
             } else {
                 draftAttendance = null;
+                draftAttendanceReason = null;
+                draftAttendanceReasonText = '';
                 draftEveningStudy = null;
+                draftStudyAttitude = null;
+                draftAbsenceReason = null;
+                draftReasonText = '';
+                draftAssignments = [];
+                draftPromises = [];
                 draftMemo = '';
             }
         }
@@ -3321,17 +3697,66 @@
             const hasRecord = !!existing;
             const stats = getMonthlyHabitStats(habitCalYear, habitCalMonth);
 
+            // 출결 버튼 활성화 상태
             const isOntimeActive = (draftAttendance === 'ON_TIME') ? 'active-ontime' : '';
             const isLateActive = (draftAttendance === 'LATE') ? 'active-late' : '';
+            const isEarlyActive = (draftAttendance === 'EARLY_LEAVE') ? 'active-early' : '';
+            const isAbsentActive = (draftAttendance === 'ABSENT') ? 'active-absent' : '';
             const isHolidayActive = (draftAttendance === 'HOLIDAY') ? 'active-holiday' : '';
 
+            // 공부 여부 활성화 상태
             const isStudyActive = (draftEveningStudy === true) ? 'active-study' : '';
             const isNoStudyActive = (draftEveningStudy === false) ? 'active-nostudy' : '';
 
+            // 공부 태도 활성화 상태 (공부한 날)
+            const isAttExcellent = (draftStudyAttitude === 'EXCELLENT') ? 'active-study' : '';
+            const isAttGood = (draftStudyAttitude === 'GOOD') ? 'active-ontime' : '';
+            const isAttPoor = (draftStudyAttitude === 'NEEDS_FOCUS') ? 'active-late' : '';
+
+            // 못한 날 사유 활성화 상태 (공부 쉼/못함)
+            const isR_Sick = (draftAbsenceReason === 'REST_SICK') ? 'active-sick' : '';
+            const isR_Exam = (draftAbsenceReason === 'REST_EXAM') ? 'active-exam' : '';
+            const isR_Travel = (draftAbsenceReason === 'REST_TRAVEL') ? 'active-travel' : '';
+            const isR_Fatigue = (draftAbsenceReason === 'REST_FATIGUE') ? 'active-nostudy' : '';
+            const isR_Custom = (draftAbsenceReason === 'REST_CUSTOM') ? 'active-late' : '';
+
+            // 과제 목록 HTML 생성
+            let assignmentsHtml = '';
+            if (draftAssignments.length === 0) {
+                assignmentsHtml = `<div style="font-size:12px; color:#94a3b8; text-align:center; padding:10px;">등록된 과제가 없습니다. 아래에서 숙제를 내주세요! ✍️</div>`;
+            } else {
+                draftAssignments.forEach((task, idx) => {
+                    assignmentsHtml += `
+                        <div class="task-item ${task.done ? 'completed' : ''}">
+                            <input type="checkbox" class="task-checkbox" ${task.done ? 'checked' : ''} onchange="toggleAssignment(${idx})">
+                            <span class="task-text">${escapeHtml(task.text)}</span>
+                            ${task.dueDate ? `<span class="task-due-badge">~${task.dueDate.slice(5)}까지</span>` : ''}
+                            <button type="button" class="task-del-btn" onclick="deleteAssignment(${idx})" title="과제 삭제">✕</button>
+                        </div>
+                    `;
+                });
+            }
+
+            // 약속 목록 HTML 생성
+            let promisesHtml = '';
+            if (draftPromises.length === 0) {
+                promisesHtml = `<div style="font-size:12px; color:#94a3b8; text-align:center; padding:10px;">아람이와 함께 지키기로 한 약속을 적어보세요! 🤝</div>`;
+            } else {
+                draftPromises.forEach((prom, idx) => {
+                    promisesHtml += `
+                        <div class="task-item ${prom.done ? 'completed' : ''}">
+                            <input type="checkbox" class="task-checkbox" ${prom.done ? 'checked' : ''} onchange="togglePromise(${idx})">
+                            <span class="task-text">🤙 ${escapeHtml(prom.text)}</span>
+                            <button type="button" class="task-del-btn" onclick="deletePromise(${idx})" title="약속 삭제">✕</button>
+                        </div>
+                    `;
+                });
+            }
+
             let html = `
                 <div class="habit-header">
-                    <div class="habit-title">👨‍👧 아람이 출석 & 저녁 공부 관리</div>
-                    <div class="habit-subtitle">매일 지각 여부와 저녁 공부를 체크해주세요! 💖</div>
+                    <div class="habit-title">👨‍👧 아람이 출결·생활·과제 코칭 관리</div>
+                    <div class="habit-subtitle">매일 출결, 공부 태도 및 과제·약속을 꼼꼼하게 챙겨주세요! 💖</div>
                     <button onclick="toggleDadPreview(true)" style="margin-top:10px; background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white; border:none; padding:6px 14px; border-radius:14px; font-size:13px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif; box-shadow:0 2px 6px rgba(0,0,0,0.1);">👀 아람이 화면(달력) 미리보기</button>
                 </div>
 
@@ -3351,47 +3776,158 @@
                     </div>
                 </div>
 
-                <!-- 1) 아침 등교 / 지각 체크 -->
+                <!-- 1) 출결 관리 (정상, 지각, 조퇴, 결석, 주말/휴일) -->
                 <div class="habit-form-group">
                     <div class="habit-form-label">
-                        <span>⏰ 아침 등교 체크</span>
+                        <span>⏰ 학교 출결 상태</span>
                         <span style="font-size:12px; color:#94a3b8; font-weight:normal;">(클릭하여 선택/해제)</span>
                     </div>
-                    <div class="habit-toggle-grid">
+                    <div class="habit-toggle-grid" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));">
                         <button type="button" class="habit-toggle-btn ${isOntimeActive}" onclick="setHabitAttendance('ON_TIME')">
-                            <span>☀️</span> 정상 등교 (지각 No!)
+                            <span>☀️</span> 정상 출석
                         </button>
                         <button type="button" class="habit-toggle-btn ${isLateActive}" onclick="setHabitAttendance('LATE')">
-                            <span>⏰</span> 지각함
+                            <span>⏰</span> 지각
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isEarlyActive}" onclick="setHabitAttendance('EARLY_LEAVE')">
+                            <span>🚪</span> 조퇴
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isAbsentActive}" onclick="setHabitAttendance('ABSENT')">
+                            <span>🚫</span> 결석
                         </button>
                         <button type="button" class="habit-toggle-btn ${isHolidayActive}" onclick="setHabitAttendance('HOLIDAY')">
-                            <span>🏖️</span> 주말 / 휴일
+                            <span>🏖️</span> 주말/휴일
                         </button>
                     </div>
+
+                    <!-- 1-A) 결석 또는 조퇴 시 사유 작성 영역 -->
+                    ${(draftAttendance === 'ABSENT' || draftAttendance === 'EARLY_LEAVE') ? `
+                    <div class="coaching-section" style="background:#fff1f2; border:1.5px solid #fecdd3; margin-top:10px;">
+                        <div class="coaching-section-title" style="color:#b91c1c;">
+                            <span>${draftAttendance === 'ABSENT' ? '🚫 결석 사유 기록' : '🚪 조퇴 사유 기록'}</span>
+                            <span style="font-size:11px; font-weight:normal; color:#dc2626;">사유 유형과 상세 내용을 기록해주세요</span>
+                        </div>
+                        <div class="habit-toggle-grid" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); margin-bottom:10px;">
+                            <button type="button" class="habit-toggle-btn ${draftAttendanceReason === 'SICK' ? 'active-absent' : ''}" onclick="setAttendanceReason('SICK')">
+                                <span>🤒</span> 질병/감기 (병결)
+                            </button>
+                            <button type="button" class="habit-toggle-btn ${draftAttendanceReason === 'EXPERIENCE' ? 'active-absent' : ''}" onclick="setAttendanceReason('EXPERIENCE')">
+                                <span>✈️</span> 체험/가정학습
+                            </button>
+                            <button type="button" class="habit-toggle-btn ${draftAttendanceReason === 'FAMILY' ? 'active-absent' : ''}" onclick="setAttendanceReason('FAMILY')">
+                                <span>💐</span> 경조사/가족일
+                            </button>
+                            <button type="button" class="habit-toggle-btn ${draftAttendanceReason === 'CUSTOM' ? 'active-absent' : ''}" onclick="setAttendanceReason('CUSTOM')">
+                                <span>✏️</span> 기타 사유
+                            </button>
+                        </div>
+                        <input type="text" id="attendance-reason-input" class="habit-memo-input" style="background:white; border:1px solid #fda4af;" placeholder="${draftAttendance === 'ABSENT' ? '결석' : '조퇴'} 사유 상세 (예: 독감으로 인한 병원 진료 및 가정보육, 진료확인서 제출 예정)" value="${escapeHtml(draftAttendanceReasonText)}" oninput="draftAttendanceReasonText = this.value" maxlength="80">
+                    </div>
+                    ` : ''}
                 </div>
 
-                <!-- 2) 저녁 공부 체크 -->
+                <!-- 2) 오늘 공부 여부 -->
                 <div class="habit-form-group">
                     <div class="habit-form-label">
-                        <span>📖 저녁 공부 체크</span>
-                        <span style="font-size:12px; color:#94a3b8; font-weight:normal;">(클릭하여 선택/해제)</span>
+                        <span>📖 오늘 공부 진행 여부</span>
+                        <span style="font-size:12px; color:#94a3b8; font-weight:normal;">(공부한 날 vs 쉼/못한 날)</span>
                     </div>
                     <div class="habit-toggle-grid" style="grid-template-columns: 1fr 1fr;">
                         <button type="button" class="habit-toggle-btn ${isStudyActive}" onclick="setHabitEveningStudy(true)">
-                            <span>✨</span> 저녁 공부 완료! 👑
+                            <span>✨</span> 오늘 공부 완료! 👑
                         </button>
                         <button type="button" class="habit-toggle-btn ${isNoStudyActive}" onclick="setHabitEveningStudy(false)">
-                            <span>💤</span> 공부 쉼 (미완료)
+                            <span>💤</span> 오늘 공부 쉼 / 못함
                         </button>
                     </div>
                 </div>
 
-                <!-- 3) 칭찬 메모 / 특이사항 -->
-                <div class="habit-form-group">
-                    <div class="habit-form-label">
-                        <span>💌 아람이에게 전할 응원 한마디 / 메모</span>
+                <!-- 2-A) 공부한 날: 태도 평가 (공부 완료 시 표시) -->
+                ${draftEveningStudy === true ? `
+                <div class="coaching-section" style="background:#f0fdf4; border-color:#bbf7d0;">
+                    <div class="coaching-section-title" style="color:#166534;">
+                        <span>🌟 공부한 날 태도 평가</span>
+                        <span style="font-size:11px; font-weight:normal; color:#15803d;">오늘 공부 몰입도는 어땠나요?</span>
                     </div>
-                    <input type="text" id="habit-memo-input" class="habit-memo-input" placeholder="예: 스스로 영어 단어 10개 완벽 암기! 최고야 💕" value="${escapeHtml(draftMemo)}" oninput="draftMemo = this.value" maxlength="80">
+                    <div class="habit-toggle-grid" style="grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));">
+                        <button type="button" class="habit-toggle-btn ${isAttExcellent}" onclick="setHabitStudyAttitude('EXCELLENT')">
+                            <span>🌟</span> 최고! (집중 만점)
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isAttGood}" onclick="setHabitStudyAttitude('GOOD')">
+                            <span>😊</span> 보통 (성실하게 완수)
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isAttPoor}" onclick="setHabitStudyAttitude('NEEDS_FOCUS')">
+                            <span>🥱</span> 집중 부족 (딴짓/피곤)
+                        </button>
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- 2-B) 못한 날: 사유 관리 (공부 쉼/못함 선택 시 표시) -->
+                ${draftEveningStudy === false ? `
+                <div class="coaching-section" style="background:#fff1f2; border-color:#fecdd3;">
+                    <div class="coaching-section-title" style="color:#9f1239;">
+                        <span>📝 공부 못한 날 사유 관리</span>
+                        <span style="font-size:11px; font-weight:normal; color:#be123c;">사유를 선택하고 메모를 남겨주세요</span>
+                    </div>
+                    <div class="habit-toggle-grid" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); margin-bottom:10px;">
+                        <button type="button" class="habit-toggle-btn ${isR_Sick}" onclick="setHabitAbsenceReason('REST_SICK')">
+                            <span>🤒</span> 감기/병원
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isR_Exam}" onclick="setHabitAbsenceReason('REST_EXAM')">
+                            <span>📝</span> 시험/수행
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isR_Travel}" onclick="setHabitAbsenceReason('REST_TRAVEL')">
+                            <span>✈️</span> 가족행사
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isR_Fatigue}" onclick="setHabitAbsenceReason('REST_FATIGUE')">
+                            <span>😴</span> 피로/컨디션
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isR_Custom}" onclick="setHabitAbsenceReason('REST_CUSTOM')">
+                            <span>✏️</span> 기타 사유
+                        </button>
+                    </div>
+                    <input type="text" id="habit-reason-text" class="habit-memo-input" style="background:white;" placeholder="구체적인 사유를 적어주세요 (예: 치과 진료 후 휴식, 친척 결혼식)" value="${escapeHtml(draftReasonText)}" oninput="draftReasonText = this.value" maxlength="80">
+                </div>
+                ` : ''}
+
+                <!-- 3) 내준 과제 관리 (Assignments) -->
+                <div class="coaching-section">
+                    <div class="coaching-section-title">
+                        <span>📝 내준 과제 (숙제 체크)</span>
+                        <span style="font-size:11px; color:#64748b; font-weight:normal;">완료 시 체크박스 클릭</span>
+                    </div>
+                    <div class="task-list" id="assignment-list">
+                        ${assignmentsHtml}
+                    </div>
+                    <div class="task-input-row">
+                        <input type="text" id="new-assignment-input" class="task-input" placeholder="새 과제 입력 (예: 수학 익힘책 20~24p 풀기)" onkeydown="if(event.key==='Enter') addAssignment()">
+                        <input type="date" id="new-assignment-date" class="habit-date-picker" style="padding:6px; font-size:12px;" title="마감일">
+                        <button type="button" class="task-add-btn" onclick="addAssignment()">과제 추가</button>
+                    </div>
+                </div>
+
+                <!-- 4) 함께 하기로 한 약속 (Commitments) -->
+                <div class="coaching-section">
+                    <div class="coaching-section-title">
+                        <span>🤝 함께 하기로 한 약속</span>
+                        <span style="font-size:11px; color:#64748b; font-weight:normal;">서로 약속한 실천 사항</span>
+                    </div>
+                    <div class="task-list" id="promise-list">
+                        ${promisesHtml}
+                    </div>
+                    <div class="task-input-row">
+                        <input type="text" id="new-promise-input" class="task-input" placeholder="함께할 약속 입력 (예: 자기 전 가방 미리 싸놓기)" onkeydown="if(event.key==='Enter') addPromise()">
+                        <button type="button" class="task-add-btn" onclick="addPromise()">약속 추가</button>
+                    </div>
+                </div>
+
+                <!-- 5) 칭찬 메모 / 응원 한마디 -->
+                <div class="habit-form-group" style="margin-top:16px;">
+                    <div class="habit-form-label">
+                        <span>💌 아람이에게 전할 응원 한마디 / 코칭 피드백</span>
+                    </div>
+                    <input type="text" id="habit-memo-input" class="habit-memo-input" placeholder="예: 약속한 과제를 스스로 먼저 끝낸 아람이 최고야! 💕" value="${escapeHtml(draftMemo)}" oninput="draftMemo = this.value" maxlength="80">
                 </div>
 
                 <!-- 저장 및 삭제 액션 바 -->
@@ -3425,11 +3961,15 @@
                                 <div class="habit-stat-value" style="color:#059669;">${stats.onTimeCount}일</div>
                             </div>
                             <div class="habit-stat-badge">
-                                <div class="habit-stat-label">⏰ 지각</div>
-                                <div class="habit-stat-value" style="color:#ef4444;">${stats.lateCount}일</div>
+                                <div class="habit-stat-label">⏰ 지각/조퇴</div>
+                                <div class="habit-stat-value" style="color:#f97316;">${stats.lateCount + (stats.earlyLeaveCount || 0)}일</div>
+                            </div>
+                            <div class="habit-stat-badge">
+                                <div class="habit-stat-label">🚫 결석</div>
+                                <div class="habit-stat-value" style="color:#ef4444;">${stats.absentCount || 0}일</div>
                             </div>
                             <div class="habit-stat-badge highlight">
-                                <div class="habit-stat-label">📖 저녁 공부 완료</div>
+                                <div class="habit-stat-label">📖 공부 완료</div>
                                 <div class="habit-stat-value" style="color:#6366f1;">${stats.studyCount}일</div>
                             </div>
                         </div>
@@ -3458,14 +3998,14 @@
                 `;
             }
 
-            // 아침 등교 상태 박스
+            // 아침 출결 상태 박스
             let attendanceHtml = '';
             if (todayRecord && todayRecord.attendance === 'ON_TIME') {
                 attendanceHtml = `
                     <div class="child-item-box ontime">
                         <div class="child-item-icon">☀️</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">아침 등교</div>
+                            <div class="child-item-title">학교 출결</div>
                             <div class="child-item-text">지각 안 함! 멋지게 정시 등교 완료 ✨ (칭찬해요!)</div>
                         </div>
                     </div>
@@ -3475,8 +4015,30 @@
                     <div class="child-item-box late">
                         <div class="child-item-icon">⏰</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">아침 등교</div>
+                            <div class="child-item-title">학교 출결</div>
                             <div class="child-item-text">오늘은 조금 늦었어요! 내일은 10분 일찍 출발해봐요 💪</div>
+                        </div>
+                    </div>
+                `;
+            } else if (todayRecord && todayRecord.attendance === 'EARLY_LEAVE') {
+                let earlyReason = todayRecord.attendance_reason_text || (todayRecord.attendance_reason === 'SICK' ? '병원 진료/질병' : '');
+                attendanceHtml = `
+                    <div class="child-item-box late" style="border-left-color:#f97316;">
+                        <div class="child-item-icon">🚪</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">학교 출결 (조퇴)</div>
+                            <div class="child-item-text">오늘 조퇴했어요.${earlyReason ? ` [사유: ${escapeHtml(earlyReason)}]` : ''} 푹 쉬고 건강 회복해요! 토닥토닥 🧡</div>
+                        </div>
+                    </div>
+                `;
+            } else if (todayRecord && todayRecord.attendance === 'ABSENT') {
+                let absReason = todayRecord.attendance_reason_text || (todayRecord.attendance_reason === 'SICK' ? '질병/감기(병결)' : (todayRecord.attendance_reason === 'EXPERIENCE' ? '체험학습' : ''));
+                attendanceHtml = `
+                    <div class="child-item-box late" style="border-left-color:#ef4444; background:#fef2f2;">
+                        <div class="child-item-icon">🚫</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">학교 출결 (결석)</div>
+                            <div class="child-item-text">오늘 결석했어요.${absReason ? ` [사유: ${escapeHtml(absReason)}]` : ''} 컨디션 관리 잘하고 푹 쉬어요! 🌿</div>
                         </div>
                     </div>
                 `;
@@ -3485,7 +4047,7 @@
                     <div class="child-item-box holiday">
                         <div class="child-item-icon">🏖️</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">아침 등교</div>
+                            <div class="child-item-title">학교 출결</div>
                             <div class="child-item-text">즐거운 주말 / 휴일이에요! 푹 쉬고 재충전해요 😊</div>
                         </div>
                     </div>
@@ -3495,32 +4057,47 @@
                     <div class="child-item-box waiting">
                         <div class="child-item-icon">⏳</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">아침 등교</div>
+                            <div class="child-item-title">학교 출결</div>
                             <div class="child-item-text">오늘 출석 체크 대기 중이에요 😊</div>
                         </div>
                     </div>
                 `;
             }
 
-            // 저녁 공부 상태 박스
+            // 저녁 공부 상태 박스 & 태도 / 사유
             let studyHtml = '';
             if (todayRecord && todayRecord.evening_study === true) {
+                let attitudeDesc = '오늘도 한 걸음 더 성장했어요! 👑';
+                if (todayRecord.study_attitude === 'EXCELLENT') attitudeDesc = '집중력 만점! 최고로 멋진 열공데이였어요! 🌟👑';
+                else if (todayRecord.study_attitude === 'GOOD') attitudeDesc = '성실하게 약속을 지키며 완수했어요! 👏';
+                else if (todayRecord.study_attitude === 'NEEDS_FOCUS') attitudeDesc = '공부를 마쳤지만 조금 딴짓이 아쉬웠어요. 내일은 더 몰입해봐요! 💪';
+
                 studyHtml = `
                     <div class="child-item-box study-done">
                         <div class="child-item-icon">📖</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">저녁 공부</div>
-                            <div class="child-item-text">저녁 공부 완료! 오늘도 한 걸음 더 성장했어요! 👑</div>
+                            <div class="child-item-title">오늘 공부 완료! ✨</div>
+                            <div class="child-item-text">${attitudeDesc}</div>
                         </div>
                     </div>
                 `;
             } else if (todayRecord && todayRecord.evening_study === false) {
+                let reasonDesc = '오늘은 편안하게 쉬어가는 날이에요 ☕';
+                if (todayRecord.reason_text) {
+                    reasonDesc = `사유: ${escapeHtml(todayRecord.reason_text)}`;
+                } else if (todayRecord.absence_reason === 'REST_SICK') {
+                    reasonDesc = '몸이 아파서 푹 쉬고 회복하는 중이에요 💊 얼른 나아요!';
+                } else if (todayRecord.absence_reason === 'REST_EXAM') {
+                    reasonDesc = '수행평가/시험 준비로 집중 휴식 중이에요 📝 화이팅!';
+                } else if (todayRecord.absence_reason === 'REST_TRAVEL') {
+                    reasonDesc = '가족 일정 / 외출로 즐거운 추억 만드는 중이에요 ✈️';
+                }
                 studyHtml = `
                     <div class="child-item-box study-rest">
                         <div class="child-item-icon">💤</div>
                         <div class="child-item-content">
-                            <div class="child-item-title">저녁 공부</div>
-                            <div class="child-item-text">오늘은 쉬어가는 날이에요 ☕</div>
+                            <div class="child-item-title">오늘 공부 쉼 / 휴식</div>
+                            <div class="child-item-text">${reasonDesc}</div>
                         </div>
                     </div>
                 `;
@@ -3532,6 +4109,55 @@
                             <div class="child-item-title">저녁 공부</div>
                             <div class="child-item-text">저녁 공부 체크 대기 중이에요 🌙</div>
                         </div>
+                    </div>
+                `;
+            }
+
+            // 과제 리스트 (아람이용)
+            const todayTasks = (todayRecord && Array.isArray(todayRecord.assignments)) ? todayRecord.assignments : [];
+            let childTasksHtml = '';
+            if (todayTasks.length > 0) {
+                let items = '';
+                todayTasks.forEach((task, idx) => {
+                    items += `
+                        <div class="task-item ${task.done ? 'completed' : ''}" style="margin-bottom:6px;">
+                            <input type="checkbox" class="task-checkbox" ${task.done ? 'checked' : ''} onchange="toggleChildAssignment('${todayStr}', ${idx})">
+                            <span class="task-text" style="font-size:13px;">${escapeHtml(task.text)}</span>
+                            ${task.dueDate ? `<span class="task-due-badge">${task.dueDate.slice(5)}</span>` : ''}
+                        </div>
+                    `;
+                });
+                childTasksHtml = `
+                    <div class="coaching-section" style="margin-top:12px; background:#fff7ed; border-color:#ffedd5;">
+                        <div class="coaching-section-title" style="color:#c2410c;">
+                            <span>📝 내가 오늘 할 과제</span>
+                            <span style="font-size:11px; font-weight:normal; color:#ea580c;">다 했으면 체크해요! ✨</span>
+                        </div>
+                        <div>${items}</div>
+                    </div>
+                `;
+            }
+
+            // 약속 리스트 (아람이용)
+            const todayPromises = (todayRecord && Array.isArray(todayRecord.promises)) ? todayRecord.promises : [];
+            let childPromisesHtml = '';
+            if (todayPromises.length > 0) {
+                let pitems = '';
+                todayPromises.forEach((prom, idx) => {
+                    pitems += `
+                        <div class="task-item ${prom.done ? 'completed' : ''}" style="margin-bottom:6px;">
+                            <input type="checkbox" class="task-checkbox" ${prom.done ? 'checked' : ''} onchange="toggleChildPromise('${todayStr}', ${idx})">
+                            <span class="task-text" style="font-size:13px;">🤙 ${escapeHtml(prom.text)}</span>
+                        </div>
+                    `;
+                });
+                childPromisesHtml = `
+                    <div class="coaching-section" style="margin-top:12px; background:#f0fdf4; border-color:#dcfce7;">
+                        <div class="coaching-section-title" style="color:#15803d;">
+                            <span>🤝 아빠와 함께 지키기로 한 약속</span>
+                            <span style="font-size:11px; font-weight:normal; color:#16a34a;">실천 완료 체크! 💕</span>
+                        </div>
+                        <div>${pitems}</div>
                     </div>
                 `;
             }
@@ -3550,7 +4176,7 @@
                 ${previewBanner}
                 <div class="habit-header">
                     <div class="habit-title">🌟 나의 매일 출석 & 열공 현황판 🌟</div>
-                    <div class="habit-subtitle">아빠가 매일 응원하며 챙겨주시는 나의 출석과 공부 기록이에요! 💖</div>
+                    <div class="habit-subtitle">아빠와 함께 챙기는 출결·과제·약속 기록이에요! 💖</div>
                 </div>
 
                 <!-- 오늘의 현황 카드 -->
@@ -3561,19 +4187,21 @@
                     </div>
                     ${attendanceHtml}
                     ${studyHtml}
+                    ${childTasksHtml}
+                    ${childPromisesHtml}
                     ${memoHtml}
                 </div>
 
                 <!-- 주요 일정 & D-Day 카드 -->
                 ${generateScheduleCardHtml(false)}
 
-                <!-- 주간 달력 스트립 (생활패턴에 맞춘 1주일 단위 기본 뷰) -->
+                <!-- 주간 달력 스트립 -->
                 ${generateHabitWeekStripHtml(false)}
 
                 <!-- 성취 요약 뱃지 -->
                 <div class="habit-stats-row" style="margin-top:16px;">
                     <div class="habit-stat-badge highlight">
-                        <div class="habit-stat-label">🏆 이번 달 저녁 공부</div>
+                        <div class="habit-stat-label">🏆 이번 달 공부</div>
                         <div class="habit-stat-value" style="color:#6366f1;">${stats.studyCount}일</div>
                     </div>
                     <div class="habit-stat-badge">
@@ -3639,14 +4267,28 @@
 
                 let badgesHtml = '';
                 if (rec) {
-                    if (rec.attendance === 'ON_TIME') badgesHtml += '<span title="정상 등교">☀️</span>';
+                    if (rec.attendance === 'ON_TIME') badgesHtml += '<span title="정상 출석">☀️</span>';
                     else if (rec.attendance === 'LATE') badgesHtml += '<span title="지각">⏰</span>';
+                    else if (rec.attendance === 'EARLY_LEAVE') badgesHtml += '<span title="조퇴">🚪</span>';
+                    else if (rec.attendance === 'ABSENT') badgesHtml += '<span title="결석">🚫</span>';
                     else if (rec.attendance === 'HOLIDAY') badgesHtml += '<span title="휴일/주말">🏖️</span>';
 
-                    if (rec.evening_study === true) badgesHtml += '<span title="저녁 공부 완료">📖</span>';
-                    else if (rec.evening_study === false) badgesHtml += '<span title="공부 쉼">💤</span>';
+                    if (rec.evening_study === true) {
+                        if (rec.study_attitude === 'EXCELLENT') badgesHtml += '<span title="공부 완료 (최고 열공!)">🌟</span>';
+                        else badgesHtml += '<span title="공부 완료">📖</span>';
+                    } else if (rec.evening_study === false) {
+                        badgesHtml += '<span title="공부 쉼">💤</span>';
+                    } else {
+                        const studyInfo = getStudyStatusInfo(rec.evening_study);
+                        if (studyInfo) badgesHtml += `<span title="${studyInfo.title}">${studyInfo.badge}</span>`;
+                    }
 
-                    if (rec.memo) badgesHtml += '<span title="아빠 응원">💌</span>';
+                    if (Array.isArray(rec.assignments) && rec.assignments.length > 0) {
+                        const allDone = rec.assignments.every(a => a.done);
+                        badgesHtml += `<span title="과제: ${allDone ? '완료' : '진행중'}">${allDone ? '✅' : '📝'}</span>`;
+                    }
+
+                    if (rec.memo) badgesHtml += '<span title="코칭/응원">💌</span>';
                 }
 
                 const dayEvents = getSchedulesForDate(dateStr);
@@ -3679,7 +4321,7 @@
             html += `
                     </div>
                     <div style="font-size:11px; color:#888; text-align:center; margin-top:10px;">
-                        ☀️ 정상등교 · ⏰ 지각 · 🏖️ 주말/휴일 · 📖 저녁공부 · 💤 휴식 · 💌 응원 · 🗓️ 주요일정
+                        ☀️ 정상등교 · ⏰ 지각 · 🏖️ 주말/휴일 · 📖 저녁공부 · 📝 수행평가 · 🤒 질병 · ✈️ 여행 · 💤 휴식 · 💌 응원 · 🗓️ 주요일정
                     </div>
                 </div>
             `;
@@ -3690,6 +4332,8 @@
             const prefix = `${year}-${String(month + 1).padStart(2, '0')}`;
             let onTimeCount = 0;
             let lateCount = 0;
+            let earlyLeaveCount = 0;
+            let absentCount = 0;
             let holidayCount = 0;
             let studyCount = 0;
 
@@ -3698,13 +4342,15 @@
                     const rec = habitRecordsMap[dateStr];
                     if (rec.attendance === 'ON_TIME') onTimeCount++;
                     else if (rec.attendance === 'LATE') lateCount++;
+                    else if (rec.attendance === 'EARLY_LEAVE') earlyLeaveCount++;
+                    else if (rec.attendance === 'ABSENT') absentCount++;
                     else if (rec.attendance === 'HOLIDAY') holidayCount++;
 
                     if (rec.evening_study === true) studyCount++;
                 }
             });
 
-            return { onTimeCount, lateCount, holidayCount, studyCount };
+            return { onTimeCount, lateCount, earlyLeaveCount, absentCount, holidayCount, studyCount };
         }
 
         function calculateStudyStreak() {
@@ -3768,13 +4414,149 @@
         }
 
         function setHabitAttendance(val) {
-            draftAttendance = (draftAttendance === val) ? null : val;
+            if (draftAttendance === val) {
+                draftAttendance = null;
+                draftAttendanceReason = null;
+                draftAttendanceReasonText = '';
+            } else {
+                draftAttendance = val;
+                if ((val === 'ABSENT' || val === 'EARLY_LEAVE') && !draftAttendanceReason) {
+                    draftAttendanceReason = 'SICK'; // 기본값: 질병/감기(병결)
+                }
+            }
+            renderHabitSection();
+        }
+
+        function setAttendanceReason(val) {
+            draftAttendanceReason = (draftAttendanceReason === val) ? null : val;
             renderHabitSection();
         }
 
         function setHabitEveningStudy(val) {
-            draftEveningStudy = (draftEveningStudy === val) ? null : val;
+            if (draftEveningStudy === val) {
+                draftEveningStudy = null;
+            } else {
+                draftEveningStudy = val;
+                if (val === true && !draftStudyAttitude) {
+                    draftStudyAttitude = 'EXCELLENT';
+                }
+                if (val === false && !draftAbsenceReason) {
+                    draftAbsenceReason = 'REST_SICK';
+                }
+            }
             renderHabitSection();
+        }
+
+        function setHabitStudyAttitude(val) {
+            draftStudyAttitude = (draftStudyAttitude === val) ? null : val;
+            renderHabitSection();
+        }
+
+        function setHabitAbsenceReason(val) {
+            draftAbsenceReason = (draftAbsenceReason === val) ? null : val;
+            renderHabitSection();
+        }
+
+        // 과제 추가 / 토글 / 삭제
+        function addAssignment() {
+            const input = document.getElementById('new-assignment-input');
+            const dateInput = document.getElementById('new-assignment-date');
+            if (!input || !input.value.trim()) return;
+
+            const text = input.value.trim();
+            const dueDate = dateInput ? dateInput.value : '';
+
+            draftAssignments.push({
+                id: Date.now(),
+                text: text,
+                dueDate: dueDate,
+                done: false
+            });
+
+            renderHabitSection();
+        }
+
+        function toggleAssignment(idx) {
+            if (draftAssignments[idx]) {
+                draftAssignments[idx].done = !draftAssignments[idx].done;
+                renderHabitSection();
+            }
+        }
+
+        function deleteAssignment(idx) {
+            draftAssignments.splice(idx, 1);
+            renderHabitSection();
+        }
+
+        // 약속 추가 / 토글 / 삭제
+        function addPromise() {
+            const input = document.getElementById('new-promise-input');
+            if (!input || !input.value.trim()) return;
+
+            draftPromises.push({
+                id: Date.now(),
+                text: input.value.trim(),
+                done: false
+            });
+
+            renderHabitSection();
+        }
+
+        function togglePromise(idx) {
+            if (draftPromises[idx]) {
+                draftPromises[idx].done = !draftPromises[idx].done;
+                renderHabitSection();
+            }
+        }
+
+        function deletePromise(idx) {
+            draftPromises.splice(idx, 1);
+            renderHabitSection();
+        }
+
+        // 아이(아람이) 모드에서 과제/약속 실시간 체크 및 DB 저장
+        async function toggleChildAssignment(dateStr, idx) {
+            const rec = habitRecordsMap[dateStr];
+            if (!rec || !Array.isArray(rec.assignments) || !rec.assignments[idx]) return;
+
+            rec.assignments[idx].done = !rec.assignments[idx].done;
+            renderHabitSection();
+
+            try {
+                await supabaseClient
+                    .from('study_words')
+                    .upsert({
+                        word: dateStr,
+                        meaning: JSON.stringify(rec),
+                        subject: 'DAILY_HABIT',
+                        category: '아람',
+                        example: userNickname || '아람'
+                    }, { onConflict: 'word' });
+            } catch(e) {
+                console.error("Auto save child assignment error:", e);
+            }
+        }
+
+        async function toggleChildPromise(dateStr, idx) {
+            const rec = habitRecordsMap[dateStr];
+            if (!rec || !Array.isArray(rec.promises) || !rec.promises[idx]) return;
+
+            rec.promises[idx].done = !rec.promises[idx].done;
+            renderHabitSection();
+
+            try {
+                await supabaseClient
+                    .from('study_words')
+                    .upsert({
+                        word: dateStr,
+                        meaning: JSON.stringify(rec),
+                        subject: 'DAILY_HABIT',
+                        category: '아람',
+                        example: userNickname || '아람'
+                    }, { onConflict: 'word' });
+            } catch(e) {
+                console.error("Auto save child promise error:", e);
+            }
         }
 
         function changeHabitCalMonth(delta) {
@@ -3797,8 +4579,8 @@
         async function saveHabitRecord() {
             if (isHabitSaving) return;
 
-            if (!draftAttendance && draftEveningStudy === null && !draftMemo.trim()) {
-                alert("등교 여부나 저녁 공부 여부를 최소 하나 선택해주세요! 😊");
+            if (!draftAttendance && draftEveningStudy === null && !draftMemo.trim() && draftAssignments.length === 0 && draftPromises.length === 0) {
+                alert("출결 상태나 공부 여부, 또는 과제나 약속을 하나 이상 입력해주세요! 😊");
                 return;
             }
 
@@ -3810,10 +4592,19 @@
             }
 
             const memoVal = (document.getElementById('habit-memo-input')?.value || draftMemo || '').trim();
+            const reasonVal = (document.getElementById('habit-reason-text')?.value || draftReasonText || '').trim();
+            const attendReasonTextVal = (document.getElementById('attendance-reason-input')?.value || draftAttendanceReasonText || '').trim();
 
             const detailObj = {
                 attendance: draftAttendance,
+                attendance_reason: draftAttendanceReason,
+                attendance_reason_text: attendReasonTextVal,
                 evening_study: draftEveningStudy,
+                study_attitude: draftStudyAttitude,
+                absence_reason: draftAbsenceReason,
+                reason_text: reasonVal,
+                assignments: draftAssignments,
+                promises: draftPromises,
                 memo: memoVal,
                 student: '아람',
                 recorded_by: userNickname || '아빠',
@@ -3849,7 +4640,7 @@
                     colors: ['#ffc3a0', '#ffafbd', '#84fab0', '#8fd3f4', '#a18cd1']
                 });
 
-                alert(`💖 ${selectedHabitDate} 아람이의 출석·공부 기록이 저장되었습니다!`);
+                alert(`💖 ${selectedHabitDate} 아람이의 출결·공부 코칭 기록이 저장되었습니다!`);
                 renderHabitSection();
 
             } catch (err) {
@@ -3892,13 +4683,21 @@
             const friendlyDate = formatFriendlyDate(dateStr);
             
             let attendanceText = '기록 없음 (미체크)';
-            if (rec && rec.attendance === 'ON_TIME') attendanceText = '☀️ 정상 등교 (지각 안 함 ✨)';
+            if (rec && rec.attendance === 'ON_TIME') attendanceText = '☀️ 정상 출석 (지각 안 함 ✨)';
             else if (rec && rec.attendance === 'LATE') attendanceText = '⏰ 지각함';
-            else if (rec && rec.attendance === 'HOLIDAY') attendanceText = '🏖️ 주말 / 휴일';
+            else if (rec && rec.attendance === 'EARLY_LEAVE') {
+                const reason = rec.attendance_reason_text || (rec.attendance_reason === 'SICK' ? '질병/감기' : '');
+                attendanceText = `🚪 조퇴 ${reason ? `[사유: ${escapeHtml(reason)}]` : ''}`;
+            } else if (rec && rec.attendance === 'ABSENT') {
+                const reason = rec.attendance_reason_text || (rec.attendance_reason === 'SICK' ? '질병/감기(병결)' : (rec.attendance_reason === 'EXPERIENCE' ? '체험학습' : ''));
+                attendanceText = `🚫 결석 ${reason ? `[사유: ${escapeHtml(reason)}]` : ''}`;
+            } else if (rec && rec.attendance === 'HOLIDAY') attendanceText = '🏖️ 주말 / 휴일';
 
             let studyText = '기록 없음 (미체크)';
-            if (rec && rec.evening_study === true) studyText = '📖 저녁 공부 완료! 👑';
-            else if (rec && rec.evening_study === false) studyText = '💤 공부 쉼 / 휴식';
+            const dayStudyInfo = rec ? getStudyStatusInfo(rec.evening_study) : null;
+            if (dayStudyInfo) {
+                studyText = dayStudyInfo.modalText;
+            }
 
             let memoHtml = '';
             if (rec && rec.memo) {
