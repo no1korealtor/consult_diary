@@ -1784,6 +1784,62 @@
             supabaseKey
         )
 
+        // 메인 모드 탭 상태 및 즉시 전환 함수
+        let currentMainTab = localStorage.getItem('study_app_main_tab') || 'study';
+
+        window.switchMainTab = function(tab) {
+            currentMainTab = tab;
+            try {
+                localStorage.setItem('study_app_main_tab', tab);
+            } catch(e) {}
+
+            const btnStudy = document.getElementById('nav-btn-study');
+            const btnLife = document.getElementById('nav-btn-life');
+            if (btnStudy && btnLife) {
+                if (tab === 'study') {
+                    btnStudy.classList.add('active');
+                    btnLife.classList.remove('active');
+                } else {
+                    btnLife.classList.add('active');
+                    btnStudy.classList.remove('active');
+                }
+            }
+
+            const statsBar = document.getElementById('stats-bar');
+            const cardWrapper = document.getElementById('card-wrapper');
+            const lastUpdated = document.getElementById('last-updated');
+            const historyContainer = document.getElementById('history-container');
+            const youtubeContainer = document.getElementById('youtube-container');
+            const habitContainer = document.getElementById('habit-container');
+
+            if (tab === 'study') {
+                if (statsBar) statsBar.style.display = 'flex';
+                if (cardWrapper) cardWrapper.style.display = 'block';
+                if (lastUpdated) lastUpdated.style.display = 'block';
+                if (historyContainer && !historyContainer.classList.contains('hidden-manual')) {
+                    historyContainer.style.display = 'block';
+                }
+                if (youtubeContainer) youtubeContainer.style.display = 'block';
+                if (habitContainer) {
+                    habitContainer.classList.add('hidden');
+                    habitContainer.style.display = 'none';
+                }
+            } else {
+                if (statsBar) statsBar.style.display = 'none';
+                if (cardWrapper) cardWrapper.style.display = 'none';
+                if (lastUpdated) lastUpdated.style.display = 'none';
+                if (historyContainer) historyContainer.style.display = 'none';
+                if (youtubeContainer) youtubeContainer.style.display = 'none';
+                if (habitContainer) {
+                    habitContainer.classList.remove('hidden');
+                    habitContainer.style.display = 'block';
+                    if (typeof renderHabitSection === 'function') {
+                        renderHabitSection();
+                    }
+                }
+            }
+        };
+
         let words = []
         let currentWord = null
 
@@ -2941,54 +2997,6 @@
         let draftAssignments = []; // [{ id, text, dueDate, done }]
         let draftPromises = []; // [{ id, text, done }]
         let draftMemo = '';
-
-        // 메인 모드 탭 전환 (학습 vs 생활/출결/과제 코칭)
-        function switchMainTab(tab) {
-            currentMainTab = tab;
-            try {
-                localStorage.setItem('study_app_main_tab', tab);
-            } catch(e) {}
-
-            const btnStudy = document.getElementById('nav-btn-study');
-            const btnLife = document.getElementById('nav-btn-life');
-            if (btnStudy && btnLife) {
-                if (tab === 'study') {
-                    btnStudy.classList.add('active');
-                    btnLife.classList.remove('active');
-                } else {
-                    btnLife.classList.add('active');
-                    btnStudy.classList.remove('active');
-                }
-            }
-
-            const statsBar = document.getElementById('stats-bar');
-            const cardWrapper = document.getElementById('card-wrapper');
-            const lastUpdated = document.getElementById('last-updated');
-            const historyContainer = document.getElementById('history-container');
-            const youtubeContainer = document.getElementById('youtube-container');
-            const habitContainer = document.getElementById('habit-container');
-
-            if (tab === 'study') {
-                if (statsBar) statsBar.style.display = 'flex';
-                if (cardWrapper) cardWrapper.style.display = 'block';
-                if (lastUpdated) lastUpdated.style.display = 'block';
-                if (historyContainer && !historyContainer.classList.contains('hidden-manual')) {
-                    historyContainer.style.display = 'block';
-                }
-                if (youtubeContainer) youtubeContainer.style.display = 'block';
-                if (habitContainer) habitContainer.classList.add('hidden');
-            } else {
-                if (statsBar) statsBar.style.display = 'none';
-                if (cardWrapper) cardWrapper.style.display = 'none';
-                if (lastUpdated) lastUpdated.style.display = 'none';
-                if (historyContainer) historyContainer.style.display = 'none';
-                if (youtubeContainer) youtubeContainer.style.display = 'none';
-                if (habitContainer) {
-                    habitContainer.classList.remove('hidden');
-                    renderHabitSection();
-                }
-            }
-        }
 
         function getStudyStatusInfo(val) {
             if (val === true) {
