@@ -1500,8 +1500,11 @@ async function insertStudyLog(subject, content, detail) {
                 else passedList.push({ ...ev, info });
             });
 
+            // 아람이 화면 및 메인 카드에는 [진행 중] 또는 [예정된 D-Day] 일정만 표시하고, 이미 지난(종료된) 일정은 숨김 처리
+            // (종료된 지난 일정은 아빠 관리 모달에서 확인하거나 내년 날짜로 갱신 가능)
             let displayList = [...activeList, ...upcomingList];
-            if (displayList.length === 0 && passedList.length > 0) {
+            if (isDad && displayList.length === 0 && passedList.length > 0) {
+                // 아빠 관리 모드에서는 등록된 일정이 모두 종료되었을 때만 최근 종료 일정 1건을 안내용으로 표시
                 displayList.push(passedList[passedList.length - 1]);
             }
 

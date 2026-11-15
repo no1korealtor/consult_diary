@@ -2144,3 +2144,118 @@
             box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
             font-family: 'Jua', sans-serif;
         }
+
+
+        /* ==================== 📝 과제 및 약속 코칭 스타일 ==================== */
+        .coaching-section {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .coaching-section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #334155;
+            transition: all 0.2s ease;
+        }
+
+        .task-item.completed {
+            background: #f1f5f9;
+            text-decoration: line-through;
+            color: #94a3b8;
+        }
+
+        .task-input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .task-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            background: #ffffff;
+            color: #1e293b;
+            transition: border-color 0.2s;
+        }
+
+        .task-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .task-add-btn {
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: #ffffff !important;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: bold;
+            font-family: 'Jua', sans-serif;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 3px 8px rgba(79, 70, 229, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .task-add-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 12px rgba(79, 70, 229, 0.45);
+        }
+
+        .task-add-btn:active {
+            transform: translateY(1px);
+        }
+
+        .task-del-btn {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #ef4444;
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .task-del-btn:hover {
+            background: #fca5a5;
+            color: #b91c1c;
+        }
