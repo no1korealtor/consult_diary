@@ -2259,3 +2259,163 @@
             background: #fca5a5;
             color: #b91c1c;
         }
+
+
+        // ==================== 📊 퀴즈 풀이 & 오답노트 리포트 스타일 ====================
+        .quiz-report-card {
+            background: #ffffff;
+            border: 2px solid #e0e7ff;
+            border-radius: 18px;
+            padding: 18px 20px;
+            margin-top: 18px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.08);
+        }
+
+        .quiz-report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+
+        .quiz-report-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quiz-report-refresh-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 4px 10px;
+            font-size: 12px;
+            color: #475569;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .quiz-report-refresh-btn:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .quiz-stat-summary-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .quiz-stat-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .quiz-stat-box .label {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .quiz-stat-box .val {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1e293b;
+            font-family: 'Jua', sans-serif;
+        }
+
+        .quiz-log-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .quiz-log-item {
+            background: #f8fafc;
+            border-left: 4px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .quiz-log-item.correct {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .quiz-log-item.wrong {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .quiz-log-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .quiz-log-tag {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 6px;
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .quiz-log-item.correct .quiz-log-tag {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .quiz-log-item.wrong .quiz-log-tag {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .quiz-log-time {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .quiz-log-question {
+            font-weight: bold;
+            color: #1e293b;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .quiz-log-detail {
+            font-size: 12px;
+            color: #475569;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 6px 10px;
+            border-radius: 6px;
+            line-height: 1.4;
+        }
+
+        .quiz-log-detail .wrong-choice {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .quiz-log-detail .correct-choice {
+            color: #16a34a;
+            font-weight: bold;
+        }

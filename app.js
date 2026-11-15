@@ -608,6 +608,9 @@
             const quiz = COMMON_QUIZ_POOL[currentQuizIndex % COMMON_QUIZ_POOL.length];
             const isCorrect = (selectedQuizOption === quiz.answer);
 
+            // 풀이 기록을 Supabase study_logs에 실시간 저장 (아빠 리포트 및 오답노트용)
+            logQuizAnswerToDb(quiz, selectedQuizOption, isCorrect);
+
             if (isCorrect) {
                 quizBankState.currentPoints = (quizBankState.currentPoints || 0) + 100;
                 quizBankState.totalAnswered = (quizBankState.totalAnswered || 0) + 1;
@@ -634,6 +637,30 @@
 
             renderCard();
         }
+
+                async function logQuizAnswerToDb(quiz, chosenOptionIdx, isCorrect) {
+            try {
+                const logDetail = JSON.stringify({
+                    category: quiz.category,
+                    question: quiz.question,
+                    chosen: quiz.options[chosenOptionIdx],
+                    answer: quiz.options[quiz.answer],
+                    isCorrect: isCorrect,
+                    explanation: quiz.explanation,
+                    user: userNickname || '아람'
+                });
+
+                await supabaseClient.from('study_logs').insert([{
+                    subject: 'COMMON_QUIZ',
+                    content: `[${quiz.category}] ${quiz.question.substring(0, 50)}...`,
+                    detail: logDetail,
+                    creator: userNickname || '아람'
+                }]);
+            } catch(e) {
+                console.error("logQuizAnswerToDb error:", e);
+            }
+        }
+
 
         function nextCommonQuiz() {
             currentQuizIndex = (currentQuizIndex + 1) % COMMON_QUIZ_POOL.length;
@@ -2008,6 +2035,7 @@ async function insertStudyLog(subject, content, detail) {
 
             syncDraftWithSelectedDate();
             await checkAndGrantRewards();
+            if (userNickname === '아빠' && recentQuizLogs.length === 0) loadRecentQuizLogs();
             renderHabitSection();
             if (currentMainTab) switchMainTab(currentMainTab);
         }
@@ -2042,6 +2070,119 @@ async function insertStudyLog(subject, content, detail) {
                 draftMemo = '';
             }
         }
+
+                // ===================================================
+        // 📊 아빠 전용: 아람이 퀴즈 풀이 & 오답노트 리포트
+        // ===================================================
+        let recentQuizLogs = [];
+        let isQuizLogsLoading = false;
+
+        async function loadRecentQuizLogs() {
+            if (isQuizLogsLoading) return;
+            isQuizLogsLoading = true;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('study_logs')
+                    .select('*')
+                    .eq('subject', 'COMMON_QUIZ')
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+
+                if (!error && data) {
+                    recentQuizLogs = data;
+                }
+            } catch(e) {
+                console.error("loadRecentQuizLogs error:", e);
+            } finally {
+                isQuizLogsLoading = false;
+                renderHabitSection();
+            }
+        }
+
+        function generateQuizReportHtml() {
+            const totalCount = recentQuizLogs.length;
+            let correctCount = 0;
+            let wrongCount = 0;
+
+            const parsedLogs = recentQuizLogs.map(l => {
+                let d = {};
+                try { d = JSON.parse(l.detail); } catch(e) { d = { isCorrect: false }; }
+                if (d.isCorrect) correctCount++;
+                else wrongCount++;
+                return { ...l, parsed: d };
+            });
+
+            const accuracy = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+
+            let logItemsHtml = '';
+            if (parsedLogs.length === 0) {
+                logItemsHtml = `
+                    <div style="text-align:center; padding:18px; color:#94a3b8; font-size:13px; font-family:'Jua', sans-serif;">
+                        아직 아람이가 푼 퀴즈 기록이 없습니다. 아람이가 문제를 풀면 여기에 실시간으로 기록됩니다! 💖
+                    </div>
+                `;
+            } else {
+                logItemsHtml = parsedLogs.map(item => {
+                    const p = item.parsed;
+                    const isCor = !!p.isCorrect;
+                    const dateObj = new Date(item.created_at);
+                    const timeStr = `${dateObj.getMonth() + 1}월 ${dateObj.getDate()}일 ${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+
+                    return `
+                        <div class="quiz-log-item ${isCor ? 'correct' : 'wrong'}">
+                            <div class="quiz-log-top">
+                                <span class="quiz-log-tag">${isCor ? '⭕ 정답 (+100원)' : '❌ 오답'}</span>
+                                <span class="quiz-log-time">🕒 ${timeStr}</span>
+                            </div>
+                            <div class="quiz-log-question">
+                                [${escapeHtml(p.category || '상식')}] ${escapeHtml(p.question || item.content)}
+                            </div>
+                            <div class="quiz-log-detail">
+                                ${isCor 
+                                    ? `선택한 정답: <span class="correct-choice">${escapeHtml(p.chosen || p.answer)}</span>`
+                                    : `선택한 오답: <span class="wrong-choice">${escapeHtml(p.chosen)}</span> / 실제 정답: <span class="correct-choice">${escapeHtml(p.answer)}</span>`
+                                }
+                                ${!isCor && p.explanation ? `<div style="margin-top:4px; font-size:11px; color:#64748b;">💡 해설: ${escapeHtml(p.explanation)}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            return `
+                <div class="quiz-report-card">
+                    <div class="quiz-report-header">
+                        <div class="quiz-report-title">
+                            <span>📊 아람이의 퀴즈 풀이 & 오답노트 리포트</span>
+                        </div>
+                        <button type="button" class="quiz-report-refresh-btn" onclick="loadRecentQuizLogs()">🔄 새로고침</button>
+                    </div>
+
+                    <div class="quiz-stat-summary-row">
+                        <div class="quiz-stat-box">
+                            <div class="label">총 풀이 문제</div>
+                            <div class="val" style="color:#6366f1;">${totalCount}개</div>
+                        </div>
+                        <div class="quiz-stat-box">
+                            <div class="label">정답 / 오답</div>
+                            <div class="val" style="color:#10b981;">${correctCount} / <span style="color:#ef4444;">${wrongCount}</span></div>
+                        </div>
+                        <div class="quiz-stat-box">
+                            <div class="label">정답률</div>
+                            <div class="val" style="color:#f59e0b;">${accuracy}%</div>
+                        </div>
+                    </div>
+
+                    <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:8px;">
+                        📝 최근 풀이 상세 내역 (오답 확인 & 복습 코칭용):
+                    </div>
+                    <div class="quiz-log-list">
+                        ${logItemsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
 
         function renderHabitSection() {
             const container = document.getElementById('habit-container');
@@ -2310,6 +2451,9 @@ async function insertStudyLog(subject, content, detail) {
                     </button>
                     ${hasRecord ? `<button type="button" class="habit-delete-btn" onclick="deleteHabitRecord()" title="기록 삭제">🗑️ 삭제</button>` : ''}
                 </div>
+
+                <!-- 📊 아람이 퀴즈 풀이 & 오답 리포트 (아빠 화면) -->
+                ${generateQuizReportHtml()}
 
                 <!-- 퀘스트 & 보상 쿠폰 관리 섹션 (아빠 화면) -->
                 ${renderDadRewardManagerHtml()}
