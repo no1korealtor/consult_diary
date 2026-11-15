@@ -1,4 +1,4 @@
-const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
+﻿const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
         const supabaseKey = 'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k'
 
         const supabaseClient = window.supabase.createClient(
@@ -286,6 +286,18 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
                 dailyProgress = savedData.progress || 0;
                 comboCount = savedData.combo || 0;
             }
+
+            // 상식 퀴즈 저금통 데이터 로드
+            const savedQuizState = JSON.parse(localStorage.getItem('studyQuizState_' + userNickname)) || {};
+            const todayStr = getLocalDateStr(new Date());
+            quizBankState.totalAnswered = savedQuizState.totalAnswered || 0;
+            quizBankState.currentPoints = savedQuizState.currentPoints || 0;
+            if (savedQuizState.todayDate === todayStr) {
+                quizBankState.todayAnswered = savedQuizState.todayAnswered || 0;
+            } else {
+                quizBankState.todayAnswered = 0;
+                quizBankState.todayDate = todayStr;
+            }
         }
 
         function showNameModal() {
@@ -397,6 +409,7 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
                 combo: comboCount,
                 nickname: userNickname
             }));
+            localStorage.setItem('studyQuizState_' + userNickname, JSON.stringify(quizBankState));
             updateStatsUI();
             const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
             updateHeader(todayStr);
@@ -490,216 +503,187 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
             renderCard()
         }
 
-        function renderCard() {
-            const cardContainer = document.getElementById('card-wrapper')
+                function renderCard() {
+            const cardContainer = document.getElementById('card-wrapper');
+            if (!cardContainer) return;
 
-            if (words.length === 0) {
-                cardContainer.innerHTML = `
-                    <div class="card empty-state">
-                        🎉 모든 단어를 다 외웠어요! 최고야! 💖
-                        <br><br>
-                        <button class="btn-quiz" onclick="startQuiz()">🎮 복습 퀴즈 풀기</button>
-                    </div>
-                `;
-                return
-            }
-
-            const word = currentWord
-
-            if (isTestMode) {
-                cardContainer.innerHTML = `
-                    <div class="card test-mode">
-                        <div class="test-title">💡 암기 확인 테스트 💡</div>
-                        
-                        
-                        <div class="tags">
-                            <div class="subject">${word.subject}</div>
-                            <div class="category">${word.category}</div>
-                        </div>
-                        
-                        <div class="meaning-hint">${word.meaning || '뜻이 등록되지 않은 단어입니다.'}</div>
-                        
-                        <div style="text-align: center;">
-                            ${word.irregular ? `<div class="irregular-hint">불규칙/원형 힌트: ${word.irregular}</div>` : ''}
-                        </div>
-                        
-                        <div class="input-group">
-                            <input type="text" id="test-input" placeholder="스펠링을 입력해봐요! ✍️" autocomplete="off" onkeypress="if(event.key === 'Enter') checkTest()">
-                        </div>
-
-                        <div class="buttons">
-                            <button class="btn-submit" onclick="checkTest()">정답 제출 💖</button>
-                            <button class="btn-cancel" onclick="cancelTest()">취소 닫기</button>
-                        </div>
-                    </div>
-                `
-                setTimeout(() => document.getElementById('test-input').focus(), 10);
-                return;
-            }
-
-            if (isIrregularTestMode) {
-                cardContainer.innerHTML = `
-                    <div class="card test-mode">
-                        <div class="test-title">🔥 불규칙 변화 테스트 🔥</div>
-                        
-                        <div class="meaning-hint" style="font-size: 32px; color: #ff758c; border-color: #ff758c;">${cleanWord(word.word)}</div>
-                        <div style="text-align: center; color: #636e72; margin-bottom: 20px; font-weight: bold;">(${word.meaning || ''})</div>
-                        
-                        <div style="text-align: center; font-size: 16px; color: #b2bec3; margin-bottom: 10px;">
-                            과거/과거분사형을 입력해주세요! (쉼표나 띄어쓰기는 무시됩니다)
-                        </div>
-                        
-                        <div class="input-group">
-                            <input type="text" id="irregular-test-input" placeholder="불규칙 형태 입력! ✍️" autocomplete="off" onkeypress="if(event.key === 'Enter') checkIrregularTest()">
-                        </div>
-
-                        <div class="buttons">
-                            <button class="btn-submit" onclick="checkIrregularTest()">정답 제출 💖</button>
-                            <button class="btn-cancel" onclick="cancelTest()">취소 닫기</button>
-                        </div>
-                    </div>
-                `;
-                setTimeout(() => document.getElementById('irregular-test-input').focus(), 10);
-                return;
-            }
-
-            if (isQuizMode) {
-                cardContainer.innerHTML = `
-                    <div class="card test-mode">
-                        <div class="test-title">🎮 복습 퀴즈 🎮</div>
-                        <div class="meaning-hint" style="border-color:#f6d365;">${quizTargetWord.meaning || '의미 없음'}</div>
-                        <div style="text-align:center; color:#636e72; margin-bottom: 20px; font-weight: bold;">이 뜻을 가진 단어는 무엇일까요?</div>
-                        
-                        <div class="quiz-options">
-                            ${quizOptions.map(opt => `
-                                <button class="quiz-option" onclick="submitQuiz('${opt.word.replace(/'/g, "\\'")}')">${cleanWord(opt.word)}</button>
-                            `).join('')}
-                        </div>
-
-                        <div class="buttons">
-                            <button class="btn-cancel" onclick="cancelQuiz()">취소 닫기</button>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-            
-            if (isMathAiMode) {
-                if (isMathLoading) {
-                    cardContainer.innerHTML = `
-                        <div class="card test-mode">
-                            <div class="test-title">🤖 AI 수학 선생님 🤖</div>
-                            <div class="empty-state">
-                                <div>${cleanWord(word.word)} 기초 문제를 만들고 있어요...</div>
-                                <div style="font-size: 40px; margin-top: 20px; animation: popIn 1s infinite;">⏳</div>
-                            </div>
-                        </div>
-                    `;
-                } else if (mathAiResult) {
-                    cardContainer.innerHTML = `
-                        <div class="card test-mode">
-                            <div class="test-title">🤖 AI 기초 탄탄 문제 🤖</div>
-                            <div style="font-family:'Jua', sans-serif; font-size: 22px; color:#2d3436; text-align:center; margin-bottom:20px; line-height: 1.5; padding: 20px; background:#fff9e6; border-radius:20px; border:2px solid #ffeaa7;">
-                                ${mathAiResult.problem}
-                            </div>
-                            
-                            <div id="math-solution-area" class="hidden">
-                                <div style="font-weight:bold; color:#ff758c; font-size: 24px; text-align:center; margin-bottom: 10px;">정답: ${mathAiResult.answer}</div>
-                                <div style="font-size: 16px; color:#636e72; background:#f8f9fa; padding:15px; border-radius:15px; line-height:1.6; white-space: pre-wrap;">${mathAiResult.solution}</div>
-                            </div>
-
-                            <div class="buttons" id="math-actions-1">
-                                <button class="btn-meaning" onclick="document.getElementById('math-solution-area').classList.remove('hidden'); document.getElementById('math-actions-1').classList.add('hidden'); document.getElementById('math-actions-2').classList.remove('hidden');">👀 정답 및 풀이 보기</button>
-                                <button class="btn-cancel" onclick="nextWord()">다음에 풀기</button>
-                            </div>
-                            
-                            <div class="buttons hidden" id="math-actions-2">
-                                <button class="btn-submit" style="width:100%" onclick="finishMathAi()">이해했어요! (완료) 💖</button>
-                                <button class="btn-cancel" onclick="nextWord()">다시 공부할게요</button>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // 수식(LaTeX) 렌더링 적용 (AI 문제 화면용)
-                    if (window.renderMathInElement) {
-                        setTimeout(() => {
-                            renderMathInElement(document.getElementById('card-wrapper'), {
-                                delimiters: [
-                                    {left: '$$', right: '$$', display: true},
-                                    {left: '$', right: '$', display: false},
-                                    {left: '\\(', right: '\\)', display: false},
-                                    {left: '\\[', right: '\\]', display: true}
-                                ],
-                                throwOnError: false
-                            });
-                        }, 50); // DOM 업데이트 직후 렌더링되도록 약간의 지연 시간 부여
-                    }
-                }
-                return;
-            }
-
-            const isMath = word.subject && word.subject.includes('수학');
-            const isMc = !!parseMultipleChoice(word.example);
-
-            cardContainer.innerHTML = `
-        <div class="card">
-          
-          <div class="word">
-              <span id="secret-word-display" style="${isMc ? 'color: #ffb8b8; font-size: 0.8em;' : ''}">${isMc ? '❓❓❓' : cleanWord(word.word)}</span>
-              ${/[a-zA-Z]/.test(cleanWord(word.word)) ? `<span id="secret-speaker-icon" class="speaker-icon ${isMc ? 'hidden' : ''}" onclick="speakWord('${cleanWord(word.word).replace(/'/g, "\\'")}')" title="발음 듣기">🔊</span>` : ''}
-          </div>
-          
-          <div style="text-align: center;">
-              ${word.irregular ? `
-                  <div class="irregular" style="display: inline-flex; align-items: center; gap: 8px;">
-                      ${word.irregular}
-                      ${/[a-zA-Z]/.test(word.irregular) ? `<span class="speaker-icon" onclick="speakWord('${word.irregular.replace(/'/g, "\\'")}')" title="불규칙 변화 발음 듣기" style="font-size: 22px; padding: 4px;">🔊</span>` : ''}
-                  </div>
-              ` : ''}
-          </div>
-          
-          <div class="hanja">${word.hanja || ''}</div>
-
-          <div class="tags">
-              <div class="subject">${word.subject}</div>
-              <div class="category">${word.category}</div>
-          </div>
-
-          <div class="example ${isMc ? 'mc-mode' : ''}">${renderMultipleChoice(word.example)}</div>
-
-          <div class="meaning ${meaningVisible ? '' : 'hidden'}">${word.meaning || ''}</div>
-
-          <div class="buttons">
-            ${isMath ? 
-              `<button class="btn-meaning" onclick="toggleMeaning()">✨ 정답 보기</button>
-               <button class="btn-test" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white;" onclick="startMathAiMode()">🤖 AI 맞춤 문제</button>` 
-              :
-              `<button class="btn-meaning" onclick="toggleMeaning()">✨ 뜻 보기</button>
-               <button class="btn-test" onclick="toggleTestMode()">📝 스펠링 테스트</button>
-               ${word.irregular ? `<button class="btn-test" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:white;" onclick="toggleIrregularTestMode()">📝 불규칙 테스트</button>` : ''}`
-            }
-            <button class="btn-next" onclick="nextWord()">다음 🚀</button>
-            ${!isMath ? `<button class="btn-quiz" style="width: 100%;" onclick="startQuiz()">🎮 복습 퀴즈 풀기</button>` : ''}
-          </div>
-
-        </div>
-      `
-            
-            // 수식(LaTeX) 렌더링 적용
-            if (window.renderMathInElement) {
-                renderMathInElement(cardContainer, {
-                    delimiters: [
-                        {left: '$$', right: '$$', display: true},
-                        {left: '$', right: '$', display: false},
-                        {left: '\\(', right: '\\)', display: false},
-                        {left: '\\[', right: '\\]', display: true}
-                    ],
-                    throwOnError: false
-                });
-            }
+            // 상식 퀴즈 100원 저금통 모드 렌더링
+            renderCommonKnowledgeQuiz(cardContainer);
         }
 
-        async function insertStudyLog(subject, content, detail) {
+        // ===================================================
+        // 🧠 중학생 맞춤 상식 퀴즈 & 100원 저금통 뷰 로직
+        // ===================================================
+        function renderCommonKnowledgeQuiz(container) {
+            const quiz = COMMON_QUIZ_POOL[currentQuizIndex % COMMON_QUIZ_POOL.length];
+            const currentWon = quizBankState.currentPoints || 0;
+            const progressCount = Math.floor(currentWon / 100);
+            const remainingToCoupon = Math.max(0, 20 - progressCount);
+            const percent = Math.min(100, Math.round((currentWon / 2000) * 100));
+
+            // 저금통 게이지 HTML
+            const piggyBankHtml = `
+                <div class="piggy-bank-container">
+                    <div class="piggy-bank-header">
+                        <div class="piggy-bank-title">🪙 아람이의 상식 저금통 (1문제 = 100원!)</div>
+                        <div class="piggy-bank-badge">${currentWon.toLocaleString()}원 / 2,000원</div>
+                    </div>
+                    <div class="piggy-bar-bg">
+                        <div class="piggy-bar-fill" style="width: ${percent}%;"></div>
+                    </div>
+                    <div class="piggy-bank-meta">
+                        <span>오늘 푼 문제: <strong>${quizBankState.todayAnswered} / 5개</strong> (하루 최대 500원)</span>
+                        <span style="color:#e11d48; font-weight:bold;">${remainingToCoupon > 0 ? remainingToCoupon + '문제 더 풀면 2,000원 쿠폰 지급!' : '🎉 2,000원 쿠폰 발급 완료!'}</span>
+                    </div>
+                </div>
+            `;
+
+            // 4지선다 옵션 버튼 HTML
+            const optionsHtml = quiz.options.map((opt, idx) => {
+                let btnClass = 'quiz-opt-btn';
+                if (isQuizAnswerSubmitted) {
+                    if (idx === quiz.answer) {
+                        btnClass += ' correct';
+                    } else if (selectedQuizOption === idx) {
+                        btnClass += ' wrong';
+                    }
+                } else if (selectedQuizOption === idx) {
+                    btnClass += ' selected';
+                }
+
+                return `
+                    <button type="button" class="${btnClass}" onclick="selectQuizOption(${idx})" ${isQuizAnswerSubmitted ? 'disabled' : ''}>
+                        <span class="quiz-opt-num">${idx + 1}</span>
+                        <span class="quiz-opt-text">${escapeHtml(opt)}</span>
+                    </button>
+                `;
+            }).join('');
+
+            // 하단 액션 버튼 및 해설 HTML
+            let actionHtml = '';
+            if (!isQuizAnswerSubmitted) {
+                actionHtml = `
+                    <div style="margin-top:16px;">
+                        <button type="button" class="quiz-submit-btn" onclick="submitQuizAnswer()" ${selectedQuizOption === null ? 'disabled' : ''}>
+                            정답 확인하기 (맞히면 +100원! 🪙)
+                        </button>
+                    </div>
+                `;
+            } else {
+                const isCorrect = (selectedQuizOption === quiz.answer);
+                actionHtml = `
+                    <div class="quiz-feedback-box ${isCorrect ? 'correct' : 'wrong'}">
+                        <div class="feedback-title">${isCorrect ? '🎉 딩동댕! 정답입니다! (+100원 적립 🪙)' : '앗! 아쉽지만 오답이에요! 💡'}</div>
+                        <div class="feedback-desc">${escapeHtml(quiz.explanation)}</div>
+                        <button type="button" class="quiz-next-btn" onclick="nextCommonQuiz()">
+                            다음 문제 풀기 ▶
+                        </button>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = `
+                ${piggyBankHtml}
+                <div class="quiz-card">
+                    <div class="quiz-card-top">
+                        <span class="quiz-cat-tag">${escapeHtml(quiz.category)}</span>
+                        <span class="quiz-num-tag">Q. 문제 ${ (currentQuizIndex % COMMON_QUIZ_POOL.length) + 1 }</span>
+                    </div>
+                    <div class="quiz-question-text">
+                        ${escapeHtml(quiz.question)}
+                    </div>
+                    <div class="quiz-options-list">
+                        ${optionsHtml}
+                    </div>
+                    ${actionHtml}
+                </div>
+            `;
+        }
+
+        function selectQuizOption(idx) {
+            if (isQuizAnswerSubmitted) return;
+            selectedQuizOption = idx;
+            renderCard();
+        }
+
+        async function submitQuizAnswer() {
+            if (selectedQuizOption === null || isQuizAnswerSubmitted) return;
+            isQuizAnswerSubmitted = true;
+            const quiz = COMMON_QUIZ_POOL[currentQuizIndex % COMMON_QUIZ_POOL.length];
+            const isCorrect = (selectedQuizOption === quiz.answer);
+
+            if (isCorrect) {
+                quizBankState.currentPoints = (quizBankState.currentPoints || 0) + 100;
+                quizBankState.totalAnswered = (quizBankState.totalAnswered || 0) + 1;
+                quizBankState.todayAnswered = (quizBankState.todayAnswered || 0) + 1;
+                dailyProgress++;
+
+                // 2000원(20개) 달성 시 2000원 쿠폰 자동 발급!
+                if (quizBankState.currentPoints >= 2000) {
+                    await grantQuizRewardCoupon();
+                    quizBankState.currentPoints = 0; // 리셋 후 다음 2000원 저금 시작
+                }
+
+                saveStats();
+
+                confetti({
+                    particleCount: 120,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#fbbf24', '#f59e0b', '#10b981', '#60a5fa']
+                });
+            } else {
+                saveStats();
+            }
+
+            renderCard();
+        }
+
+        function nextCommonQuiz() {
+            currentQuizIndex = (currentQuizIndex + 1) % COMMON_QUIZ_POOL.length;
+            selectedQuizOption = null;
+            isQuizAnswerSubmitted = false;
+            renderCard();
+        }
+
+        // 2,000원 상식 저금통 달성 시 쿠폰 발급 함수
+        async function grantQuizRewardCoupon() {
+            const couponId = `REWARD_QUIZ_2000_${Date.now()}`;
+            const couponData = {
+                title: questConfig.quizRewardTitle || '🏪 편의점 2,000원 상품권 (또는 현금 2,000원)',
+                type: 'QUIZ_20_ANSWER',
+                rewardDesc: questConfig.quizRewardDesc || '상식 퀴즈 20문제 정답(2,000원 적립) 달성 축하 보상! 🪙',
+                date: getLocalDateStr(new Date()),
+                status: 'PENDING',
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                await supabaseClient
+                    .from('study_words')
+                    .insert([{
+                        word: couponId,
+                        meaning: JSON.stringify(couponData),
+                        subject: 'CHILD_REWARD',
+                        category: '아람',
+                        example: userNickname || '아람'
+                    }]);
+
+                rewardCoupons.unshift({ id: couponId, ...couponData });
+
+                confetti({
+                    particleCount: 200,
+                    spread: 100,
+                    origin: { y: 0.5 },
+                    colors: ['#f59e0b', '#ef4444', '#10b981', '#8b5cf6']
+                });
+
+                alert("🎉 축하합니다! 상식 저금통 2,000원 달성! 🏪 편의점 2,000원 쿠폰이 보물상자에 발급되었습니다! 💖");
+            } catch(e) {
+                console.error("Grant quiz coupon error:", e);
+            }
+        }
+async function insertStudyLog(subject, content, detail) {
             await supabaseClient.from('study_logs').insert([{
                 subject: subject,
                 content: content,
@@ -1211,9 +1195,168 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
             focusRewardTitle: '🏪 편의점 3,000원 상품권',
             focusRewardDesc: '정시 시작 & 몰입 퀘스트 5회 달성 축하 선물! 💖 (또는 학습 보너스권)',
             goldRewardTitle: '🏖️ 1일 학습 자유 휴식권 (골드 티켓)',
-            goldRewardDesc: '2주 퍼펙트 출결(14일 무결석·무지각·무조퇴) 대기록 달성 보상! 👑'
+            goldRewardDesc: '2주 퍼펙트 출결(14일 무결석·무지각·무조퇴) 대기록 달성 보상! 👑',
+            quizRewardTitle: '🏪 편의점 2,000원 상품권 (또는 현금 2,000원)',
+            quizRewardDesc: '상식 퀴즈 20문제 정답(2,000원 적립) 달성 축하 보상! 🪙'
         };
         let currentMainTab = 'study'; // 'study' | 'life'
+
+        // ===================================================
+        // 상식 퀴즈 100원 저금통 시스템 State
+        // ===================================================
+        let quizBankState = {
+            totalAnswered: 0,
+            currentPoints: 0, // 0 ~ 2000원 (20개 달성 시 리셋 및 쿠폰 발급)
+            todayAnswered: 0, // 오늘 푼 개수 (최대 5개 = 500원)
+            todayDate: ''
+        };
+        let currentQuizIndex = 0;
+        let selectedQuizOption = null;
+        let isQuizAnswerSubmitted = false;
+
+        // 중학생 눈높이 맞춤 필수 상식 퀴즈 풀 (어휘·국어, 사회·역사, 과학·환경, 시사·잡학)
+        const COMMON_QUIZ_POOL = [
+            {
+                category: "📚 어휘·문해력",
+                question: "'어부지리(漁父之利)'의 정확한 뜻으로 알맞은 것은 무엇일까요?",
+                options: ["어부가 물고기를 많이 잡아 부자가 됨", "두 사람이 다투는 틈을 타 제3자가 이득을 얻음", "어려운 상황에서도 끝까지 포기하지 않음", "스스로 힘으로 바다를 건너 큰 성공을 거둠"],
+                answer: 1,
+                explanation: "어부지리는 조개와 도요새가 서로 다투느라 도망치지 못하는 사이, 지나가던 어부가 둘 다 쉽게 잡았다는 고사성어에서 유래했어요!"
+            },
+            {
+                category: "🌍 사회·정치",
+                question: "국가 권력이 남용되는 것을 막기 위해 권력을 입법부, 사법부, 행정부로 나누는 제도는?",
+                options: ["삼권분립", "직접민주주의", "지방자치제", "의원내각제"],
+                answer: 0,
+                explanation: "삼권분립은 국민의 자유와 권리를 지키기 위해 법을 만드는 국회(입법), 법을 집행하는 정부(행정), 법을 판단하는 법원(사법)으로 권력을 나누는 민주주의의 핵심 원리예요."
+            },
+            {
+                category: "🧪 과학·물리",
+                question: "비행기 날개 위쪽과 아래쪽의 공기 흐름 속도 차이에 의해 비행기를 위로 뜨게 하는 힘은?",
+                options: ["중력", "마찰력", "양력", "부력"],
+                answer: 2,
+                explanation: "비행기는 날개 위쪽이 볼록하여 공기가 빠르게 흐르고, 아래쪽은 천천히 흐르면서 압력 차이로 위로 뜨는 '양력(Lift)'이 발생해 하늘을 날 수 있어요."
+            },
+            {
+                category: "📚 맞춤법·국어",
+                question: "다음 중 올바른 맞춤법으로 쓰인 문장은 무엇일까요?",
+                options: ["어의가 없어서 말이 안 나온다.", "어이가 없어서 말이 안 나온다.", "어의가 업서서 말이 안 나온다.", "어의없네 정말로."],
+                answer: 1,
+                explanation: "뜻밖의 일에 기가 막히다는 뜻의 표준어는 '어이없다'입니다! ('어의'는 조선시대 임금님을 진료하던 의사를 뜻해요.)"
+            },
+            {
+                category: "🌍 역사·세계",
+                question: "14~16세기 유럽에서 고대 그리스·로마 문화를 되살려 인간 중심 문화를 꽃피운 문화 운동은?",
+                options: ["종교 개혁", "르네상스", "산업 혁명", "계몽주의"],
+                answer: 1,
+                explanation: "르네상스(Renaissance)는 '부활·재생'을 뜻하는 프랑스어로, 다빈치·미켈란젤로 등 위대한 예술과 인문주의가 번성했던 시대예요."
+            },
+            {
+                category: "💡 경제·시사",
+                question: "물가가 지속적으로 상승하여 돈의 가치가 떨어지는 경제 현상을 무엇이라고 할까요?",
+                options: ["디플레이션", "스태그플레이션", "인플레이션", "환율 급락"],
+                answer: 2,
+                explanation: "인플레이션(Inflation)이 발생하면 같은 1,000원으로 살 수 있는 물건의 양이 줄어들게 되어 화폐 가치가 하락합니다."
+            },
+            {
+                category: "🧪 과학·생물",
+                question: "식물이 햇빛, 물, 이산화탄소를 이용해 스스로 영양분(포도당)과 산소를 만드는 작용은?",
+                options: ["호흡 작용", "증산 작용", "광합성", "소화 작용"],
+                answer: 2,
+                explanation: "광합성은 엽록체에서 일어나며, 지구상의 생물들이 숨 쉴 수 있는 산소와 살아가는데 필요한 에너지를 공급해 주는 고마운 생명 활동이에요."
+            },
+            {
+                category: "🌍 지리·환경",
+                question: "지구 온난화를 일으키는 대표적인 '온실가스'로 화석연료 연소 시 가장 많이 배출되는 기체는?",
+                options: ["산소", "질소", "이산화탄소", "헬륨"],
+                answer: 2,
+                explanation: "이산화탄소(CO2)는 지구 대기 중에 열을 가두어 지구 온도를 상승시키는 온실효과의 주원인 기체예요."
+            },
+            {
+                category: "📚 어휘·한자",
+                question: "'각주구검(刻舟求劍)'이 비판하는 어리석은 태도는 무엇일까요?",
+                options: ["칼을 너무 위험하게 다루는 태도", "시대나 상황의 변화를 모르고 낡은 방식만 고집함", "자신의 이익만 챙기고 친구를 배신함", "게으르게 낮잠만 자는 태도"],
+                answer: 1,
+                explanation: "달리는 배에서 칼을 물에 빠뜨리고는 뱃전에 자국을 새겨 나중에 찾으려 했다는 고사에서 유래한 말로, 상황 변화를 모르는 융통성 없는 태도를 뜻해요."
+            },
+            {
+                category: "💡 상식·IT",
+                question: "컴퓨터나 스마트폰의 뇌 역할을 하며 모든 계산과 명령을 처리하는 핵심 부품은?",
+                options: ["RAM(램)", "CPU(중앙처리장치)", "SSD(저장장치)", "파워서플라이"],
+                answer: 1,
+                explanation: "CPU(Central Processing Unit, 중앙처리장치)는 컴퓨터 시스템 전체의 두뇌로서 모든 연산과 제어를 도맡아 수행합니다."
+            },
+            {
+                category: "🌍 사회·법",
+                question: "대한민국 헌법 제1조 제2항: '대한민국의 주권은 (    )에게 있고, 모든 권력은 (    )으로부터 나온다.' 빈칸은?",
+                options: ["대통령", "국회", "국민", "법원"],
+                answer: 2,
+                explanation: "민주공화국 대한민국의 모든 주권과 권력의 주인은 바로 '국민'이라는 민주주의의 가장 숭고한 헌법 조항이에요!"
+            },
+            {
+                category: "🧪 과학·우주",
+                question: "태양계 행성 중 태양에서 가장 가깝고 크기가 가장 작은 행성은 무엇일까요?",
+                options: ["금성", "수성", "화성", "명왕성"],
+                answer: 1,
+                explanation: "태양계 순서는 '수-금-지-화-목-토-천-해'로, 태양에 가장 가까운 행성은 수성(Mercury)입니다. (명왕성은 왜소행성으로 분류되었어요)"
+            },
+            {
+                category: "📚 어휘·속담",
+                question: "'등잔 밑이 어둡다'라는 속담의 의미로 가장 적절한 것은?",
+                options: ["밤에는 불을 켜지 않으면 아무것도 보이지 않는다.", "가까운 곳에서 일어난 일을 오히려 알아채기 어렵다.", "전기를 아껴 써야 미래가 밝아진다.", "불빛 아래에서는 글씨가 잘 읽히지 않는다."],
+                answer: 1,
+                explanation: "등잔 바로 아래에는 그늘이 지듯, 아주 가까이에 있는 사실이나 물건을 오히려 잘 찾지 못하거나 모르는 경우를 뜻해요."
+            },
+            {
+                category: "💡 문화·예술",
+                question: "세계에서 가장 유명한 초상화 중 하나로, 프랑스 루브르 박물관에 소장된 레오나르도 다빈치의 명작은?",
+                options: ["최후의 만찬", "모나리자", "진주 귀걸이를 한 소녀", "별이 빛나는 밤"],
+                answer: 1,
+                explanation: "신비로운 미소로 유명한 '모나리자'는 르네상스의 거장 레오나르도 다빈치가 남긴 불후의 명작이에요."
+            },
+            {
+                category: "🌍 역사·한국사",
+                question: "조선 시대 세종대왕이 백성들이 쉽게 글을 읽고 쓸 수 있도록 창제한 우리 고유의 문자는?",
+                options: ["이두", "향찰", "훈민정음 (한글)", "갑골문자"],
+                answer: 2,
+                explanation: "1443년에 창제된 훈민정음(한글)은 '백성을 가르치는 바른 소리'라는 뜻으로, 과학적이고 독창성을 인정받아 유네스코 세계기록유산에 등재되었어요."
+            },
+            {
+                category: "🧪 과학·화학",
+                question: "물질의 상태 변화 중 '얼음(고체)이 물(액체)'로 변하는 현상을 무엇이라고 할까요?",
+                options: ["응고", "융해", "기화", "승화"],
+                answer: 1,
+                explanation: "고체가 열을 얻어 액체로 녹는 현상을 '융해(Melting)'라고 합니다. 반대로 액체가 얼어서 고체가 되는 것은 '응고'예요."
+            },
+            {
+                category: "💡 시사·환경",
+                question: "물건을 만들고 쓰고 버리는 대신 재활용·재사용하여 환경오염을 0(Zero)으로 만들자는 운동은?",
+                options: ["패스트패션", "제로 웨이스트(Zero Waste)", "블랙 컨슈머", "빅블러"],
+                answer: 1,
+                explanation: "'제로 웨이스트'는 일회용품 대신 다회용기를 사용하고 포장재를 줄여 쓰레기 배출을 최소화하는 전 지구적인 환경 실천 운동이에요."
+            },
+            {
+                category: "📚 맞춤법·국어",
+                question: "다음 중 올바른 표기는 무엇일까요?",
+                options: ["며칠 동안", "몇일 동안", "몇 일 동안", "몆일 동안"],
+                answer: 0,
+                explanation: "날짜나 날의 수를 나타낼 때는 언제나 '며칠'로 적는 것이 올바른 표준어 표기법입니다! ('몇일'은 틀린 표현이에요)"
+            },
+            {
+                category: "🌍 경제·시사",
+                question: "하나를 얻기 위해 포기해야 하는 다른 선택지의 가치 중 가장 큰 것을 무엇이라고 할까요?",
+                options: ["매몰비용", "기회비용", "한계효용", "고정비용"],
+                answer: 1,
+                explanation: "시간과 자원은 유한하기 때문에, 어떤 선택을 할 때 포기하는 대안의 가치를 '기회비용(Opportunity Cost)'이라고 부릅니다."
+            },
+            {
+                category: "💡 상식·안전",
+                question: "지진이 발생했을 때 실내에서 가장 안전하게 대피하는 행동 요령은?",
+                options: ["엘리베이터를 타고 신속히 내려간다.", "탁자나 책상 아래로 들어가 머리를 보호하고 다리를 잡는다.", "창문을 닫고 베란다로 나간다.", "촛불이나 라이터를 켜서 주위를 밝힌다."],
+                answer: 1,
+                explanation: "지진 발생 시에는 떨어지는 물건으로부터 머리를 보호하기 위해 튼튼한 탁자 아래로 들어가 책상 다리를 꼭 잡는 것이 가장 중요해요!"
+            }
+        ];
 
         function getStudyStatusInfo(val) {
             if (val === true) {
