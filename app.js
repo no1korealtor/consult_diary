@@ -1,0 +1,3391 @@
+const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
+        const supabaseKey = 'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k'
+
+        const supabaseClient = window.supabase.createClient(
+            supabaseUrl,
+            supabaseKey
+        )
+
+        let words = []
+        let currentWord = null
+
+        function cleanWord(str) {
+            return str ? str.replace(/_\d+$/, '') : '';
+        }
+        let meaningVisible = false
+        let isTestMode = false
+
+        // Multiple choice state & helpers
+        let currentMc = null;
+        let mcWrongClicked = false;
+
+        function parseMultipleChoice(example) {
+            if (!example) return null;
+            
+            // Check if there are choices like A. B. C. D. or A) B) C) D)
+            if (!/([A-E]|[1-5])[\.\)]/i.test(example)) return null;
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = example;
+            
+            let htmlContent = tempDiv.innerHTML
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/p>/gi, '\n')
+                .replace(/<p[^>]*>/gi, '');
+                
+            tempDiv.innerHTML = htmlContent;
+            let plainText = tempDiv.textContent || tempDiv.innerText || '';
+            
+            let lines = plainText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+            
+            let question = '';
+            let options = [];
+            let correctIndex = -1;
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i];
+                let match = line.match(/^([A-E]|[1-5])[\.\)]\s*(.*)$/i);
+                if (match) {
+                    let label = match[1];
+                    let text = match[2];
+                    let isCorrect = false;
+                    
+                    if (text.includes('(정답') || text.includes('정답!') || text.includes('정답')) {
+                        isCorrect = true;
+                        text = text.replace(/\(정답.*?\)/g, '').replace(/정답.*/g, '').trim();
+                        text = text.replace(/[\(\)\!\s]+$/, '').trim();
+                    }
+                    
+                    options.push({
+                        label: label.toUpperCase(),
+                        text: text,
+                        isCorrect: isCorrect
+                    });
+                    
+                    if (isCorrect) {
+                        correctIndex = options.length - 1;
+                    }
+                } else {
+                    if (question) {
+                        question += '<br>' + line;
+                    } else {
+                        question = line;
+                    }
+                }
+            }
+            
+            if (options.length > 0) {
+                // If correct option is not explicitly marked with "(정답)", check if option matches currentWord.word
+                if (correctIndex === -1 && typeof currentWord !== 'undefined' && currentWord) {
+                    const cleanTarget = cleanWord(currentWord.word).toLowerCase();
+                    for (let i = 0; i < options.length; i++) {
+                        if (options[i].text.toLowerCase() === cleanTarget) {
+                            options[i].isCorrect = true;
+                            correctIndex = i;
+                            break;
+                        }
+                    }
+                }
+                
+                return {
+                    question: question,
+                    options: options,
+                    correctIndex: correctIndex
+                };
+            }
+            
+            return null;
+        }
+
+        function renderMultipleChoice(example) {
+            const mc = parseMultipleChoice(example);
+            if (!mc) {
+                return example || '';
+            }
+            
+            currentMc = mc;
+            mcWrongClicked = false;
+            
+            return `
+                <div class="mc-container">
+                    <div class="mc-question">${mc.question}</div>
+                    <div class="mc-options">
+                        ${mc.options.map((opt, idx) => `
+                            <button class="mc-option-btn" id="mc-opt-${idx}" onclick="selectMcOption(${idx})">
+                                <span class="mc-label">${opt.label}</span>
+                                <span class="mc-text">${opt.text}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div class="mc-feedback hidden" id="mc-feedback"></div>
+                </div>
+            `;
+        }
+
+        async function selectMcOption(idx) {
+            if (!currentMc || isSubmitting) return;
+            
+            const feedbackEl = document.getElementById('mc-feedback');
+            const clickedBtn = document.getElementById(`mc-opt-${idx}`);
+            const option = currentMc.options[idx];
+            
+            if (option.isCorrect) {
+                isSubmitting = true;
+                
+                // Mark correct option
+                clickedBtn.classList.add('mc-correct');
+                feedbackEl.innerHTML = "정답이에요! 🎉";
+                feedbackEl.className = "mc-feedback success";
+                feedbackEl.classList.remove('hidden');
+                
+                // Disable all options
+                currentMc.options.forEach((_, i) => {
+                    const btn = document.getElementById(`mc-opt-${i}`);
+                    if (btn) btn.disabled = true;
+                });
+                
+                // If they got it right on the first try, increase combo
+                if (!mcWrongClicked) {
+                    comboCount++;
+                } else {
+                    comboCount = 0;
+                }
+                
+                dailyProgress++;
+                saveStats();
+                
+                // Trigger confetti
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#ffc3a0', '#ffafbd', '#84fab0', '#8fd3f4', '#f6d365']
+                });
+                
+                // Speak the word automatically
+                speakWord(currentWord.word);
+                
+                // Automatically show the meaning in DOM
+                const meaningEl = document.querySelector('.meaning');
+                if (meaningEl) {
+                    meaningEl.classList.remove('hidden');
+                }
+                meaningVisible = true;
+
+                // Reveal the hidden word if it was a multiple choice question
+                const secretWordEl = document.getElementById('secret-word-display');
+                if (secretWordEl) {
+                    secretWordEl.innerText = cleanWord(currentWord.word);
+                    secretWordEl.style = '';
+                }
+                const secretSpeakerEl = document.getElementById('secret-speaker-icon');
+                if (secretSpeakerEl) {
+                    secretSpeakerEl.classList.remove('hidden');
+                }
+                
+                await updateMemorizedState();
+                await insertStudyLog(currentWord.subject || '영어', cleanWord(currentWord.word), '객관식 퀴즈 정답 완료');
+                
+                setTimeout(() => {
+                    const memorizedWord = currentWord;
+                    words = words.filter(w => w.id !== currentWord.id);
+                    memorizedWords.push(memorizedWord);
+                    
+                    isSubmitting = false;
+                    mcWrongClicked = false;
+                    meaningVisible = false;
+                    
+                    setupSubjects();
+                    loadMyHistory();
+                }, 1800);
+                
+            } else {
+                // Mark incorrect option
+                clickedBtn.classList.add('mc-incorrect');
+                clickedBtn.disabled = true;
+                
+                mcWrongClicked = true;
+                comboCount = 0;
+                saveStats();
+                
+                feedbackEl.innerHTML = "앗, 틀렸어요! 다른 답을 골라보세요! 😉";
+                feedbackEl.className = "mc-feedback fail";
+                feedbackEl.classList.remove('hidden');
+            }
+        }
+        let isIrregularTestMode = false
+        
+        let wordsBySubject = {}
+        let subjects = []
+        let currentSubjectIndex = 0
+
+        let memorizedWords = []
+        let isQuizMode = false
+        let quizOptions = []
+        let quizTargetWord = null
+        let userNickname = ''
+        let geminiApiKey = ''
+        
+        let isMathAiMode = false;
+        let mathAiResult = null;
+        let isMathLoading = false;
+        let isSubmitting = false;
+
+        // Reward System State
+        let comboCount = 0;
+        const dailyGoal = 5;
+        let dailyProgress = 0;
+
+        function initStats() {
+            const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
+            userNickname = localStorage.getItem('study_currentUser') || '';
+            
+            // 기존 '우리딸' 계정명을 '아람'으로 마이그레이션
+            if (userNickname === '우리딸') {
+                userNickname = '아람';
+                localStorage.setItem('study_currentUser', '아람');
+            }
+
+            if (!userNickname) {
+                showNameModal();
+            } else {
+                loadStats();
+                updateHeader(todayStr);
+                updateStatsUI();
+                loadMyHistory();
+                loadHabitRecords();
+            }
+        }
+
+        function loadStats() {
+            // 과거 버전 데이터(studyStats, geminiApiKey) 정리 및 마이그레이션
+            const oldDataStr = localStorage.getItem('studyStats');
+            if (oldDataStr) {
+                try {
+                    const oldData = JSON.parse(oldDataStr);
+                    // 기존 닉네임과 새 로그인 계정이 연관성이 있으면 데이터 복원
+                    if (oldData.nickname && (
+                        (userNickname === '아빠' && oldData.nickname.includes('아빠')) ||
+                        (userNickname === '아람' && (oldData.nickname.includes('딸') || oldData.nickname.includes('아람'))) ||
+                        (userNickname === '친구' && oldData.nickname.includes('친구'))
+                    )) {
+                        localStorage.setItem('studyStats_' + userNickname, oldDataStr);
+                    }
+                } catch(e) {}
+                // 마이그레이션 후 과거 데이터는 깔끔하게 삭제
+                localStorage.removeItem('studyStats');
+            }
+            // 이제 필요 없는 API 키도 깔끔하게 삭제
+            localStorage.removeItem('geminiApiKey');
+
+            const savedData = JSON.parse(localStorage.getItem('studyStats_' + userNickname)) || {};
+            if (savedData.date !== new Date().toLocaleDateString()) {
+                dailyProgress = 0;
+                comboCount = 0;
+            } else {
+                dailyProgress = savedData.progress || 0;
+                comboCount = savedData.combo || 0;
+            }
+        }
+
+        function showNameModal() {
+            const modalHtml = `
+                <div class="modal-overlay" id="name-modal-overlay">
+                    <div class="name-modal">
+                        <h2>비밀번호를 입력해주세요 🔒</h2>
+                        <input type="password" id="nickname-input" class="name-input" placeholder="비밀번호 4자리" onkeypress="if(event.key === 'Enter') saveNickname()">
+                        <button class="name-btn" onclick="saveNickname()">로그인 💖</button>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('nickname-input').focus();
+        }
+
+        function saveNickname() {
+            const input = document.getElementById('nickname-input').value.trim();
+            if(!input) return;
+            
+            if (input === '4321') {
+                userNickname = '아빠';
+            } else if (input === '1234') {
+                userNickname = '아람';
+            } else if (input === '0000') {
+                userNickname = '혜령';
+            } else {
+                alert('비밀번호가 틀렸습니다! 다시 입력해주세요. 😊');
+                document.getElementById('nickname-input').value = '';
+                return;
+            }
+            
+            localStorage.setItem('study_currentUser', userNickname);
+            loadStats();
+
+            const overlay = document.getElementById('name-modal-overlay');
+            if (overlay) overlay.remove();
+            
+            const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
+            updateHeader(todayStr);
+            updateStatsUI();
+            loadMyHistory();
+            loadWords();
+            loadHabitRecords();
+        }
+
+        function logout() {
+            localStorage.removeItem('study_currentUser');
+            location.reload();
+        }
+
+        function scrollToHabit() {
+            switchMainTab('life');
+            const el = document.getElementById('habit-container');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function switchMainTab(tab) {
+            currentMainTab = tab;
+            const btnStudy = document.getElementById('nav-btn-study');
+            const btnLife = document.getElementById('nav-btn-life');
+            const statsBar = document.getElementById('stats-bar');
+            const cardWrapper = document.getElementById('card-wrapper');
+            const lastUpdated = document.getElementById('last-updated');
+            const habitContainer = document.getElementById('habit-container');
+            const historyContainer = document.getElementById('history-container');
+            const youtubeContainer = document.getElementById('youtube-container');
+
+            if (tab === 'study') {
+                if (btnStudy) btnStudy.classList.add('active');
+                if (btnLife) btnLife.classList.remove('active');
+                if (statsBar) statsBar.style.display = '';
+                if (cardWrapper) cardWrapper.style.display = '';
+                if (lastUpdated) lastUpdated.style.display = '';
+                if (historyContainer) historyContainer.style.display = '';
+                if (youtubeContainer) youtubeContainer.style.display = '';
+                if (habitContainer) habitContainer.style.display = 'none';
+            } else {
+                if (btnStudy) btnStudy.classList.remove('active');
+                if (btnLife) btnLife.classList.add('active');
+                if (statsBar) statsBar.style.display = 'none';
+                if (cardWrapper) cardWrapper.style.display = 'none';
+                if (lastUpdated) lastUpdated.style.display = 'none';
+                if (historyContainer) historyContainer.style.display = 'none';
+                if (youtubeContainer) youtubeContainer.style.display = 'none';
+                if (habitContainer) {
+                    habitContainer.style.display = 'block';
+                    habitContainer.classList.remove('hidden');
+                }
+            }
+        }
+
+        function updateHeader(dateStr) {
+            let habitNavBtn = '';
+            if (userNickname === '아빠') {
+                habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">📋 출석·공부 체크</button>`;
+            } else if (userNickname) {
+                habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">🌟 내 출석·공부 달력</button>`;
+            }
+            document.getElementById('greeting-text').innerHTML = `환영해요, ${userNickname}님! 💖 ${habitNavBtn} <button onclick="logout()" style="background:rgba(255,255,255,0.3); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:14px; font-weight:bold; margin-left:8px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); font-family:'Nunito', sans-serif;">로그아웃</button>`;
+            document.getElementById('date-stats-text').innerText = `${dateStr} | 오늘 암기: ${dailyProgress}개`;
+        }
+
+        function saveStats() {
+            const today = new Date().toLocaleDateString();
+            localStorage.setItem('studyStats_' + userNickname, JSON.stringify({
+                date: today,
+                progress: dailyProgress,
+                combo: comboCount,
+                nickname: userNickname
+            }));
+            updateStatsUI();
+            const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
+            updateHeader(todayStr);
+        }
+
+        function updateStatsUI() {
+            const comboEl = document.getElementById('combo-badge');
+            if (comboCount >= 2) {
+                comboEl.classList.remove('hidden');
+                comboEl.innerHTML = `🔥 ${comboCount} Combo!`;
+                // Re-trigger animation
+                comboEl.style.animation = 'none';
+                setTimeout(() => comboEl.style.animation = '', 10);
+            } else {
+                comboEl.classList.add('hidden');
+            }
+
+            const progressEl = document.getElementById('progress-bar');
+            const textEl = document.getElementById('progress-text');
+            const percent = Math.min((dailyProgress / dailyGoal) * 100, 100);
+            progressEl.style.width = `${percent}%`;
+            
+            // 그래픽(보석)으로 목표 표시 (중2 맞춤형 퀘스트 스타일)
+            let graphicGoal = '';
+            for(let i = 0; i < dailyGoal; i++) {
+                if (i < dailyProgress) {
+                    graphicGoal += '<span style="display:inline-block; margin: 0 2px; transform:scale(1.1); text-shadow: 0 0 5px rgba(0,0,0,0.2); transition:all 0.3s;">💎</span>';
+                } else {
+                    graphicGoal += '<span style="display:inline-block; margin: 0 2px; opacity:0.35; filter:grayscale(100%); transition:all 0.3s;">💎</span>';
+                }
+            }
+            
+            if (dailyProgress >= dailyGoal) {
+                textEl.innerHTML = `🎉 퀘스트 클리어! ${graphicGoal} 👑`;
+                progressEl.style.background = 'linear-gradient(90deg, #f6d365 0%, #fda085 100%)';
+            } else {
+                textEl.innerHTML = `일일 퀘스트: ${graphicGoal}`;
+                progressEl.style.background = 'linear-gradient(90deg, #84fab0 0%, #8fd3f4 100%)';
+            }
+        }
+
+        async function loadWords() {
+            const { data, error } = await supabaseClient
+                .from('study_words')
+                .select('*')
+                .order('created_at', { ascending: false })
+
+            if (error) {
+                console.log(error)
+                return
+            }
+            const youtubeLinks = data.filter(w => w.subject === 'YOUTUBE_LINK');
+            const IGNORED_SUBJECTS = ['YOUTUBE_LINK', 'DAILY_HABIT', 'FAMILY_SCHEDULE', 'CHILD_REWARD'];
+            const studyData = data.filter(w => {
+                const s = (w.subject || '').trim().toUpperCase();
+                return !IGNORED_SUBJECTS.includes(s) && !s.includes('SCHEDULE') && !s.includes('HABIT') && !s.includes('REWARD');
+            });
+
+            words = studyData.filter(w => !(w.memorized_users && w.memorized_users.includes(userNickname)))
+            memorizedWords = studyData.filter(w => w.memorized_users && w.memorized_users.includes(userNickname))
+
+            if (studyData.length > 0) {
+                const latestDate = new Date(studyData[0]?.created_at || data[0].created_at);
+                document.getElementById('last-updated').innerHTML = `
+                    최근 업데이트: ${latestDate.toLocaleDateString()} ${latestDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}<br>
+                    <span style="font-weight: bold; color: rgba(255,255,255,0.9); display: inline-block; margin-top: 5px;">
+                        저장된 단어: 총 ${studyData.length}개 (남은 단어: ${words.length}개)
+                    </span>
+                `;
+            } else {
+                document.getElementById('last-updated').innerHTML = `저장된 단어가 없습니다.`;
+            }
+
+            renderYoutubeLinks(youtubeLinks);
+            setupSubjects()
+        }
+
+        function setupSubjects() {
+            wordsBySubject = {}
+            words.forEach(w => {
+                const subj = w.subject || '기타'
+                if (!wordsBySubject[subj]) {
+                    wordsBySubject[subj] = []
+                }
+                wordsBySubject[subj].push(w)
+            })
+
+            subjects = Object.keys(wordsBySubject)
+
+            pickNextWord()
+            renderCard()
+        }
+
+        function renderCard() {
+            const cardContainer = document.getElementById('card-wrapper')
+
+            if (words.length === 0) {
+                cardContainer.innerHTML = `
+                    <div class="card empty-state">
+                        🎉 모든 단어를 다 외웠어요! 최고야! 💖
+                        <br><br>
+                        <button class="btn-quiz" onclick="startQuiz()">🎮 복습 퀴즈 풀기</button>
+                    </div>
+                `;
+                return
+            }
+
+            const word = currentWord
+
+            if (isTestMode) {
+                cardContainer.innerHTML = `
+                    <div class="card test-mode">
+                        <div class="test-title">💡 암기 확인 테스트 💡</div>
+                        
+                        
+                        <div class="tags">
+                            <div class="subject">${word.subject}</div>
+                            <div class="category">${word.category}</div>
+                        </div>
+                        
+                        <div class="meaning-hint">${word.meaning || '뜻이 등록되지 않은 단어입니다.'}</div>
+                        
+                        <div style="text-align: center;">
+                            ${word.irregular ? `<div class="irregular-hint">불규칙/원형 힌트: ${word.irregular}</div>` : ''}
+                        </div>
+                        
+                        <div class="input-group">
+                            <input type="text" id="test-input" placeholder="스펠링을 입력해봐요! ✍️" autocomplete="off" onkeypress="if(event.key === 'Enter') checkTest()">
+                        </div>
+
+                        <div class="buttons">
+                            <button class="btn-submit" onclick="checkTest()">정답 제출 💖</button>
+                            <button class="btn-cancel" onclick="cancelTest()">취소 닫기</button>
+                        </div>
+                    </div>
+                `
+                setTimeout(() => document.getElementById('test-input').focus(), 10);
+                return;
+            }
+
+            if (isIrregularTestMode) {
+                cardContainer.innerHTML = `
+                    <div class="card test-mode">
+                        <div class="test-title">🔥 불규칙 변화 테스트 🔥</div>
+                        
+                        <div class="meaning-hint" style="font-size: 32px; color: #ff758c; border-color: #ff758c;">${cleanWord(word.word)}</div>
+                        <div style="text-align: center; color: #636e72; margin-bottom: 20px; font-weight: bold;">(${word.meaning || ''})</div>
+                        
+                        <div style="text-align: center; font-size: 16px; color: #b2bec3; margin-bottom: 10px;">
+                            과거/과거분사형을 입력해주세요! (쉼표나 띄어쓰기는 무시됩니다)
+                        </div>
+                        
+                        <div class="input-group">
+                            <input type="text" id="irregular-test-input" placeholder="불규칙 형태 입력! ✍️" autocomplete="off" onkeypress="if(event.key === 'Enter') checkIrregularTest()">
+                        </div>
+
+                        <div class="buttons">
+                            <button class="btn-submit" onclick="checkIrregularTest()">정답 제출 💖</button>
+                            <button class="btn-cancel" onclick="cancelTest()">취소 닫기</button>
+                        </div>
+                    </div>
+                `;
+                setTimeout(() => document.getElementById('irregular-test-input').focus(), 10);
+                return;
+            }
+
+            if (isQuizMode) {
+                cardContainer.innerHTML = `
+                    <div class="card test-mode">
+                        <div class="test-title">🎮 복습 퀴즈 🎮</div>
+                        <div class="meaning-hint" style="border-color:#f6d365;">${quizTargetWord.meaning || '의미 없음'}</div>
+                        <div style="text-align:center; color:#636e72; margin-bottom: 20px; font-weight: bold;">이 뜻을 가진 단어는 무엇일까요?</div>
+                        
+                        <div class="quiz-options">
+                            ${quizOptions.map(opt => `
+                                <button class="quiz-option" onclick="submitQuiz('${opt.word.replace(/'/g, "\\'")}')">${cleanWord(opt.word)}</button>
+                            `).join('')}
+                        </div>
+
+                        <div class="buttons">
+                            <button class="btn-cancel" onclick="cancelQuiz()">취소 닫기</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (isMathAiMode) {
+                if (isMathLoading) {
+                    cardContainer.innerHTML = `
+                        <div class="card test-mode">
+                            <div class="test-title">🤖 AI 수학 선생님 🤖</div>
+                            <div class="empty-state">
+                                <div>${cleanWord(word.word)} 기초 문제를 만들고 있어요...</div>
+                                <div style="font-size: 40px; margin-top: 20px; animation: popIn 1s infinite;">⏳</div>
+                            </div>
+                        </div>
+                    `;
+                } else if (mathAiResult) {
+                    cardContainer.innerHTML = `
+                        <div class="card test-mode">
+                            <div class="test-title">🤖 AI 기초 탄탄 문제 🤖</div>
+                            <div style="font-family:'Jua', sans-serif; font-size: 22px; color:#2d3436; text-align:center; margin-bottom:20px; line-height: 1.5; padding: 20px; background:#fff9e6; border-radius:20px; border:2px solid #ffeaa7;">
+                                ${mathAiResult.problem}
+                            </div>
+                            
+                            <div id="math-solution-area" class="hidden">
+                                <div style="font-weight:bold; color:#ff758c; font-size: 24px; text-align:center; margin-bottom: 10px;">정답: ${mathAiResult.answer}</div>
+                                <div style="font-size: 16px; color:#636e72; background:#f8f9fa; padding:15px; border-radius:15px; line-height:1.6; white-space: pre-wrap;">${mathAiResult.solution}</div>
+                            </div>
+
+                            <div class="buttons" id="math-actions-1">
+                                <button class="btn-meaning" onclick="document.getElementById('math-solution-area').classList.remove('hidden'); document.getElementById('math-actions-1').classList.add('hidden'); document.getElementById('math-actions-2').classList.remove('hidden');">👀 정답 및 풀이 보기</button>
+                                <button class="btn-cancel" onclick="nextWord()">다음에 풀기</button>
+                            </div>
+                            
+                            <div class="buttons hidden" id="math-actions-2">
+                                <button class="btn-submit" style="width:100%" onclick="finishMathAi()">이해했어요! (완료) 💖</button>
+                                <button class="btn-cancel" onclick="nextWord()">다시 공부할게요</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // 수식(LaTeX) 렌더링 적용 (AI 문제 화면용)
+                    if (window.renderMathInElement) {
+                        setTimeout(() => {
+                            renderMathInElement(document.getElementById('card-wrapper'), {
+                                delimiters: [
+                                    {left: '$$', right: '$$', display: true},
+                                    {left: '$', right: '$', display: false},
+                                    {left: '\\(', right: '\\)', display: false},
+                                    {left: '\\[', right: '\\]', display: true}
+                                ],
+                                throwOnError: false
+                            });
+                        }, 50); // DOM 업데이트 직후 렌더링되도록 약간의 지연 시간 부여
+                    }
+                }
+                return;
+            }
+
+            const isMath = word.subject && word.subject.includes('수학');
+            const isMc = !!parseMultipleChoice(word.example);
+
+            cardContainer.innerHTML = `
+        <div class="card">
+          
+          <div class="word">
+              <span id="secret-word-display" style="${isMc ? 'color: #ffb8b8; font-size: 0.8em;' : ''}">${isMc ? '❓❓❓' : cleanWord(word.word)}</span>
+              ${/[a-zA-Z]/.test(cleanWord(word.word)) ? `<span id="secret-speaker-icon" class="speaker-icon ${isMc ? 'hidden' : ''}" onclick="speakWord('${cleanWord(word.word).replace(/'/g, "\\'")}')" title="발음 듣기">🔊</span>` : ''}
+          </div>
+          
+          <div style="text-align: center;">
+              ${word.irregular ? `
+                  <div class="irregular" style="display: inline-flex; align-items: center; gap: 8px;">
+                      ${word.irregular}
+                      ${/[a-zA-Z]/.test(word.irregular) ? `<span class="speaker-icon" onclick="speakWord('${word.irregular.replace(/'/g, "\\'")}')" title="불규칙 변화 발음 듣기" style="font-size: 22px; padding: 4px;">🔊</span>` : ''}
+                  </div>
+              ` : ''}
+          </div>
+          
+          <div class="hanja">${word.hanja || ''}</div>
+
+          <div class="tags">
+              <div class="subject">${word.subject}</div>
+              <div class="category">${word.category}</div>
+          </div>
+
+          <div class="example ${isMc ? 'mc-mode' : ''}">${renderMultipleChoice(word.example)}</div>
+
+          <div class="meaning ${meaningVisible ? '' : 'hidden'}">${word.meaning || ''}</div>
+
+          <div class="buttons">
+            ${isMath ? 
+              `<button class="btn-meaning" onclick="toggleMeaning()">✨ 정답 보기</button>
+               <button class="btn-test" style="background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white;" onclick="startMathAiMode()">🤖 AI 맞춤 문제</button>` 
+              :
+              `<button class="btn-meaning" onclick="toggleMeaning()">✨ 뜻 보기</button>
+               <button class="btn-test" onclick="toggleTestMode()">📝 스펠링 테스트</button>
+               ${word.irregular ? `<button class="btn-test" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color:white;" onclick="toggleIrregularTestMode()">📝 불규칙 테스트</button>` : ''}`
+            }
+            <button class="btn-next" onclick="nextWord()">다음 🚀</button>
+            ${!isMath ? `<button class="btn-quiz" style="width: 100%;" onclick="startQuiz()">🎮 복습 퀴즈 풀기</button>` : ''}
+          </div>
+
+        </div>
+      `
+            
+            // 수식(LaTeX) 렌더링 적용
+            if (window.renderMathInElement) {
+                renderMathInElement(cardContainer, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        async function insertStudyLog(subject, content, detail) {
+            await supabaseClient.from('study_logs').insert([{
+                subject: subject,
+                content: content,
+                detail: detail,
+                creator: userNickname
+            }]);
+        }
+
+        async function markAsMemorizedManually() {
+            if (isSubmitting) return;
+            isSubmitting = true;
+            await updateMemorizedState();
+            await insertStudyLog(currentWord.subject || '기타', currentWord.word, '직접 완료 처리');
+            finalizeTest();
+            isSubmitting = false;
+        }
+
+        async function updateMemorizedState() {
+            const newUsers = currentWord.memorized_users ? [...currentWord.memorized_users] : [];
+            if (!newUsers.includes(userNickname)) {
+                newUsers.push(userNickname);
+            }
+
+            const { error } = await supabaseClient
+                .from('study_words')
+                .update({ memorized_users: newUsers })
+                .eq('id', currentWord.id);
+                
+            if (error) {
+                console.error("DB 업데이트 에러:", error);
+                alert("서버 저장 중 오류가 발생했어요. 다시 시도해주세요! 😥");
+                return false;
+            }
+            return true;
+        }
+
+        function finalizeTest() {
+            comboCount++;
+            dailyProgress++;
+            saveStats();
+
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ffc3a0', '#ffafbd', '#84fab0', '#8fd3f4', '#f6d365']
+            });
+            
+            const memorizedWord = currentWord;
+            words = words.filter(w => w.id !== currentWord.id);
+            memorizedWords.push(memorizedWord);
+            isTestMode = false;
+            isIrregularTestMode = false;
+            isMathAiMode = false;
+            mathAiResult = null;
+            setupSubjects();
+            loadMyHistory();
+        }
+
+        function toggleMeaning() {
+            meaningVisible = !meaningVisible
+            renderCard()
+        }
+        
+        function toggleTestMode() {
+            isTestMode = true
+            renderCard()
+        }
+
+        function toggleIrregularTestMode() {
+            isIrregularTestMode = true
+            renderCard()
+        }
+        
+        function cancelTest() {
+            isTestMode = false
+            isIrregularTestMode = false
+            isMathAiMode = false
+            renderCard()
+        }
+        
+        async function checkTest() {
+            if (isSubmitting) return;
+            const inputVal = document.getElementById('test-input').value.trim();
+            if (inputVal.toLowerCase() === cleanWord(currentWord.word).toLowerCase()) {
+                isSubmitting = true;
+                const success = await updateMemorizedState();
+                if(!success) { isSubmitting = false; return; }
+
+                await insertStudyLog(currentWord.subject || '영어', cleanWord(currentWord.word), '스펠링 테스트 완료');
+                finalizeTest();
+                isSubmitting = false;
+            } else {
+                // Combo Breaks
+                comboCount = 0;
+                saveStats();
+
+                alert("앗, 틀렸어요! 다시 한 번 시도해볼까요? 😉");
+                const inputEl = document.getElementById('test-input');
+                inputEl.value = '';
+                inputEl.focus();
+            }
+        }
+
+        async function checkIrregularTest() {
+            if (isSubmitting) return;
+            const inputVal = document.getElementById('irregular-test-input').value.trim();
+            
+            // 공백, 쉼표, 하이픈 등 기호 무시하고 소문자로 알파벳만 비교 (또는 한글도 포함)
+            const normalizedInput = inputVal.toLowerCase().replace(/[\s\-\,\.]/g, '');
+            const normalizedTarget = currentWord.irregular.toLowerCase().replace(/[\s\-\,\.]/g, '');
+
+            if (normalizedInput === normalizedTarget) {
+                isSubmitting = true;
+                const success = await updateMemorizedState();
+                if(!success) { isSubmitting = false; return; }
+
+                await insertStudyLog(currentWord.subject || '영어', cleanWord(currentWord.word), '불규칙 변화 테스트 완료');
+                finalizeTest();
+                isSubmitting = false;
+            } else {
+                comboCount = 0;
+                saveStats();
+
+                alert("앗, 틀렸어요! 불규칙 형태를 다시 한 번 확인해볼까요? 😉");
+                const inputEl = document.getElementById('irregular-test-input');
+                inputEl.value = '';
+                inputEl.focus();
+            }
+        }
+
+        function startQuiz() {
+            if (memorizedWords.length < 4) {
+                alert("앗! 퀴즈를 풀려면 최소 4개의 단어를 암기해야 해요! (현재 암기완료: " + memorizedWords.length + "개)");
+                return;
+            }
+            isQuizMode = true;
+            
+            // Pick 1 target from memorizedWords
+            const targetIndex = Math.floor(Math.random() * memorizedWords.length);
+            quizTargetWord = memorizedWords[targetIndex];
+            
+            // Pick 3 distractors
+            let allAvailable = [...words, ...memorizedWords].filter(w => w.id !== quizTargetWord.id);
+            allAvailable.sort(() => 0.5 - Math.random());
+            
+            const targetClean = cleanWord(quizTargetWord.word).toLowerCase();
+            let uniqueDistractors = [];
+            let seenCleanWords = new Set([targetClean]);
+            
+            for (let w of allAvailable) {
+                const wClean = cleanWord(w.word).toLowerCase();
+                if (!seenCleanWords.has(wClean)) {
+                    uniqueDistractors.push(w);
+                    seenCleanWords.add(wClean);
+                    if (uniqueDistractors.length === 3) break;
+                }
+            }
+            if (uniqueDistractors.length < 3) {
+                uniqueDistractors = allAvailable.slice(0, 3);
+            }
+            
+            quizOptions = [quizTargetWord, ...uniqueDistractors];
+            quizOptions.sort(() => 0.5 - Math.random());
+            
+            renderCard();
+        }
+
+        async function submitQuiz(selectedWord) {
+            if (isSubmitting) return;
+            if (selectedWord === quizTargetWord.word) {
+                isSubmitting = true;
+                confetti({
+                    particleCount: 100,
+                    spread: 60,
+                    origin: { y: 0.6 }
+                });
+                await insertStudyLog(quizTargetWord.subject || '복습', quizTargetWord.word, '복습 퀴즈 정답');
+                alert("정답이에요! 🎉 멋져요!");
+                setTimeout(() => {
+                    isSubmitting = false;
+                    startQuiz();
+                }, 500);
+            } else {
+                alert(`앗, 틀렸어요! 😥 정답은 '${quizTargetWord.word}' 였어요.`);
+            }
+        }
+
+        function cancelQuiz() {
+            isQuizMode = false;
+            renderCard();
+        }
+
+        function pickNextWord() {
+            if (subjects.length === 0) return
+
+            const subj = subjects[currentSubjectIndex]
+            currentSubjectIndex++
+            if (currentSubjectIndex >= subjects.length) {
+                currentSubjectIndex = 0
+            }
+
+            const list = wordsBySubject[subj]
+            const randomIndex = Math.floor(Math.random() * list.length)
+            currentWord = list[randomIndex]
+        }
+
+        async function startMathAiMode() {
+            isMathAiMode = true;
+            isMathLoading = true;
+            mathAiResult = null;
+            renderCard();
+
+            try {
+                const response = await fetch('/api/math', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ word: currentWord.word })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`상태 코드: ${response.status}, 내용: ${errorText}`);
+                }
+
+                mathAiResult = await response.json();
+            } catch (err) {
+                console.error(err);
+                alert("AI 문제 생성에 실패했습니다.\n사유: " + err.message);
+                isMathAiMode = false;
+            } finally {
+                isMathLoading = false;
+                renderCard();
+            }
+        }
+
+        async function finishMathAi() {
+            if (isSubmitting) return;
+            isSubmitting = true;
+            const success = await updateMemorizedState();
+            if(!success) { isSubmitting = false; return; }
+            
+            await insertStudyLog(currentWord.subject || '수학', cleanWord(currentWord.word), 'AI 맞춤 수학 문제 풀이 완료');
+            finalizeTest();
+            isSubmitting = false;
+        }
+
+        function nextWord() {
+            meaningVisible = false
+            isMathAiMode = false
+            pickNextWord()
+            renderCard()
+        }
+
+        function speakWord(text) {
+            text = cleanWord(text);
+            if ('speechSynthesis' in window) {
+                // 기존 재생중인 음성 취소
+                window.speechSynthesis.cancel();
+                
+                // 한글 제거 (영어 발음 기호나 기타 텍스트만 남김)
+                const englishOnly = text.replace(/[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/g, '').trim();
+                
+                if (!englishOnly) return;
+                
+                const utterance = new SpeechSynthesisUtterance(englishOnly);
+                
+                // 중학생 학습용 추천 목소리 적용 (자동)
+                const voices = window.speechSynthesis.getVoices();
+                const recommendedVoices = ['Google US English', 'Samantha', 'Microsoft Zira - English (United States)', 'Microsoft Zira', 'Alex'];
+                
+                const bestVoice = voices.find(v => recommendedVoices.includes(v.name));
+                if (bestVoice) {
+                    utterance.voice = bestVoice;
+                } else {
+                    // 추천 목소리가 없으면 기본 영어 목소리
+                    const fallbackVoice = voices.find(v => v.lang.startsWith('en') && v.default) || voices.find(v => v.lang.startsWith('en'));
+                    if (fallbackVoice) {
+                        utterance.voice = fallbackVoice;
+                    } else {
+                        utterance.lang = 'en-US';
+                    }
+                }
+
+                utterance.rate = 0.85;    // 약간 천천히 (아이들이 듣기 편하게)
+                utterance.pitch = 1.1;    // 살짝 높은 톤으로 밝게
+                
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("앗! 지금 사용 중인 브라우저에서는 발음 듣기가 안 돼요. 😥 (크롬/사파리를 추천해요)");
+            }
+        }
+
+        async function loadMyHistory() {
+            if (!userNickname) return;
+            
+            const targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() - 6);
+            targetDate.setHours(0, 0, 0, 0);
+            const targetIso = targetDate.toISOString();
+
+            const { data, error } = await supabaseClient
+                .from('study_logs')
+                .select('*')
+                .eq('creator', userNickname)
+                .gte('created_at', targetIso)
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error("DB 로드 에러:", error);
+                return;
+            }
+
+            // DAILY_HABIT 및 CHILD_REWARD 기록은 단어 암기 그래프에 포함되지 않도록 필터링
+            const wordLogs = (data || []).filter(log => log.subject !== 'DAILY_HABIT' && log.subject !== 'CHILD_REWARD');
+            renderHistory(wordLogs);
+        }
+
+        function renderHistory(logs) {
+            const container = document.getElementById('history-container');
+            if (!container) return;
+            
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div class="history-title">📈 나의 일주일 공부 기록</div>
+                    <div style="text-align:center; color:#636e72; font-size:14px; padding: 20px 0; font-family:'Jua', sans-serif;">아직 최근 기록이 없어요. 오늘도 파이팅! 💖</div>
+                `;
+                container.classList.remove('hidden');
+                return;
+            }
+
+            // Aggregate by date
+            const countsByDate = {};
+            // Initialize last 7 days to maintain order
+            for(let i=6; i>=0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+                countsByDate[dateStr] = { total: 0 };
+            }
+
+            logs.forEach(log => {
+                const d = new Date(log.created_at);
+                const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+                if (countsByDate[dateStr]) {
+                    countsByDate[dateStr].total++;
+                }
+            });
+
+            let html = `<div class="history-title">📈 나의 일주일 공부 기록</div>`;
+            html += `<div style="display:flex; flex-direction:column; gap:4px; margin-top: 15px;">`;
+
+            // Max value for bar chart scaling (minimum 10)
+            const maxTotal = Math.max(10, ...Object.values(countsByDate).map(c => c.total));
+
+            Object.keys(countsByDate).reverse().forEach((dateStr, index) => {
+                const count = countsByDate[dateStr];
+                const barWidth = Math.min((count.total / maxTotal) * 100, 100);
+                const isToday = index === 0;
+                
+                html += `
+                    <div class="history-chart-row">
+                        <div class="history-chart-date" style="${isToday ? 'color:#ff758c;' : ''}">${dateStr}</div>
+                        <div class="history-chart-bar-bg">
+                            <div class="history-chart-bar-fill" style="width: ${barWidth}%; ${isToday ? 'background: linear-gradient(90deg, #84fab0 0%, #8fd3f4 100%);' : ''}"></div>
+                        </div>
+                        <div class="history-chart-count" style="${isToday ? 'color:#ff758c;' : ''}">${count.total}개</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            
+            container.innerHTML = html;
+            container.classList.remove('hidden');
+        }
+
+        function renderYoutubeLinks(links) {
+            const listEl = document.getElementById('youtube-list');
+            if (!listEl) return;
+            
+            let html = '';
+            
+            // Default links
+            const defaultLinks = [
+                { url: 'https://www.youtube.com/@ebs_middle', icon: '🎒', title: 'EBS 중학 (교과서 기초 탄탄)' },
+                { url: 'https://www.youtube.com/@hongong', icon: '🔤', title: '혼공TV (쉽고 재밌는 영문법)' },
+                { url: 'https://www.youtube.com/@jungseungje', icon: '📐', title: '정승제 생선님 (수학 포기 금지!)' },
+                { url: 'https://www.youtube.com/@science_dream', icon: '🔬', title: '과학드림 (흥미진진한 과학 이야기)' },
+                { url: 'https://www.youtube.com/@1minuteinfo', icon: '🧠', title: '1분미만 (짧고 유익한 상식)' },
+                { url: 'https://youtu.be/tedqdAiXBCk?si=cTraohne85P4HqTv', icon: '📖', title: '영어동화 모아듣기 (들려드리리나)' }
+            ];
+
+            const allLinks = [...defaultLinks, ...links.map(l => ({
+                id: l.id,
+                url: l.meaning,
+                icon: l.example || '📺',
+                title: l.word
+            }))];
+
+            allLinks.forEach(link => {
+                html += `
+                    <div style="position:relative; display:flex; align-items:center;">
+                        <a href="${link.url}" target="_blank" class="youtube-link" style="flex-grow:1; padding-right:${link.id && userNickname === '아빠' ? '40px' : '16px'};">
+                            <span style="font-size:24px; margin-right:12px;">${link.icon}</span> ${link.title}
+                        </a>
+                        ${userNickname === '아빠' && link.id ? `<button onclick="deleteYoutubeLink('${link.id}')" style="position:absolute; right:10px; background:white; border:2px solid #ff758c; border-radius:50%; padding:5px 8px; color:#ff758c; font-size:12px; cursor:pointer;">❌</button>` : ''}
+                    </div>
+                `;
+            });
+            
+            listEl.innerHTML = html;
+            
+            const btnContainer = document.getElementById('youtube-admin-actions');
+            if (btnContainer) {
+                if (userNickname === '아빠') {
+                    btnContainer.innerHTML = `<button onclick="showAddYoutubeModal()" style="width:100%; margin-top:16px; background:linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); color:#4a69bd; font-family:'Jua', sans-serif;">➕ 아빠의 추천 링크 추가하기</button>`;
+                } else {
+                    btnContainer.innerHTML = '';
+                }
+            }
+        }
+        
+        async function deleteYoutubeLink(id) {
+            if(!confirm('이 추천 링크를 삭제할까요?')) return;
+            const { error } = await supabaseClient.from('study_words').delete().eq('id', id);
+            if (!error) {
+                alert('삭제되었습니다!');
+                loadWords();
+            } else {
+                alert('삭제에 실패했습니다.');
+            }
+        }
+
+        function showAddYoutubeModal() {
+            const overlay = document.getElementById('youtube-modal-overlay');
+            if (overlay) {
+                overlay.classList.remove('hidden');
+                document.getElementById('yt-title').value = '';
+                document.getElementById('yt-url').value = '';
+                document.getElementById('yt-icon').value = '📺';
+                document.getElementById('yt-title').focus();
+            }
+        }
+        
+        function closeYoutubeModal() {
+            const overlay = document.getElementById('youtube-modal-overlay');
+            if (overlay) overlay.classList.add('hidden');
+        }
+
+        function submitYoutubeModal() {
+            const title = document.getElementById('yt-title').value.trim();
+            const url = document.getElementById('yt-url').value.trim();
+            const icon = document.getElementById('yt-icon').value.trim() || '📺';
+
+            if (!title) { alert('제목을 입력해주세요!'); return; }
+            if (!url) { alert('유튜브 링크를 입력해주세요!'); return; }
+
+            addYoutubeLink(title, url, icon);
+            closeYoutubeModal();
+        }
+        
+        async function addYoutubeLink(title, url, icon) {
+            const { error } = await supabaseClient.from('study_words').insert([{
+                word: title,
+                meaning: url,
+                example: icon,
+                subject: 'YOUTUBE_LINK'
+            }]);
+            
+            if (error) {
+                alert('저장에 실패했습니다.');
+            } else {
+                alert('추천 링크가 추가되었습니다! 💖');
+                loadWords();
+            }
+        }
+
+        // ===================================================
+        // Daily Habit State & Logic (지각 / 저녁 공부 관리)
+        // ===================================================
+        let habitRecordsMap = {};
+        let selectedHabitDate = getLocalDateStr(new Date());
+        let habitCalYear = new Date().getFullYear();
+        let habitCalMonth = new Date().getMonth(); // 0-indexed
+        let isHabitSaving = false;
+        let isDadPreviewMode = false;
+        let habitWeekOffset = 0; // 0 = 이번 주, -1 = 지난주, +1 = 다음주
+        let isHabitMonthExpanded = false; // 월간 달력 전체보기 접기/펼치기 여부
+        let familySchedules = []; // 아빠가 등록한 주요 일정 (중간고사, 제사, 기념일 등)
+
+        let draftAttendance = null; // 'ON_TIME' | 'LATE' | 'EARLY_LEAVE' | 'ABSENT' | 'HOLIDAY' | null
+        let draftAttendanceReason = null; // 'SICK' | 'EXPERIENCE' | 'FAMILY' | 'CUSTOM' | null
+        let draftAttendanceReasonText = ''; // 결석/조퇴 구체적인 사유
+        let draftEveningStudy = null; // true | false | null
+        let draftStudyAttitude = null; // 'EXCELLENT' | 'GOOD' | 'NEEDS_FOCUS' | null
+        let draftFocusOnTime = false; // [⏰ 정시 시작 / 시간 엄수]
+        let draftFocusDeep = false; // [🌟 집중 몰입]
+        let draftAbsenceReason = null; // 'REST_SICK' | 'REST_EXAM' | 'REST_TRAVEL' | 'REST_FATIGUE' | 'REST_CUSTOM' | null
+        let draftReasonText = ''; // 사유 상세 텍스트
+        let draftAssignments = []; // [{ id, text, dueDate, done }]
+        let draftPromises = []; // [{ id, text, done }]
+        let draftMemo = '';
+
+        // ===================================================
+        // 보상 & 퀘스트 시스템 State (CHILD_REWARD)
+        // ===================================================
+        let rewardCoupons = []; // [{ id, dbId, title, type, rewardDesc, date, status, claimedAt, usedAt }]
+        let questConfig = {
+            focusRewardTitle: '🏪 편의점 3,000원 상품권',
+            focusRewardDesc: '정시 시작 & 몰입 퀘스트 5회 달성 축하 선물! 💖 (또는 학습 보너스권)',
+            goldRewardTitle: '🏖️ 1일 학습 자유 휴식권 (골드 티켓)',
+            goldRewardDesc: '2주 퍼펙트 출결(14일 무결석·무지각·무조퇴) 대기록 달성 보상! 👑'
+        };
+        let currentMainTab = 'study'; // 'study' | 'life'
+
+        function getStudyStatusInfo(val) {
+            if (val === true) {
+                return {
+                    badge: '📖',
+                    title: '저녁 공부 완료',
+                    childClass: 'study-done',
+                    icon: '📖',
+                    childTitle: '저녁 공부',
+                    childText: '저녁 공부 완료! 오늘도 한 걸음 더 성장했어요! 👑',
+                    modalText: '📖 저녁 공부 완료! 👑'
+                };
+            }
+            if (val === 'REST_EXAM') {
+                return {
+                    badge: '📝',
+                    title: '공부 쉼 (수행평가)',
+                    childClass: 'study-exam',
+                    icon: '📝',
+                    childTitle: '공부 쉼 (수행평가)',
+                    childText: '수행평가 준비로 저녁 공부를 쉬어갑니다 📝 화이팅!',
+                    modalText: '📝 공부 쉼 (수행평가 집중)'
+                };
+            }
+            if (val === 'REST_SICK') {
+                return {
+                    badge: '🤒',
+                    title: '공부 쉼 (질병/아픔)',
+                    childClass: 'study-sick',
+                    icon: '🤒',
+                    childTitle: '공부 쉼 (질병/아픔)',
+                    childText: '몸이 아파서 푹 쉬고 회복하는 중이에요 💊 얼른 나아요!',
+                    modalText: '🤒 공부 쉼 (질병 / 건강 회복)'
+                };
+            }
+            if (val === 'REST_TRAVEL') {
+                return {
+                    badge: '✈️',
+                    title: '공부 쉼 (여행/외출)',
+                    childClass: 'study-travel',
+                    icon: '✈️',
+                    childTitle: '공부 쉼 (여행/외출)',
+                    childText: '즐거운 여행·일정 중이에요! 좋은 추억 만들어요 🎈',
+                    modalText: '✈️ 공부 쉼 (여행 / 가족 일정)'
+                };
+            }
+            if (val === false || val === 'REST_NORMAL') {
+                return {
+                    badge: '💤',
+                    title: '공부 쉼 (일반 휴식)',
+                    childClass: 'study-rest',
+                    icon: '💤',
+                    childTitle: '저녁 공부',
+                    childText: '오늘은 편안하게 쉬어가는 날이에요 ☕',
+                    modalText: '💤 공부 쉼 / 일반 휴식'
+                };
+            }
+            return null;
+        }
+
+        function getSchedulesForDate(dateStr) {
+            if (!familySchedules || !familySchedules.length) return [];
+            return familySchedules.filter(s => {
+                const start = s.startDate;
+                const end = s.endDate || s.startDate;
+                return start <= dateStr && dateStr <= end;
+            });
+        }
+
+        function formatScheduleRange(startDate, endDate) {
+            if (!startDate) return '';
+            if (!endDate || startDate === endDate) {
+                const parts = startDate.split('-').map(Number);
+                const d = new Date(parts[0], parts[1] - 1, parts[2]);
+                const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+                return `${parts[1]}월 ${parts[2]}일(${dayNames[d.getDay()]})`;
+            }
+            const p1 = startDate.split('-').map(Number);
+            const d1 = new Date(p1[0], p1[1] - 1, p1[2]);
+            const p2 = endDate.split('-').map(Number);
+            const d2 = new Date(p2[0], p2[1] - 1, p2[2]);
+            const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+            return `${p1[1]}월 ${p1[2]}일(${dayNames[d1.getDay()]}) ~ ${p2[1]}월 ${p2[2]}일(${dayNames[d2.getDay()]})`;
+        }
+
+        function getScheduleDDayInfo(startDate, endDate) {
+            const todayStr = getLocalDateStr(new Date());
+
+            if (todayStr >= startDate && todayStr <= (endDate || startDate)) {
+                return {
+                    label: (startDate === endDate) ? '오늘 D-Day! 🌟' : '진행 중! 🔥',
+                    className: 'active',
+                    isOngoing: true,
+                    isUpcoming: false,
+                    isPassed: false,
+                    diff: 0
+                };
+            }
+
+            const todayParts = todayStr.split('-').map(Number);
+            const todayDate = new Date(todayParts[0], todayParts[1] - 1, todayParts[2]);
+
+            const startParts = startDate.split('-').map(Number);
+            const startDateObj = new Date(startParts[0], startParts[1] - 1, startParts[2]);
+
+            const diffDays = Math.round((startDateObj - todayDate) / (1000 * 60 * 60 * 24));
+
+            if (diffDays > 0) {
+                return {
+                    label: `D-${diffDays}`,
+                    className: (diffDays <= 7) ? 'urgent' : 'normal',
+                    isOngoing: false,
+                    isUpcoming: true,
+                    isPassed: false,
+                    diff: diffDays
+                };
+            } else {
+                const endParts = (endDate || startDate).split('-').map(Number);
+                const endDateObj = new Date(endParts[0], endParts[1] - 1, endParts[2]);
+                const pastDays = Math.round((todayDate - endDateObj) / (1000 * 60 * 60 * 24));
+                return {
+                    label: '종료',
+                    className: 'passed',
+                    isOngoing: false,
+                    isUpcoming: false,
+                    isPassed: true,
+                    diff: -pastDays
+                };
+            }
+        }
+
+        function generateScheduleCardHtml(isDad) {
+            const activeList = [];
+            const upcomingList = [];
+            const passedList = [];
+
+            familySchedules.forEach(ev => {
+                const info = getScheduleDDayInfo(ev.startDate, ev.endDate);
+                if (info.isOngoing) activeList.push({ ...ev, info });
+                else if (info.isUpcoming) upcomingList.push({ ...ev, info });
+                else passedList.push({ ...ev, info });
+            });
+
+            let displayList = [...activeList, ...upcomingList];
+            if (displayList.length === 0 && passedList.length > 0) {
+                displayList.push(passedList[passedList.length - 1]);
+            }
+
+            let itemsHtml = '';
+            if (displayList.length === 0) {
+                itemsHtml = `
+                    <div style="text-align:center; padding:12px; color:#94a3b8; font-size:13px; font-family:'Jua', sans-serif;">
+                        ${isDad ? '등록된 시험이나 가족 일정이 없습니다. 우측 버튼을 눌러 일정을 등록해보세요! 😊' : '등록된 주요 일정이 없습니다 💖'}
+                    </div>
+                `;
+            } else {
+                itemsHtml = displayList.slice(0, 4).map(ev => {
+                    const rangeStr = formatScheduleRange(ev.startDate, ev.endDate);
+                    const deleteBtn = isDad 
+                        ? `<button type="button" onclick="deleteSchedule(${ev.id}, '${escapeHtml(ev.title)}')" style="background:none; border:none; color:#cbd5e1; cursor:pointer; font-size:14px; padding:2px 4px;" title="일정 삭제" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'">🗑️</button>` 
+                        : '';
+                    const activeClass = ev.info.isOngoing ? 'active-now' : '';
+                    return `
+                        <div class="schedule-item ${activeClass}">
+                            <div class="schedule-item-left">
+                                <div class="schedule-icon-badge">${ev.icon}</div>
+                                <div class="schedule-info">
+                                    <div class="schedule-name">${escapeHtml(ev.title)}</div>
+                                    <div class="schedule-dates">📅 ${rangeStr}</div>
+                                    ${ev.memo ? `<div class="schedule-memo-text">💬 ${escapeHtml(ev.memo)}</div>` : ''}
+                                </div>
+                            </div>
+                            <div class="schedule-item-right">
+                                <span class="schedule-dday-badge ${ev.info.className}">${ev.info.label}</span>
+                                ${deleteBtn}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const manageBtn = isDad
+                ? `<button type="button" class="schedule-add-btn" onclick="openScheduleModal()">➕ 일정 등록 / 관리</button>`
+                : (familySchedules.length > 0 ? `<button type="button" class="habit-cal-btn" onclick="openScheduleModal()" style="font-size:11px; padding:3px 8px;">전체 (${familySchedules.length})</button>` : '');
+
+            return `
+                <div class="schedule-section-card">
+                    <div class="schedule-header">
+                        <div class="schedule-title">
+                            <span>🗓️ 우리 집 주요 일정 & D-Day</span>
+                        </div>
+                        ${manageBtn}
+                    </div>
+                    <div class="schedule-list">
+                        ${itemsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function openScheduleModal() {
+            const overlay = document.getElementById('schedule-modal-overlay');
+            if (!overlay) return;
+            overlay.classList.remove('hidden');
+
+            const startInput = document.getElementById('sched-input-start');
+            const endInput = document.getElementById('sched-input-end');
+            if (startInput && !startInput.value) {
+                startInput.value = selectedHabitDate || getLocalDateStr(new Date());
+            }
+            if (endInput && !endInput.value) {
+                endInput.value = startInput ? startInput.value : getLocalDateStr(new Date());
+            }
+
+            renderScheduleModalList();
+        }
+
+        function closeScheduleModal() {
+            const overlay = document.getElementById('schedule-modal-overlay');
+            if (overlay) overlay.classList.add('hidden');
+        }
+
+        function selectSchedCat(btn) {
+            document.querySelectorAll('.sched-cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function syncSchedEndDate(val) {
+            const endInput = document.getElementById('sched-input-end');
+            if (endInput && (!endInput.value || endInput.value < val)) {
+                endInput.value = val;
+            }
+        }
+
+        async function saveNewSchedule() {
+            const titleInput = document.getElementById('sched-input-title');
+            const startInput = document.getElementById('sched-input-start');
+            const endInput = document.getElementById('sched-input-end');
+            const memoInput = document.getElementById('sched-input-memo');
+            const saveBtn = document.getElementById('sched-save-btn');
+
+            const title = (titleInput?.value || '').trim();
+            const startDate = startInput?.value;
+            let endDate = endInput?.value || startDate;
+            const memo = (memoInput?.value || '').trim();
+
+            if (!title) {
+                alert("일정 제목을 입력해주세요! (예: 2학기 중간고사, 할아버지 제사 등)");
+                titleInput?.focus();
+                return;
+            }
+            if (!startDate) {
+                alert("시작 날짜를 선택해주세요!");
+                startInput?.focus();
+                return;
+            }
+            if (endDate < startDate) {
+                endDate = startDate;
+            }
+
+            const selectedCatBtn = document.querySelector('.sched-cat-btn.active');
+            const icon = selectedCatBtn ? selectedCatBtn.getAttribute('data-icon') : '📌';
+            const category = selectedCatBtn ? selectedCatBtn.getAttribute('data-cat') : 'OTHER';
+
+            const schedObj = {
+                title,
+                startDate,
+                endDate,
+                icon,
+                category,
+                memo,
+                author: userNickname || '아빠',
+                created_at: new Date().toISOString()
+            };
+
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerText = "저장 중... ⏳";
+            }
+
+            try {
+                const schedKey = `SCHED_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+                const { error } = await supabaseClient
+                    .from('study_words')
+                    .insert([{
+                        word: schedKey,
+                        meaning: JSON.stringify(schedObj),
+                        subject: 'FAMILY_SCHEDULE',
+                        category: '아람',
+                        example: userNickname || '아빠'
+                    }]);
+
+                if (error) throw error;
+
+                confetti({
+                    particleCount: 80,
+                    spread: 60,
+                    origin: { y: 0.5 }
+                });
+
+                alert(`💖 [${icon} ${title}] 일정이 등록되었습니다!`);
+                
+                await loadHabitRecords();
+                
+                if (titleInput) titleInput.value = '';
+                if (memoInput) memoInput.value = '';
+                
+                renderScheduleModalList();
+                
+            } catch(err) {
+                console.error("Save schedule error:", err);
+                alert("일정 저장 중 오류가 발생했습니다: " + (err.message || err));
+            } finally {
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerText = "💾 일정 추가하기 💖";
+                }
+            }
+        }
+
+        async function deleteSchedule(id, title) {
+            if (!confirm(`[${title}] 일정을 삭제하시겠습니까?`)) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('study_words')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                alert(`[${title}] 일정이 삭제되었습니다.`);
+                await loadHabitRecords();
+                renderScheduleModalList();
+            } catch(err) {
+                console.error("Delete schedule error:", err);
+                alert("삭제 중 오류가 발생했습니다: " + (err.message || err));
+            }
+        }
+
+        function renderScheduleModalList() {
+            const container = document.getElementById('sched-modal-list');
+            if (!container) return;
+
+            if (!familySchedules || familySchedules.length === 0) {
+                container.innerHTML = `<div style="text-align:center; color:#94a3b8; font-size:12px; padding:16px;">등록된 일정이 없습니다.</div>`;
+                return;
+            }
+
+            const isDad = (userNickname === '아빠');
+            let html = '';
+            familySchedules.forEach(ev => {
+                const dday = getScheduleDDayInfo(ev.startDate, ev.endDate);
+                const delBtn = isDad 
+                    ? `<button type="button" onclick="deleteSchedule(${ev.id}, '${escapeHtml(ev.title)}')" style="background:#fee2e2; color:#ef4444; border:none; padding:4px 8px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">🗑️ 삭제</button>` 
+                    : '';
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:8px 12px; box-shadow:0 1px 3px rgba(0,0,0,0.02);">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:18px;">${ev.icon}</span>
+                            <div>
+                                <div style="font-size:13px; font-weight:bold; color:#1e293b;">${escapeHtml(ev.title)}</div>
+                                <div style="font-size:11px; color:#64748b;">${formatScheduleRange(ev.startDate, ev.endDate)} <span style="font-weight:bold; color:#6366f1;">(${dday.label})</span></div>
+                                ${ev.memo ? `<div style="font-size:11px; color:#8b5cf6;">💬 ${escapeHtml(ev.memo)}</div>` : ''}
+                            </div>
+                        </div>
+                        ${delBtn}
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function getWeekDays(offset = 0) {
+            const now = new Date();
+            const day = now.getDay(); // 0 is Sun, 1 is Mon, ... 6 is Sat
+            const diffToMonday = (day === 0 ? -6 : 1 - day);
+            const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday + (offset * 7));
+            
+            const week = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i);
+                week.push(d);
+            }
+            return week;
+        }
+
+        function getWeekOffsetFromDate(targetDateStr) {
+            if (!targetDateStr) return 0;
+            const now = new Date();
+            const day = now.getDay();
+            const diffToMonday = (day === 0 ? -6 : 1 - day);
+            const currMonday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
+            currMonday.setHours(0,0,0,0);
+
+            const parts = targetDateStr.split('-').map(Number);
+            const targetDate = new Date(parts[0], parts[1] - 1, parts[2]);
+            const targetDay = targetDate.getDay();
+            const targetDiffToMonday = (targetDay === 0 ? -6 : 1 - targetDay);
+            const targetMonday = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + targetDiffToMonday);
+            targetMonday.setHours(0,0,0,0);
+
+            const diffDays = Math.round((targetMonday - currMonday) / (1000 * 60 * 60 * 24));
+            return Math.round(diffDays / 7);
+        }
+
+        function getWeekRangeTitle(monday, sunday) {
+            const y1 = monday.getFullYear();
+            const m1 = monday.getMonth() + 1;
+            const d1 = monday.getDate();
+            const y2 = sunday.getFullYear();
+            const m2 = sunday.getMonth() + 1;
+            const d2 = sunday.getDate();
+
+            if (y1 === y2) {
+                if (m1 === m2) {
+                    return `${y1}년 ${m1}월 ${d1}일 ~ ${d2}일`;
+                }
+                return `${y1}년 ${m1}월 ${d1}일 ~ ${m2}월 ${d2}일`;
+            }
+            return `${y1}년 ${m1}월 ${d1}일 ~ ${y2}년 ${m2}월 ${d2}일`;
+        }
+
+        function getWeeklyHabitStats(weekDays) {
+            let onTimeCount = 0;
+            let lateCount = 0;
+            let holidayCount = 0;
+            let studyCount = 0;
+
+            weekDays.forEach(d => {
+                const dStr = getLocalDateStr(d);
+                const rec = habitRecordsMap[dStr];
+                if (rec) {
+                    if (rec.attendance === 'ON_TIME') onTimeCount++;
+                    else if (rec.attendance === 'LATE') lateCount++;
+                    else if (rec.attendance === 'HOLIDAY') holidayCount++;
+
+                    if (rec.evening_study === true) studyCount++;
+                }
+            });
+
+            return { onTimeCount, lateCount, holidayCount, studyCount };
+        }
+
+        function changeHabitWeek(delta) {
+            habitWeekOffset += delta;
+            renderHabitSection();
+        }
+
+        function resetHabitWeek() {
+            habitWeekOffset = 0;
+            renderHabitSection();
+        }
+
+        function toggleHabitMonthCalendar() {
+            isHabitMonthExpanded = !isHabitMonthExpanded;
+            renderHabitSection();
+        }
+
+        function generateHabitWeekStripHtml(isDad) {
+            const weekDays = getWeekDays(habitWeekOffset);
+            const monday = weekDays[0];
+            const sunday = weekDays[6];
+            const todayStr = getLocalDateStr(new Date());
+
+            const weekStats = getWeeklyHabitStats(weekDays);
+            const weekTitle = getWeekRangeTitle(monday, sunday);
+            const dayNames = ['월', '화', '수', '목', '금', '토', '일'];
+
+            let daysHtml = '';
+            weekDays.forEach((d, idx) => {
+                const dateStr = getLocalDateStr(d);
+                const isToday = (dateStr === todayStr);
+                const isSelected = (isDad && dateStr === selectedHabitDate);
+                const rec = habitRecordsMap[dateStr];
+
+                let badgesHtml = '';
+                if (rec) {
+                    if (rec.attendance === 'ON_TIME') badgesHtml += '<span title="정상 등교">☀️</span>';
+                    else if (rec.attendance === 'LATE') badgesHtml += '<span title="지각">⏰</span>';
+                    else if (rec.attendance === 'HOLIDAY') badgesHtml += '<span title="휴일/주말">🏖️</span>';
+
+                    const studyInfo = getStudyStatusInfo(rec.evening_study);
+                    if (studyInfo) {
+                        badgesHtml += `<span title="${studyInfo.title}">${studyInfo.badge}</span>`;
+                    }
+
+                    if (rec.memo) badgesHtml += '<span title="아빠 응원">💌</span>';
+                }
+
+                const dayEvents = getSchedulesForDate(dateStr);
+                let eventPillsHtml = '';
+                if (dayEvents && dayEvents.length > 0) {
+                    dayEvents.forEach(ev => {
+                        let catClass = 'other';
+                        if (ev.category === 'EXAM') catClass = 'exam';
+                        else if (ev.category === 'FAMILY') catClass = 'family';
+                        else if (ev.category === 'BIRTHDAY') catClass = 'birthday';
+                        else if (ev.category === 'VACATION') catClass = 'vacation';
+                        eventPillsHtml += `<div class="habit-week-event-pill ${catClass}" title="${escapeHtml(ev.title)}">${ev.icon} ${escapeHtml(ev.title)}</div>`;
+                    });
+                }
+
+                const clickHandler = isDad 
+                    ? `changeHabitDate('${dateStr}')` 
+                    : `showChildDayDetail('${dateStr}')`;
+
+                const isSat = (idx === 5);
+                const isSun = (idx === 6);
+                const weekdayClass = isSun ? 'sun' : (isSat ? 'sat' : '');
+
+                daysHtml += `
+                    <div class="habit-week-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" onclick="${clickHandler}" title="${dateStr}">
+                        ${isToday ? '<span class="habit-today-tag">오늘</span>' : ''}
+                        <div class="habit-week-weekday ${weekdayClass}">${dayNames[idx]}</div>
+                        <div class="habit-week-date-num">${d.getDate()}</div>
+                        <div class="habit-week-badges">${badgesHtml || '<span class="habit-badge-empty">·</span>'}</div>
+                        ${eventPillsHtml}
+                    </div>
+                `;
+            });
+
+            return `
+                <div class="habit-week-wrap">
+                    <div class="habit-week-nav">
+                        <button type="button" class="habit-cal-btn" onclick="changeHabitWeek(-1)">◀ 지난주</button>
+                        <div class="habit-date-center">
+                            <div class="habit-week-title">📅 ${weekTitle}</div>
+                            ${habitWeekOffset !== 0 
+                                ? `<button type="button" onclick="resetHabitWeek()" class="habit-week-reset-btn">이번 주로 돌아가기</button>` 
+                                : `<span class="habit-week-current-pill">이번 주</span>`}
+                        </div>
+                        <button type="button" class="habit-cal-btn" onclick="changeHabitWeek(1)">다음주 ▶</button>
+                    </div>
+
+                    <!-- 주간 성취 요약 바 -->
+                    <div class="habit-week-stats-bar">
+                        <span>✨ 이번 주 성취:</span>
+                        <strong>📖 저녁 공부 <span style="color:#6366f1;">${weekStats.studyCount}일</span></strong>
+                        <span style="color:#cbd5e1;">·</span>
+                        <strong>☀️ 정상 등교 <span style="color:#059669;">${weekStats.onTimeCount}일</span></strong>
+                        ${weekStats.lateCount > 0 ? `<span style="color:#cbd5e1;">·</span> <strong>⏰ 지각 <span style="color:#ef4444;">${weekStats.lateCount}일</span></strong>` : ''}
+                    </div>
+
+                    <!-- 주간 7일 스트립 -->
+                    <div class="habit-week-grid">
+                        ${daysHtml}
+                    </div>
+                    <div style="font-size:11px; color:#888; text-align:center; margin-top:10px;">
+                        ☀️ 정상등교 · ⏰ 지각 · 🏖️ 주말/휴일 · 📖 저녁공부 · 📝 수행평가 · 🤒 질병 · ✈️ 여행 · 💤 휴식 · 💌 응원
+                    </div>
+                </div>
+            `;
+        }
+
+        function getLocalDateStr(d = new Date()) {
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatFriendlyDate(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-').map(Number);
+            const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            const dayName = days[dateObj.getDay()];
+            return `${parts[0]}년 ${parts[1]}월 ${parts[2]}일 (${dayName}요일)`;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        async function loadHabitRecords() {
+            const container = document.getElementById('habit-container');
+            if (!container || !userNickname) return;
+            container.classList.remove('hidden');
+
+            try {
+                const [habitRes, schedRes, rewardRes] = await Promise.all([
+                    supabaseClient
+                        .from('study_words')
+                        .select('*')
+                        .eq('subject', 'DAILY_HABIT')
+                        .order('word', { ascending: false }),
+                    supabaseClient
+                        .from('study_words')
+                        .select('*')
+                        .eq('subject', 'FAMILY_SCHEDULE')
+                        .order('created_at', { ascending: true }),
+                    supabaseClient
+                        .from('study_words')
+                        .select('*')
+                        .eq('subject', 'CHILD_REWARD')
+                        .order('created_at', { ascending: false })
+                ]);
+
+                if (habitRes.error) {
+                    console.error("Habit logs fetch error:", habitRes.error);
+                } else if (habitRes.data) {
+                    habitRecordsMap = {};
+                    habitRes.data.forEach(item => {
+                        try {
+                            const detail = typeof item.meaning === 'string' ? JSON.parse(item.meaning) : (item.meaning || {});
+                            habitRecordsMap[item.word] = {
+                                ...detail,
+                                id: item.id,
+                                rawCreatedAt: item.created_at
+                            };
+                        } catch(e) {
+                            console.error("Habit parse error:", e);
+                        }
+                    });
+                }
+
+                if (schedRes.error) {
+                    console.error("Schedule fetch error:", schedRes.error);
+                } else if (schedRes.data) {
+                    familySchedules = [];
+                    schedRes.data.forEach(item => {
+                        try {
+                            const detail = typeof item.meaning === 'string' ? JSON.parse(item.meaning) : (item.meaning || {});
+                            familySchedules.push({
+                                id: item.id,
+                                word: item.word,
+                                title: detail.title || item.word,
+                                startDate: detail.startDate,
+                                endDate: detail.endDate || detail.startDate,
+                                icon: detail.icon || '📌',
+                                category: detail.category || 'OTHER',
+                                memo: detail.memo || '',
+                                author: detail.author || item.example || '아빠'
+                            });
+                        } catch(e) {
+                            console.error("Schedule parse error:", e);
+                        }
+                    });
+                    // Sort by startDate
+                    familySchedules.sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''));
+                }
+
+                if (rewardRes.error) {
+                    console.error("Reward fetch error:", rewardRes.error);
+                } else if (rewardRes.data) {
+                    rewardCoupons = [];
+                    rewardRes.data.forEach(item => {
+                        try {
+                            const detail = typeof item.meaning === 'string' ? JSON.parse(item.meaning) : (item.meaning || {});
+                            if (item.word === 'QUEST_REWARD_SETTINGS') {
+                                questConfig = {
+                                    focusRewardTitle: detail.focusRewardTitle || questConfig.focusRewardTitle,
+                                    focusRewardDesc: detail.focusRewardDesc || questConfig.focusRewardDesc,
+                                    goldRewardTitle: detail.goldRewardTitle || questConfig.goldRewardTitle,
+                                    goldRewardDesc: detail.goldRewardDesc || questConfig.goldRewardDesc
+                                };
+                            } else {
+                                rewardCoupons.push({
+                                    dbId: item.id,
+                                    id: item.word,
+                                    ...detail
+                                });
+                            }
+                        } catch(e) {
+                            console.error("Reward parse error:", e);
+                        }
+                    });
+                }
+            } catch(err) {
+                console.error("loadHabitRecords error:", err);
+            }
+
+            syncDraftWithSelectedDate();
+            await checkAndGrantRewards();
+            renderHabitSection();
+            if (currentMainTab) switchMainTab(currentMainTab);
+        }
+
+        function syncDraftWithSelectedDate() {
+            const existing = habitRecordsMap[selectedHabitDate];
+            if (existing) {
+                draftAttendance = existing.attendance || null;
+                draftAttendanceReason = existing.attendance_reason || null;
+                draftAttendanceReasonText = existing.attendance_reason_text || '';
+                draftEveningStudy = (existing.evening_study !== undefined && existing.evening_study !== null) ? existing.evening_study : null;
+                draftStudyAttitude = existing.study_attitude || null;
+                draftFocusOnTime = !!existing.focus_ontime;
+                draftFocusDeep = !!existing.focus_deep;
+                draftAbsenceReason = existing.absence_reason || null;
+                draftReasonText = existing.reason_text || '';
+                draftAssignments = Array.isArray(existing.assignments) ? JSON.parse(JSON.stringify(existing.assignments)) : [];
+                draftPromises = Array.isArray(existing.promises) ? JSON.parse(JSON.stringify(existing.promises)) : [];
+                draftMemo = existing.memo || '';
+            } else {
+                draftAttendance = null;
+                draftAttendanceReason = null;
+                draftAttendanceReasonText = '';
+                draftEveningStudy = null;
+                draftStudyAttitude = null;
+                draftFocusOnTime = false;
+                draftFocusDeep = false;
+                draftAbsenceReason = null;
+                draftReasonText = '';
+                draftAssignments = [];
+                draftPromises = [];
+                draftMemo = '';
+            }
+        }
+
+        function renderHabitSection() {
+            const container = document.getElementById('habit-container');
+            if (!container) return;
+
+            if (userNickname === '아빠' && !isDadPreviewMode) {
+                renderDadHabitView(container);
+            } else {
+                renderChildHabitView(container);
+            }
+        }
+
+        function renderDadHabitView(container) {
+            const existing = habitRecordsMap[selectedHabitDate];
+            const hasRecord = !!existing;
+            const stats = getMonthlyHabitStats(habitCalYear, habitCalMonth);
+
+            // 출결 버튼 활성화 상태
+            const isOntimeActive = (draftAttendance === 'ON_TIME') ? 'active-ontime' : '';
+            const isLateActive = (draftAttendance === 'LATE') ? 'active-late' : '';
+            const isEarlyActive = (draftAttendance === 'EARLY_LEAVE') ? 'active-early' : '';
+            const isAbsentActive = (draftAttendance === 'ABSENT') ? 'active-absent' : '';
+            const isHolidayActive = (draftAttendance === 'HOLIDAY') ? 'active-holiday' : '';
+
+            // 공부 여부 활성화 상태
+            const isStudyActive = (draftEveningStudy === true) ? 'active-study' : '';
+            const isNoStudyActive = (draftEveningStudy === false) ? 'active-nostudy' : '';
+
+            // 공부 태도 활성화 상태 (공부한 날)
+            const isAttExcellent = (draftStudyAttitude === 'EXCELLENT') ? 'active-study' : '';
+            const isAttGood = (draftStudyAttitude === 'GOOD') ? 'active-ontime' : '';
+            const isAttPoor = (draftStudyAttitude === 'NEEDS_FOCUS') ? 'active-late' : '';
+
+            // 못한 날 사유 활성화 상태 (공부 쉼/못함)
+            const isR_Sick = (draftAbsenceReason === 'REST_SICK') ? 'active-sick' : '';
+            const isR_Exam = (draftAbsenceReason === 'REST_EXAM') ? 'active-exam' : '';
+            const isR_Travel = (draftAbsenceReason === 'REST_TRAVEL') ? 'active-travel' : '';
+            const isR_Fatigue = (draftAbsenceReason === 'REST_FATIGUE') ? 'active-nostudy' : '';
+            const isR_Custom = (draftAbsenceReason === 'REST_CUSTOM') ? 'active-late' : '';
+
+            // 과제 목록 HTML 생성
+            let assignmentsHtml = '';
+            if (draftAssignments.length === 0) {
+                assignmentsHtml = `<div style="font-size:12px; color:#94a3b8; text-align:center; padding:10px;">등록된 과제가 없습니다. 아래에서 숙제를 내주세요! ✍️</div>`;
+            } else {
+                draftAssignments.forEach((task, idx) => {
+                    assignmentsHtml += `
+                        <div class="task-item ${task.done ? 'completed' : ''}">
+                            <input type="checkbox" class="task-checkbox" ${task.done ? 'checked' : ''} onchange="toggleAssignment(${idx})">
+                            <span class="task-text">${escapeHtml(task.text)}</span>
+                            ${task.dueDate ? `<span class="task-due-badge">~${task.dueDate.slice(5)}까지</span>` : ''}
+                            <button type="button" class="task-del-btn" onclick="deleteAssignment(${idx})" title="과제 삭제">✕</button>
+                        </div>
+                    `;
+                });
+            }
+
+            // 약속 목록 HTML 생성
+            let promisesHtml = '';
+            if (draftPromises.length === 0) {
+                promisesHtml = `<div style="font-size:12px; color:#94a3b8; text-align:center; padding:10px;">아람이와 함께 지키기로 한 약속을 적어보세요! 🤝</div>`;
+            } else {
+                draftPromises.forEach((prom, idx) => {
+                    promisesHtml += `
+                        <div class="task-item ${prom.done ? 'completed' : ''}">
+                            <input type="checkbox" class="task-checkbox" ${prom.done ? 'checked' : ''} onchange="togglePromise(${idx})">
+                            <span class="task-text">🤙 ${escapeHtml(prom.text)}</span>
+                            <button type="button" class="task-del-btn" onclick="deletePromise(${idx})" title="약속 삭제">✕</button>
+                        </div>
+                    `;
+                });
+            }
+
+            let html = `
+                <div class="habit-header">
+                    <div class="habit-title">👨‍👧 아람이 출결·생활·과제 코칭 관리</div>
+                    <div class="habit-subtitle">매일 출결, 공부 태도 및 과제·약속을 꼼꼼하게 챙겨주세요! 💖</div>
+                    <button onclick="toggleDadPreview(true)" style="margin-top:10px; background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white; border:none; padding:6px 14px; border-radius:14px; font-size:13px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif; box-shadow:0 2px 6px rgba(0,0,0,0.1);">👀 아람이 화면(달력) 미리보기</button>
+                </div>
+
+                <!-- 주요 일정 & D-Day 카드 -->
+                ${generateScheduleCardHtml(true)}
+
+                <!-- 날짜 선택 바 -->
+                <div class="habit-date-bar">
+                    <button class="habit-date-btn" onclick="stepHabitDate(-1)">◀ 어제</button>
+                    <div class="habit-date-center">
+                        <input type="date" class="habit-date-picker" id="habit-date-input" value="${selectedHabitDate}" onchange="changeHabitDate(this.value)">
+                        <span style="font-size:12px; color:#ff758c; font-weight:bold; font-family:'Nunito', sans-serif;">${formatFriendlyDate(selectedHabitDate)}</span>
+                    </div>
+                    <div style="display:flex; gap:4px; flex-shrink:0;">
+                        <button class="habit-date-btn" onclick="setHabitDateToToday()">오늘 📅</button>
+                        <button class="habit-date-btn" onclick="stepHabitDate(1)">내일 ▶</button>
+                    </div>
+                </div>
+
+                <!-- 1) 출결 관리 (정상, 지각, 조퇴, 결석, 주말/휴일) -->
+                <div class="habit-form-group">
+                    <div class="habit-form-label">
+                        <span>⏰ 학교 출결 상태</span>
+                        <span style="font-size:12px; color:#94a3b8; font-weight:normal;">(클릭하여 선택/해제)</span>
+                    </div>
+                    <div class="habit-toggle-grid" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));">
+                        <button type="button" class="habit-toggle-btn ${isOntimeActive}" onclick="setHabitAttendance('ON_TIME')">
+                            <span>☀️</span> 정상 출석
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isLateActive}" onclick="setHabitAttendance('LATE')">
+                            <span>⏰</span> 지각
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isEarlyActive}" onclick="setHabitAttendance('EARLY_LEAVE')">
+                            <span>🚪</span> 조퇴
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isAbsentActive}" onclick="setHabitAttendance('ABSENT')">
+                            <span>🚫</span> 결석
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isHolidayActive}" onclick="setHabitAttendance('HOLIDAY')">
+                            <span>🏖️</span> 주말/휴일
+                        </button>
+                    </div>
+
+                    <!-- 1-A) 결석 또는 조퇴 시 사유 작성 영역 -->
+                    ${(draftAttendance === 'ABSENT' || draftAttendance === 'EARLY_LEAVE') ? `
+                    <div class="coaching-section" style="background:#fff1f2; border:1.5px solid #fecdd3; margin-top:10px;">
+                        <div class="coaching-section-title" style="color:#b91c1c;">
+                            <span>${draftAttendance === 'ABSENT' ? '🚫 결석 사유 기록' : '🚪 조퇴 사유 기록'}</span>
+                            <span style="font-size:11px; font-weight:normal; color:#dc2626;">사유 유형과 상세 내용을 기록해주세요</span>
+                        </div>
+                        <div class="habit-toggle-grid" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); margin-bottom:10px;">
+                            <button type="button" class="habit-toggle-btn ${draftAttendanceReason === 'SICK' ? 'active-absent' : ''}" onclick="setAttendanceReason('SICK')">
+                                <span>🤒</span> 질병/감기 (병결)
+                            </button>
+                            <button type="button" class="habit-toggle-btn ${draftAttendanceReason === 'EXPERIENCE' ? 'active-absent' : ''}" onclick="setAttendanceReason('EXPERIENCE')">
+                                <span>✈️</span> 체험/가정학습
+                            </button>
+                            <button type="button" class="habit-toggle-btn ${draftAttendanceReason === 'FAMILY' ? 'active-absent' : ''}" onclick="setAttendanceReason('FAMILY')">
+                                <span>💐</span> 경조사/가족일
+                            </button>
+                            <button type="button" class="habit-toggle-btn ${draftAttendanceReason === 'CUSTOM' ? 'active-absent' : ''}" onclick="setAttendanceReason('CUSTOM')">
+                                <span>✏️</span> 기타 사유
+                            </button>
+                        </div>
+                        <input type="text" id="attendance-reason-input" class="habit-memo-input" style="background:white; border:1px solid #fda4af;" placeholder="${draftAttendance === 'ABSENT' ? '결석' : '조퇴'} 사유 상세 (예: 독감으로 인한 병원 진료 및 가정보육, 진료확인서 제출 예정)" value="${escapeHtml(draftAttendanceReasonText)}" oninput="draftAttendanceReasonText = this.value" maxlength="80">
+                    </div>
+                    ` : ''}
+                </div>
+
+                <!-- 2) 오늘 공부 여부 -->
+                <div class="habit-form-group">
+                    <div class="habit-form-label">
+                        <span>📖 오늘 공부 진행 여부</span>
+                        <span style="font-size:12px; color:#94a3b8; font-weight:normal;">(공부한 날 vs 쉼/못한 날)</span>
+                    </div>
+                    <div class="habit-toggle-grid" style="grid-template-columns: 1fr 1fr;">
+                        <button type="button" class="habit-toggle-btn ${isStudyActive}" onclick="setHabitEveningStudy(true)">
+                            <span>✨</span> 오늘 공부 완료! 👑
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isNoStudyActive}" onclick="setHabitEveningStudy(false)">
+                            <span>💤</span> 오늘 공부 쉼 / 못함
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 2-A) 공부한 날: 태도 평가 (공부 완료 시 표시) -->
+                ${draftEveningStudy === true ? `
+                <div class="coaching-section" style="background:#f0fdf4; border-color:#bbf7d0;">
+                    <div class="coaching-section-title" style="color:#166534;">
+                        <span>🌟 공부한 날 태도 평가</span>
+                        <span style="font-size:11px; font-weight:normal; color:#15803d;">오늘 공부 몰입도는 어땠나요?</span>
+                    </div>
+                    <div class="habit-toggle-grid" style="grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));">
+                        <button type="button" class="habit-toggle-btn ${isAttExcellent}" onclick="setHabitStudyAttitude('EXCELLENT')">
+                            <span>🌟</span> 최고! (집중 만점)
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isAttGood}" onclick="setHabitStudyAttitude('GOOD')">
+                            <span>😊</span> 보통 (성실하게 완수)
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isAttPoor}" onclick="setHabitStudyAttitude('NEEDS_FOCUS')">
+                            <span>🥱</span> 집중 부족 (딴짓/피곤)
+                        </button>
+                    <!-- 2-A-2) 정시 시작 & 몰입 퀘스트 스탬프 토글 -->
+                    <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #bbf7d0;">
+                        <div style="font-size:12px; font-weight:bold; color:#15803d; margin-bottom:6px;">🎯 정시 시작 &amp; 몰입 퀘스트 체크 (5회 달성 시 편의점 쿠폰/보너스권!)</div>
+                        <div class="habit-toggle-grid" style="grid-template-columns: 1fr 1fr;">
+                            <button type="button" class="habit-toggle-btn ${draftFocusOnTime ? 'active-ontime' : ''}" onclick="toggleFocusOnTime()">
+                                <span>⏰</span> 정시 시작 / 시간 엄수
+                            </button>
+                            <button type="button" class="habit-toggle-btn ${draftFocusDeep ? 'active-study' : ''}" onclick="toggleFocusDeep()">
+                                <span>🌟</span> 집중 몰입 완료
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+
+                <!-- 2-B) 못한 날: 사유 관리 (공부 쉼/못함 선택 시 표시) -->
+                ${draftEveningStudy === false ? `
+                <div class="coaching-section" style="background:#fff1f2; border-color:#fecdd3;">
+                    <div class="coaching-section-title" style="color:#9f1239;">
+                        <span>📝 공부 못한 날 사유 관리</span>
+                        <span style="font-size:11px; font-weight:normal; color:#be123c;">사유를 선택하고 메모를 남겨주세요</span>
+                    </div>
+                    <div class="habit-toggle-grid" style="grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); margin-bottom:10px;">
+                        <button type="button" class="habit-toggle-btn ${isR_Sick}" onclick="setHabitAbsenceReason('REST_SICK')">
+                            <span>🤒</span> 감기/병원
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isR_Exam}" onclick="setHabitAbsenceReason('REST_EXAM')">
+                            <span>📝</span> 시험/수행
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isR_Travel}" onclick="setHabitAbsenceReason('REST_TRAVEL')">
+                            <span>✈️</span> 가족행사
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isR_Fatigue}" onclick="setHabitAbsenceReason('REST_FATIGUE')">
+                            <span>😴</span> 피로/컨디션
+                        </button>
+                        <button type="button" class="habit-toggle-btn ${isR_Custom}" onclick="setHabitAbsenceReason('REST_CUSTOM')">
+                            <span>✏️</span> 기타 사유
+                        </button>
+                    </div>
+                    <input type="text" id="habit-reason-text" class="habit-memo-input" style="background:white;" placeholder="구체적인 사유를 적어주세요 (예: 치과 진료 후 휴식, 친척 결혼식)" value="${escapeHtml(draftReasonText)}" oninput="draftReasonText = this.value" maxlength="80">
+                </div>
+                ` : ''}
+
+                <!-- 3) 내준 과제 관리 (Assignments) -->
+                <div class="coaching-section">
+                    <div class="coaching-section-title">
+                        <span>📝 내준 과제 (숙제 체크)</span>
+                        <span style="font-size:11px; color:#64748b; font-weight:normal;">완료 시 체크박스 클릭</span>
+                    </div>
+                    <div class="task-list" id="assignment-list">
+                        ${assignmentsHtml}
+                    </div>
+                    <div class="task-input-row">
+                        <input type="text" id="new-assignment-input" class="task-input" placeholder="새 과제 입력 (예: 수학 익힘책 20~24p 풀기)" onkeydown="if(event.key==='Enter') addAssignment()">
+                        <input type="date" id="new-assignment-date" class="habit-date-picker" style="padding:6px; font-size:12px;" title="마감일">
+                        <button type="button" class="task-add-btn" onclick="addAssignment()">과제 추가</button>
+                    </div>
+                </div>
+
+                <!-- 4) 함께 하기로 한 약속 (Commitments) -->
+                <div class="coaching-section">
+                    <div class="coaching-section-title">
+                        <span>🤝 함께 하기로 한 약속</span>
+                        <span style="font-size:11px; color:#64748b; font-weight:normal;">서로 약속한 실천 사항</span>
+                    </div>
+                    <div class="task-list" id="promise-list">
+                        ${promisesHtml}
+                    </div>
+                    <div class="task-input-row">
+                        <input type="text" id="new-promise-input" class="task-input" placeholder="함께할 약속 입력 (예: 자기 전 가방 미리 싸놓기)" onkeydown="if(event.key==='Enter') addPromise()">
+                        <button type="button" class="task-add-btn" onclick="addPromise()">약속 추가</button>
+                    </div>
+                </div>
+
+                <!-- 5) 칭찬 메모 / 응원 한마디 -->
+                <div class="habit-form-group" style="margin-top:16px;">
+                    <div class="habit-form-label">
+                        <span>💌 아람이에게 전할 응원 한마디 / 코칭 피드백</span>
+                    </div>
+                    <input type="text" id="habit-memo-input" class="habit-memo-input" placeholder="예: 약속한 과제를 스스로 먼저 끝낸 아람이 최고야! 💕" value="${escapeHtml(draftMemo)}" oninput="draftMemo = this.value" maxlength="80">
+                </div>
+
+                <!-- 저장 및 삭제 액션 바 -->
+                <div class="habit-action-bar">
+                    <button type="button" id="habit-save-btn" class="habit-save-btn" onclick="saveHabitRecord()">
+                        💾 ${hasRecord ? '기록 수정하기' : '기록 저장하기'} 💖
+                    </button>
+                    ${hasRecord ? `<button type="button" class="habit-delete-btn" onclick="deleteHabitRecord()" title="기록 삭제">🗑️ 삭제</button>` : ''}
+                </div>
+
+                <!-- 퀘스트 & 보상 쿠폰 관리 섹션 (아빠 화면) -->
+                ${renderDadRewardManagerHtml()}
+
+                <!-- 주간 달력 스트립 (기본 1주일 단위) -->
+                ${generateHabitWeekStripHtml(true)}
+
+                <!-- 필요할 때만 월간 달력 전체보기 토글 버튼 -->
+                <div style="text-align:center; margin-top:16px;">
+                    <button type="button" class="habit-toggle-month-btn" onclick="toggleHabitMonthCalendar()">
+                        ${isHabitMonthExpanded ? '▲ 월간 달력 접기' : '📅 월간 달력 전체보기 ▾'}
+                    </button>
+                </div>
+
+                <!-- 월간 달력 (펼쳤을 때만 표시) -->
+                ${isHabitMonthExpanded ? `
+                <div id="habit-dad-month-section" style="margin-top:14px;">
+                    <div style="margin-top:10px; padding-top:14px; border-top: 1px dashed #ffd1dc;">
+                        <div style="font-family:'Jua', sans-serif; font-size:15px; color:#2d3436; text-align:center;">
+                            📊 ${habitCalYear}년 ${habitCalMonth + 1}월 현황 요약
+                        </div>
+                        <div class="habit-stats-row">
+                            <div class="habit-stat-badge">
+                                <div class="habit-stat-label">☀️ 정상 등교</div>
+                                <div class="habit-stat-value" style="color:#059669;">${stats.onTimeCount}일</div>
+                            </div>
+                            <div class="habit-stat-badge">
+                                <div class="habit-stat-label">⏰ 지각</div>
+                                <div class="habit-stat-value" style="color:#ef4444;">${stats.lateCount}일</div>
+                            </div>
+                            <div class="habit-stat-badge highlight">
+                                <div class="habit-stat-label">📖 저녁 공부 완료</div>
+                                <div class="habit-stat-value" style="color:#6366f1;">${stats.studyCount}일</div>
+                            </div>
+                        </div>
+                    </div>
+                    ${generateHabitCalendarHtml(habitCalYear, habitCalMonth, true)}
+                </div>
+                ` : ''}
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function renderChildHabitView(container) {
+            const todayStr = getLocalDateStr(new Date());
+            const todayRecord = habitRecordsMap[todayStr];
+            const stats = getMonthlyHabitStats(habitCalYear, habitCalMonth);
+            const streak = calculateStudyStreak();
+
+            let previewBanner = '';
+            if (userNickname === '아빠' && isDadPreviewMode) {
+                previewBanner = `
+                    <div style="background:#eef2ff; border:2px solid #818cf8; border-radius:16px; padding:10px; margin-bottom:16px; text-align:center;">
+                        <span style="font-size:13px; color:#3730a3; font-weight:bold;">[아이(아람이) 화면 미리보기 모드입니다]</span><br>
+                        <button onclick="toggleDadPreview(false)" style="margin-top:6px; background:#4f46e5; color:white; border:none; padding:5px 14px; border-radius:10px; font-size:13px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif;">✏️ 아빠 체크 화면으로 돌아가기</button>
+                    </div>
+                `;
+            }
+
+            // 아침 출결 상태 박스
+            let attendanceHtml = '';
+            if (todayRecord && todayRecord.attendance === 'ON_TIME') {
+                attendanceHtml = `
+                    <div class="child-item-box ontime">
+                        <div class="child-item-icon">☀️</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">학교 출결</div>
+                            <div class="child-item-text">지각 안 함! 멋지게 정시 등교 완료 ✨ (칭찬해요!)</div>
+                        </div>
+                    </div>
+                `;
+            } else if (todayRecord && todayRecord.attendance === 'LATE') {
+                attendanceHtml = `
+                    <div class="child-item-box late">
+                        <div class="child-item-icon">⏰</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">학교 출결</div>
+                            <div class="child-item-text">오늘은 조금 늦었어요! 내일은 10분 일찍 출발해봐요 💪</div>
+                        </div>
+                    </div>
+                `;
+            } else if (todayRecord && todayRecord.attendance === 'EARLY_LEAVE') {
+                let earlyReason = todayRecord.attendance_reason_text || (todayRecord.attendance_reason === 'SICK' ? '병원 진료/질병' : '');
+                attendanceHtml = `
+                    <div class="child-item-box late" style="border-left-color:#f97316;">
+                        <div class="child-item-icon">🚪</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">학교 출결 (조퇴)</div>
+                            <div class="child-item-text">오늘 조퇴했어요.${earlyReason ? ` [사유: ${escapeHtml(earlyReason)}]` : ''} 푹 쉬고 건강 회복해요! 토닥토닥 🧡</div>
+                        </div>
+                    </div>
+                `;
+            } else if (todayRecord && todayRecord.attendance === 'ABSENT') {
+                let absReason = todayRecord.attendance_reason_text || (todayRecord.attendance_reason === 'SICK' ? '질병/감기(병결)' : (todayRecord.attendance_reason === 'EXPERIENCE' ? '체험학습' : ''));
+                attendanceHtml = `
+                    <div class="child-item-box late" style="border-left-color:#ef4444; background:#fef2f2;">
+                        <div class="child-item-icon">🚫</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">학교 출결 (결석)</div>
+                            <div class="child-item-text">오늘 결석했어요.${absReason ? ` [사유: ${escapeHtml(absReason)}]` : ''} 컨디션 관리 잘하고 푹 쉬어요! 🌿</div>
+                        </div>
+                    </div>
+                `;
+            } else if (todayRecord && todayRecord.attendance === 'HOLIDAY') {
+                attendanceHtml = `
+                    <div class="child-item-box holiday">
+                        <div class="child-item-icon">🏖️</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">학교 출결</div>
+                            <div class="child-item-text">즐거운 주말 / 휴일이에요! 푹 쉬고 재충전해요 😊</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                attendanceHtml = `
+                    <div class="child-item-box waiting">
+                        <div class="child-item-icon">⏳</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">학교 출결</div>
+                            <div class="child-item-text">오늘 출석 체크 대기 중이에요 😊</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 저녁 공부 상태 박스
+            let studyHtml = '';
+            const todayStudyInfo = getStudyStatusInfo(todayRecord ? todayRecord.evening_study : null);
+            if (todayStudyInfo) {
+                studyHtml = `
+                    <div class="child-item-box ${todayStudyInfo.childClass}">
+                        <div class="child-item-icon">${todayStudyInfo.icon}</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">${todayStudyInfo.childTitle}</div>
+                            <div class="child-item-text">${todayStudyInfo.childText}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                studyHtml = `
+                    <div class="child-item-box waiting">
+                        <div class="child-item-icon">⏳</div>
+                        <div class="child-item-content">
+                            <div class="child-item-title">저녁 공부</div>
+                            <div class="child-item-text">저녁 공부 체크 대기 중이에요 🌙</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // 칭찬 메모
+            let memoHtml = '';
+            if (todayRecord && todayRecord.memo) {
+                memoHtml = `
+                    <div class="child-memo-box">
+                        💌 아빠의 응원: "${escapeHtml(todayRecord.memo)}" 💖
+                    </div>
+                `;
+            }
+
+            let html = `
+                ${previewBanner}
+                <div class="habit-header">
+                    <div class="habit-title">🌟 나의 매일 출석 & 열공 현황판 🌟</div>
+                    <div class="habit-subtitle">아빠가 매일 응원하며 챙겨주시는 나의 출석과 공부 기록이에요! 💖</div>
+                </div>
+
+                <!-- 오늘의 현황 카드 -->
+                <div class="child-today-card">
+                    <div class="child-today-header">
+                        <div class="child-today-date">📅 오늘: ${formatFriendlyDate(todayStr)}</div>
+                        <span style="font-size:12px; background:#ffe4e8; color:#ff758c; padding:3px 8px; border-radius:10px; font-weight:bold;">실시간</span>
+                    </div>
+                    ${attendanceHtml}
+                    ${studyHtml}
+                    ${memoHtml}
+                </div>
+
+                <!-- 주요 일정 & D-Day 카드 -->
+                ${generateScheduleCardHtml(false)}
+
+                <!-- 아람이 보물상자 & 보상 플랜 (퀘스트 & 인벤토리) -->
+                ${generateChildRewardBoxHtml()}
+
+                <!-- 주간 달력 스트립 (생활패턴에 맞춘 1주일 단위 기본 뷰) -->
+                ${generateHabitWeekStripHtml(false)}
+
+                <!-- 성취 요약 뱃지 -->
+                <div class="habit-stats-row" style="margin-top:16px;">
+                    <div class="habit-stat-badge highlight">
+                        <div class="habit-stat-label">🏆 이번 달 저녁 공부</div>
+                        <div class="habit-stat-value" style="color:#6366f1;">${stats.studyCount}일</div>
+                    </div>
+                    <div class="habit-stat-badge">
+                        <div class="habit-stat-label">☀️ 정시 등교</div>
+                        <div class="habit-stat-value" style="color:#059669;">${stats.onTimeCount}일</div>
+                    </div>
+                    <div class="habit-stat-badge">
+                        <div class="habit-stat-label">🔥 연속 열공</div>
+                        <div class="habit-stat-value" style="color:#f59e0b;">${streak}일째!</div>
+                    </div>
+                </div>
+
+                <!-- 필요할 때만 월간 달력 전체보기 토글 버튼 -->
+                <div style="text-align:center; margin-top:16px;">
+                    <button type="button" class="habit-toggle-month-btn" onclick="toggleHabitMonthCalendar()">
+                        ${isHabitMonthExpanded ? '▲ 월간 달력 접기' : '📅 이번 달 전체 달력 보기 ▾'}
+                    </button>
+                </div>
+
+                <!-- 월간 달력 (펼쳤을 때만 표시) -->
+                ${isHabitMonthExpanded ? `
+                <div id="child-habit-month-section" style="margin-top:14px;">
+                    ${generateHabitCalendarHtml(habitCalYear, habitCalMonth, false)}
+                </div>
+                ` : ''}
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function generateHabitCalendarHtml(year, month, isDad) {
+            const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const todayStr = getLocalDateStr(new Date());
+
+            let html = `
+                <div class="habit-calendar-wrap">
+                    <div class="habit-cal-nav">
+                        <button type="button" class="habit-cal-btn" onclick="changeHabitCalMonth(-1)">◀ 이전 달</button>
+                        <div class="habit-cal-title">📅 ${year}년 ${monthNames[month]}</div>
+                        <button type="button" class="habit-cal-btn" onclick="changeHabitCalMonth(1)">다음 달 ▶</button>
+                    </div>
+                    <div class="habit-cal-grid">
+                        <div class="habit-cal-weekday sun">일</div>
+                        <div class="habit-cal-weekday">월</div>
+                        <div class="habit-cal-weekday">화</div>
+                        <div class="habit-cal-weekday">수</div>
+                        <div class="habit-cal-weekday">목</div>
+                        <div class="habit-cal-weekday">금</div>
+                        <div class="habit-cal-weekday sat">토</div>
+            `;
+
+            for (let i = 0; i < firstDay; i++) {
+                html += `<div class="habit-cal-day other-month"></div>`;
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = (dateStr === todayStr);
+                const isSelected = (isDad && dateStr === selectedHabitDate);
+                const rec = habitRecordsMap[dateStr];
+
+                let badgesHtml = '';
+                if (rec) {
+                    if (rec.attendance === 'ON_TIME') badgesHtml += '<span title="정상 등교">☀️</span>';
+                    else if (rec.attendance === 'LATE') badgesHtml += '<span title="지각">⏰</span>';
+                    else if (rec.attendance === 'HOLIDAY') badgesHtml += '<span title="휴일/주말">🏖️</span>';
+
+                    const studyInfo = getStudyStatusInfo(rec.evening_study);
+                    if (studyInfo) {
+                        badgesHtml += `<span title="${studyInfo.title}">${studyInfo.badge}</span>`;
+                    }
+
+                    if (rec.memo) badgesHtml += '<span title="아빠 응원">💌</span>';
+                }
+
+                const dayEvents = getSchedulesForDate(dateStr);
+                if (dayEvents && dayEvents.length > 0) {
+                    dayEvents.forEach(ev => {
+                        badgesHtml += `<span title="일정: ${escapeHtml(ev.title)}">${ev.icon}</span>`;
+                    });
+                }
+
+                const clickHandler = isDad 
+                    ? `changeHabitDate('${dateStr}')` 
+                    : `showChildDayDetail('${dateStr}')`;
+
+                html += `
+                    <div class="habit-cal-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" onclick="${clickHandler}" title="${dateStr}">
+                        <div class="habit-cal-day-num">${day}</div>
+                        <div class="habit-cal-badges">${badgesHtml}</div>
+                    </div>
+                `;
+            }
+
+            const totalCells = firstDay + daysInMonth;
+            const remainder = totalCells % 7;
+            if (remainder > 0) {
+                for (let i = 0; i < 7 - remainder; i++) {
+                    html += `<div class="habit-cal-day other-month"></div>`;
+                }
+            }
+
+            html += `
+                    </div>
+                    <div style="font-size:11px; color:#888; text-align:center; margin-top:10px;">
+                        ☀️ 정상등교 · ⏰ 지각 · 🏖️ 주말/휴일 · 📖 저녁공부 · 📝 수행평가 · 🤒 질병 · ✈️ 여행 · 💤 휴식 · 💌 응원 · 🗓️ 주요일정
+                    </div>
+                </div>
+            `;
+            return html;
+        }
+
+        function getMonthlyHabitStats(year, month) {
+            const prefix = `${year}-${String(month + 1).padStart(2, '0')}`;
+            let onTimeCount = 0;
+            let lateCount = 0;
+            let holidayCount = 0;
+            let studyCount = 0;
+
+            Object.keys(habitRecordsMap).forEach(dateStr => {
+                if (dateStr.startsWith(prefix)) {
+                    const rec = habitRecordsMap[dateStr];
+                    if (rec.attendance === 'ON_TIME') onTimeCount++;
+                    else if (rec.attendance === 'LATE') lateCount++;
+                    else if (rec.attendance === 'HOLIDAY') holidayCount++;
+
+                    if (rec.evening_study === true) studyCount++;
+                }
+            });
+
+            return { onTimeCount, lateCount, holidayCount, studyCount };
+        }
+
+        function calculateStudyStreak() {
+            let streak = 0;
+            let checkDate = new Date();
+            const todayStr = getLocalDateStr(checkDate);
+            const todayRec = habitRecordsMap[todayStr];
+            
+            if (todayRec && todayRec.evening_study === true) {
+                streak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                checkDate.setDate(checkDate.getDate() - 1);
+            }
+
+            for (let i = 0; i < 60; i++) {
+                const dStr = getLocalDateStr(checkDate);
+                const rec = habitRecordsMap[dStr];
+                if (rec && rec.evening_study === true) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+            return streak;
+        }
+
+        // 1) 정시 시작 & 몰입 퀘스트 스탬프 계산 (총 유효 스탬프 수)
+        function getFocusStampCount() {
+            let count = 0;
+            Object.keys(habitRecordsMap).forEach(dStr => {
+                const rec = habitRecordsMap[dStr];
+                if (rec && rec.focus_ontime && rec.focus_deep) {
+                    count++;
+                }
+            });
+            return count;
+        }
+
+        // 2) 2주 퍼펙트 출결 퀘스트 연속일 수 계산 (최근 14일 연속 무결석·무지각·무조퇴)
+        function getPerfectAttendanceStreak() {
+            let streak = 0;
+            let checkDate = new Date();
+            // 오늘 날짜부터 역순으로 확인
+            for (let i = 0; i < 60; i++) {
+                const dStr = getLocalDateStr(checkDate);
+                const rec = habitRecordsMap[dStr];
+                const dayOfWeek = checkDate.getDay(); // 0: 일, 6: 토
+                const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+
+                if (rec) {
+                    if (rec.attendance === 'ON_TIME' || (isWeekend && rec.attendance === 'HOLIDAY')) {
+                        streak++;
+                    } else if (rec.attendance === 'LATE' || rec.attendance === 'ABSENT' || rec.attendance === 'EARLY_LEAVE') {
+                        break;
+                    } else if (isWeekend) {
+                        streak++; // 주말 미기록은 연속 유지
+                    } else if (i === 0) {
+                        // 오늘 아직 미체크면 이전 날부터 계산
+                    } else {
+                        break;
+                    }
+                } else if (isWeekend) {
+                    streak++; // 기록 없어도 주말은 기본 통과
+                } else if (i === 0) {
+                    // 오늘 미체크인 경우 통과
+                } else {
+                    break;
+                }
+                checkDate.setDate(checkDate.getDate() - 1);
+            }
+            return Math.min(streak, 14);
+        }
+
+        // 3) 쿠폰 자동 발급 및 상태 체크 함수
+        async function checkAndGrantRewards() {
+            if (!userNickname) return;
+            const focusCount = getFocusStampCount();
+            const earnedFocusCoupons = Math.floor(focusCount / 5);
+            const currentFocusCoupons = rewardCoupons.filter(c => c.type === 'FOCUS_5_STAMP');
+
+            let updatedAny = false;
+            // 도장 5개마다 쿠폰 1장씩 발급
+            for (let i = currentFocusCoupons.length; i < earnedFocusCoupons; i++) {
+                const newCouponId = `REWARD_FOCUS_${Date.now()}_${i + 1}`;
+                const couponData = {
+                    title: questConfig.focusRewardTitle || '🏪 편의점 3,000원 상품권',
+                    type: 'FOCUS_5_STAMP',
+                    rewardDesc: questConfig.focusRewardDesc || '정시 시작 & 몰입 퀘스트 5회 달성 축하 선물! 💖 (또는 학습 보너스권)',
+                    date: getLocalDateStr(new Date()),
+                    status: 'PENDING', // PENDING (지급 대기) -> CLAIMED (아이가 부모님께 수령 완료) -> USED (맛있게 사용 완료)
+                    created_at: new Date().toISOString()
+                };
+
+                try {
+                    const { error } = await supabaseClient
+                        .from('study_words')
+                        .insert([{
+                            word: newCouponId,
+                            meaning: JSON.stringify(couponData),
+                            subject: 'CHILD_REWARD',
+                            category: '아람',
+                            example: userNickname || '시스템'
+                        }]);
+
+                    if (!error) {
+                        rewardCoupons.unshift({ id: newCouponId, ...couponData });
+                        updatedAny = true;
+                    }
+                } catch(e) {
+                    console.error("Grant focus reward error:", e);
+                }
+            }
+
+            // 14일 퍼펙트 출결 골드 티켓
+            const perfectStreak = getPerfectAttendanceStreak();
+            const hasGoldTicket = rewardCoupons.some(c => c.type === 'PERFECT_ATTEND_14');
+            if (perfectStreak >= 14 && !hasGoldTicket) {
+                const goldCouponId = `REWARD_GOLD_${Date.now()}`;
+                const goldData = {
+                    title: questConfig.goldRewardTitle || '🏖️ 1일 학습 자유 휴식권 (골드 티켓)',
+                    type: 'PERFECT_ATTEND_14',
+                    rewardDesc: questConfig.goldRewardDesc || '2주 퍼펙트 출결(14일 무결석·무지각·무조퇴) 대기록 달성 보상! 👑',
+                    date: getLocalDateStr(new Date()),
+                    status: 'PENDING',
+                    created_at: new Date().toISOString()
+                };
+
+                try {
+                    const { error } = await supabaseClient
+                        .from('study_words')
+                        .insert([{
+                            word: goldCouponId,
+                            meaning: JSON.stringify(goldData),
+                            subject: 'CHILD_REWARD',
+                            category: '아람',
+                            example: userNickname || '시스템'
+                        }]);
+
+                    if (!error) {
+                        rewardCoupons.unshift({ id: goldCouponId, ...goldData });
+                        updatedAny = true;
+                    }
+                } catch(e) {
+                    console.error("Grant gold reward error:", e);
+                }
+            }
+
+            return updatedAny;
+        }
+
+        // 아이 또는 아빠가 쿠폰 상태 변경 (수령 완료 / 사용 완료)
+        async function updateCouponStatus(couponId, newStatus) {
+            const coupon = rewardCoupons.find(c => c.id === couponId);
+            if (!coupon) return;
+
+            const oldStatus = coupon.status;
+            coupon.status = newStatus;
+            if (newStatus === 'CLAIMED') coupon.claimedAt = new Date().toISOString();
+            if (newStatus === 'USED') coupon.usedAt = new Date().toISOString();
+
+            try {
+                await supabaseClient
+                    .from('study_words')
+                    .upsert({
+                        word: coupon.id,
+                        meaning: JSON.stringify(coupon),
+                        subject: 'CHILD_REWARD',
+                        category: '아람',
+                        example: userNickname || '아람'
+                    }, { onConflict: 'word' });
+
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#ffc3a0', '#ffafbd', '#f6d365', '#fda085', '#84fab0']
+                });
+
+                renderHabitSection();
+            } catch(e) {
+                console.error("Update coupon status error:", e);
+                coupon.status = oldStatus;
+                alert("상태 저장 중 오류가 발생했습니다.");
+            }
+        }
+
+        // 아이 화면 '보물상자 & 보상 플랜' HTML 생성
+        function generateChildRewardBoxHtml() {
+            const focusCount = getFocusStampCount();
+            const currentCycleStamps = focusCount % 5;
+            const remainingToNextCoupon = 5 - currentCycleStamps;
+            const perfectStreak = getPerfectAttendanceStreak();
+            const remainingToGold = Math.max(0, 14 - perfectStreak);
+            const perfectPercent = Math.min(100, Math.round((perfectStreak / 14) * 100));
+
+            // 스탬프 5칸 시각화
+            let stampSlotsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= currentCycleStamps) {
+                    stampSlotsHtml += `<div class="quest-stamp-slot active" title="달성 완료!">⭐</div>`;
+                } else {
+                    stampSlotsHtml += `<div class="quest-stamp-slot empty" title="도전 중">${i}</div>`;
+                }
+            }
+
+            // 인벤토리 쿠폰 목록 HTML
+            let couponsHtml = '';
+            if (rewardCoupons.length === 0) {
+                couponsHtml = `<div style="text-align:center; color:#94a3b8; font-size:13px; padding:16px 0;">아직 획득한 보상 티켓이 없어요.<br>매일 정시 시작과 출결을 지키면 반짝이는 티켓이 생겨요! 🎁</div>`;
+            } else {
+                couponsHtml = rewardCoupons.map(coupon => {
+                    let statusBadge = '';
+                    let actionBtn = '';
+
+                    if (coupon.status === 'PENDING') {
+                        statusBadge = `<span class="coupon-status-badge pending">🎁 지급 대기</span>`;
+                        actionBtn = `<button type="button" class="coupon-action-btn claim-btn" onclick="updateCouponStatus('${coupon.id}', 'CLAIMED')">✅ 부모님께 수령 완료!</button>`;
+                    } else if (coupon.status === 'CLAIMED') {
+                        statusBadge = `<span class="coupon-status-badge claimed">보관 중 (수령완료)</span>`;
+                        actionBtn = `<button type="button" class="coupon-action-btn use-btn" onclick="updateCouponStatus('${coupon.id}', 'USED')">🎉 맛있게 사용 완료!</button>`;
+                    } else if (coupon.status === 'USED') {
+                        statusBadge = `<span class="coupon-status-badge used">✨ 사용 완료</span>`;
+                        actionBtn = `<div style="font-size:12px; color:#10b981; font-weight:bold; margin-top:6px;">기분 좋은 보상 완료! 💖</div>`;
+                    }
+
+                    const isGold = (coupon.type === 'PERFECT_ATTEND_14');
+                    return `
+                        <div class="reward-coupon-card ${isGold ? 'gold' : ''}">
+                            <div class="coupon-header">
+                                <div class="coupon-title">${escapeHtml(coupon.title)}</div>
+                                ${statusBadge}
+                            </div>
+                            <div class="coupon-desc">${escapeHtml(coupon.rewardDesc || '')}</div>
+                            <div class="coupon-meta">발급일: ${coupon.date || ''}</div>
+                            <div class="coupon-actions">${actionBtn}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            return `
+                <div class="child-reward-box">
+                    <div class="child-reward-title">
+                        <span>🎁 아람이의 보물상자 &amp; 보상 플랜 💎</span>
+                    </div>
+                    <div class="child-reward-subtitle">
+                        열심히 달성하면 멋진 선물 티켓이 지급돼요! ✨
+                    </div>
+
+                    <!-- 퀘스트 진행 상태 -->
+                    <div class="quest-card-grid">
+                        <!-- 퀘스트 1: 정시 시작 & 몰입 -->
+                        <div class="quest-card">
+                            <div class="quest-card-header">
+                                <span class="quest-badge">퀘스트 1</span>
+                                <span class="quest-tag-highlight">도장 5개 모으면 즉시 발급!</span>
+                            </div>
+                            <div class="quest-name">🎯 정시 시작 + 집중 몰입 퀘스트</div>
+                            <div class="quest-mission-desc">
+                                📌 <strong>미션:</strong> 아빠와 약속한 시간에 딱 맞춰 공부를 시작하고, 집중해서 끝내기!
+                            </div>
+                            
+                            <!-- 획득할 선물 안내 배너 -->
+                            <div class="quest-reward-banner">
+                                <div class="reward-banner-label">🎁 달성 시 받는 선물:</div>
+                                <div class="reward-banner-title">${escapeHtml(questConfig.focusRewardTitle)}</div>
+                                ${questConfig.focusRewardDesc ? `<div class="reward-banner-desc">${escapeHtml(questConfig.focusRewardDesc)}</div>` : ''}
+                            </div>
+
+                            <div class="quest-stamps-row">
+                                ${stampSlotsHtml}
+                            </div>
+                            <div class="quest-progress-txt">
+                                도장 <strong>${currentCycleStamps} / 5</strong>개 달성 
+                                <span style="color:#e11d48; font-weight:bold;">(앞으로 ${remainingToNextCoupon}개 남음!)</span>
+                            </div>
+                        </div>
+
+                        <!-- 퀘스트 2: 2주 퍼펙트 출결 -->
+                        <div class="quest-card gold-border">
+                            <div class="quest-card-header">
+                                <span class="quest-badge gold">퀘스트 2 (대기록)</span>
+                                <span class="quest-tag-highlight gold">14일 연속 달성!</span>
+                            </div>
+                            <div class="quest-name">🔥 2주 퍼펙트 출결 퀘스트</div>
+                            <div class="quest-mission-desc">
+                                📌 <strong>미션:</strong> 14일 동안 지각, 결석, 조퇴 없이 씩씩하게 연속 등교하기!
+                            </div>
+
+                            <!-- 획득할 선물 안내 배너 -->
+                            <div class="quest-reward-banner gold">
+                                <div class="reward-banner-label gold">👑 대기록 달성 선물 (골드 티켓):</div>
+                                <div class="reward-banner-title gold">${escapeHtml(questConfig.goldRewardTitle)}</div>
+                                ${questConfig.goldRewardDesc ? `<div class="reward-banner-desc">${escapeHtml(questConfig.goldRewardDesc)}</div>` : ''}
+                            </div>
+
+                            <div class="quest-bar-bg">
+                                <div class="quest-bar-fill" style="width: ${perfectPercent}%;"></div>
+                            </div>
+                            <div class="quest-progress-txt">
+                                연속 <strong>${perfectStreak} / 14일</strong> 달성 (${perfectPercent}%)
+                                ${remainingToGold > 0 ? `<span style="color:#d97706; font-weight:bold;">(앞으로 ${remainingToGold}일 더 출석하면 획득!)</span>` : `<span style="color:#059669; font-weight:bold;">(대기록 성공! 골드티켓 지급 완료!)</span>`}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 보관함(인벤토리) -->
+                    <div class="inventory-section">
+                        <div class="inventory-title">
+                            <span>🎟️ 내 보관함 (보상 티켓 인벤토리)</span>
+                            <span style="font-size:12px; color:#6366f1; font-weight:normal;">총 ${rewardCoupons.length}개 보유</span>
+                        </div>
+                        <div class="inventory-list">
+                            ${couponsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 아빠 화면 '퀘스트 & 보상 쿠폰 현황 및 선물 설정' HTML
+        function renderDadRewardManagerHtml() {
+            const focusCount = getFocusStampCount();
+            const perfectStreak = getPerfectAttendanceStreak();
+
+            let couponsListHtml = '';
+            if (rewardCoupons.length === 0) {
+                couponsListHtml = `<div style="text-align:center; color:#94a3b8; font-size:12px; padding:10px;">아직 발급된 보상 쿠폰이 없습니다.</div>`;
+            } else {
+                couponsListHtml = rewardCoupons.map(c => `
+                    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:10px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                        <div style="flex:1; margin-right:8px;">
+                            <div style="font-weight:bold; font-size:13px; color:#1e293b;">${escapeHtml(c.title)}</div>
+                            <div style="font-size:11px; color:#64748b;">${c.date} 발급 | 상태: <strong>${c.status === 'PENDING' ? '지급 대기' : (c.status === 'CLAIMED' ? '수령 완료' : '사용 완료')}</strong></div>
+                            ${c.rewardDesc ? `<div style="font-size:11px; color:#94a3b8;">${escapeHtml(c.rewardDesc)}</div>` : ''}
+                        </div>
+                        <div style="display:flex; gap:6px; flex-shrink:0;">
+                            ${c.status === 'PENDING' ? `<button onclick="updateCouponStatus('${c.id}', 'CLAIMED')" style="background:#10b981; color:white; border:none; padding:5px 9px; border-radius:8px; font-size:11px; cursor:pointer; font-weight:bold;">수령확인</button>` : ''}
+                            ${c.status === 'CLAIMED' ? `<button onclick="updateCouponStatus('${c.id}', 'USED')" style="background:#6366f1; color:white; border:none; padding:5px 9px; border-radius:8px; font-size:11px; cursor:pointer; font-weight:bold;">사용완료처리</button>` : ''}
+                            <button onclick="deleteRewardCoupon('${c.id}')" style="background:#f1f5f9; color:#ef4444; border:1px solid #fecdd3; padding:5px 8px; border-radius:8px; font-size:11px; cursor:pointer;">삭제</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            return `
+                <div class="coaching-section" style="background:#fff7ed; border-color:#fed7aa; margin-top:16px;">
+                    <div class="coaching-section-title" style="color:#9a3412; display:flex; justify-content:space-between; align-items:center;">
+                        <span>🎁 퀘스트 &amp; 보상 선물 설정 및 쿠폰 관리</span>
+                    </div>
+
+                    <!-- 1) 퀘스트 선물 설정 (아빠가 직접 선물 내용 변경 가능) -->
+                    <div style="background:#ffffff; border:1.5px solid #fed7aa; border-radius:14px; padding:12px; margin-bottom:14px;">
+                        <div style="font-size:13px; font-weight:bold; color:#7c2d12; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                            <span>⚙️ 퀘스트 달성 보상(선물) 변경</span>
+                            <span style="font-size:11px; color:#ea580c; font-weight:normal;">원하는 선물로 수정 후 저장하세요</span>
+                        </div>
+                        
+                        <div style="margin-bottom:10px;">
+                            <label style="font-size:12px; font-weight:bold; color:#334155; display:block; margin-bottom:4px;">
+                                🎯 퀘스트 1 선물 (정시+몰입 5회 도장):
+                            </label>
+                            <input type="text" id="cfg-focus-title" class="habit-memo-input" style="background:#f8fafc; font-size:13px; padding:8px 10px; margin-bottom:4px;" value="${escapeHtml(questConfig.focusRewardTitle)}" placeholder="예: 🏪 편의점 3,000원 상품권 / 🍨 베스킨 싱글킹">
+                            <input type="text" id="cfg-focus-desc" class="habit-memo-input" style="background:#f8fafc; font-size:11px; padding:6px 10px; color:#64748b;" value="${escapeHtml(questConfig.focusRewardDesc)}" placeholder="선물 부가 설명">
+                        </div>
+
+                        <div style="margin-bottom:12px;">
+                            <label style="font-size:12px; font-weight:bold; color:#334155; display:block; margin-bottom:4px;">
+                                🔥 퀘스트 2 선물 (2주 14일 퍼펙트 출결 골드 티켓):
+                            </label>
+                            <input type="text" id="cfg-gold-title" class="habit-memo-input" style="background:#f8fafc; font-size:13px; padding:8px 10px; margin-bottom:4px;" value="${escapeHtml(questConfig.goldRewardTitle)}" placeholder="예: 🏖️ 1일 학습 자유 휴식권 (골드 티켓) / 🍕 주말 피자 파티">
+                            <input type="text" id="cfg-gold-desc" class="habit-memo-input" style="background:#f8fafc; font-size:11px; padding:6px 10px; color:#64748b;" value="${escapeHtml(questConfig.goldRewardDesc)}" placeholder="선물 부가 설명">
+                        </div>
+
+                        <div style="display:flex; gap:8px;">
+                            <button type="button" onclick="saveQuestSettings()" style="flex:1; background:linear-gradient(135deg, #f97316 0%, #ea580c 100%); color:white; border:none; padding:8px 12px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;">💾 선물 설정 저장하기</button>
+                            <button type="button" onclick="giveManualBonusReward()" style="background:#4f46e5; color:white; border:none; padding:8px 12px; border-radius:10px; font-size:12px; font-weight:bold; cursor:pointer;">+ 깜짝 선물 즉시 지급</button>
+                        </div>
+                    </div>
+
+                    <!-- 2) 현재 퀘스트 진행 통계 -->
+                    <div style="font-size:12px; color:#475569; margin-bottom:12px; line-height:1.6; background:#fff7ed; padding:8px 10px; border-radius:10px;">
+                        • 현재 정시+몰입 스탬프: <strong>${focusCount}회</strong> (5회마다 위 설정 선물 자동 발급)<br>
+                        • 2주 퍼펙트 출결 연속 스트릭: <strong>${perfectStreak} / 14일</strong> (14일 달성 시 골드티켓 자동 발급)
+                    </div>
+
+                    <!-- 3) 발급된 쿠폰 목록 및 상태 관리 -->
+                    <div>
+                        <div style="font-size:13px; font-weight:bold; color:#7c2d12; margin-bottom:8px;">🎟️ 발급된 쿠폰 인벤토리 현황</div>
+                        ${couponsListHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 선물 설정 저장 함수
+        async function saveQuestSettings() {
+            const focusTitle = (document.getElementById('cfg-focus-title')?.value || '').trim();
+            const focusDesc = (document.getElementById('cfg-focus-desc')?.value || '').trim();
+            const goldTitle = (document.getElementById('cfg-gold-title')?.value || '').trim();
+            const goldDesc = (document.getElementById('cfg-gold-desc')?.value || '').trim();
+
+            if (!focusTitle || !goldTitle) {
+                alert("선물 제목을 입력해주세요!");
+                return;
+            }
+
+            questConfig = {
+                focusRewardTitle: focusTitle,
+                focusRewardDesc: focusDesc,
+                goldRewardTitle: goldTitle,
+                goldRewardDesc: goldDesc
+            };
+
+            try {
+                await supabaseClient
+                    .from('study_words')
+                    .upsert({
+                        word: 'QUEST_REWARD_SETTINGS',
+                        meaning: JSON.stringify(questConfig),
+                        subject: 'CHILD_REWARD',
+                        category: '설정',
+                        example: userNickname || '아빠'
+                    }, { onConflict: 'word' });
+
+                alert("💖 퀘스트 보상(선물) 설정이 저장되었습니다! 아람이 화면에도 바로 반영됩니다.");
+                renderHabitSection();
+            } catch(e) {
+                console.error("Save quest settings error:", e);
+                alert("선물 설정 저장 실패: " + e.message);
+            }
+        }
+
+        // 아빠가 깜짝 보너스 선물 즉시 발급
+        async function giveManualBonusReward() {
+            const title = prompt("아람이에게 줄 깜짝 선물 이름을 입력하세요:", "🎉 아빠의 특별 칭찬 선물 (자유 이용권)");
+            if (!title || !title.trim()) return;
+
+            const desc = prompt("선물 설명 또는 칭찬 메시지를 적어주세요:", "오늘 스스로 열심히 노력한 아람이를 위한 깜짝 선물! 💖") || '';
+
+            const couponId = `REWARD_MANUAL_${Date.now()}`;
+            const newCoupon = {
+                title: title.trim(),
+                type: 'MANUAL_BONUS',
+                rewardDesc: desc.trim(),
+                date: getLocalDateStr(new Date()),
+                status: 'PENDING',
+                created_at: new Date().toISOString()
+            };
+
+            try {
+                await supabaseClient
+                    .from('study_words')
+                    .insert([{
+                        word: couponId,
+                        meaning: JSON.stringify(newCoupon),
+                        subject: 'CHILD_REWARD',
+                        category: '아람',
+                        example: userNickname || '아빠'
+                    }]);
+
+                rewardCoupons.unshift({ id: couponId, ...newCoupon });
+                alert(`✨ [${title.trim()}] 깜짝 선물이 아람이 보관함으로 발급되었습니다!`);
+                renderHabitSection();
+            } catch(e) {
+                console.error("Manual reward error:", e);
+                alert("선물 발급 실패: " + e.message);
+            }
+        }
+
+        // 쿠폰 삭제 함수
+        async function deleteRewardCoupon(couponId) {
+            if (!confirm("이 보상 쿠폰을 삭제하시겠습니까?")) return;
+
+            try {
+                await supabaseClient
+                    .from('study_words')
+                    .delete()
+                    .eq('subject', 'CHILD_REWARD')
+                    .eq('word', couponId);
+
+                rewardCoupons = rewardCoupons.filter(c => c.id !== couponId);
+                renderHabitSection();
+                alert("쿠폰이 삭제되었습니다.");
+            } catch(e) {
+                console.error("Delete coupon error:", e);
+                alert("삭제 실패: " + e.message);
+            }
+        }
+
+        function changeHabitDate(val) {
+            if (!val) return;
+            selectedHabitDate = val;
+            const parts = val.split('-').map(Number);
+            habitCalYear = parts[0];
+            habitCalMonth = parts[1] - 1;
+            habitWeekOffset = getWeekOffsetFromDate(val);
+            syncDraftWithSelectedDate();
+            renderHabitSection();
+            const el = document.getElementById('habit-container');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function stepHabitDate(offset) {
+            const parts = selectedHabitDate.split('-').map(Number);
+            const curr = new Date(parts[0], parts[1] - 1, parts[2]);
+            curr.setDate(curr.getDate() + offset);
+            selectedHabitDate = getLocalDateStr(curr);
+            habitCalYear = curr.getFullYear();
+            habitCalMonth = curr.getMonth();
+            habitWeekOffset = getWeekOffsetFromDate(selectedHabitDate);
+            syncDraftWithSelectedDate();
+            renderHabitSection();
+        }
+
+        function setHabitDateToToday() {
+            selectedHabitDate = getLocalDateStr(new Date());
+            habitCalYear = new Date().getFullYear();
+            habitCalMonth = new Date().getMonth();
+            habitWeekOffset = 0;
+            syncDraftWithSelectedDate();
+            renderHabitSection();
+        }
+
+        function setHabitAttendance(val) {
+            if (draftAttendance === val) {
+                draftAttendance = null;
+                draftAttendanceReason = null;
+                draftAttendanceReasonText = '';
+            } else {
+                draftAttendance = val;
+                if ((val === 'ABSENT' || val === 'EARLY_LEAVE') && !draftAttendanceReason) {
+                    draftAttendanceReason = 'SICK'; // 기본값: 질병/감기(병결)
+                }
+            }
+            renderHabitSection();
+        }
+
+        function setAttendanceReason(val) {
+            draftAttendanceReason = (draftAttendanceReason === val) ? null : val;
+            renderHabitSection();
+        }
+
+        function setHabitEveningStudy(val) {
+            if (draftEveningStudy === val) {
+                draftEveningStudy = null;
+            } else {
+                draftEveningStudy = val;
+                if (val === true && !draftStudyAttitude) {
+                    draftStudyAttitude = 'EXCELLENT';
+                }
+                if (val === false && !draftAbsenceReason) {
+                    draftAbsenceReason = 'REST_SICK';
+                }
+            }
+            renderHabitSection();
+        }
+
+        function setHabitStudyAttitude(val) {
+            draftStudyAttitude = (draftStudyAttitude === val) ? null : val;
+            renderHabitSection();
+        }
+
+        function toggleFocusOnTime() {
+            draftFocusOnTime = !draftFocusOnTime;
+            renderHabitSection();
+        }
+
+        function toggleFocusDeep() {
+            draftFocusDeep = !draftFocusDeep;
+            renderHabitSection();
+        }
+
+        function setHabitAbsenceReason(val) {
+            draftAbsenceReason = (draftAbsenceReason === val) ? null : val;
+            renderHabitSection();
+        }
+
+        // 과제 추가 / 토글 / 삭제
+        function addAssignment() {
+            const input = document.getElementById('new-assignment-input');
+            const dateInput = document.getElementById('new-assignment-date');
+            if (!input || !input.value.trim()) return;
+
+            const text = input.value.trim();
+            const dueDate = dateInput ? dateInput.value : '';
+
+            draftAssignments.push({
+                id: Date.now(),
+                text: text,
+                dueDate: dueDate,
+                done: false
+            });
+
+            renderHabitSection();
+        }
+
+        function toggleAssignment(idx) {
+            if (draftAssignments[idx]) {
+                draftAssignments[idx].done = !draftAssignments[idx].done;
+                renderHabitSection();
+            }
+        }
+
+        function deleteAssignment(idx) {
+            draftAssignments.splice(idx, 1);
+            renderHabitSection();
+        }
+
+        // 약속 추가 / 토글 / 삭제
+        function addPromise() {
+            const input = document.getElementById('new-promise-input');
+            if (!input || !input.value.trim()) return;
+
+            draftPromises.push({
+                id: Date.now(),
+                text: input.value.trim(),
+                done: false
+            });
+
+            renderHabitSection();
+        }
+
+        function togglePromise(idx) {
+            if (draftPromises[idx]) {
+                draftPromises[idx].done = !draftPromises[idx].done;
+                renderHabitSection();
+            }
+        }
+
+        function deletePromise(idx) {
+            draftPromises.splice(idx, 1);
+            renderHabitSection();
+        }
+
+        // 아이(아람이) 모드에서 과제/약속 실시간 체크 및 DB 저장
+        async function toggleChildAssignment(dateStr, idx) {
+            const rec = habitRecordsMap[dateStr];
+            if (!rec || !Array.isArray(rec.assignments) || !rec.assignments[idx]) return;
+
+            rec.assignments[idx].done = !rec.assignments[idx].done;
+            renderHabitSection();
+
+            try {
+                await supabaseClient
+                    .from('study_words')
+                    .upsert({
+                        word: dateStr,
+                        meaning: JSON.stringify(rec),
+                        subject: 'DAILY_HABIT',
+                        category: '아람',
+                        example: userNickname || '아람'
+                    }, { onConflict: 'word' });
+            } catch(e) {
+                console.error("Auto save child assignment error:", e);
+            }
+        }
+
+        async function toggleChildPromise(dateStr, idx) {
+            const rec = habitRecordsMap[dateStr];
+            if (!rec || !Array.isArray(rec.promises) || !rec.promises[idx]) return;
+
+            rec.promises[idx].done = !rec.promises[idx].done;
+            renderHabitSection();
+
+            try {
+                await supabaseClient
+                    .from('study_words')
+                    .upsert({
+                        word: dateStr,
+                        meaning: JSON.stringify(rec),
+                        subject: 'DAILY_HABIT',
+                        category: '아람',
+                        example: userNickname || '아람'
+                    }, { onConflict: 'word' });
+            } catch(e) {
+                console.error("Auto save child promise error:", e);
+            }
+        }
+
+        function changeHabitCalMonth(delta) {
+            habitCalMonth += delta;
+            if (habitCalMonth < 0) {
+                habitCalMonth = 11;
+                habitCalYear--;
+            } else if (habitCalMonth > 11) {
+                habitCalMonth = 0;
+                habitCalYear++;
+            }
+            renderHabitSection();
+        }
+
+        function toggleDadPreview(val) {
+            isDadPreviewMode = val;
+            renderHabitSection();
+        }
+
+        async function saveHabitRecord() {
+            if (isHabitSaving) return;
+
+            if (!draftAttendance && draftEveningStudy === null && !draftMemo.trim() && draftAssignments.length === 0 && draftPromises.length === 0) {
+                alert("출결 상태나 공부 여부, 또는 과제나 약속을 하나 이상 입력해주세요! 😊");
+                return;
+            }
+
+            isHabitSaving = true;
+            const saveBtn = document.getElementById('habit-save-btn');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerText = "저장 중... ⏳";
+            }
+
+            const memoVal = (document.getElementById('habit-memo-input')?.value || draftMemo || '').trim();
+            const reasonVal = (document.getElementById('habit-reason-text')?.value || draftReasonText || '').trim();
+            const attendReasonTextVal = (document.getElementById('attendance-reason-input')?.value || draftAttendanceReasonText || '').trim();
+
+            const detailObj = {
+                attendance: draftAttendance,
+                attendance_reason: draftAttendanceReason,
+                attendance_reason_text: attendReasonTextVal,
+                evening_study: draftEveningStudy,
+                study_attitude: draftStudyAttitude,
+                focus_ontime: !!draftFocusOnTime,
+                focus_deep: !!draftFocusDeep,
+                absence_reason: draftAbsenceReason,
+                reason_text: reasonVal,
+                assignments: draftAssignments,
+                promises: draftPromises,
+                memo: memoVal,
+                student: '아람',
+                recorded_by: userNickname || '아빠',
+                updated_at: new Date().toISOString()
+            };
+
+            try {
+                // Supabase upsert를 사용하여 중복 키 충돌(unique_word violation)을 원천 방지
+                const { data: upsertData, error: upsertErr } = await supabaseClient
+                    .from('study_words')
+                    .upsert({
+                        word: selectedHabitDate,
+                        meaning: JSON.stringify(detailObj),
+                        subject: 'DAILY_HABIT',
+                        category: '아람',
+                        example: userNickname || '아빠'
+                    }, { onConflict: 'word' })
+                    .select();
+
+                if (upsertErr) throw upsertErr;
+
+                const savedId = (upsertData && upsertData[0]?.id) || (habitRecordsMap[selectedHabitDate]?.id);
+                habitRecordsMap[selectedHabitDate] = {
+                    ...detailObj,
+                    id: savedId,
+                    rawCreatedAt: new Date().toISOString()
+                };
+
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#ffc3a0', '#ffafbd', '#84fab0', '#8fd3f4', '#a18cd1']
+                });
+
+                alert(`💖 ${selectedHabitDate} 아람이의 출석·공부 기록이 저장되었습니다!`);
+                await checkAndGrantRewards();
+                renderHabitSection();
+
+            } catch (err) {
+                console.error("Save habit record error:", err);
+                alert("저장 중 오류가 발생했습니다: " + (err.message || err));
+            } finally {
+                isHabitSaving = false;
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    const hasRecord = !!habitRecordsMap[selectedHabitDate];
+                    saveBtn.innerHTML = `💾 ${hasRecord ? '기록 수정하기' : '기록 저장하기'} 💖`;
+                }
+            }
+        }
+
+        async function deleteHabitRecord() {
+            if (!confirm(`${selectedHabitDate}의 기록을 삭제하시겠습니까?`)) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('study_words')
+                    .delete()
+                    .eq('subject', 'DAILY_HABIT')
+                    .eq('word', selectedHabitDate);
+
+                if (error) throw error;
+
+                delete habitRecordsMap[selectedHabitDate];
+                syncDraftWithSelectedDate();
+                renderHabitSection();
+                alert(`${selectedHabitDate} 기록이 삭제되었습니다.`);
+            } catch(err) {
+                console.error("Delete habit record error:", err);
+                alert("삭제 실패: " + err.message);
+            }
+        }
+
+        function showChildDayDetail(dateStr) {
+            const rec = habitRecordsMap[dateStr];
+            const friendlyDate = formatFriendlyDate(dateStr);
+            
+            let attendanceText = '기록 없음 (미체크)';
+            if (rec && rec.attendance === 'ON_TIME') attendanceText = '☀️ 정상 등교 (지각 안 함 ✨)';
+            else if (rec && rec.attendance === 'LATE') attendanceText = '⏰ 지각함';
+            else if (rec && rec.attendance === 'HOLIDAY') attendanceText = '🏖️ 주말 / 휴일';
+
+            let studyText = '기록 없음 (미체크)';
+            const dayStudyInfo = rec ? getStudyStatusInfo(rec.evening_study) : null;
+            if (dayStudyInfo) {
+                studyText = dayStudyInfo.modalText;
+            }
+
+            let memoHtml = '';
+            if (rec && rec.memo) {
+                memoHtml = `<div class="child-memo-box" style="margin-top:12px;">💌 아빠의 응원: "${escapeHtml(rec.memo)}" 💖</div>`;
+            }
+
+            const dayEvents = getSchedulesForDate(dateStr);
+            let eventsModalHtml = '';
+            if (dayEvents && dayEvents.length > 0) {
+                const items = dayEvents.map(ev => `
+                    <div style="background:#ffffff; border:1px solid #c7d2fe; border-radius:10px; padding:8px 10px; margin-top:4px;">
+                        <div style="font-weight:bold; color:#3730a3; font-size:13px;">${ev.icon} ${escapeHtml(ev.title)}</div>
+                        <div style="font-size:12px; color:#64748b;">기간: ${formatScheduleRange(ev.startDate, ev.endDate)}</div>
+                        ${ev.memo ? `<div style="font-size:11px; color:#6366f1; margin-top:2px;">💬 ${escapeHtml(ev.memo)}</div>` : ''}
+                    </div>
+                `).join('');
+                eventsModalHtml = `
+                    <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #cbd5e1; text-align:left;">
+                        <strong style="color:#4338ca; font-size:13px;">🗓️ 이날의 주요 일정:</strong>
+                        ${items}
+                    </div>
+                `;
+            }
+
+            const modalHtml = `
+                <div class="child-detail-modal" id="child-day-modal" onclick="if(event.target === this) closeChildDayDetail()">
+                    <div class="child-modal-body">
+                        <div style="font-size: 32px; margin-bottom: 8px;">📅</div>
+                        <div style="font-family:'Jua', sans-serif; font-size:20px; color:#2d3436; margin-bottom:14px;">${friendlyDate}</div>
+                        <div style="background:#f8fafc; border-radius:16px; padding:14px; text-align:left; font-size:14px; display:flex; flex-direction:column; gap:8px;">
+                            <div><strong>등교 상태:</strong> ${attendanceText}</div>
+                            <div><strong>저녁 공부:</strong> ${studyText}</div>
+                        </div>
+                        ${eventsModalHtml}
+                        ${memoHtml}
+                        <button onclick="closeChildDayDetail()" style="margin-top:16px; width:100%; background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); color:white; border:none; padding:10px 18px; border-radius:14px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer;">확인 💖</button>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function closeChildDayDetail() {
+            const modal = document.getElementById('child-day-modal');
+            if (modal) modal.remove();
+        }
+
+        initStats()
+        loadWords()
