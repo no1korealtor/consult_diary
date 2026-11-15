@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -60,32 +60,11 @@
 
     <div id="history-container" class="history-section hidden"></div>
 
-    <!-- 유튜브 추천 링크 섹션 -->
-    <div id="youtube-container" class="history-section">
-        <div class="history-title">📺 추천 유튜브 학습 채널 📺</div>
-        <div style="text-align:center; color:#636e72; font-size:14px; margin-bottom: 15px; font-family:'Jua', sans-serif;">
-            아람이의 공부를 도와줄 꿀잼 채널들이에요! 💖
-        </div>
-        <div id="youtube-list" style="display:flex; flex-direction:column; gap:12px;"></div>
-        <div id="youtube-btn-container"></div>
-        <div id="youtube-admin-actions"></div>
-    </div>
+
 
     <script src="app.js" defer></script>
 
-    <!-- 유튜브 링크 추가 모달 -->
-    <div class="modal-overlay hidden" id="youtube-modal-overlay">
-        <div class="name-modal">
-            <h2 style="font-size:22px; margin-bottom:15px;">📺 추천 링크 추가 📺</h2>
-            <input type="text" id="yt-title" class="name-input" placeholder="채널/영상 제목 (예: 과학드림)">
-            <input type="text" id="yt-url" class="name-input" placeholder="유튜브 링크 URL">
-            <input type="text" id="yt-icon" class="name-input" placeholder="이모지 하나 (기본값: 📺)" value="📺">
-            <div style="display:flex; gap:10px; margin-top: 20px;">
-                <button class="name-btn" onclick="submitYoutubeModal()">추가하기 💖</button>
-                <button class="name-btn" style="background: #dfe6e9; color: #636e72; box-shadow:none;" onclick="closeYoutubeModal()">취소</button>
-            </div>
-        </div>
-    </div>
+
 
     <!-- 주요 일정 추가/관리 모달 -->
     <div class="modal-overlay hidden" id="schedule-modal-overlay" onclick="if(event.target === this) closeScheduleModal()">

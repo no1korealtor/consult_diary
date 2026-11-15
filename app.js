@@ -364,8 +364,6 @@
             const lastUpdated = document.getElementById('last-updated');
             const habitContainer = document.getElementById('habit-container');
             const historyContainer = document.getElementById('history-container');
-            const youtubeContainer = document.getElementById('youtube-container');
-
             if (tab === 'study') {
                 if (btnStudy) btnStudy.classList.add('active');
                 if (btnLife) btnLife.classList.remove('active');
@@ -373,7 +371,6 @@
                 if (cardWrapper) cardWrapper.style.display = '';
                 if (lastUpdated) lastUpdated.style.display = '';
                 if (historyContainer) historyContainer.style.display = '';
-                if (youtubeContainer) youtubeContainer.style.display = '';
                 if (habitContainer) habitContainer.style.display = 'none';
             } else {
                 if (btnStudy) btnStudy.classList.remove('active');
@@ -382,7 +379,6 @@
                 if (cardWrapper) cardWrapper.style.display = 'none';
                 if (lastUpdated) lastUpdated.style.display = 'none';
                 if (historyContainer) historyContainer.style.display = 'none';
-                if (youtubeContainer) youtubeContainer.style.display = 'none';
                 if (habitContainer) {
                     habitContainer.style.display = 'block';
                     habitContainer.classList.remove('hidden');
@@ -483,7 +479,7 @@
                 document.getElementById('last-updated').innerHTML = `저장된 단어가 없습니다.`;
             }
 
-            renderYoutubeLinks(youtubeLinks);
+            // renderYoutubeLinks removed
             setupSubjects()
         }
 
@@ -1058,107 +1054,6 @@ async function insertStudyLog(subject, content, detail) {
             
             container.innerHTML = html;
             container.classList.remove('hidden');
-        }
-
-        function renderYoutubeLinks(links) {
-            const listEl = document.getElementById('youtube-list');
-            if (!listEl) return;
-            
-            let html = '';
-            
-            // Default links
-            const defaultLinks = [
-                { url: 'https://www.youtube.com/@ebs_middle', icon: '🎒', title: 'EBS 중학 (교과서 기초 탄탄)' },
-                { url: 'https://www.youtube.com/@hongong', icon: '🔤', title: '혼공TV (쉽고 재밌는 영문법)' },
-                { url: 'https://www.youtube.com/@jungseungje', icon: '📐', title: '정승제 생선님 (수학 포기 금지!)' },
-                { url: 'https://www.youtube.com/@science_dream', icon: '🔬', title: '과학드림 (흥미진진한 과학 이야기)' },
-                { url: 'https://www.youtube.com/@1minuteinfo', icon: '🧠', title: '1분미만 (짧고 유익한 상식)' },
-                { url: 'https://youtu.be/tedqdAiXBCk?si=cTraohne85P4HqTv', icon: '📖', title: '영어동화 모아듣기 (들려드리리나)' }
-            ];
-
-            const allLinks = [...defaultLinks, ...links.map(l => ({
-                id: l.id,
-                url: l.meaning,
-                icon: l.example || '📺',
-                title: l.word
-            }))];
-
-            allLinks.forEach(link => {
-                html += `
-                    <div style="position:relative; display:flex; align-items:center;">
-                        <a href="${link.url}" target="_blank" class="youtube-link" style="flex-grow:1; padding-right:${link.id && userNickname === '아빠' ? '40px' : '16px'};">
-                            <span style="font-size:24px; margin-right:12px;">${link.icon}</span> ${link.title}
-                        </a>
-                        ${userNickname === '아빠' && link.id ? `<button onclick="deleteYoutubeLink('${link.id}')" style="position:absolute; right:10px; background:white; border:2px solid #ff758c; border-radius:50%; padding:5px 8px; color:#ff758c; font-size:12px; cursor:pointer;">❌</button>` : ''}
-                    </div>
-                `;
-            });
-            
-            listEl.innerHTML = html;
-            
-            const btnContainer = document.getElementById('youtube-admin-actions');
-            if (btnContainer) {
-                if (userNickname === '아빠') {
-                    btnContainer.innerHTML = `<button onclick="showAddYoutubeModal()" style="width:100%; margin-top:16px; background:linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%); color:#4a69bd; font-family:'Jua', sans-serif;">➕ 아빠의 추천 링크 추가하기</button>`;
-                } else {
-                    btnContainer.innerHTML = '';
-                }
-            }
-        }
-        
-        async function deleteYoutubeLink(id) {
-            if(!confirm('이 추천 링크를 삭제할까요?')) return;
-            const { error } = await supabaseClient.from('study_words').delete().eq('id', id);
-            if (!error) {
-                alert('삭제되었습니다!');
-                loadWords();
-            } else {
-                alert('삭제에 실패했습니다.');
-            }
-        }
-
-        function showAddYoutubeModal() {
-            const overlay = document.getElementById('youtube-modal-overlay');
-            if (overlay) {
-                overlay.classList.remove('hidden');
-                document.getElementById('yt-title').value = '';
-                document.getElementById('yt-url').value = '';
-                document.getElementById('yt-icon').value = '📺';
-                document.getElementById('yt-title').focus();
-            }
-        }
-        
-        function closeYoutubeModal() {
-            const overlay = document.getElementById('youtube-modal-overlay');
-            if (overlay) overlay.classList.add('hidden');
-        }
-
-        function submitYoutubeModal() {
-            const title = document.getElementById('yt-title').value.trim();
-            const url = document.getElementById('yt-url').value.trim();
-            const icon = document.getElementById('yt-icon').value.trim() || '📺';
-
-            if (!title) { alert('제목을 입력해주세요!'); return; }
-            if (!url) { alert('유튜브 링크를 입력해주세요!'); return; }
-
-            addYoutubeLink(title, url, icon);
-            closeYoutubeModal();
-        }
-        
-        async function addYoutubeLink(title, url, icon) {
-            const { error } = await supabaseClient.from('study_words').insert([{
-                word: title,
-                meaning: url,
-                example: icon,
-                subject: 'YOUTUBE_LINK'
-            }]);
-            
-            if (error) {
-                alert('저장에 실패했습니다.');
-            } else {
-                alert('추천 링크가 추가되었습니다! 💖');
-                loadWords();
-            }
         }
 
         // ===================================================
