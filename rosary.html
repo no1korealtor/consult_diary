@@ -4406,36 +4406,6 @@ input:focus, textarea:focus {
           <p id="introHeroQuote" class="intro-hero-quote">"성모님과 함께 바치는 거룩한 장미 화관"</p>
         </div>
 
-        <!-- 2. 은은한 묵상 배경음악 (BGM) 컨트롤 카드 -->
-        <div id="introBgmCard" class="intro-section-card" style="background: linear-gradient(135deg, rgba(243, 198, 105, 0.12) 0%, rgba(22, 31, 51, 0.9) 100%); border: 1.2px solid rgba(243, 198, 105, 0.35);">
-          <div class="intro-card-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="intro-card-icon" style="font-size: 1.15rem;">🎵</span>
-              <div>
-                <span class="intro-card-title" style="font-size: 0.92rem; font-weight: 800;">은은한 묵상 배경음악 (BGM)</span>
-                <small style="display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 1px;">박자 없이 서두르지 않는 성당 오르간/성가</small>
-              </div>
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="introBgmSwitch" onchange="if(window.rosaryApp){window.rosaryApp.setBgmEnabled(this.checked);}">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <div id="introBgmDetailControls" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-            <div style="display: flex; gap: 6px; width: 100%;">
-              <button type="button" id="btnIntroBgmOrgan" class="action-pill-btn active" style="flex: 1; height: 38px; font-size: 0.78rem; font-weight: 700; cursor: pointer; pointer-events: auto !important; touch-action: manipulation !important;" onclick="directSelectBgmPreset('organ');">🎹 파이프 오르간</button>
-              <button type="button" id="btnIntroBgmChoir" class="action-pill-btn" style="flex: 1; height: 38px; font-size: 0.78rem; font-weight: 700; cursor: pointer; pointer-events: auto !important; touch-action: manipulation !important;" onclick="directSelectBgmPreset('choir');">🕊️ 수도원 성가</button>
-              <button type="button" id="btnIntroBgmBells" class="action-pill-btn" style="flex: 1; height: 38px; font-size: 0.78rem; font-weight: 700; cursor: pointer; pointer-events: auto !important; touch-action: manipulation !important;" onclick="directSelectBgmPreset('bells');">✨ 평화의 종소리</button>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px; padding: 4px 4px 0;">
-              <span style="font-size: 0.74rem; color: var(--text-muted); font-weight: 600;">음량 조절</span>
-              <input type="range" id="introBgmSlider" min="0.01" max="0.30" step="0.01" value="0.08" style="flex: 1; accent-color: var(--gold-primary); cursor: pointer; pointer-events: auto !important; touch-action: auto !important;" oninput="directChangeBgmVolume(parseFloat(this.value));">
-              <span id="introBgmVolLabel" style="font-size: 0.75rem; color: var(--gold-primary); font-weight: 700; width: 32px; text-align: right;">8%</span>
-            </div>
-          </div>
-        </div>
-
         <!-- 2. 기도 종류 선택 카드 (묵주기도 vs 하느님 자비를 구하는 기도) -->
         <div id="introPrayerTypeCard" class="intro-section-card prayer-type-card">
           <div class="intro-card-header">
