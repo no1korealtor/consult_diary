@@ -4603,51 +4603,8 @@ input:focus, textarea:focus {
         </div>
 
         <!-- ==============================================
-             [NEW] 은총의 묵주기도 봉헌 현황 (공동체 & 나의 단수)
+             [NEW] 함께 바치는 교우들의 지향 영역
              ============================================== -->
-        <div id="introCommunityCard" class="intro-section-card community-stats-card" style="display: none !important;">
-          <div class="community-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08);">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="font-size: 1rem;">🌹</span>
-              <span id="commHeaderCardTitle" style="font-size: 0.88rem; font-weight: 700; color: #FFF; letter-spacing: -0.2px;">성모 묵주기도 봉헌 현황</span>
-            </div>
-            <span class="intro-today-badge" style="background: rgba(243, 198, 105, 0.16); color: var(--gold-light); font-size: 0.72rem; padding: 2px 7px;">묵주 5단</span>
-          </div>
-          <div class="community-card-top">
-            <div class="community-name-badge">
-              <span class="comm-pin-icon">📍</span>
-              <span id="commCurrentName" class="comm-name-text">전국 교우 공동체</span>
-            </div>
-            <button type="button" id="btnOpenCommModal" class="comm-change-btn">
-              <span>PIN / 단체 변경 ❯</span>
-            </button>
-          </div>
-
-          <div class="community-stats-grid">
-            <div class="comm-stat-box comm-total">
-              <div class="comm-stat-label">
-                <span class="comm-stat-dot">🕊️</span>
-                <span>공동체 함께 봉헌</span>
-              </div>
-              <div id="commTotalDecades" class="comm-stat-value">178단</div>
-              <div id="commTotalRoses" class="comm-stat-sub">(장미 1780송이 🌹)</div>
-            </div>
-
-            <div class="comm-stat-box my-total">
-              <div class="comm-stat-label">
-                <span class="comm-stat-dot">🌹</span>
-                <span>내가 봉헌한 기도</span>
-              </div>
-              <div id="myTotalDecades" class="comm-stat-value">50단</div>
-              <div id="myTotalRoses" class="comm-stat-sub">(500송이 🌹)</div>
-            </div>
-          </div>
-        </div>
-
-        
-
-        
-        <!-- [NEW] 함께 바치는 교우들의 지향 영역 -->
         <!-- A. 등록된 지향이 있을 때: 풍성한 카드 노출 -->
         <div id="introIntentionCard" class="intro-section-card intention-card" style="display: none; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(243, 198, 105, 0.25); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -5198,6 +5155,46 @@ input:focus, textarea:focus {
             <button id="btnTrackerAdd5" class="action-pill-btn gold">+ 5단 (1신비)</button>
             <button id="btnTrackerAdd1" class="action-pill-btn">+ 1단</button>
             <button id="btnTrackerMinus1" class="action-pill-btn minus">- 1단</button>
+          </div>
+        </div>
+
+        <!-- ==============================================
+             [NEW] 은총의 묵주기도 봉헌 현황 (공동체 & 나의 단수)
+             ============================================== -->
+        <div id="trackerCommunityBox" class="community-stats-card" style="margin-top: 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(243, 198, 105, 0.25); border-radius: var(--radius-md); padding: 12px 14px;">
+          <div class="community-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 1rem;">🌹</span>
+              <span id="commHeaderCardTitle" style="font-size: 0.86rem; font-weight: 700; color: #FFF; letter-spacing: -0.2px;">묵주기도 전체 봉헌 현황</span>
+            </div>
+            <div class="community-name-badge" style="background: rgba(243, 198, 105, 0.12); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(243, 198, 105, 0.3);">
+              <span class="comm-pin-icon" style="font-size: 0.75rem;">📍</span>
+              <span id="commCurrentName" class="comm-name-text" style="font-size: 0.74rem; font-weight: 700; color: var(--gold-light);">전국 교우 공동체</span>
+            </div>
+          </div>
+
+          <div class="community-stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div class="comm-stat-box comm-total" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px; text-align: center;">
+              <div class="comm-stat-label" style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px;">
+                <span>🕊️ 공동체 함께 봉헌</span>
+              </div>
+              <div id="commTotalDecades" class="comm-stat-value" style="font-size: 1.1rem; font-weight: 800; color: var(--gold-primary);">178단</div>
+              <div id="commTotalRoses" class="comm-stat-sub" style="font-size: 0.68rem; color: var(--text-muted);">(장미 1780송이 🌹)</div>
+            </div>
+
+            <div class="comm-stat-box my-total" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px; text-align: center;">
+              <div class="comm-stat-label" style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px;">
+                <span>🌹 내가 봉헌한 누적</span>
+              </div>
+              <div id="myTotalDecades" class="comm-stat-value" style="font-size: 1.1rem; font-weight: 800; color: #FFF;">50단</div>
+              <div id="myTotalRoses" class="comm-stat-sub" style="font-size: 0.68rem; color: var(--text-muted);">(500송이 🌹)</div>
+            </div>
+          </div>
+
+          <div style="text-align: right;">
+            <button type="button" id="btnOpenCommModal" class="comm-change-btn" style="background: none; border: 1px solid rgba(243, 198, 105, 0.3); color: var(--gold-light); font-size: 0.72rem; padding: 3px 8px; border-radius: 8px; cursor: pointer;">
+              <span>PIN / 단체 변경 ❯</span>
+            </button>
           </div>
         </div>
 
@@ -7388,10 +7385,7 @@ class RosaryApp {
     if (this.dom.introDivineMercyCard) {
       this.dom.introDivineMercyCard.style.display = isDm ? "block" : "none";
     }
-    // [Option 1] 성모 묵주기도 모드일 때만 묵주기도 봉헌 현황(공동체 & 장미) 및 주간 장미 기록 카드 노출
-    if (this.dom.introCommunityCard) {
-      this.dom.introCommunityCard.style.display = isDm ? "none" : "block";
-    }
+    // [Option 1] 성모 묵주기도 모드일 때만 주간 장미 기록 카드 노출
     if (this.dom.introTrackerMiniCard) {
       this.dom.introTrackerMiniCard.style.display = isDm ? "none" : "flex";
     }
