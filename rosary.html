@@ -1949,10 +1949,10 @@ input:checked + .toggle-slider:before {
 }
 
 .intro-top-header {
-  padding-top: max(10px, var(--safe-top));
-  padding-left: 16px;
-  padding-right: 16px;
-  padding-bottom: 8px;
+  padding-top: max(8px, var(--safe-top));
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-bottom: 6px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1963,7 +1963,9 @@ input:checked + .toggle-slider:before {
 .intro-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .intro-cross-icon {
@@ -1971,16 +1973,18 @@ input:checked + .toggle-slider:before {
 }
 
 .intro-brand-name {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--gold-primary);
   letter-spacing: -0.3px;
+  white-space: nowrap;
 }
 
 .intro-top-actions {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .intro-scroll-body {
@@ -4368,7 +4372,7 @@ input:focus, textarea:focus {
     <section id="introView" class="intro-view">
       <!-- 상단 헤더 바 -->
       <header class="intro-top-header">
-        <div class="intro-brand">
+        <div class="intro-brand" title="거룩한 묵주기도">
           <span class="intro-cross-icon">✝️</span>
           <span class="intro-brand-name">묵주기도</span>
         </div>
@@ -4376,23 +4380,11 @@ input:focus, textarea:focus {
           <button id="btnHeaderBgmToggle" type="button" class="icon-btn" onclick="if(window.rosaryApp){window.rosaryApp.toggleBgm();}else{directToggleBgm();}" aria-label="배경음악 토글" title="은은한 성당 배경음악 (BGM)">
             <span id="btnHeaderBgmIcon" style="font-size: 1.05rem;">🎵</span>
           </button>
-          <button id="btnHeaderLangToggle" type="button" class="action-pill-btn" onclick="toggleGlobalLanguage();" style="height: 32px; padding: 0 10px; font-size: 0.78rem; font-weight: 700; margin-right: 4px; background: rgba(243, 198, 105, 0.12); border: 1px solid rgba(243, 198, 105, 0.35); color: var(--gold-primary); border-radius: 16px;">
-            🌐 EN
-          </button>
-          <button id="btnHeaderWydQuick" type="button" class="action-pill-btn" onclick="openWydModal();" aria-label="2027 서울 세계청년대회 공식 기도문" title="2027 서울 세계청년대회 (WYD Seoul 2027) 공식 기도문" style="height: 32px; padding: 0 9px; font-size: 0.74rem; font-weight: 800; margin-right: 4px; background: linear-gradient(135deg, rgba(243, 198, 105, 0.22) 0%, rgba(59, 130, 246, 0.22) 100%); border: 1.2px solid rgba(243, 198, 105, 0.55); color: #FDE68A; border-radius: 16px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 0 10px rgba(243, 198, 105, 0.25);">
-            <span>🕊️</span>
-            <span>WYD 2027</span>
+          <button id="btnHeaderWydQuick" type="button" class="icon-btn highlight-btn" onclick="openWydModal();" aria-label="2027 서울 세계청년대회 공식 기도문" title="2027 서울 세계청년대회 (WYD Seoul 2027) 공식 기도문">
+            <span style="font-size: 1.1rem;">🕊️</span>
           </button>
           <button id="btnIntroYeondoQuick" class="icon-btn yeondo-quick-header-btn" onclick="if(window.rosaryApp){window.rosaryApp.switchView('yeondo');}else{var iv=document.getElementById('introView');var yv=document.getElementById('yeondoView');if(iv)iv.style.display='none';if(yv)yv.style.display='flex';}" aria-label="짧은 연도 (약식 위령기도)" title="짧은 연도 (약식 위령기도 · 조문 예절)">
             <span style="font-size: 1.05rem;">🕯️</span>
-          </button>
-          <button id="btnIntroTracker" class="icon-btn" onclick="directOpenTracker();" aria-label="주간 기도 기록" title="주간 기도 기록">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
           </button>
           <button id="btnIntroSettings" class="icon-btn" onclick="directOpenSettings();" aria-label="설정" title="설정">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
