@@ -499,9 +499,27 @@
             renderCard()
         }
 
-                function renderCard() {
+        function renderCard() {
             const cardContainer = document.getElementById('card-wrapper');
             if (!cardContainer) return;
+
+            // 아빠 계정일 때는 학생용 퀴즈 풀이 카드 대신 안내 표시
+            if (userNickname === '아빠') {
+                cardContainer.innerHTML = `
+                    <div style="background:#ffffff; border-radius:20px; padding:24px 20px; box-shadow:0 10px 25px rgba(0,0,0,0.08); text-align:center; border:2px solid #e0e7ff; margin-bottom:16px;">
+                        <div style="font-size:36px; margin-bottom:10px;">📋</div>
+                        <h2 style="font-size:18px; color:#1e293b; margin-bottom:8px; font-family:'Jua', sans-serif;">아빠 관리자 모드</h2>
+                        <p style="font-size:13px; color:#64748b; line-height:1.6; margin-bottom:18px;">
+                            상식 퀴즈 및 100원 저금통은 <strong>아람이(학생) 학습 전용</strong> 화면입니다.<br>
+                            아빠 모드에서는 <strong>출석·공부 코칭, 일정 관리, 칭찬 쿠폰 발급</strong> 화면이 기본으로 작동합니다.
+                        </p>
+                        <button type="button" onclick="switchMainTab('life')" style="background:linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color:white; border:none; padding:10px 22px; border-radius:14px; font-size:14px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif; box-shadow:0 4px 10px rgba(99,102,241,0.3);">
+                            📋 생활·출결·과제 코칭으로 이동
+                        </button>
+                    </div>
+                `;
+                return;
+            }
 
             // 상식 퀴즈 100원 저금통 모드 렌더링
             renderCommonKnowledgeQuiz(cardContainer);
@@ -1115,7 +1133,7 @@ async function insertStudyLog(subject, content, detail) {
         let rewardCoupons = []; // [{ id, dbId, title, type, rewardDesc, date, status, claimedAt, usedAt }]
         let questConfig = {
             focusRewardTitle: '🏪 편의점 3,000원 상품권',
-            focusRewardDesc: '정시 시작 & 몰입 퀘스트 5회 달성 축하 선물! 💖 (또는 학습 보너스권)',
+            focusRewardDesc: '정시 시작 & 몰입 퀘스트 5회 달성 축하 선물! 💖 (또는 아람이가 원하는 3,000원 간식 선물!) 🍰',
             goldRewardTitle: '🏖️ 1일 학습 자유 휴식권 (골드 티켓)',
             goldRewardDesc: '2주 퍼펙트 출결(14일 무결석·무지각·무조퇴) 대기록 달성 보상! 👑',
             quizRewardTitle: '🏪 편의점 2,000원 상품권 (또는 현금 2,000원)',
@@ -2037,6 +2055,9 @@ async function insertStudyLog(subject, content, detail) {
             await checkAndGrantRewards();
             if (userNickname === '아빠' && recentQuizLogs.length === 0) loadRecentQuizLogs();
             renderHabitSection();
+            if (userNickname === '아빠') {
+                currentMainTab = 'life';
+            }
             if (currentMainTab) switchMainTab(currentMainTab);
         }
 
@@ -2263,6 +2284,9 @@ async function insertStudyLog(subject, content, detail) {
                     <button onclick="toggleDadPreview(true)" style="margin-top:10px; background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); color:white; border:none; padding:6px 14px; border-radius:14px; font-size:13px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif; box-shadow:0 2px 6px rgba(0,0,0,0.1);">👀 아람이 화면(달력) 미리보기</button>
                 </div>
 
+                <!-- 🎯 아빠가 준 특별 미션 & 과제 카드 (아람이 화면) -->
+                ${generateChildMissionBoxHtml()}
+
                 <!-- 주요 일정 & D-Day 카드 -->
                 ${generateScheduleCardHtml(true)}
 
@@ -2364,7 +2388,7 @@ async function insertStudyLog(subject, content, detail) {
                         </button>
                     <!-- 2-A-2) 정시 시작 & 몰입 퀘스트 스탬프 토글 -->
                     <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #bbf7d0;">
-                        <div style="font-size:12px; font-weight:bold; color:#15803d; margin-bottom:6px;">🎯 정시 시작 &amp; 몰입 퀘스트 체크 (5회 달성 시 편의점 쿠폰/보너스권!)</div>
+                        <div style="font-size:12px; font-weight:bold; color:#15803d; margin-bottom:6px;">🎯 정시 시작 &amp; 몰입 퀘스트 체크 (5회 달성 시 편의점 쿠폰/맛있는 간식 선물!)</div>
                         <div class="habit-toggle-grid" style="grid-template-columns: 1fr 1fr;">
                             <button type="button" class="habit-toggle-btn ${draftFocusOnTime ? 'active-ontime' : ''}" onclick="toggleFocusOnTime()">
                                 <span>⏰</span> 정시 시작 / 시간 엄수
@@ -2497,6 +2521,132 @@ async function insertStudyLog(subject, content, detail) {
 
             container.innerHTML = html;
         }
+
+                function getActiveTasksAndPromises() {
+            // 모든 날짜의 기록을 순회하며 미완료된(done: false) 과제와 약속을 수집
+            const uncompletedAssignments = [];
+            const uncompletedPromises = [];
+            const seenTaskIds = new Set();
+            const seenPromiseIds = new Set();
+
+            // 1. 현재 선택된 날짜의 draft 항목 우선
+            draftAssignments.forEach(t => {
+                if (!seenTaskIds.has(t.text)) {
+                    seenTaskIds.add(t.text);
+                    uncompletedAssignments.push(t);
+                }
+            });
+            draftPromises.forEach(p => {
+                if (!seenPromiseIds.has(p.text)) {
+                    seenPromiseIds.add(p.text);
+                    uncompletedPromises.push(p);
+                }
+            });
+
+            // 2. 다른 날짜들의 기록에서 아직 완료 안 된 과제/약속도 함께 취합
+            const sortedDates = Object.keys(habitRecordsMap).sort().reverse();
+            sortedDates.forEach(dateStr => {
+                const rec = habitRecordsMap[dateStr];
+                if (rec) {
+                    if (Array.isArray(rec.assignments)) {
+                        rec.assignments.forEach(t => {
+                            if (!t.done && !seenTaskIds.has(t.text)) {
+                                seenTaskIds.add(t.text);
+                                uncompletedAssignments.push(t);
+                            }
+                        });
+                    }
+                    if (Array.isArray(rec.promises)) {
+                        rec.promises.forEach(p => {
+                            if (!p.done && !seenPromiseIds.has(p.text)) {
+                                seenPromiseIds.add(p.text);
+                                uncompletedPromises.push(p);
+                            }
+                        });
+                    }
+                }
+            });
+
+            // 기본 필수 미션이 없으면 '오답노트 만들 시험지 가져오기' 자동 보장
+            if (uncompletedAssignments.length === 0 && !seenTaskIds.has('오답노트 만들 시험지 가져오기')) {
+                uncompletedAssignments.push({
+                    id: Date.now(),
+                    text: '오답노트 만들 시험지 가져오기',
+                    dueDate: '',
+                    done: false
+                });
+            }
+
+            return {
+                assignments: uncompletedAssignments,
+                promises: uncompletedPromises
+            };
+        }
+
+        function generateChildMissionBoxHtml() {
+            const { assignments, promises } = getActiveTasksAndPromises();
+
+            if (assignments.length === 0 && promises.length === 0) {
+                return '';
+            }
+
+            let taskItemsHtml = '';
+            assignments.forEach((task, idx) => {
+                taskItemsHtml += `
+                    <div class="child-task-card ${task.done ? 'done' : ''}">
+                        <div class="child-task-left">
+                            <span class="child-task-icon">${task.done ? '✅' : '📌'}</span>
+                            <div class="child-task-text-wrap">
+                                <span class="child-task-title ${task.done ? 'completed' : ''}">${escapeHtml(task.text)}</span>
+                                ${task.dueDate ? `<span class="child-task-due">~${task.dueDate.slice(5)} 마감</span>` : ''}
+                            </div>
+                        </div>
+                        <span class="child-task-status-badge ${task.done ? 'done' : 'ing'}">
+                            ${task.done ? '완료 🎉' : '진행 중 ⏳'}
+                        </span>
+                    </div>
+                `;
+            });
+
+            let promiseItemsHtml = '';
+            promises.forEach((p, idx) => {
+                promiseItemsHtml += `
+                    <div class="child-task-card ${p.done ? 'done' : ''}">
+                        <div class="child-task-left">
+                            <span class="child-task-icon">${p.done ? '🤝' : '🌱'}</span>
+                            <div class="child-task-text-wrap">
+                                <span class="child-task-title ${p.done ? 'completed' : ''}">${escapeHtml(p.text)}</span>
+                            </div>
+                        </div>
+                        <span class="child-task-status-badge ${p.done ? 'done' : 'ing'}">
+                            ${p.done ? '실천 완료! 💖' : '약속 지키기 ✨'}
+                        </span>
+                    </div>
+                `;
+            });
+
+            return `
+                <div class="child-mission-container">
+                    <div class="child-mission-header">
+                        <div class="child-mission-title">
+                            <span>🎯 아빠가 준 오늘의 특별 미션 & 과제</span>
+                        </div>
+                        <span class="child-mission-count">미션 ${assignments.length + promises.length}개</span>
+                    </div>
+
+                    ${assignments.length > 0 ? `
+                        <div class="child-mission-subtitle">📝 실천 과제 (숙제/미션)</div>
+                        <div class="child-task-list">${taskItemsHtml}</div>
+                    ` : ''}
+
+                    ${promises.length > 0 ? `
+                        <div class="child-mission-subtitle" style="margin-top:10px;">🤝 아빠와 한 소중한 약속</div>
+                        <div class="child-task-list">${promiseItemsHtml}</div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
 
         function renderChildHabitView(container) {
             const todayStr = getLocalDateStr(new Date());
@@ -2868,7 +3018,7 @@ async function insertStudyLog(subject, content, detail) {
                 const couponData = {
                     title: questConfig.focusRewardTitle || '🏪 편의점 3,000원 상품권',
                     type: 'FOCUS_5_STAMP',
-                    rewardDesc: questConfig.focusRewardDesc || '정시 시작 & 몰입 퀘스트 5회 달성 축하 선물! 💖 (또는 학습 보너스권)',
+                    rewardDesc: questConfig.focusRewardDesc || '정시 시작 & 몰입 퀘스트 5회 달성 축하 선물! 💖 (또는 아람이가 원하는 3,000원 간식 선물!) 🍰',
                     date: getLocalDateStr(new Date()),
                     status: 'PENDING', // PENDING (지급 대기) -> CLAIMED (아이가 부모님께 수령 완료) -> USED (맛있게 사용 완료)
                     created_at: new Date().toISOString()
