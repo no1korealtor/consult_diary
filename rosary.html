@@ -4398,14 +4398,6 @@ input:focus, textarea:focus {
       <!-- 스크롤 가능한 본문 -->
       <div class="intro-scroll-body">
         
-        <!-- 타이틀 & 날짜 헤더 -->
-        <div class="intro-hero-box">
-          <div class="intro-rose-emblem">🌹🕊️</div>
-          <h1 id="introHeroTitle" class="intro-hero-title">거룩한 묵주기도</h1>
-          <p id="introHeroDate" class="intro-hero-date">10월 14일 수요일</p>
-          <p id="introHeroQuote" class="intro-hero-quote">"성모님과 함께 바치는 거룩한 장미 화관"</p>
-        </div>
-
         <!-- [NEW] 2027 서울 세계청년대회 (WYD 2027) 공식 기도문 바로가기 배너 카드 -->
         <div id="introWydBannerCard" class="intro-section-card" onclick="openWydModal();" style="cursor: pointer; background: linear-gradient(135deg, rgba(243, 198, 105, 0.18) 0%, rgba(59, 130, 246, 0.22) 100%); border: 1.5px solid rgba(243, 198, 105, 0.55); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); padding: 12px 14px; margin-bottom: 12px;">
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
@@ -4483,8 +4475,8 @@ input:focus, textarea:focus {
         <div id="introMysteryCard" class="intro-section-card">
           <div class="intro-card-header">
             <span class="intro-card-icon">✨</span>
-            <span id="introMysteryTitle" class="intro-card-title">묵주기도 신비 선택</span>
-            <span id="introTodayBadge" class="intro-today-badge">오늘의 신비</span>
+            <span id="introMysteryTitle" class="intro-card-title">오늘의 신비</span>
+            <span id="introTodayBadge" class="intro-today-badge" style="display: none;">오늘의 신비</span>
           </div>
           
           <div class="intro-mystery-grid">
@@ -8496,6 +8488,16 @@ showCrucifixKissOverlay(onComplete) {
       }
     }
 
+    if (this.dom.introMysteryTitle) {
+      const daysShortKo = ["일", "월", "화", "수", "목", "금", "토"];
+      const daysShortEn = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      if (isEn) {
+        this.dom.introMysteryTitle.textContent = `${monthsEn[now.getMonth()]} ${now.getDate()} (${daysShortEn[now.getDay()]}) Today's Mystery`;
+      } else {
+        this.dom.introMysteryTitle.textContent = `${monthsKo[now.getMonth()]} ${now.getDate()}일(${daysShortKo[now.getDay()]}) 오늘의 신비`;
+      }
+    }
+
     // 1. 지난 기도 이어하기 카드 상태 업데이트
     const saved = this.loadSavedProgress();
     if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length : 68)) {
@@ -8667,9 +8669,7 @@ showCrucifixKissOverlay(onComplete) {
     if (this.dom.introContinueText) {
       this.dom.introContinueText.textContent = isEn ? "Continue Praying" : "이어서 계속 기도하기";
     }
-    if (this.dom.introMysteryTitle) {
-      this.dom.introMysteryTitle.textContent = isEn ? "Select Mystery" : "묵주기도 신비 선택";
-    }
+    this.updateIntroView();
     if (this.dom.introTodayBadge) {
       this.dom.introTodayBadge.textContent = isEn ? "Today" : "오늘의 신비";
     }
