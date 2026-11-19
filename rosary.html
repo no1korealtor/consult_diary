@@ -2213,12 +2213,13 @@ input:checked + .toggle-slider:before {
 .liturgical-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.74rem;
+  justify-content: center;
+  font-size: 0.76rem;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: var(--radius-full);
   letter-spacing: -0.2px;
+  white-space: nowrap;
 }
 .liturgical-badge.color-white {
   background: rgba(255, 255, 255, 0.18);
@@ -8659,7 +8660,7 @@ showCrucifixKissOverlay(onComplete) {
         color: f.color,
         colorKo: f.colorKo,
         title: f.name,
-        badgeText: `[${f.colorKo}] ${f.name}`
+        badgeText: `[${f.colorKo}]`
       };
     }
 
@@ -8675,18 +8676,18 @@ showCrucifixKissOverlay(onComplete) {
     const sacredHeart = addDays(easter, 68);
     const christKing = addDays(advent, -7);
 
-    if (isSameDay(curDateOnly, ashWed)) return { color: "violet", colorKo: "자", title: "재의 수요일", badgeText: "[자] 재의 수요일" };
-    if (isSameDay(curDateOnly, palmSun)) return { color: "red", colorKo: "홍", title: "주님 수난 성지 주일", badgeText: "[홍] 성지 주일" };
-    if (isSameDay(curDateOnly, holyThurs)) return { color: "white", colorKo: "백", title: "주님 만찬 성목요일", badgeText: "[백] 성목요일" };
-    if (isSameDay(curDateOnly, goodFri)) return { color: "red", colorKo: "홍", title: "주님 수난 성금요일", badgeText: "[홍] 성금요일" };
-    if (isSameDay(curDateOnly, holySat)) return { color: "white", colorKo: "백", title: "성토요일 (부활 성야)", badgeText: "[백] 성토요일" };
-    if (isSameDay(curDateOnly, easter)) return { color: "white", colorKo: "백", title: "주님 부활 대축일", badgeText: "[백] 주님 부활 대축일" };
-    if (isSameDay(curDateOnly, addDays(easter, 7))) return { color: "white", colorKo: "백", title: "하느님의 자비 주일 (부활 제2주일)", badgeText: "[백] 자비 주일" };
-    if (isSameDay(curDateOnly, pentecost)) return { color: "red", colorKo: "홍", title: "성령 강림 대축일", badgeText: "[홍] 성령 강림 대축일" };
-    if (isSameDay(curDateOnly, trinity)) return { color: "white", colorKo: "백", title: "지극히 거룩하신 삼위일체 대축일", badgeText: "[백] 삼위일체 대축일" };
-    if (isSameDay(curDateOnly, corpusChristi)) return { color: "white", colorKo: "백", title: "그리스도의 성체 성혈 대축일", badgeText: "[백] 성체 성혈 대축일" };
-    if (isSameDay(curDateOnly, sacredHeart)) return { color: "white", colorKo: "백", title: "지극히 거룩하신 예수 성심 대축일", badgeText: "[백] 예수 성심 대축일" };
-    if (isSameDay(curDateOnly, christKing)) return { color: "white", colorKo: "백", title: "그리스도 왕 대축일 (연중 제34주일)", badgeText: "[백] 그리스도 왕 대축일" };
+    if (isSameDay(curDateOnly, ashWed)) return { color: "violet", colorKo: "자", title: "재의 수요일", badgeText: "[자]" };
+    if (isSameDay(curDateOnly, palmSun)) return { color: "red", colorKo: "홍", title: "주님 수난 성지 주일", badgeText: "[홍]" };
+    if (isSameDay(curDateOnly, holyThurs)) return { color: "white", colorKo: "백", title: "주님 만찬 성목요일", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, goodFri)) return { color: "red", colorKo: "홍", title: "주님 수난 성금요일", badgeText: "[홍]" };
+    if (isSameDay(curDateOnly, holySat)) return { color: "white", colorKo: "백", title: "성토요일 (부활 성야)", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, easter)) return { color: "white", colorKo: "백", title: "주님 부활 대축일", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, addDays(easter, 7))) return { color: "white", colorKo: "백", title: "하느님의 자비 주일 (부활 제2주일)", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, pentecost)) return { color: "red", colorKo: "홍", title: "성령 강림 대축일", badgeText: "[홍]" };
+    if (isSameDay(curDateOnly, trinity)) return { color: "white", colorKo: "백", title: "지극히 거룩하신 삼위일체 대축일", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, corpusChristi)) return { color: "white", colorKo: "백", title: "그리스도의 성체 성혈 대축일", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, sacredHeart)) return { color: "white", colorKo: "백", title: "지극히 거룩하신 예수 성심 대축일", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, christKing)) return { color: "white", colorKo: "백", title: "그리스도 왕 대축일 (연중 제34주일)", badgeText: "[백]" };
 
     const dayKoList = ["주일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
     const wdayName = dayKoList[wday];
@@ -8699,15 +8700,15 @@ showCrucifixKissOverlay(onComplete) {
       const col = isRose ? "rose" : "violet";
       const colKo = isRose ? "장" : "자";
       const t = `대림 제${week}주간 ${wdayName}`;
-      return { color: col, colorKo: colKo, title: t, badgeText: `[${colKo}] ${t}` };
+      return { color: col, colorKo: colKo, title: t, badgeText: `[${colKo}]` };
     }
 
     // 4. 성탄 시기 (Christmas Time: 12/25 ~ 1월 12일경 주님 세례 축일)
     if (curDateOnly >= christmas || (month === 1 && day <= 12)) {
       if (month === 1 && day >= 7 && wday === 0) {
-        return { color: "white", colorKo: "백", title: "주님 세례 축일", badgeText: "[백] 주님 세례 축일" };
+        return { color: "white", colorKo: "백", title: "주님 세례 축일", badgeText: "[백]" };
       }
-      return { color: "white", colorKo: "백", title: `성탄 시기 (${month}월 ${day}일)`, badgeText: `[백] 성탄 시기` };
+      return { color: "white", colorKo: "백", title: `성탄 시기 (${month}월 ${day}일)`, badgeText: `[백]` };
     }
 
     // 5. 사순 시기 (Lent)
@@ -8715,14 +8716,14 @@ showCrucifixKissOverlay(onComplete) {
       const firstSunLent = addDays(ashWed, 4);
       if (curDateOnly < firstSunLent) {
         const t = `사순 전 평일 ${wdayName}`;
-        return { color: "violet", colorKo: "자", title: t, badgeText: `[자] ${t}` };
+        return { color: "violet", colorKo: "자", title: t, badgeText: `[자]` };
       } else {
         const week = Math.floor((curDateOnly - firstSunLent) / (7 * 86400000)) + 1;
         const isRose = (week === 4 && wday === 0);
         const col = isRose ? "rose" : "violet";
         const colKo = isRose ? "장" : "자";
         const t = `사순 제${week}주간 ${wdayName}`;
-        return { color: col, colorKo: colKo, title: t, badgeText: `[${colKo}] ${t}` };
+        return { color: col, colorKo: colKo, title: t, badgeText: `[${colKo}]` };
       }
     }
 
@@ -8730,7 +8731,7 @@ showCrucifixKissOverlay(onComplete) {
     if (curDateOnly > easter && curDateOnly < pentecost) {
       const week = Math.floor((curDateOnly - easter) / (7 * 86400000)) + 1;
       const t = `부활 제${week}주간 ${wdayName}`;
-      return { color: "white", colorKo: "백", title: t, badgeText: `[백] ${t}` };
+      return { color: "white", colorKo: "백", title: t, badgeText: `[백]` };
     }
 
     // 7. 연중 시기 (Ordinary Time)
@@ -8738,7 +8739,7 @@ showCrucifixKissOverlay(onComplete) {
       const jan7 = new Date(year, 0, 7);
       const week = Math.max(1, Math.floor((curDateOnly - jan7) / (7 * 86400000)) + 1);
       const t = `연중 제${week}주간 ${wdayName}`;
-      return { color: "green", colorKo: "녹", title: t, badgeText: `[녹] ${t}` };
+      return { color: "green", colorKo: "녹", title: t, badgeText: `[녹]` };
     } else {
       // 그리스도 왕 대축일(연중 34주일) 기준으로 주간 역산
       const diffToSunday = wday; // 일요일부터 지난 일수
@@ -8748,7 +8749,7 @@ showCrucifixKissOverlay(onComplete) {
       if (weekNum < 1) weekNum = 1;
       if (weekNum > 34) weekNum = 34;
       const t = `연중 제${weekNum}주간 ${wdayName}`;
-      return { color: "green", colorKo: "녹", title: t, badgeText: `[녹] ${t}` };
+      return { color: "green", colorKo: "녹", title: t, badgeText: `[녹]` };
     }
   }
 
