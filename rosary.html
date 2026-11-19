@@ -2249,8 +2249,8 @@ input:checked + .toggle-slider:before {
 }
 
 .liturgical-info-banner {
-  border-radius: 12px;
-  padding: 10px 14px;
+  border-radius: 14px;
+  padding: 12px 16px;
   margin-bottom: 12px;
   display: flex;
   align-items: center;
@@ -2261,48 +2261,51 @@ input:checked + .toggle-slider:before {
   overflow: hidden;
 }
 
-/* 전례색별 은은하고 고급스러운 배경 그라데이션 테마 */
+/* 전례색별 풍부하고 품격 있는 배경 테마 */
 .liturgical-info-banner.theme-green {
-  background: linear-gradient(135deg, rgba(20, 83, 45, 0.45) 0%, rgba(13, 43, 27, 0.7) 100%);
-  border: 1.2px solid rgba(74, 222, 128, 0.4);
-  box-shadow: 0 3px 12px rgba(20, 83, 45, 0.25);
+  background: linear-gradient(135deg, #1b4d2e 0%, #0d2818 100%);
+  border: 1.5px solid #2e7d32;
+  box-shadow: 0 4px 16px rgba(13, 40, 24, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 .liturgical-info-banner.theme-white {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(243, 198, 105, 0.12) 100%);
-  border: 1.2px solid rgba(243, 198, 105, 0.45);
-  box-shadow: 0 3px 12px rgba(243, 198, 105, 0.18);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(212, 175, 55, 0.25) 100%);
+  border: 1.5px solid #F3C669;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 .liturgical-info-banner.theme-red {
-  background: linear-gradient(135deg, rgba(153, 27, 27, 0.45) 0%, rgba(69, 10, 10, 0.7) 100%);
-  border: 1.2px solid rgba(248, 113, 113, 0.4);
-  box-shadow: 0 3px 12px rgba(153, 27, 27, 0.25);
+  background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
+  border: 1.5px solid #dc2626;
+  box-shadow: 0 4px 16px rgba(69, 10, 10, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 .liturgical-info-banner.theme-violet {
-  background: linear-gradient(135deg, rgba(88, 28, 135, 0.45) 0%, rgba(46, 16, 101, 0.7) 100%);
-  border: 1.2px solid rgba(192, 132, 252, 0.4);
-  box-shadow: 0 3px 12px rgba(88, 28, 135, 0.25);
+  background: linear-gradient(135deg, #4c1d95 0%, #2e1065 100%);
+  border: 1.5px solid #8b5cf6;
+  box-shadow: 0 4px 16px rgba(46, 16, 101, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 .liturgical-info-banner.theme-rose {
-  background: linear-gradient(135deg, rgba(157, 23, 77, 0.4) 0%, rgba(76, 5, 35, 0.7) 100%);
-  border: 1.2px solid rgba(244, 114, 182, 0.45);
-  box-shadow: 0 3px 12px rgba(157, 23, 77, 0.25);
+  background: linear-gradient(135deg, #831843 0%, #500724 100%);
+  border: 1.5px solid #ec4899;
+  box-shadow: 0 4px 16px rgba(80, 7, 36, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .liturgical-info-main {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
 }
 .liturgical-info-date {
   font-size: 0.76rem;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  letter-spacing: 0.2px;
 }
 .liturgical-info-dayname {
-  font-size: 0.98rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #FFFFFF;
   letter-spacing: -0.3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 .liturgical-today-mystery-callout {
   font-size: 0.73rem;
@@ -4528,14 +4531,6 @@ input:focus, textarea:focus {
 
         <!-- 1. 오늘의 전례력 & 묵주기도 신비 선택 카드 (최상단 통합 배치) -->
         <div id="introMysteryCard" class="intro-section-card" style="border: 1.2px solid rgba(243, 198, 105, 0.45); background: linear-gradient(135deg, rgba(243, 198, 105, 0.08) 0%, rgba(22, 31, 51, 0.95) 100%);">
-          <div class="intro-card-header" style="margin-bottom: 8px;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span class="intro-card-icon">✨</span>
-              <span id="introMysteryTitle" class="intro-card-title">오늘의 전례와 신비</span>
-            </div>
-            <span id="introTodayBadge" class="intro-today-badge" style="display: none;">오늘의 신비</span>
-          </div>
-
           <!-- 가톨릭 전례력 안내 배너 -->
           <div id="introLiturgicalBanner" class="liturgical-info-banner">
             <div class="liturgical-info-main">
@@ -4543,7 +4538,7 @@ input:focus, textarea:focus {
               <span id="liturgicalDayName" class="liturgical-info-dayname">연중 시기</span>
             </div>
             <div style="display: flex; align-items: center; flex-shrink: 0;">
-              <span id="liturgicalColorBadge" class="liturgical-badge color-green">[녹] 연중</span>
+              <span id="liturgicalColorBadge" class="liturgical-badge color-green">[녹]</span>
             </div>
           </div>
           
