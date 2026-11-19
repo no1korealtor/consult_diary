@@ -2209,6 +2209,80 @@ input:checked + .toggle-slider:before {
   color: #FFFFFF;
 }
 
+/* 전례력 뱃지 및 스타일 */
+.liturgical-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  letter-spacing: -0.2px;
+}
+.liturgical-badge.color-white {
+  background: rgba(255, 255, 255, 0.18);
+  color: #FFFDF0;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+}
+.liturgical-badge.color-red {
+  background: rgba(220, 38, 38, 0.25);
+  color: #FCA5A5;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+}
+.liturgical-badge.color-green {
+  background: rgba(34, 197, 94, 0.2);
+  color: #86EFAC;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+.liturgical-badge.color-violet {
+  background: rgba(168, 85, 247, 0.25);
+  color: #D8B4FE;
+  border: 1px solid rgba(168, 85, 247, 0.45);
+}
+.liturgical-badge.color-rose {
+  background: rgba(244, 114, 182, 0.25);
+  color: #FBCFE8;
+  border: 1px solid rgba(244, 114, 182, 0.45);
+}
+.liturgical-info-banner {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(243, 198, 105, 0.25);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.liturgical-info-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.liturgical-info-date {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+.liturgical-info-dayname {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #FFF;
+}
+.liturgical-today-mystery-callout {
+  font-size: 0.73rem;
+  color: var(--gold-primary);
+  background: rgba(243, 198, 105, 0.1);
+  padding: 2px 7px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
 /* 4대 신비 선택 2x2 그리드 */
 .intro-mystery-grid {
   display: grid;
@@ -4419,6 +4493,61 @@ input:focus, textarea:focus {
           </div>
         </div>
 
+        <!-- 1. 오늘의 전례력 & 묵주기도 신비 선택 카드 (최상단 통합 배치) -->
+        <div id="introMysteryCard" class="intro-section-card" style="border: 1.2px solid rgba(243, 198, 105, 0.45); background: linear-gradient(135deg, rgba(243, 198, 105, 0.08) 0%, rgba(22, 31, 51, 0.95) 100%);">
+          <div class="intro-card-header" style="margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="intro-card-icon">✨</span>
+              <span id="introMysteryTitle" class="intro-card-title">오늘의 전례와 신비</span>
+            </div>
+            <span id="introTodayBadge" class="intro-today-badge" style="display: none;">오늘의 신비</span>
+          </div>
+
+          <!-- 가톨릭 전례력 안내 배너 -->
+          <div id="introLiturgicalBanner" class="liturgical-info-banner">
+            <div class="liturgical-info-main">
+              <span id="liturgicalDateText" class="liturgical-info-date">오늘의 가톨릭 전례력</span>
+              <span id="liturgicalDayName" class="liturgical-info-dayname">연중 시기</span>
+            </div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+              <span id="liturgicalColorBadge" class="liturgical-badge color-green">[녹] 연중</span>
+              <span id="liturgicalRecMysteryCallout" class="liturgical-today-mystery-callout">📿 오늘의 신비: 고통</span>
+            </div>
+          </div>
+          
+          <div class="intro-mystery-grid">
+            <button type="button" class="mystery-select-card" data-mystery="joyful">
+              <span class="mystery-icon">🌹</span>
+              <span class="mystery-name">환희의 신비</span>
+              <span class="mystery-days">월 · 토</span>
+            </button>
+            <button type="button" class="mystery-select-card" data-mystery="luminous">
+              <span class="mystery-icon">💡</span>
+              <span class="mystery-name">빛의 신비</span>
+              <span class="mystery-days">목</span>
+            </button>
+            <button type="button" class="mystery-select-card" data-mystery="sorrowful">
+              <span class="mystery-icon">✝️</span>
+              <span class="mystery-name">고통의 신비</span>
+              <span class="mystery-days">화 · 금</span>
+            </button>
+            <button type="button" class="mystery-select-card" data-mystery="glorious">
+              <span class="mystery-icon">👑</span>
+              <span class="mystery-name">영광의 신비</span>
+              <span class="mystery-days">수 · 일</span>
+            </button>
+          </div>
+
+          <div id="introMysteryDescBox" class="intro-mystery-desc-box" style="margin-top: 8px;">
+            <!-- 선택된 신비 요약 자동 반영 -->
+          </div>
+
+          <button type="button" id="btnOpenRosaryHistory" class="history-guide-trigger-btn">
+            <span class="history-btn-icon">📖</span>
+            <span id="txtOpenRosaryHistory">묵주기도의 유래와 약속된 은총 ❯</span>
+          </button>
+        </div>
+
         <!-- 2. 기도 종류 선택 카드 (묵주기도 vs 하느님 자비를 구하는 기도) -->
         <div id="introPrayerTypeCard" class="intro-section-card prayer-type-card">
           <div class="intro-card-header">
@@ -4428,7 +4557,7 @@ input:focus, textarea:focus {
           <div class="intro-toggle-group prayer-type-toggle">
             <button type="button" id="btnPrayerTypeRosary" class="intro-toggle-btn active">🌹 성모 묵주기도</button>
             <button type="button" id="btnPrayerTypeDivineMercy" class="intro-toggle-btn">🕊️ 자비의 기도</button>
-            </div>
+          </div>
         </div>
 
         <!-- 기도 방식 선택 카드 (실물 묵주 모드 vs 터치 카운트 모드) -->
@@ -4467,47 +4596,6 @@ input:focus, textarea:focus {
           <button type="button" id="btnIntroContinue" class="intro-cta-btn resume" onclick="directContinuePrayerAction();">
             <span>🕊️</span>
             <span id="introContinueText">이어서 계속 기도하기</span>
-          </button>
-        </div>
-
-        <!-- 4. 묵주기도 신비 선택 카드 (성모 묵주기도 모드) -->
-        <div id="introMysteryCard" class="intro-section-card">
-          <div class="intro-card-header">
-            <span class="intro-card-icon">✨</span>
-            <span id="introMysteryTitle" class="intro-card-title">오늘의 신비</span>
-            <span id="introTodayBadge" class="intro-today-badge" style="display: none;">오늘의 신비</span>
-          </div>
-          
-          <div class="intro-mystery-grid">
-            <button type="button" class="mystery-select-card" data-mystery="joyful">
-              <span class="mystery-icon">🌹</span>
-              <span class="mystery-name">환희의 신비</span>
-              <span class="mystery-days">월 · 토</span>
-            </button>
-            <button type="button" class="mystery-select-card" data-mystery="luminous">
-              <span class="mystery-icon">💡</span>
-              <span class="mystery-name">빛의 신비</span>
-              <span class="mystery-days">목</span>
-            </button>
-            <button type="button" class="mystery-select-card" data-mystery="sorrowful">
-              <span class="mystery-icon">✝️</span>
-              <span class="mystery-name">고통의 신비</span>
-              <span class="mystery-days">화 · 금</span>
-            </button>
-            <button type="button" class="mystery-select-card" data-mystery="glorious">
-              <span class="mystery-icon">👑</span>
-              <span class="mystery-name">영광의 신비</span>
-              <span class="mystery-days">수 · 일</span>
-            </button>
-          </div>
-
-          <div id="introMysteryDescBox" class="intro-mystery-desc-box">
-            <!-- 선택된 신비 요약 자동 반영 -->
-          </div>
-
-          <button type="button" id="btnOpenRosaryHistory" class="history-guide-trigger-btn">
-            <span class="history-btn-icon">📖</span>
-            <span id="txtOpenRosaryHistory">묵주기도의 유래와 약속된 은총 ❯</span>
           </button>
         </div>
 
@@ -7069,11 +7157,16 @@ class RosaryApp {
       btnIntroContinue: document.getElementById("btnIntroContinue"),
       introContinueText: document.getElementById("introContinueText"),
 
-      // 인트로 4. 신비 선택
+      // 인트로 4. 신비 선택 & 전례력
       introMysteryCard: document.getElementById("introMysteryCard"),
       introMysteryTitle: document.getElementById("introMysteryTitle"),
       introTodayBadge: document.getElementById("introTodayBadge"),
       introMysteryDescBox: document.getElementById("introMysteryDescBox"),
+      introLiturgicalBanner: document.getElementById("introLiturgicalBanner"),
+      liturgicalDateText: document.getElementById("liturgicalDateText"),
+      liturgicalDayName: document.getElementById("liturgicalDayName"),
+      liturgicalColorBadge: document.getElementById("liturgicalColorBadge"),
+      liturgicalRecMysteryCallout: document.getElementById("liturgicalRecMysteryCallout"),
 
       // 인트로 5. 하느님 자비의 기도 안내
       introDivineMercyCard: document.getElementById("introDivineMercyCard"),
@@ -8470,6 +8563,194 @@ showCrucifixKissOverlay(onComplete) {
     }
   }
 
+  // 가톨릭 전례력 (Liturgical Calendar) 계산 엔진
+  getLiturgicalInfo(date = new Date()) {
+    const isEn = this.settings.lang === "en";
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1; // 1-12
+    const day = date.getDate();
+    const wday = date.getDay(); // 0: Sun, 1: Mon, ...
+    const curDateOnly = new Date(year, date.getMonth(), day);
+
+    // 부활 대축일 계산 (Anonymous Gregorian algorithm)
+    const getEaster = (y) => {
+      const a = y % 19;
+      const b = Math.floor(y / 100);
+      const c = y % 100;
+      const d = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const mon = Math.floor((h + l - 7 * m + 114) / 31);
+      const dy = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(y, mon - 1, dy);
+    };
+
+    // 대림 제1주일 (11월 27일~12월 3일 사이의 주일)
+    const getAdvent1 = (y) => {
+      const d = new Date(y, 10, 27); // Nov 27
+      while (d.getDay() !== 0) {
+        d.setDate(d.getDate() + 1);
+      }
+      return d;
+    };
+
+    const addDays = (d, n) => {
+      const res = new Date(d);
+      res.setDate(res.getDate() + n);
+      return res;
+    };
+
+    const isSameDay = (d1, d2) => {
+      return d1.getFullYear() === d2.getFullYear() &&
+             d1.getMonth() === d2.getMonth() &&
+             d1.getDate() === d2.getDate();
+    };
+
+    const easter = getEaster(year);
+    const advent = getAdvent1(year);
+
+    // 1. 주요 고정 대축일 및 축일
+    const fixedFeastsKo = {
+      "1-1": { color: "white", colorKo: "백", name: "천주의 성모 마리아 대축일", rank: "대축일" },
+      "1-6": { color: "white", colorKo: "백", name: "주님 공현 대축일", rank: "대축일" },
+      "2-2": { color: "white", colorKo: "백", name: "주님 봉헌 축일", rank: "축일" },
+      "3-19": { color: "white", colorKo: "백", name: "복되신 동정 마리아의 배필 성 요셉 대축일", rank: "대축일" },
+      "3-25": { color: "white", colorKo: "백", name: "주님 탄생 예고(성모영보) 대축일", rank: "대축일" },
+      "5-1": { color: "white", colorKo: "백", name: "노동자 성 요셉 기념일", rank: "기념일" },
+      "5-31": { color: "white", colorKo: "백", name: "복되신 동정 마리아의 방문 축일", rank: "축일" },
+      "6-24": { color: "white", colorKo: "백", name: "세례자 성 요한 탄생 대축일", rank: "대축일" },
+      "6-29": { color: "red", colorKo: "홍", name: "성 베드로와 성 바오로 사도 대축일", rank: "대축일" },
+      "7-3": { color: "red", colorKo: "홍", name: "성 토마스 사도 축일", rank: "축일" },
+      "7-22": { color: "white", colorKo: "백", name: "성녀 마리아 막달레나 축일", rank: "축일" },
+      "7-25": { color: "red", colorKo: "홍", name: "성 야고보 사도 축일", rank: "축일" },
+      "8-6": { color: "white", colorKo: "백", name: "주님의 거룩한 변모 축일", rank: "축일" },
+      "8-10": { color: "red", colorKo: "홍", name: "성 라우렌시오 부제 순교자 축일", rank: "축일" },
+      "8-15": { color: "white", colorKo: "백", name: "성모 승천 대축일", rank: "대축일" },
+      "8-24": { color: "red", colorKo: "홍", name: "성 바르톨로메오 사도 축일", rank: "축일" },
+      "9-8": { color: "white", colorKo: "백", name: "복되신 동정 마리아 탄생 축일", rank: "축일" },
+      "9-14": { color: "red", colorKo: "홍", name: "성 십자가 현양 축일", rank: "축일" },
+      "9-20": { color: "red", colorKo: "홍", name: "성 김대건 안드레아와 성 정하상 바오로와 동료 순교자들 대축일", rank: "대축일" },
+      "9-21": { color: "red", colorKo: "홍", name: "성 마태오 사도 복음사가 축일", rank: "축일" },
+      "9-29": { color: "white", colorKo: "백", name: "성 미카엘, 성 가브리엘, 성 라파엘 대천사 축일", rank: "축일" },
+      "10-18": { color: "red", colorKo: "홍", name: "성 루카 복음사가 축일", rank: "축일" },
+      "10-28": { color: "red", colorKo: "홍", name: "성 시몬과 성 유다 사도 축일", rank: "축일" },
+      "11-1": { color: "white", colorKo: "백", name: "모든 성인 대축일", rank: "대축일" },
+      "11-2": { color: "violet", colorKo: "자", name: "위령의 날", rank: "위령" },
+      "11-9": { color: "white", colorKo: "백", name: "라테라노 대성전 봉헌 축일", rank: "축일" },
+      "11-30": { color: "red", colorKo: "홍", name: "성 안드레아 사도 축일", rank: "축일" },
+      "12-8": { color: "white", colorKo: "백", name: "원죄 없이 잉태되신 동정 마리아 대축일", rank: "대축일" },
+      "12-25": { color: "white", colorKo: "백", name: "예수 성탄 대축일", rank: "대축일" },
+      "12-26": { color: "red", colorKo: "홍", name: "성 스테파노 첫 순교자 축일", rank: "축일" },
+      "12-27": { color: "white", colorKo: "백", name: "성 요한 사도 복음사가 축일", rank: "축일" },
+      "12-28": { color: "red", colorKo: "홍", name: "죄 없는 아기 순교자들 축일", rank: "축일" }
+    };
+
+    const fixedKey = `${month}-${day}`;
+    if (fixedFeastsKo[fixedKey]) {
+      const f = fixedFeastsKo[fixedKey];
+      return {
+        color: f.color,
+        colorKo: f.colorKo,
+        title: f.name,
+        badgeText: `[${f.colorKo}] ${f.name}`
+      };
+    }
+
+    // 2. 이동 대축일 및 전례 시기 판별
+    const ashWed = addDays(easter, -46);
+    const palmSun = addDays(easter, -7);
+    const holyThurs = addDays(easter, -3);
+    const goodFri = addDays(easter, -2);
+    const holySat = addDays(easter, -1);
+    const pentecost = addDays(easter, 49);
+    const trinity = addDays(easter, 56);
+    const corpusChristi = addDays(easter, 63);
+    const sacredHeart = addDays(easter, 68);
+    const christKing = addDays(advent, -7);
+
+    if (isSameDay(curDateOnly, ashWed)) return { color: "violet", colorKo: "자", title: "재의 수요일", badgeText: "[자] 재의 수요일" };
+    if (isSameDay(curDateOnly, palmSun)) return { color: "red", colorKo: "홍", title: "주님 수난 성지 주일", badgeText: "[홍] 성지 주일" };
+    if (isSameDay(curDateOnly, holyThurs)) return { color: "white", colorKo: "백", title: "주님 만찬 성목요일", badgeText: "[백] 성목요일" };
+    if (isSameDay(curDateOnly, goodFri)) return { color: "red", colorKo: "홍", title: "주님 수난 성금요일", badgeText: "[홍] 성금요일" };
+    if (isSameDay(curDateOnly, holySat)) return { color: "white", colorKo: "백", title: "성토요일 (부활 성야)", badgeText: "[백] 성토요일" };
+    if (isSameDay(curDateOnly, easter)) return { color: "white", colorKo: "백", title: "주님 부활 대축일", badgeText: "[백] 주님 부활 대축일" };
+    if (isSameDay(curDateOnly, addDays(easter, 7))) return { color: "white", colorKo: "백", title: "하느님의 자비 주일 (부활 제2주일)", badgeText: "[백] 자비 주일" };
+    if (isSameDay(curDateOnly, pentecost)) return { color: "red", colorKo: "홍", title: "성령 강림 대축일", badgeText: "[홍] 성령 강림 대축일" };
+    if (isSameDay(curDateOnly, trinity)) return { color: "white", colorKo: "백", title: "지극히 거룩하신 삼위일체 대축일", badgeText: "[백] 삼위일체 대축일" };
+    if (isSameDay(curDateOnly, corpusChristi)) return { color: "white", colorKo: "백", title: "그리스도의 성체 성혈 대축일", badgeText: "[백] 성체 성혈 대축일" };
+    if (isSameDay(curDateOnly, sacredHeart)) return { color: "white", colorKo: "백", title: "지극히 거룩하신 예수 성심 대축일", badgeText: "[백] 예수 성심 대축일" };
+    if (isSameDay(curDateOnly, christKing)) return { color: "white", colorKo: "백", title: "그리스도 왕 대축일 (연중 제34주일)", badgeText: "[백] 그리스도 왕 대축일" };
+
+    const dayKoList = ["주일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+    const wdayName = dayKoList[wday];
+
+    // 3. 대림 시기 (Advent)
+    const christmas = new Date(year, 11, 25);
+    if (curDateOnly >= advent && curDateOnly < christmas) {
+      const week = Math.floor((curDateOnly - advent) / (7 * 86400000)) + 1;
+      const isRose = (week === 3 && wday === 0);
+      const col = isRose ? "rose" : "violet";
+      const colKo = isRose ? "장" : "자";
+      const t = `대림 제${week}주간 ${wdayName}`;
+      return { color: col, colorKo: colKo, title: t, badgeText: `[${colKo}] ${t}` };
+    }
+
+    // 4. 성탄 시기 (Christmas Time: 12/25 ~ 1월 12일경 주님 세례 축일)
+    if (curDateOnly >= christmas || (month === 1 && day <= 12)) {
+      if (month === 1 && day >= 7 && wday === 0) {
+        return { color: "white", colorKo: "백", title: "주님 세례 축일", badgeText: "[백] 주님 세례 축일" };
+      }
+      return { color: "white", colorKo: "백", title: `성탄 시기 (${month}월 ${day}일)`, badgeText: `[백] 성탄 시기` };
+    }
+
+    // 5. 사순 시기 (Lent)
+    if (curDateOnly > ashWed && curDateOnly < easter) {
+      const firstSunLent = addDays(ashWed, 4);
+      if (curDateOnly < firstSunLent) {
+        const t = `사순 전 평일 ${wdayName}`;
+        return { color: "violet", colorKo: "자", title: t, badgeText: `[자] ${t}` };
+      } else {
+        const week = Math.floor((curDateOnly - firstSunLent) / (7 * 86400000)) + 1;
+        const isRose = (week === 4 && wday === 0);
+        const col = isRose ? "rose" : "violet";
+        const colKo = isRose ? "장" : "자";
+        const t = `사순 제${week}주간 ${wdayName}`;
+        return { color: col, colorKo: colKo, title: t, badgeText: `[${colKo}] ${t}` };
+      }
+    }
+
+    // 6. 부활 시기 (Easter Season)
+    if (curDateOnly > easter && curDateOnly < pentecost) {
+      const week = Math.floor((curDateOnly - easter) / (7 * 86400000)) + 1;
+      const t = `부활 제${week}주간 ${wdayName}`;
+      return { color: "white", colorKo: "백", title: t, badgeText: `[백] ${t}` };
+    }
+
+    // 7. 연중 시기 (Ordinary Time)
+    if (curDateOnly < ashWed) {
+      const jan7 = new Date(year, 0, 7);
+      const week = Math.max(1, Math.floor((curDateOnly - jan7) / (7 * 86400000)) + 1);
+      const t = `연중 제${week}주간 ${wdayName}`;
+      return { color: "green", colorKo: "녹", title: t, badgeText: `[녹] ${t}` };
+    } else {
+      // 그리스도 왕 대축일(연중 34주일) 기준으로 주간 역산
+      const diffToSunday = wday; // 일요일부터 지난 일수
+      const prevSunday = addDays(curDateOnly, -diffToSunday);
+      const weeksBeforeKing = Math.round((christKing - prevSunday) / (7 * 86400000));
+      let weekNum = 34 - weeksBeforeKing;
+      if (weekNum < 1) weekNum = 1;
+      if (weekNum > 34) weekNum = 34;
+      const t = `연중 제${weekNum}주간 ${wdayName}`;
+      return { color: "green", colorKo: "녹", title: t, badgeText: `[녹] ${t}` };
+    }
+  }
+
   updateIntroView() {
     this.renderCommunityStats();
     const isEn = this.settings.lang === "en";
@@ -8495,6 +8776,33 @@ showCrucifixKissOverlay(onComplete) {
       } else {
         this.dom.introMysteryTitle.textContent = `${monthsKo[now.getMonth()]} ${now.getDate()}일(${daysShortKo[now.getDay()]}) 오늘의 신비`;
       }
+    }
+
+    // 0. 가톨릭 전례력 안내 배너 갱신
+    try {
+      const litInfo = this.getLiturgicalInfo(now);
+      if (this.dom.liturgicalDateText) {
+        if (isEn) {
+          this.dom.liturgicalDateText.textContent = `${monthsEn[now.getMonth()]} ${now.getDate()} (${daysShortEn[now.getDay()]}) · Catholic Calendar`;
+        } else {
+          this.dom.liturgicalDateText.textContent = `${now.getFullYear()}년 ${monthsKo[now.getMonth()]} ${now.getDate()}일 (${daysKo[now.getDay()]})`;
+        }
+      }
+      if (this.dom.liturgicalDayName) {
+        this.dom.liturgicalDayName.textContent = litInfo.title;
+      }
+      if (this.dom.liturgicalColorBadge) {
+        this.dom.liturgicalColorBadge.textContent = litInfo.badgeText;
+        this.dom.liturgicalColorBadge.className = `liturgical-badge color-${litInfo.color}`;
+      }
+      if (this.dom.liturgicalRecMysteryCallout) {
+        const mysteries = MYSTERIES[this.settings.lang] || MYSTERIES.ko;
+        const recKey = this.getTodayMysteryKey();
+        const recName = (mysteries[recKey] && mysteries[recKey].name) ? mysteries[recKey].name : "환희의 신비";
+        this.dom.liturgicalRecMysteryCallout.textContent = isEn ? `📿 Today: ${recName}` : `📿 오늘 권장: ${recName}`;
+      }
+    } catch (e) {
+      console.warn("Liturgical update error:", e);
     }
 
     // 1. 지난 기도 이어하기 카드 상태 업데이트
