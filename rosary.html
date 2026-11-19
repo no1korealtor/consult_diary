@@ -2250,26 +2250,28 @@ input:checked + .toggle-slider:before {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(243, 198, 105, 0.25);
   border-radius: 10px;
-  padding: 8px 12px;
+  padding: 10px 12px;
   margin-bottom: 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
 }
 .liturgical-info-main {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 .liturgical-info-date {
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   color: var(--text-secondary);
 }
 .liturgical-info-dayname {
-  font-size: 0.88rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #FFF;
+  letter-spacing: -0.3px;
 }
 .liturgical-today-mystery-callout {
   font-size: 0.73rem;
@@ -4509,9 +4511,8 @@ input:focus, textarea:focus {
               <span id="liturgicalDateText" class="liturgical-info-date">오늘의 가톨릭 전례력</span>
               <span id="liturgicalDayName" class="liturgical-info-dayname">연중 시기</span>
             </div>
-            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+            <div style="display: flex; align-items: center; flex-shrink: 0;">
               <span id="liturgicalColorBadge" class="liturgical-badge color-green">[녹] 연중</span>
-              <span id="liturgicalRecMysteryCallout" class="liturgical-today-mystery-callout">📿 오늘의 신비: 고통</span>
             </div>
           </div>
           
@@ -8794,12 +8795,6 @@ showCrucifixKissOverlay(onComplete) {
       if (this.dom.liturgicalColorBadge) {
         this.dom.liturgicalColorBadge.textContent = litInfo.badgeText;
         this.dom.liturgicalColorBadge.className = `liturgical-badge color-${litInfo.color}`;
-      }
-      if (this.dom.liturgicalRecMysteryCallout) {
-        const mysteries = MYSTERIES[this.settings.lang] || MYSTERIES.ko;
-        const recKey = this.getTodayMysteryKey();
-        const recName = (mysteries[recKey] && mysteries[recKey].name) ? mysteries[recKey].name : "환희의 신비";
-        this.dom.liturgicalRecMysteryCallout.textContent = isEn ? `📿 Today: ${recName}` : `📿 오늘 권장: ${recName}`;
       }
     } catch (e) {
       console.warn("Liturgical update error:", e);
