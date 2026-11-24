@@ -284,8 +284,8 @@
           </button>
         </div>
 
-        <!-- 4. 기도 방식 선택 카드 (실물 묵주 모드 vs 터치 카운트 모드) -->
-        <div id="introPrayerModeCard" class="intro-section-card" style="background: linear-gradient(135deg, rgba(243, 198, 105, 0.14) 0%, rgba(22, 31, 51, 0.85) 100%); border: 1.2px solid rgba(243, 198, 105, 0.4);">
+        <!-- 4. 기도 방식 선택 카드 (Intro에서 숨김 -> 2번째 화면인 준비 모달에서만 단독 노출) -->
+        <div id="introPrayerModeCard" class="intro-section-card" style="display: none !important; background: linear-gradient(135deg, rgba(243, 198, 105, 0.14) 0%, rgba(22, 31, 51, 0.85) 100%); border: 1.2px solid rgba(243, 198, 105, 0.4);">
           <div class="intro-card-header">
             <span class="intro-card-icon">📿</span>
             <span id="introPrayerModeTitle" class="intro-card-title">묵주기도 진행 방식</span>
@@ -3366,7 +3366,7 @@ class RosaryApp {
       this.dom.introFatimaCard.style.display = "none";
     }
     if (this.dom.introPrayerModeCard) {
-      this.dom.introPrayerModeCard.style.display = isDm ? "none" : "block";
+      this.dom.introPrayerModeCard.style.display = "none";
     }
     if (this.dom.introDivineMercyCard) {
       this.dom.introDivineMercyCard.style.display = isDm ? "block" : "none";
@@ -4597,36 +4597,105 @@ showCrucifixKissOverlay(onComplete) {
     const easter = getEaster(year);
     const advent = getAdvent1(year);
 
-    // 1. 주요 고정 대축일 및 축일
+    // 1. 주요 고정 대축일 및 축일 / 기념일
     const fixedFeastsKo = {
       "1-1": { color: "white", colorKo: "백", name: "천주의 성모 마리아 대축일", rank: "대축일" },
+      "1-2": { color: "white", colorKo: "백", name: "성 바실리오와 나지안조의 성 그레고리오 주교 학자 기념일", rank: "기념일" },
       "1-6": { color: "white", colorKo: "백", name: "주님 공현 대축일", rank: "대축일" },
+      "1-17": { color: "white", colorKo: "백", name: "성 안토니오 아빠스 기념일", rank: "기념일" },
+      "1-21": { color: "red", colorKo: "홍", name: "성녀 아녜스 동정 순교자 기념일", rank: "기념일" },
+      "1-24": { color: "white", colorKo: "백", name: "성 프란치스코 살레시오 주교 교회학자 기념일", rank: "기념일" },
+      "1-25": { color: "white", colorKo: "백", name: "성 바오로 사도의 회심 축일", rank: "축일" },
+      "1-26": { color: "white", colorKo: "백", name: "성 티모테오와 성 티토 주교 기념일", rank: "기념일" },
+      "1-28": { color: "white", colorKo: "백", name: "성 토마스 아퀴나스 사제 교회학자 기념일", rank: "기념일" },
+      "1-31": { color: "white", colorKo: "백", name: "성 요한 보스코 사제 기념일", rank: "기념일" },
       "2-2": { color: "white", colorKo: "백", name: "주님 봉헌 축일", rank: "축일" },
+      "2-5": { color: "red", colorKo: "홍", name: "성녀 아가타 동정 순교자 기념일", rank: "기념일" },
+      "2-6": { color: "red", colorKo: "홍", name: "성 바오로 미키와 동료 순교자들 기념일", rank: "기념일" },
+      "2-10": { color: "white", colorKo: "백", name: "성녀 스콜라스티카 동정 기념일", rank: "기념일" },
+      "2-14": { color: "white", colorKo: "백", name: "성 치릴로 수도자와 성 메토디오 주교 기념일", rank: "기념일" },
+      "2-22": { color: "white", colorKo: "백", name: "성 베드로 사도좌 축일", rank: "축일" },
+      "2-23": { color: "red", colorKo: "홍", name: "성 폴리카르포 주교 순교자 기념일", rank: "기념일" },
       "3-19": { color: "white", colorKo: "백", name: "복되신 동정 마리아의 배필 성 요셉 대축일", rank: "대축일" },
       "3-25": { color: "white", colorKo: "백", name: "주님 탄생 예고(성모영보) 대축일", rank: "대축일" },
+      "4-25": { color: "red", colorKo: "홍", name: "성 마르코 복음사가 축일", rank: "축일" },
+      "4-29": { color: "white", colorKo: "백", name: "시에나의 성녀 카타리나 동정 교회학자 기념일", rank: "기념일" },
       "5-1": { color: "white", colorKo: "백", name: "노동자 성 요셉 기념일", rank: "기념일" },
+      "5-2": { color: "white", colorKo: "백", name: "성 아타나시오 주교 교회학자 기념일", rank: "기념일" },
+      "5-3": { color: "red", colorKo: "홍", name: "성 필립보와 성 야고보 사도 축일", rank: "축일" },
+      "5-14": { color: "red", colorKo: "홍", name: "성 마티아 사도 축일", rank: "축일" },
+      "5-26": { color: "white", colorKo: "백", name: "성 필립보 네리 사제 기념일", rank: "기념일" },
       "5-31": { color: "white", colorKo: "백", name: "복되신 동정 마리아의 방문 축일", rank: "축일" },
+      "6-1": { color: "red", colorKo: "홍", name: "성 유스티노 순교자 기념일", rank: "기념일" },
+      "6-3": { color: "red", colorKo: "홍", name: "성 카를로 루앙가와 동료 순교자들 기념일", rank: "기념일" },
+      "6-5": { color: "red", colorKo: "홍", name: "성 보니파시오 주교 순교자 기념일", rank: "기념일" },
+      "6-11": { color: "red", colorKo: "홍", name: "성 바르나바 사도 기념일", rank: "기념일" },
+      "6-13": { color: "white", colorKo: "백", name: "파도바의 성 안토니오 사제 교회학자 기념일", rank: "기념일" },
+      "6-21": { color: "white", colorKo: "백", name: "성 알로이시오 곤자가 수도자 기념일", rank: "기념일" },
       "6-24": { color: "white", colorKo: "백", name: "세례자 성 요한 탄생 대축일", rank: "대축일" },
+      "6-28": { color: "red", colorKo: "홍", name: "성 이레네오 주교 순교자 기념일", rank: "기념일" },
       "6-29": { color: "red", colorKo: "홍", name: "성 베드로와 성 바오로 사도 대축일", rank: "대축일" },
       "7-3": { color: "red", colorKo: "홍", name: "성 토마스 사도 축일", rank: "축일" },
+      "7-5": { color: "red", colorKo: "홍", name: "한국 성직자들의 수호자 성 김대건 안드레아 사제 순교자 대축일", rank: "대축일" },
+      "7-11": { color: "white", colorKo: "백", name: "성 베네딕토 아빠스 기념일", rank: "기념일" },
+      "7-15": { color: "white", colorKo: "백", name: "성 보나벤투라 주교 교회학자 기념일", rank: "기념일" },
       "7-22": { color: "white", colorKo: "백", name: "성녀 마리아 막달레나 축일", rank: "축일" },
       "7-25": { color: "red", colorKo: "홍", name: "성 야고보 사도 축일", rank: "축일" },
+      "7-26": { color: "white", colorKo: "백", name: "복되신 동정 마리아의 부모 성 요아킴과 성녀 안나 기념일", rank: "기념일" },
+      "7-29": { color: "white", colorKo: "백", name: "성녀 마르타와 성녀 마리아와 성 라자로 기념일", rank: "기념일" },
+      "7-31": { color: "white", colorKo: "백", name: "성 이냐시오 데 로욜라 사제 기념일", rank: "기념일" },
+      "8-1": { color: "white", colorKo: "백", name: "성 알폰소 마리아 데 리구오리 주교 교회학자 기념일", rank: "기념일" },
+      "8-4": { color: "white", colorKo: "백", name: "성 요한 마리아 비안네 사제 기념일", rank: "기념일" },
       "8-6": { color: "white", colorKo: "백", name: "주님의 거룩한 변모 축일", rank: "축일" },
+      "8-8": { color: "white", colorKo: "백", name: "성 도미니코 사제 기념일", rank: "기념일" },
       "8-10": { color: "red", colorKo: "홍", name: "성 라우렌시오 부제 순교자 축일", rank: "축일" },
+      "8-11": { color: "white", colorKo: "백", name: "성녀 클라라 동정 기념일", rank: "기념일" },
+      "8-14": { color: "red", colorKo: "홍", name: "성 막시밀리아노 마리아 콜베 사제 순교자 기념일", rank: "기념일" },
       "8-15": { color: "white", colorKo: "백", name: "성모 승천 대축일", rank: "대축일" },
+      "8-20": { color: "white", colorKo: "백", name: "성 베르나르도 아빠스 교회학자 기념일", rank: "기념일" },
+      "8-21": { color: "white", colorKo: "백", name: "성 비오 10세 교황 기념일", rank: "기념일" },
+      "8-22": { color: "white", colorKo: "백", name: "복되신 동정 마리아 모후 기념일", rank: "기념일" },
       "8-24": { color: "red", colorKo: "홍", name: "성 바르톨로메오 사도 축일", rank: "축일" },
+      "8-27": { color: "white", colorKo: "백", name: "성녀 모니카 기념일", rank: "기념일" },
+      "8-28": { color: "white", colorKo: "백", name: "성 아우구스티노 주교 교회학자 기념일", rank: "기념일" },
+      "8-29": { color: "red", colorKo: "홍", name: "세례자 성 요한의 수난 기념일", rank: "기념일" },
+      "9-3": { color: "white", colorKo: "백", name: "성 그레고리오 1세 교황 교회학자 기념일", rank: "기념일" },
       "9-8": { color: "white", colorKo: "백", name: "복되신 동정 마리아 탄생 축일", rank: "축일" },
+      "9-13": { color: "white", colorKo: "백", name: "성 요한 크리소스토모 주교 교회학자 기념일", rank: "기념일" },
       "9-14": { color: "red", colorKo: "홍", name: "성 십자가 현양 축일", rank: "축일" },
+      "9-15": { color: "white", colorKo: "백", name: "고통의 성모 마리아 기념일", rank: "기념일" },
+      "9-16": { color: "red", colorKo: "홍", name: "성 코르넬리오 교황과 성 치프리아노 주교 순교자 기념일", rank: "기념일" },
       "9-20": { color: "red", colorKo: "홍", name: "성 김대건 안드레아와 성 정하상 바오로와 동료 순교자들 대축일", rank: "대축일" },
       "9-21": { color: "red", colorKo: "홍", name: "성 마태오 사도 복음사가 축일", rank: "축일" },
+      "9-23": { color: "white", colorKo: "백", name: "피에트렐치나의 성 비오 사제 기념일", rank: "기념일" },
+      "9-27": { color: "white", colorKo: "백", name: "성 빈첸시오 아 바오로 사제 기념일", rank: "기념일" },
       "9-29": { color: "white", colorKo: "백", name: "성 미카엘, 성 가브리엘, 성 라파엘 대천사 축일", rank: "축일" },
+      "9-30": { color: "white", colorKo: "백", name: "성 예로니모 사제 교회학자 기념일", rank: "기념일" },
+      "10-1": { color: "white", colorKo: "백", name: "아기 예수의 성녀 데레사 동정 교회학자 기념일", rank: "기념일" },
+      "10-2": { color: "white", colorKo: "백", name: "수호천사 기념일", rank: "기념일" },
+      "10-4": { color: "white", colorKo: "백", name: "아시시의 성 프란치스코 기념일", rank: "기념일" },
+      "10-7": { color: "white", colorKo: "백", name: "묵주 기도의 동정 마리아 기념일", rank: "기념일" },
+      "10-15": { color: "white", colorKo: "백", name: "아빌라의 성녀 데레사 동정 교회학자 기념일", rank: "기념일" },
+      "10-17": { color: "red", colorKo: "홍", name: "성 이냐시오 주교 순교자 기념일", rank: "기념일" },
       "10-18": { color: "red", colorKo: "홍", name: "성 루카 복음사가 축일", rank: "축일" },
       "10-28": { color: "red", colorKo: "홍", name: "성 시몬과 성 유다 사도 축일", rank: "축일" },
       "11-1": { color: "white", colorKo: "백", name: "모든 성인 대축일", rank: "대축일" },
       "11-2": { color: "violet", colorKo: "자", name: "위령의 날", rank: "위령" },
+      "11-4": { color: "white", colorKo: "백", name: "성 카를로 보로메오 주교 기념일", rank: "기념일" },
       "11-9": { color: "white", colorKo: "백", name: "라테라노 대성전 봉헌 축일", rank: "축일" },
+      "11-10": { color: "white", colorKo: "백", name: "성 레오 1세 교황 교회학자 기념일", rank: "기념일" },
+      "11-11": { color: "white", colorKo: "백", name: "투르의 성 마르티노 주교 기념일", rank: "기념일" },
+      "11-12": { color: "red", colorKo: "홍", name: "성 요사팟 주교 순교자 기념일", rank: "기념일" },
+      "11-17": { color: "white", colorKo: "백", name: "헝가리의 성녀 엘리사벳 수도자 기념일", rank: "기념일" },
+      "11-21": { color: "white", colorKo: "백", name: "복되신 동정 마리아의 자헌 기념일", rank: "기념일" },
+      "11-22": { color: "red", colorKo: "홍", name: "성녀 체칠리아 동정 순교자 기념일", rank: "기념일" },
+      "11-24": { color: "red", colorKo: "홍", name: "성 안드레아 둥락 사제와 동료 순교자들 기념일", rank: "기념일" },
       "11-30": { color: "red", colorKo: "홍", name: "성 안드레아 사도 축일", rank: "축일" },
+      "12-3": { color: "white", colorKo: "백", name: "성 프란치스코 하비에르 사제 기념일", rank: "기념일" },
+      "12-7": { color: "white", colorKo: "백", name: "성 암브로시오 주교 교회학자 기념일", rank: "기념일" },
       "12-8": { color: "white", colorKo: "백", name: "원죄 없이 잉태되신 동정 마리아 대축일", rank: "대축일" },
+      "12-13": { color: "red", colorKo: "홍", name: "성녀 루치아 동정 순교자 기념일", rank: "기념일" },
+      "12-14": { color: "white", colorKo: "백", name: "십자가의 성 요한 사제 교회학자 기념일", rank: "기념일" },
       "12-25": { color: "white", colorKo: "백", name: "예수 성탄 대축일", rank: "대축일" },
       "12-26": { color: "red", colorKo: "홍", name: "성 스테파노 첫 순교자 축일", rank: "축일" },
       "12-27": { color: "white", colorKo: "백", name: "성 요한 사도 복음사가 축일", rank: "축일" },
@@ -4798,30 +4867,9 @@ showCrucifixKissOverlay(onComplete) {
       console.warn("Liturgical update error:", e);
     }
 
-    // 1. 지난 기도 이어하기 카드 상태 업데이트
-    const saved = this.loadSavedProgress();
-    if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length : 68)) {
-      if (this.dom.introResumeCard) {
-        this.dom.introResumeCard.style.display = "flex";
-      }
-      if (saved.prayerType === "divine_mercy") {
-        if (this.dom.introResumeMystery) {
-          this.dom.introResumeMystery.textContent = isEn ? "Chaplet of Divine Mercy" : "하느님 자비를 구하는 기도";
-        }
-      } else {
-        const mysteries = MYSTERIES[this.settings.lang] || MYSTERIES.ko;
-        const mInfo = mysteries[saved.mysteryKey] || mysteries.joyful;
-        if (this.dom.introResumeMystery) {
-          this.dom.introResumeMystery.textContent = mInfo.name;
-        }
-      }
-      if (this.dom.introResumeStep) {
-        this.dom.introResumeStep.textContent = `${saved.section} · ${saved.beadLabel}`;
-      }
-    } else {
-      if (this.dom.introResumeCard) {
-        this.dom.introResumeCard.style.display = "none";
-      }
+    // 1. 지난 기도 이어하기 카드 상태 업데이트 (첫 화면에서는 항상 숨김 - 하단 '묵주기도 시작하기' 클릭 시 모달에서 선택)
+    if (this.dom.introResumeCard) {
+      this.dom.introResumeCard.style.display = "none";
     }
 
     // 2. 신비 그리드 및 상세 묵상 안내문 동기화
