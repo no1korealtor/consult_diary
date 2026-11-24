@@ -2278,6 +2278,8 @@
             border-bottom: 2px solid #f1f5f9;
             padding-bottom: 10px;
             margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
         .quiz-report-title {
@@ -2289,11 +2291,53 @@
             gap: 6px;
         }
 
-        .quiz-report-refresh-btn {
+        .quiz-report-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quiz-report-btn {
+            border: none;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            font-family: 'Jua', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .quiz-report-btn.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
+        }
+
+        .quiz-report-btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.35);
+        }
+
+        .quiz-report-btn.secondary {
             background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .quiz-report-btn.secondary:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .quiz-report-refresh-btn {
+            background: #f8fafc;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
-            padding: 4px 10px;
+            padding: 5px 9px;
             font-size: 12px;
             color: #475569;
             cursor: pointer;
@@ -2304,6 +2348,123 @@
         .quiz-report-refresh-btn:hover {
             background: #e2e8f0;
             color: #1e293b;
+        }
+
+        /* 🤖 AI 진단 카드 스타일 */
+        .quiz-ai-analysis-card {
+            background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+            border: 1.5px solid #c4b5fd;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.08);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .quiz-ai-analysis-card.loading {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .quiz-ai-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed #ddd6fe;
+        }
+
+        .quiz-ai-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #5b21b6;
+            font-family: 'Jua', sans-serif;
+        }
+
+        .quiz-ai-time {
+            font-size: 11px;
+            color: #8b5cf6;
+        }
+
+        .quiz-ai-body {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .quiz-ai-section {
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 10px;
+            padding: 9px 12px;
+            border: 1px solid #e9d5ff;
+        }
+
+        .quiz-ai-sec-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #4c1d95;
+            margin-bottom: 4px;
+        }
+
+        .quiz-ai-sec-desc {
+            font-size: 12.5px;
+            color: #334155;
+            line-height: 1.5;
+        }
+
+        .quiz-ai-section.highlight-weak {
+            background: #fff1f2;
+            border-color: #fecdd3;
+        }
+
+        .quiz-ai-section.highlight-weak .quiz-ai-sec-title {
+            color: #be123c;
+        }
+
+        .quiz-ai-section.highlight-advice {
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+        }
+
+        .quiz-ai-section.highlight-advice .quiz-ai-sec-title {
+            color: #047857;
+        }
+
+        .quiz-cat-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .quiz-cat-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #475569;
+        }
+
+        .quiz-cat-badge.good {
+            background: #f0fdf4;
+            border-color: #86efac;
+            color: #15803d;
+        }
+
+        .quiz-cat-badge.warn {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #b45309;
+        }
+
+        .quiz-cat-badge.bad {
+            background: #fef2f2;
+            border-color: #fca5a5;
+            color: #b91c1c;
         }
 
         .quiz-stat-summary-row {

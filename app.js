@@ -2097,6 +2097,8 @@ async function insertStudyLog(subject, content, detail) {
         // ===================================================
         let recentQuizLogs = [];
         let isQuizLogsLoading = false;
+        let aiAnalysisResult = null;
+        let isAiAnalyzing = false;
 
         async function loadRecentQuizLogs() {
             if (isQuizLogsLoading) return;
@@ -2118,6 +2120,185 @@ async function insertStudyLog(subject, content, detail) {
                 isQuizLogsLoading = false;
                 renderHabitSection();
             }
+        }
+
+        // 오답 텍스트 추출 및 모달/클립보드 복사
+        function getWrongQuizText() {
+            const parsedLogs = recentQuizLogs.map(l => {
+                let d = {};
+                try { d = JSON.parse(l.detail); } catch(e) { d = { isCorrect: false }; }
+                return { ...l, parsed: d };
+            });
+
+            const wrongItems = parsedLogs.filter(item => !item.parsed.isCorrect);
+            if (wrongItems.length === 0) {
+                return null;
+            }
+
+            let text = `📝 [아람이의 오답노트 모음] (총 ${wrongItems.length}문제)\n`;
+            text += `기록 일시: ${new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' })}\n`;
+            text += `--------------------------------------------------\n\n`;
+
+            wrongItems.forEach((item, idx) => {
+                const p = item.parsed;
+                const d = new Date(item.created_at);
+                const timeStr = `${d.getMonth() + 1}월 ${d.getDate()}일 ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                
+                text += `${idx + 1}. [${p.category || '상식'}] ${p.question || item.content}\n`;
+                text += `   ❌ 아람이가 고른 답: ${p.chosen || '(미선택)'}\n`;
+                text += `   ⭕ 실제 정답: ${p.answer || '(정답 미표기)'}\n`;
+                if (p.explanation) {
+                    text += `   💡 핵심 해설: ${p.explanation}\n`;
+                }
+                text += `   🕒 풀이 시간: ${timeStr}\n\n`;
+            });
+
+            text += `--------------------------------------------------\n`;
+            text += `Tip: 아람이와 복습할 때 정답을 바로 알려주기보다는 왜 헷갈렸는지 힌트를 주며 대화해 보세요! 💖\n`;
+
+            return text;
+        }
+
+        function openWrongQuizModal() {
+            const text = getWrongQuizText();
+            if (!text) {
+                alert("🎉 최근 푼 문제 중 틀린 문제가 없습니다! 아람이가 아주 잘하고 있어요! 👏");
+                return;
+            }
+
+            const modalHtml = `
+                <div class="child-detail-modal" id="wrong-quiz-modal" onclick="if(event.target === this) closeWrongQuizModal()">
+                    <div class="child-modal-body" style="max-width: 540px; width: 92%;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                            <div style="font-family:'Jua', sans-serif; font-size:18px; color:#1e293b; display:flex; align-items:center; gap:6px;">
+                                <span>📋 아람이 오답노트 모아보기</span>
+                            </div>
+                            <button type="button" onclick="closeWrongQuizModal()" style="background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer;">✕</button>
+                        </div>
+                        <div style="font-size:12px; color:#64748b; margin-bottom:10px; text-align:left;">
+                            틀린 문제만 모아서 텍스트로 정리했습니다. 복사해서 카톡이나 메모장에 붙여넣어 활용하세요!
+                        </div>
+                        <textarea id="wrong-quiz-textarea" readonly style="width:100%; height:260px; padding:12px; border-radius:12px; border:1.5px solid #cbd5e1; font-size:13px; font-family:monospace; line-height:1.5; resize:none; background:#f8fafc; color:#1e293b; box-sizing:border-box;">${escapeHtml(text)}</textarea>
+                        <div style="display:flex; gap:10px; margin-top:14px;">
+                            <button type="button" onclick="copyWrongQuizText()" style="flex:1; background:linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color:white; border:none; padding:10px 14px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:14px; box-shadow:0 3px 10px rgba(79, 70, 229, 0.25);">📋 전체 텍스트 복사</button>
+                            <button type="button" onclick="closeWrongQuizModal()" style="background:#e2e8f0; color:#475569; border:none; padding:10px 16px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:14px;">닫기</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function closeWrongQuizModal() {
+            const modal = document.getElementById('wrong-quiz-modal');
+            if (modal) modal.remove();
+        }
+
+        function copyWrongQuizText() {
+            const textarea = document.getElementById('wrong-quiz-textarea');
+            if (!textarea) return;
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(textarea.value).then(() => {
+                        alert("✅ 오답노트가 클립보드에 복사되었습니다! 카톡이나 메모장에 붙여넣으세요.");
+                    });
+                } else {
+                    document.execCommand('copy');
+                    alert("✅ 오답노트가 클립보드에 복사되었습니다!");
+                }
+            } catch(e) {
+                document.execCommand('copy');
+                alert("✅ 오답노트가 복사되었습니다!");
+            }
+        }
+
+        // AI 학습 분석 & 취약점 총평 실행
+        function runAiQuizAnalysis() {
+            if (recentQuizLogs.length === 0) {
+                alert("분석할 풀이 기록이 없습니다. 아람이가 문제를 푼 뒤 분석해 주세요!");
+                return;
+            }
+
+            isAiAnalyzing = true;
+            renderHabitSection();
+
+            setTimeout(() => {
+                try {
+                    const parsedLogs = recentQuizLogs.map(l => {
+                        let d = {};
+                        try { d = JSON.parse(l.detail); } catch(e) { d = { isCorrect: false }; }
+                        return { ...l, parsed: d };
+                    });
+
+                    const totalCount = parsedLogs.length;
+                    const correctCount = parsedLogs.filter(p => p.parsed.isCorrect).length;
+                    const wrongCount = totalCount - correctCount;
+                    const accuracy = Math.round((correctCount / totalCount) * 100);
+
+                    // 카테고리별 통계 집계
+                    const catMap = {};
+                    parsedLogs.forEach(item => {
+                        const cat = item.parsed.category || '일반상식';
+                        if (!catMap[cat]) catMap[cat] = { total: 0, correct: 0, wrong: 0, wrongQuestions: [] };
+                        catMap[cat].total++;
+                        if (item.parsed.isCorrect) {
+                            catMap[cat].correct++;
+                        } else {
+                            catMap[cat].wrong++;
+                            catMap[cat].wrongQuestions.push(item.parsed.question || item.content);
+                        }
+                    });
+
+                    // 강점 및 취약 카테고리 선별
+                    const catList = Object.entries(catMap).map(([cat, stats]) => ({
+                        cat,
+                        ...stats,
+                        rate: Math.round((stats.correct / stats.total) * 100)
+                    }));
+
+                    catList.sort((a, b) => a.rate - b.rate); // 정답률 낮은 순 (취약 순)
+                    const weakest = catList.filter(c => c.wrong > 0)[0] || null;
+                    const strongest = [...catList].reverse().filter(c => c.rate >= 70)[0] || null;
+
+                    // 코칭 조언 및 총평 메시지 도출
+                    let evaluation = "";
+                    let advice = "";
+
+                    if (accuracy >= 85) {
+                        evaluation = `🌟 대단해요! 최근 정답률 ${accuracy}%로 대부분의 상식 개념을 아주 정확하게 이해하고 있습니다. 문제 해결에 대한 자신감이 높은 상태입니다.`;
+                        advice = `정답을 많이 맞힌 만큼 큰 칭찬을 해주시고, 틀린 소수의 문제는 "아빠도 헷갈릴 뻔했다"며 가볍게 원리를 짚어주면 동기부여가 극대화됩니다.`;
+                    } else if (accuracy >= 65) {
+                        evaluation = `👍 기초 상식 이해도가 탄탄합니다 (최근 정답률 ${accuracy}%). 특정 분야에서 헷갈리는 보기를 마주쳤을 때 오답이 발생하고 있습니다.`;
+                        advice = weakest 
+                            ? `특히 [${weakest.cat}] 분야(오답 ${weakest.wrong}건)의 어휘나 개념을 헷갈려하고 있으니, 일상 대화에서 해당 주제를 자연스럽게 퀴즈로 내주며 복습을 도와주세요.`
+                            : `전반적으로 골고루 잘 풀고 있습니다. 헷갈렸던 보기를 왜 선택했는지 아람이의 생각을 먼저 들어보는 코칭을 추천합니다.`;
+                    } else {
+                        evaluation = `🌱 열심히 도전 중입니다 (최근 정답률 ${accuracy}%). 아직 생소한 단어나 교과 외 개념이 포함되어 있어 짐작으로 고르는 경우가 관찰됩니다.`;
+                        advice = `결과 점수보다는 "오늘도 어려운 퀴즈에 도전한 끈기"를 칭찬해 주세요. 아래 오답 텍스트를 복사해 쉬운 예시와 그림으로 개념을 한 번씩 이야기 나눠보세요.`;
+                    }
+
+                    aiAnalysisResult = {
+                        analyzedAt: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+                        totalCount,
+                        correctCount,
+                        wrongCount,
+                        accuracy,
+                        catList,
+                        weakest,
+                        strongest,
+                        evaluation,
+                        advice
+                    };
+                } catch(e) {
+                    console.error("AI Analysis error:", e);
+                    alert("분석 중 일시적인 오류가 발생했습니다.");
+                } finally {
+                    isAiAnalyzing = false;
+                    renderHabitSection();
+                }
+            }, 600);
         }
 
         function generateQuizReportHtml() {
@@ -2170,13 +2351,67 @@ async function insertStudyLog(subject, content, detail) {
                 }).join('');
             }
 
+            // AI 분석 결과 카드 HTML
+            let aiBoxHtml = '';
+            if (isAiAnalyzing) {
+                aiBoxHtml = `
+                    <div class="quiz-ai-analysis-card loading">
+                        <div style="font-size:14px; font-weight:bold; color:#6366f1; margin-bottom:4px;">🤖 AI가 아람이의 풀이 데이터를 꼼꼼히 분석하고 있습니다...</div>
+                        <div style="font-size:12px; color:#94a3b8;">오답 패턴, 취약 카테고리, 맞춤형 칭찬 코칭 팁을 도출하는 중입니다.</div>
+                    </div>
+                `;
+            } else if (aiAnalysisResult) {
+                const r = aiAnalysisResult;
+                const catBadges = r.catList.map(c => `
+                    <div class="quiz-cat-badge ${c.wrong > 0 ? (c.rate < 60 ? 'bad' : 'warn') : 'good'}">
+                        <strong>${escapeHtml(c.cat)}</strong> ${c.rate}% (${c.correct}/${c.total})
+                    </div>
+                `).join('');
+
+                aiBoxHtml = `
+                    <div class="quiz-ai-analysis-card">
+                        <div class="quiz-ai-header">
+                            <div class="quiz-ai-title">🤖 AI 학습 진단 & 아빠표 코칭 리포트</div>
+                            <span class="quiz-ai-time">분석 시각: ${r.analyzedAt}</span>
+                        </div>
+                        <div class="quiz-ai-body">
+                            <div class="quiz-ai-section">
+                                <div class="quiz-ai-sec-title">📌 종합 진단 총평</div>
+                                <div class="quiz-ai-sec-desc">${r.evaluation}</div>
+                            </div>
+
+                            <div class="quiz-ai-section">
+                                <div class="quiz-ai-sec-title">📊 영역별 성취도</div>
+                                <div class="quiz-cat-list">${catBadges}</div>
+                            </div>
+
+                            ${r.weakest ? `
+                            <div class="quiz-ai-section highlight-weak">
+                                <div class="quiz-ai-sec-title">⚠️ 취약 영역 주의보: [${escapeHtml(r.weakest.cat)}]</div>
+                                <div class="quiz-ai-sec-desc">${r.weakest.total}문제 중 ${r.weakest.wrong}문제를 틀렸습니다. 헷갈려 한 문제들을 오답노트로 복습하면 실력이 쑥쑥 늘어납니다!</div>
+                            </div>
+                            ` : ''}
+
+                            <div class="quiz-ai-section highlight-advice">
+                                <div class="quiz-ai-sec-title">💡 아빠를 위한 맞춤 코칭 가이드</div>
+                                <div class="quiz-ai-sec-desc">${r.advice}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
             return `
                 <div class="quiz-report-card">
                     <div class="quiz-report-header">
                         <div class="quiz-report-title">
                             <span>📊 아람이의 퀴즈 풀이 & 오답노트 리포트</span>
                         </div>
-                        <button type="button" class="quiz-report-refresh-btn" onclick="loadRecentQuizLogs()">🔄 새로고침</button>
+                        <div class="quiz-report-actions">
+                            <button type="button" class="quiz-report-btn secondary" onclick="openWrongQuizModal()" title="틀린 문제만 텍스트로 모아보기">📋 오답 텍스트</button>
+                            <button type="button" class="quiz-report-btn primary" onclick="runAiQuizAnalysis()" title="AI 정오답 및 취약점 분석">🤖 AI 분석</button>
+                            <button type="button" class="quiz-report-refresh-btn" onclick="loadRecentQuizLogs()" title="최근 풀이 새로고침">🔄</button>
+                        </div>
                     </div>
 
                     <div class="quiz-stat-summary-row">
@@ -2194,8 +2429,11 @@ async function insertStudyLog(subject, content, detail) {
                         </div>
                     </div>
 
-                    <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:8px;">
-                        📝 최근 풀이 상세 내역 (오답 확인 & 복습 코칭용):
+                    ${aiBoxHtml}
+
+                    <div style="font-size:12px; font-weight:bold; color:#475569; margin-bottom:8px; margin-top:14px; display:flex; justify-content:space-between; align-items:center;">
+                        <span>📝 최근 풀이 상세 내역 (최근 50개):</span>
+                        <span style="font-size:11px; color:#94a3b8; font-weight:normal;">틀린 문제는 붉은색 라벨</span>
                     </div>
                     <div class="quiz-log-list">
                         ${logItemsHtml}
