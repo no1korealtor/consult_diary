@@ -526,27 +526,29 @@
         }
 
         // ===================================================
-        // 🧠 중학생 맞춤 상식 퀴즈 & 100원 저금통 뷰 로직
+        // 🧠 중학생 맞춤 상식 퀴즈 & 50원 저금통 뷰 로직
         // ===================================================
         function renderCommonKnowledgeQuiz(container) {
             const quiz = COMMON_QUIZ_POOL[currentQuizIndex % COMMON_QUIZ_POOL.length];
             const currentWon = quizBankState.currentPoints || 0;
-            const progressCount = Math.floor(currentWon / 100);
-            const remainingToCoupon = Math.max(0, 20 - progressCount);
+            const progressCount = Math.floor(currentWon / 50);
+            const remainingToCoupon = Math.max(0, 40 - progressCount);
             const percent = Math.min(100, Math.round((currentWon / 2000) * 100));
+            const todayCount = quizBankState.todayAnswered || 0;
+            const isTodayCapReached = todayCount >= 10;
 
             // 저금통 게이지 HTML
             const piggyBankHtml = `
                 <div class="piggy-bank-container">
                     <div class="piggy-bank-header">
-                        <div class="piggy-bank-title">🪙 아람이의 상식 저금통 (1문제 = 100원!)</div>
+                        <div class="piggy-bank-title">🪙 아람이의 상식 저금통 (1문제 = 50원!)</div>
                         <div class="piggy-bank-badge">${currentWon.toLocaleString()}원 / 2,000원</div>
                     </div>
                     <div class="piggy-bar-bg">
                         <div class="piggy-bar-fill" style="width: ${percent}%;"></div>
                     </div>
                     <div class="piggy-bank-meta">
-                        <span>오늘 푼 문제: <strong>${quizBankState.todayAnswered} / 5개</strong> (하루 최대 500원)</span>
+                        <span>오늘 적립 문제: <strong>${Math.min(10, todayCount)} / 10개</strong> ${isTodayCapReached ? '<span style="color:#10b981; font-weight:bold;">(오늘 저금 완료! 500원 달성 👏)</span>' : '(하루 최대 500원)'}</span>
                         <span style="color:#e11d48; font-weight:bold;">${remainingToCoupon > 0 ? remainingToCoupon + '문제 더 풀면 2,000원 쿠폰 지급!' : '🎉 2,000원 쿠폰 발급 완료!'}</span>
                     </div>
                 </div>
@@ -579,15 +581,26 @@
                 actionHtml = `
                     <div style="margin-top:16px;">
                         <button type="button" class="quiz-submit-btn" onclick="submitQuizAnswer()" ${selectedQuizOption === null ? 'disabled' : ''}>
-                            정답 확인하기 (맞히면 +100원! 🪙)
+                            정답 확인하기 (맞히면 +50원! 🪙)
                         </button>
                     </div>
                 `;
             } else {
                 const isCorrect = (selectedQuizOption === quiz.answer);
+                let rewardText = '';
+                if (isCorrect) {
+                    if (todayCount <= 10) {
+                        rewardText = '🎉 딩동댕! 정답입니다! (+50원 적립 🪙)';
+                    } else {
+                        rewardText = '🎉 딩동댕! 정답입니다! (오늘 500원 적립 완료 ✨)';
+                    }
+                } else {
+                    rewardText = '앗! 아쉽지만 오답이에요! 💡';
+                }
+
                 actionHtml = `
                     <div class="quiz-feedback-box ${isCorrect ? 'correct' : 'wrong'}">
-                        <div class="feedback-title">${isCorrect ? '🎉 딩동댕! 정답입니다! (+100원 적립 🪙)' : '앗! 아쉽지만 오답이에요! 💡'}</div>
+                        <div class="feedback-title">${rewardText}</div>
                         <div class="feedback-desc">${escapeHtml(quiz.explanation)}</div>
                         <button type="button" class="quiz-next-btn" onclick="nextCommonQuiz()">
                             다음 문제 풀기 ▶
@@ -630,12 +643,18 @@
             logQuizAnswerToDb(quiz, selectedQuizOption, isCorrect);
 
             if (isCorrect) {
-                quizBankState.currentPoints = (quizBankState.currentPoints || 0) + 100;
+                const currentTodayAnswered = quizBankState.todayAnswered || 0;
+                
+                // 하루 최대 10개(=500원, 1문제=50원)까지만 포인트 적립!
+                if (currentTodayAnswered < 10) {
+                    quizBankState.currentPoints = (quizBankState.currentPoints || 0) + 50;
+                }
+                
                 quizBankState.totalAnswered = (quizBankState.totalAnswered || 0) + 1;
-                quizBankState.todayAnswered = (quizBankState.todayAnswered || 0) + 1;
+                quizBankState.todayAnswered = currentTodayAnswered + 1;
                 dailyProgress++;
 
-                // 2000원(20개) 달성 시 2000원 쿠폰 자동 발급!
+                // 2000원(40개) 달성 시 2000원 쿠폰 자동 발급!
                 if (quizBankState.currentPoints >= 2000) {
                     await grantQuizRewardCoupon();
                     quizBankState.currentPoints = 0; // 리셋 후 다음 2000원 저금 시작
@@ -2333,7 +2352,7 @@ async function insertStudyLog(subject, content, detail) {
                     return `
                         <div class="quiz-log-item ${isCor ? 'correct' : 'wrong'}">
                             <div class="quiz-log-top">
-                                <span class="quiz-log-tag">${isCor ? '⭕ 정답 (+100원)' : '❌ 오답'}</span>
+                                <span class="quiz-log-tag">${isCor ? '⭕ 정답 (+50원)' : '❌ 오답'}</span>
                                 <span class="quiz-log-time">🕒 ${timeStr}</span>
                             </div>
                             <div class="quiz-log-question">
