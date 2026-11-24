@@ -359,11 +359,29 @@
             currentMainTab = tab;
             const btnStudy = document.getElementById('nav-btn-study');
             const btnLife = document.getElementById('nav-btn-life');
+            const mainModeNav = document.querySelector('.main-mode-nav');
             const statsBar = document.getElementById('stats-bar');
             const cardWrapper = document.getElementById('card-wrapper');
             const lastUpdated = document.getElementById('last-updated');
             const habitContainer = document.getElementById('habit-container');
             const historyContainer = document.getElementById('history-container');
+
+            // 아빠 계정일 때는 상단 모드 전환 탭 자체를 숨기고 생활·코칭 화면만 표시
+            if (userNickname === '아빠') {
+                if (mainModeNav) mainModeNav.style.display = 'none';
+                if (statsBar) statsBar.style.display = 'none';
+                if (cardWrapper) cardWrapper.style.display = 'none';
+                if (lastUpdated) lastUpdated.style.display = 'none';
+                if (historyContainer) historyContainer.style.display = 'none';
+                if (habitContainer) {
+                    habitContainer.style.display = 'block';
+                    habitContainer.classList.remove('hidden');
+                }
+                return;
+            } else {
+                if (mainModeNav) mainModeNav.style.display = '';
+            }
+
             if (tab === 'study') {
                 if (btnStudy) btnStudy.classList.add('active');
                 if (btnLife) btnLife.classList.remove('active');
@@ -390,11 +408,12 @@
             let habitNavBtn = '';
             if (userNickname === '아빠') {
                 habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">📋 출석·공부 체크</button>`;
+                document.getElementById('date-stats-text').innerText = `${dateStr} | 아빠 관리자 모드`;
             } else if (userNickname) {
                 habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">🌟 내 출석·공부 달력</button>`;
+                document.getElementById('date-stats-text').innerText = `${dateStr} | 오늘 암기: ${dailyProgress}개`;
             }
             document.getElementById('greeting-text').innerHTML = `환영해요, ${userNickname}님! 💖 ${habitNavBtn} <button onclick="logout()" style="background:rgba(255,255,255,0.3); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:14px; font-weight:bold; margin-left:8px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.1); font-family:'Nunito', sans-serif;">로그아웃</button>`;
-            document.getElementById('date-stats-text').innerText = `${dateStr} | 오늘 암기: ${dailyProgress}개`;
         }
 
         function saveStats() {
