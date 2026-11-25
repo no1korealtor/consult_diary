@@ -322,8 +322,10 @@
                 userNickname = '아빠';
             } else if (input === '1234') {
                 userNickname = '아람';
+            } else if (input === '1111') {
+                userNickname = '희진';
             } else if (input === '0000') {
-                userNickname = '혜령';
+                userNickname = '희진부모';
             } else {
                 alert('비밀번호가 틀렸습니다! 다시 입력해주세요. 😊');
                 document.getElementById('nickname-input').value = '';
