@@ -252,6 +252,11 @@
                 loadStats();
                 updateHeader(todayStr);
                 updateStatsUI();
+                if (userNickname === '아빠' || userNickname === '희진부모') {
+                    switchMainTab('life');
+                } else if (userNickname === '희진') {
+                    switchMainTab('study');
+                }
                 loadMyHistory();
                 loadHabitRecords();
             }
@@ -341,6 +346,11 @@
             const todayStr = new Date().toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
             updateHeader(todayStr);
             updateStatsUI();
+            if (userNickname === '아빠' || userNickname === '희진부모') {
+                switchMainTab('life');
+            } else if (userNickname === '희진') {
+                switchMainTab('study');
+            }
             loadMyHistory();
             loadWords();
             loadHabitRecords();
@@ -484,6 +494,19 @@
         }
 
         async function loadWords() {
+            // 부모 계정(아빠, 희진부모)은 학생용 단어/상식퀴즈 카드를 로드할 필요 없음
+            if (userNickname === '아빠' || userNickname === '희진부모') {
+                const cardWrapper = document.getElementById('card-wrapper');
+                const lastUpdated = document.getElementById('last-updated');
+                const statsBar = document.getElementById('stats-bar');
+                const mainModeNav = document.querySelector('.main-mode-nav');
+                if (cardWrapper) { cardWrapper.innerHTML = ''; cardWrapper.style.display = 'none'; }
+                if (lastUpdated) lastUpdated.style.display = 'none';
+                if (statsBar) statsBar.style.display = 'none';
+                if (mainModeNav) mainModeNav.style.display = 'none';
+                return;
+            }
+
             const { data, error } = await supabaseClient
                 .from('study_words')
                 .select('*')
@@ -539,27 +562,10 @@
             const cardContainer = document.getElementById('card-wrapper');
             if (!cardContainer) return;
 
-            // 학부모 관리자 계정(아빠, 희진부모)일 때는 학생용 퀴즈 풀이 카드 대신 안내 표시
+            // 학부모 관리자 계정(아빠, 희진부모)일 때는 학생용 퀴즈 풀이 카드 자체를 완전히 숨김
             if (userNickname === '아빠' || userNickname === '희진부모') {
-                const isHeejinParent = (userNickname === '희진부모');
-                const titleText = isHeejinParent ? '희진이 학부모 모드' : '아빠 관리자 모드';
-                const descText = isHeejinParent 
-                    ? '상식 퀴즈 및 저금통은 <strong>희진이(학생) 학습 전용</strong> 화면입니다.<br>학부모 모드에서는 <strong>희진이의 퀴즈 풀이 리포트 및 AI 오답 분석</strong>을 확인하실 수 있습니다.'
-                    : '상식 퀴즈 및 저금통은 <strong>아람이(학생) 학습 전용</strong> 화면입니다.<br>아빠 모드에서는 <strong>출석·공부 코칭, 일정 관리, 칭찬 쿠폰 발급</strong> 화면이 기본으로 작동합니다.';
-                const btnText = isHeejinParent ? '📊 희진이 퀴즈 리포트 바로가기' : '📋 생활·출결·과제 코칭으로 이동';
-
-                cardContainer.innerHTML = `
-                    <div style="background:#ffffff; border-radius:20px; padding:24px 20px; box-shadow:0 10px 25px rgba(0,0,0,0.08); text-align:center; border:2px solid #e0e7ff; margin-bottom:16px;">
-                        <div style="font-size:36px; margin-bottom:10px;">${isHeejinParent ? '📊' : '📋'}</div>
-                        <h2 style="font-size:18px; color:#1e293b; margin-bottom:8px; font-family:'Jua', sans-serif;">${titleText}</h2>
-                        <p style="font-size:13px; color:#64748b; line-height:1.6; margin-bottom:18px;">
-                            ${descText}
-                        </p>
-                        <button type="button" onclick="switchMainTab('life')" style="background:linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color:white; border:none; padding:10px 22px; border-radius:14px; font-size:14px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif; box-shadow:0 4px 10px rgba(99,102,241,0.3);">
-                            ${btnText}
-                        </button>
-                    </div>
-                `;
+                cardContainer.innerHTML = '';
+                cardContainer.style.display = 'none';
                 return;
             }
 
