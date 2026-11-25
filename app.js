@@ -368,8 +368,8 @@
             const habitContainer = document.getElementById('habit-container');
             const historyContainer = document.getElementById('history-container');
 
-            // 아빠 계정일 때는 상단 모드 전환 탭 자체를 숨기고 생활·코칭 화면만 표시
-            if (userNickname === '아빠') {
+            // 아빠 및 희진부모 계정일 때는 상단 모드 전환 탭을 숨기고 코칭/리포트 화면만 표시
+            if (userNickname === '아빠' || userNickname === '희진부모') {
                 if (mainModeNav) mainModeNav.style.display = 'none';
                 if (statsBar) statsBar.style.display = 'none';
                 if (cardWrapper) cardWrapper.style.display = 'none';
@@ -379,6 +379,15 @@
                     habitContainer.style.display = 'block';
                     habitContainer.classList.remove('hidden');
                 }
+                return;
+            } else if (userNickname === '희진') {
+                // 희진(학생) 계정: 퀴즈만 풀고 생활코칭/가정사생활 탭 완전 숨김
+                if (mainModeNav) mainModeNav.style.display = 'none';
+                if (statsBar) statsBar.style.display = '';
+                if (cardWrapper) cardWrapper.style.display = '';
+                if (lastUpdated) lastUpdated.style.display = '';
+                if (historyContainer) historyContainer.style.display = '';
+                if (habitContainer) habitContainer.style.display = 'none';
                 return;
             } else {
                 if (mainModeNav) mainModeNav.style.display = '';
@@ -411,6 +420,12 @@
             if (userNickname === '아빠') {
                 habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">📋 출석·공부 체크</button>`;
                 document.getElementById('date-stats-text').innerText = `${dateStr} | 아빠 관리자 모드`;
+            } else if (userNickname === '희진부모') {
+                habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #6366f1 0%, #a855f7 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">📊 희진이 퀴즈 리포트</button>`;
+                document.getElementById('date-stats-text').innerText = `${dateStr} | 희진이 학부모 모드`;
+            } else if (userNickname === '희진') {
+                habitNavBtn = '';
+                document.getElementById('date-stats-text').innerText = `${dateStr} | 희진이 상식 퀴즈 모드`;
             } else if (userNickname) {
                 habitNavBtn = `<button onclick="scrollToHabit()" style="background:linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%); border:none; color:white; padding:4px 12px; border-radius:12px; font-size:13px; font-weight:bold; margin-left:6px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.15); font-family:'Jua', sans-serif;">🌟 내 출석·공부 달력</button>`;
                 document.getElementById('date-stats-text').innerText = `${dateStr} | 오늘 암기: ${dailyProgress}개`;
@@ -524,18 +539,24 @@
             const cardContainer = document.getElementById('card-wrapper');
             if (!cardContainer) return;
 
-            // 아빠 계정일 때는 학생용 퀴즈 풀이 카드 대신 안내 표시
-            if (userNickname === '아빠') {
+            // 학부모 관리자 계정(아빠, 희진부모)일 때는 학생용 퀴즈 풀이 카드 대신 안내 표시
+            if (userNickname === '아빠' || userNickname === '희진부모') {
+                const isHeejinParent = (userNickname === '희진부모');
+                const titleText = isHeejinParent ? '희진이 학부모 모드' : '아빠 관리자 모드';
+                const descText = isHeejinParent 
+                    ? '상식 퀴즈 및 저금통은 <strong>희진이(학생) 학습 전용</strong> 화면입니다.<br>학부모 모드에서는 <strong>희진이의 퀴즈 풀이 리포트 및 AI 오답 분석</strong>을 확인하실 수 있습니다.'
+                    : '상식 퀴즈 및 저금통은 <strong>아람이(학생) 학습 전용</strong> 화면입니다.<br>아빠 모드에서는 <strong>출석·공부 코칭, 일정 관리, 칭찬 쿠폰 발급</strong> 화면이 기본으로 작동합니다.';
+                const btnText = isHeejinParent ? '📊 희진이 퀴즈 리포트 바로가기' : '📋 생활·출결·과제 코칭으로 이동';
+
                 cardContainer.innerHTML = `
                     <div style="background:#ffffff; border-radius:20px; padding:24px 20px; box-shadow:0 10px 25px rgba(0,0,0,0.08); text-align:center; border:2px solid #e0e7ff; margin-bottom:16px;">
-                        <div style="font-size:36px; margin-bottom:10px;">📋</div>
-                        <h2 style="font-size:18px; color:#1e293b; margin-bottom:8px; font-family:'Jua', sans-serif;">아빠 관리자 모드</h2>
+                        <div style="font-size:36px; margin-bottom:10px;">${isHeejinParent ? '📊' : '📋'}</div>
+                        <h2 style="font-size:18px; color:#1e293b; margin-bottom:8px; font-family:'Jua', sans-serif;">${titleText}</h2>
                         <p style="font-size:13px; color:#64748b; line-height:1.6; margin-bottom:18px;">
-                            상식 퀴즈 및 100원 저금통은 <strong>아람이(학생) 학습 전용</strong> 화면입니다.<br>
-                            아빠 모드에서는 <strong>출석·공부 코칭, 일정 관리, 칭찬 쿠폰 발급</strong> 화면이 기본으로 작동합니다.
+                            ${descText}
                         </p>
                         <button type="button" onclick="switchMainTab('life')" style="background:linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color:white; border:none; padding:10px 22px; border-radius:14px; font-size:14px; font-weight:bold; cursor:pointer; font-family:'Jua', sans-serif; box-shadow:0 4px 10px rgba(99,102,241,0.3);">
-                            📋 생활·출결·과제 코칭으로 이동
+                            ${btnText}
                         </button>
                     </div>
                 `;
@@ -562,7 +583,7 @@
             const piggyBankHtml = `
                 <div class="piggy-bank-container">
                     <div class="piggy-bank-header">
-                        <div class="piggy-bank-title">🪙 아람이의 상식 저금통 (1문제 = 50원!)</div>
+                        <div class="piggy-bank-title">🪙 ${(userNickname || "학생")}의 상식 저금통 (1문제 = 50원!)</div>
                         <div class="piggy-bank-badge">${currentWon.toLocaleString()}원 / 2,000원</div>
                     </div>
                     <div class="piggy-bar-bg">
@@ -2092,10 +2113,14 @@ async function insertStudyLog(subject, content, detail) {
             }
 
             syncDraftWithSelectedDate();
-            await checkAndGrantRewards();
-            if (userNickname === '아빠' && recentQuizLogs.length === 0) loadRecentQuizLogs();
+            if (userNickname !== '희진' && userNickname !== '희진부모') {
+                await checkAndGrantRewards();
+            }
+            if ((userNickname === '아빠' || userNickname === '희진부모') && recentQuizLogs.length === 0) {
+                loadRecentQuizLogs();
+            }
             renderHabitSection();
-            if (userNickname === '아빠') {
+            if (userNickname === '아빠' || userNickname === '희진부모') {
                 currentMainTab = 'life';
             }
             if (currentMainTab) switchMainTab(currentMainTab);
@@ -2132,8 +2157,13 @@ async function insertStudyLog(subject, content, detail) {
             }
         }
 
-                // ===================================================
-        // 📊 아빠 전용: 아람이 퀴즈 풀이 & 오답노트 리포트
+                        function getTargetChild() {
+            if (userNickname === '희진부모' || userNickname === '희진') return '희진';
+            return '아람';
+        }
+
+        // ===================================================
+        // 📊 학부모 전용: 퀴즈 풀이 & 오답노트 리포트
         // ===================================================
         let recentQuizLogs = [];
         let isQuizLogsLoading = false;
@@ -2143,11 +2173,13 @@ async function insertStudyLog(subject, content, detail) {
         async function loadRecentQuizLogs() {
             if (isQuizLogsLoading) return;
             isQuizLogsLoading = true;
+            const targetChild = getTargetChild();
             try {
                 const { data, error } = await supabaseClient
                     .from('study_logs')
                     .select('*')
                     .eq('subject', 'COMMON_QUIZ')
+                    .eq('creator', targetChild)
                     .order('created_at', { ascending: false })
                     .limit(50);
 
@@ -2175,7 +2207,8 @@ async function insertStudyLog(subject, content, detail) {
                 return null;
             }
 
-            let text = `📝 [아람이의 오답노트 모음] (총 ${wrongItems.length}문제)\n`;
+            const targetChild = getTargetChild();
+            let text = `📝 [${targetChild}의 오답노트 모음] (총 ${wrongItems.length}문제)\n`;
             text += `기록 일시: ${new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' })}\n`;
             text += `--------------------------------------------------\n\n`;
 
@@ -2185,7 +2218,7 @@ async function insertStudyLog(subject, content, detail) {
                 const timeStr = `${d.getMonth() + 1}월 ${d.getDate()}일 ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
                 
                 text += `${idx + 1}. [${p.category || '상식'}] ${p.question || item.content}\n`;
-                text += `   ❌ 아람이가 고른 답: ${p.chosen || '(미선택)'}\n`;
+                text += `   ❌ ${targetChild}이가 고른 답: ${p.chosen || '(미선택)'}\n`;
                 text += `   ⭕ 실제 정답: ${p.answer || '(정답 미표기)'}\n`;
                 if (p.explanation) {
                     text += `   💡 핵심 해설: ${p.explanation}\n`;
@@ -2194,7 +2227,7 @@ async function insertStudyLog(subject, content, detail) {
             });
 
             text += `--------------------------------------------------\n`;
-            text += `Tip: 아람이와 복습할 때 정답을 바로 알려주기보다는 왜 헷갈렸는지 힌트를 주며 대화해 보세요! 💖\n`;
+            text += `Tip: ${targetChild}와 복습할 때 정답을 바로 알려주기보다는 왜 헷갈렸는지 힌트를 주며 대화해 보세요! 💖\n`;
 
             return text;
         }
@@ -2202,7 +2235,7 @@ async function insertStudyLog(subject, content, detail) {
         function openWrongQuizModal() {
             const text = getWrongQuizText();
             if (!text) {
-                alert("🎉 최근 푼 문제 중 틀린 문제가 없습니다! 아람이가 아주 잘하고 있어요! 👏");
+                alert(`🎉 최근 푼 문제 중 틀린 문제가 없습니다! ${getTargetChild()}이가 아주 잘하고 있어요! 👏`);
                 return;
             }
 
@@ -2211,7 +2244,7 @@ async function insertStudyLog(subject, content, detail) {
                     <div class="child-modal-body" style="max-width: 540px; width: 92%;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                             <div style="font-family:'Jua', sans-serif; font-size:18px; color:#1e293b; display:flex; align-items:center; gap:6px;">
-                                <span>📋 아람이 오답노트 모아보기</span>
+                                <span>📋 ${getTargetChild()} 오답노트 모아보기</span>
                             </div>
                             <button type="button" onclick="closeWrongQuizModal()" style="background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer;">✕</button>
                         </div>
@@ -2257,7 +2290,8 @@ async function insertStudyLog(subject, content, detail) {
         // AI 학습 분석 & 취약점 총평 실행
         function runAiQuizAnalysis() {
             if (recentQuizLogs.length === 0) {
-                alert("분석할 풀이 기록이 없습니다. 아람이가 문제를 푼 뒤 분석해 주세요!");
+                const targetChild = getTargetChild();
+            alert(`분석할 풀이 기록이 없습니다. ${targetChild}이가 문제를 푼 뒤 분석해 주세요!`);
                 return;
             }
 
@@ -2360,7 +2394,7 @@ async function insertStudyLog(subject, content, detail) {
             if (parsedLogs.length === 0) {
                 logItemsHtml = `
                     <div style="text-align:center; padding:18px; color:#94a3b8; font-size:13px; font-family:'Jua', sans-serif;">
-                        아직 아람이가 푼 퀴즈 기록이 없습니다. 아람이가 문제를 풀면 여기에 실시간으로 기록됩니다! 💖
+                        아직 ${getTargetChild()}이가 푼 퀴즈 기록이 없습니다. 문제를 풀면 여기에 실시간으로 기록됩니다! 💖
                     </div>
                 `;
             } else {
@@ -2396,7 +2430,7 @@ async function insertStudyLog(subject, content, detail) {
             if (isAiAnalyzing) {
                 aiBoxHtml = `
                     <div class="quiz-ai-analysis-card loading">
-                        <div style="font-size:14px; font-weight:bold; color:#6366f1; margin-bottom:4px;">🤖 AI가 아람이의 풀이 데이터를 꼼꼼히 분석하고 있습니다...</div>
+                        <div style="font-size:14px; font-weight:bold; color:#6366f1; margin-bottom:4px;">🤖 AI가 ${getTargetChild()}의 풀이 데이터를 꼼꼼히 분석하고 있습니다...</div>
                         <div style="font-size:12px; color:#94a3b8;">오답 패턴, 취약 카테고리, 맞춤형 칭찬 코칭 팁을 도출하는 중입니다.</div>
                     </div>
                 `;
@@ -2445,7 +2479,7 @@ async function insertStudyLog(subject, content, detail) {
                 <div class="quiz-report-card">
                     <div class="quiz-report-header">
                         <div class="quiz-report-title">
-                            <span>📊 아람이의 퀴즈 풀이 & 오답노트 리포트</span>
+                            <span>📊 ${getTargetChild()}의 퀴즈 풀이 & 오답노트 리포트</span>
                         </div>
                         <div class="quiz-report-actions">
                             <button type="button" class="quiz-report-btn secondary" onclick="openWrongQuizModal()" title="틀린 문제만 텍스트로 모아보기">📋 오답 텍스트</button>
@@ -2487,11 +2521,29 @@ async function insertStudyLog(subject, content, detail) {
             const container = document.getElementById('habit-container');
             if (!container) return;
 
-            if (userNickname === '아빠' && !isDadPreviewMode) {
+            if (userNickname === '희진부모') {
+                renderHeejinParentView(container);
+            } else if (userNickname === '희진') {
+                container.innerHTML = `<div style="text-align:center; padding:30px; font-family:'Jua', sans-serif; color:#64748b;">희진이는 상식 퀴즈 풀이 전용 모드입니다. 😊</div>`;
+            } else if (userNickname === '아빠' && !isDadPreviewMode) {
                 renderDadHabitView(container);
             } else {
                 renderChildHabitView(container);
             }
+        }
+
+        // 🌟 희진 학부모 전용 뷰: 아람이네 출결/약속/과제/일정은 철저히 차단하고 오직 희진이 퀴즈 리포트만 깔끔하게 노출
+        function renderHeejinParentView(container) {
+            container.innerHTML = `
+                <div class="habit-content-card" style="margin-bottom:18px;">
+                    <div class="habit-header">
+                        <div class="habit-title">👩‍👧 희진이 상식 퀴즈 &amp; 학습 관리</div>
+                        <div class="habit-subtitle">희진이가 푼 퀴즈 정오답 현황 및 AI 취약점 분석 리포트입니다. 💖</div>
+                    </div>
+                    <!-- 📊 희진이 퀴즈 풀이 &amp; 오답 리포트 -->
+                    ${generateQuizReportHtml()}
+                </div>
+            `;
         }
 
         function renderDadHabitView(container) {
