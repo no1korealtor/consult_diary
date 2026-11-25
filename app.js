@@ -2172,6 +2172,7 @@ async function insertStudyLog(subject, content, detail) {
         // 📊 학부모 전용: 퀴즈 풀이 & 오답노트 리포트
         // ===================================================
         let recentQuizLogs = [];
+        let allChildQuizLogs = []; // 두 아이(아람, 희진) 교차 분석용 전체 퀴즈 로그
         let isQuizLogsLoading = false;
         let aiAnalysisResult = null;
         let isAiAnalyzing = false;
@@ -2181,16 +2182,28 @@ async function insertStudyLog(subject, content, detail) {
             isQuizLogsLoading = true;
             const targetChild = getTargetChild();
             try {
-                const { data, error } = await supabaseClient
-                    .from('study_logs')
-                    .select('*')
-                    .eq('subject', 'COMMON_QUIZ')
-                    .eq('creator', targetChild)
-                    .order('created_at', { ascending: false })
-                    .limit(50);
+                // 내 자녀 퀴즈 로그 & 전체 아이들(교차 분석용) 퀴즈 로그 병렬 조회
+                const [myChildRes, allChildrenRes] = await Promise.all([
+                    supabaseClient
+                        .from('study_logs')
+                        .select('*')
+                        .eq('subject', 'COMMON_QUIZ')
+                        .eq('creator', targetChild)
+                        .order('created_at', { ascending: false })
+                        .limit(50),
+                    supabaseClient
+                        .from('study_logs')
+                        .select('*')
+                        .eq('subject', 'COMMON_QUIZ')
+                        .order('created_at', { ascending: false })
+                        .limit(100)
+                ]);
 
-                if (!error && data) {
-                    recentQuizLogs = data;
+                if (!myChildRes.error && myChildRes.data) {
+                    recentQuizLogs = myChildRes.data;
+                }
+                if (!allChildrenRes.error && allChildrenRes.data) {
+                    allChildQuizLogs = allChildrenRes.data;
                 }
             } catch(e) {
                 console.error("loadRecentQuizLogs error:", e);
@@ -2198,6 +2211,62 @@ async function insertStudyLog(subject, content, detail) {
                 isQuizLogsLoading = false;
                 renderHabitSection();
             }
+        }
+
+        // 🔍 두 아이(또는 학습자들) 공통 오답(고난도 함정 문제) 추출 함수
+        function getCommonTrapQuestions() {
+            if (!allChildQuizLogs || allChildQuizLogs.length === 0) return [];
+
+            const parsedAll = allChildQuizLogs.map(l => {
+                let d = {};
+                try { d = JSON.parse(l.detail); } catch(e) { d = { isCorrect: false }; }
+                return { ...l, parsed: d };
+            });
+
+            // 문제 질문 텍스트별로 어떤 학습자들이 풀었는지 집계
+            const qMap = {};
+            parsedAll.forEach(l => {
+                const qText = (l.parsed.question || l.content || '').trim();
+                const user = (l.creator || l.parsed.user || '').trim();
+                if (!qText || !user) return;
+
+                if (!qMap[qText]) {
+                    qMap[qText] = {
+                        question: qText,
+                        category: l.parsed.category || '상식',
+                        answer: l.parsed.answer || '',
+                        explanation: l.parsed.explanation || '',
+                        usersAnswered: new Set(),
+                        wrongUsers: new Set(),
+                        userWrongChoices: {}
+                    };
+                }
+
+                qMap[qText].usersAnswered.add(user);
+                if (!l.parsed.isCorrect) {
+                    qMap[qText].wrongUsers.add(user);
+                    if (!qMap[qText].userWrongChoices[user]) {
+                        qMap[qText].userWrongChoices[user] = l.parsed.chosen;
+                    }
+                }
+            });
+
+            // 2명 이상의 학습자(아람 & 희진)가 모두 오답을 낸 고난도 함정 문제 선별
+            const commonTraps = [];
+            Object.values(qMap).forEach(item => {
+                if (item.wrongUsers.size >= 2) {
+                    commonTraps.push({
+                        question: item.question,
+                        category: item.category,
+                        answer: item.answer,
+                        explanation: item.explanation,
+                        wrongCount: item.wrongUsers.size,
+                        wrongUsersList: Array.from(item.wrongUsers)
+                    });
+                }
+            });
+
+            return commonTraps;
         }
 
         // 오답 텍스트 추출 및 모달/클립보드 복사
@@ -2342,6 +2411,11 @@ async function insertStudyLog(subject, content, detail) {
                     const weakest = catList.filter(c => c.wrong > 0)[0] || null;
                     const strongest = [...catList].reverse().filter(c => c.rate >= 70)[0] || null;
 
+                    // 💡 두 아이 공통 오답(함정 문제) 교차 분석
+                    const commonTraps = getCommonTrapQuestions();
+                    const targetChild = getTargetChild();
+                    const childTrapQuestions = commonTraps.filter(t => t.wrongUsersList.includes(targetChild));
+
                     // 코칭 조언 및 총평 메시지 도출
                     let evaluation = "";
                     let advice = "";
@@ -2359,6 +2433,10 @@ async function insertStudyLog(subject, content, detail) {
                         advice = `결과 점수보다는 "오늘도 어려운 퀴즈에 도전한 끈기"를 칭찬해 주세요. 아래 오답 텍스트를 복사해 쉬운 예시와 그림으로 개념을 한 번씩 이야기 나눠보세요.`;
                     }
 
+                    if (childTrapQuestions.length > 0) {
+                        advice += `<br><br>⚠️ <strong>[동년배 공통 고난도 함정 주의]</strong> ${childTrapQuestions.length}개 문제는 또래 친구도 함께 헷갈려 틀린 개념입니다. 아이 혼자만의 실수가 아니므로 "이 문제는 어른들도 많이 헷갈려 하는 함정 문제야!"라고 격려하며 해설을 함께 짚어주세요.`;
+                    }
+
                     aiAnalysisResult = {
                         analyzedAt: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
                         totalCount,
@@ -2368,6 +2446,8 @@ async function insertStudyLog(subject, content, detail) {
                         catList,
                         weakest,
                         strongest,
+                        commonTraps,
+                        childTrapQuestions,
                         evaluation,
                         advice
                     };
@@ -2379,6 +2459,45 @@ async function insertStudyLog(subject, content, detail) {
                     renderHabitSection();
                 }
             }, 600);
+        }
+
+        // 🚨 두 아이 모두 틀린 고난도 함정 문제 UI 카드 생성 함수
+        function generateCommonTrapsHtml() {
+            const traps = getCommonTrapQuestions();
+            if (!traps || traps.length === 0) return '';
+
+            const trapItems = traps.map((t, idx) => `
+                <div style="background:#fff; border-left:4px solid #ef4444; border-radius:8px; padding:10px 12px; margin-bottom:8px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                        <span style="font-size:11px; font-weight:bold; color:#ef4444; background:#fee2e2; padding:2px 8px; border-radius:6px;">⚠️ 또래 공통 오답 (오답률 100%)</span>
+                        <span style="font-size:11px; color:#94a3b8;">${escapeHtml(t.category)}</span>
+                    </div>
+                    <div style="font-size:13px; font-weight:bold; color:#1e293b; margin-bottom:4px; line-height:1.4;">
+                        ${idx + 1}. ${escapeHtml(t.question)}
+                    </div>
+                    <div style="font-size:12px; color:#059669; font-weight:bold;">
+                        ⭕ 실제 정답: ${escapeHtml(t.answer)}
+                    </div>
+                    ${t.explanation ? `<div style="font-size:11px; color:#64748b; margin-top:3px; background:#f8fafc; padding:4px 8px; border-radius:6px;">💡 핵심 해설: ${escapeHtml(t.explanation)}</div>` : ''}
+                </div>
+            `).join('');
+
+            return `
+                <div style="background:linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%); border:1.5px solid #fca5a5; border-radius:14px; padding:14px 16px; margin-bottom:14px; box-shadow:0 2px 8px rgba(239,68,68,0.08);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <div style="font-size:14px; font-weight:bold; color:#991b1b; display:flex; align-items:center; gap:6px;">
+                            <span>🔥</span> <strong>두 아이 모두 틀린 주의 문제 (${traps.length}개)</strong>
+                        </div>
+                        <span style="font-size:11px; color:#b91c1c; font-weight:bold;">집중 복습 추천</span>
+                    </div>
+                    <div style="font-size:12px; color:#7f1d1d; line-height:1.5; margin-bottom:10px;">
+                        두 아이가 서로 모르는 상태에서 풀었음에도 <strong>모두 헷갈려 틀린 고난도 함정 문제</strong>입니다. 학생 혼자만의 실수가 아니므로 부모님께서 개념과 해설을 한 번 더 짚어주시면 학습 효과가 배가됩니다! 💖
+                    </div>
+                    <div style="margin-top:6px;">
+                        ${trapItems}
+                    </div>
+                </div>
+            `;
         }
 
         function generateQuizReportHtml() {
@@ -2451,7 +2570,7 @@ async function insertStudyLog(subject, content, detail) {
                 aiBoxHtml = `
                     <div class="quiz-ai-analysis-card">
                         <div class="quiz-ai-header">
-                            <div class="quiz-ai-title">🤖 AI 학습 진단 & 아빠표 코칭 리포트</div>
+                            <div class="quiz-ai-title">🤖 AI 학습 진단 & 학부모 맞춤 코칭 리포트</div>
                             <span class="quiz-ai-time">분석 시각: ${r.analyzedAt}</span>
                         </div>
                         <div class="quiz-ai-body">
@@ -2508,6 +2627,8 @@ async function insertStudyLog(subject, content, detail) {
                             <div class="val" style="color:#f59e0b;">${accuracy}%</div>
                         </div>
                     </div>
+
+                    ${generateCommonTrapsHtml()}
 
                     ${aiBoxHtml}
 
