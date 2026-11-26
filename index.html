@@ -16,7 +16,7 @@
   <link rel="apple-touch-icon" href="icons/rosary-gold-192.png?v=50">
   <link rel="apple-touch-icon" sizes="512x512" href="icons/rosary-gold-512.png?v=50">
   <link rel="manifest" href="rosary-manifest.json?v=50">
-  <link rel="stylesheet" href="./rosary.css?v=101">
+  <link rel="stylesheet" href="./rosary.css?v=105">
 </head>
 <body>
 
@@ -8309,25 +8309,36 @@ if (this.dom.btnYeondoBackToIntro) {
       return;
     }
 
+    // 역할별 배지 스타일 헬퍼 (인라인 백업으로 캐시/CSS 로드 지연 시에도 100% 보장)
+    const getBadgeStyle = (role) => {
+      if (role === "leader") {
+        return "background: rgba(245, 158, 11, 0.22); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.45);";
+      } else if (role === "respond") {
+        return "background: rgba(56, 189, 248, 0.2); color: #7DD3FC; border: 1px solid rgba(56, 189, 248, 0.45);";
+      } else {
+        return "background: rgba(255, 255, 255, 0.16); color: #F8FAFC; border: 1px solid rgba(255, 255, 255, 0.3);";
+      }
+    };
+
     let html = "";
 
     // 1. 시작 기도
     const intro = VIA_CRUCIS_DATA.intro;
     if (intro) {
       html += `
-        <div id="viaStation_intro" class="via-crucis-section-card" style="border: 1.5px solid rgba(243, 198, 105, 0.45); background: linear-gradient(135deg, rgba(243, 198, 105, 0.1) 0%, rgba(30, 41, 59, 0.8) 100%);">
-          <div class="via-crucis-section-header">
+        <div id="viaStation_intro" class="via-crucis-section-card" style="background: rgba(255, 255, 255, 0.04); border: 1.5px solid rgba(243, 198, 105, 0.45); border-radius: 14px; padding: 18px 16px; margin-bottom: 16px; text-align: left;">
+          <div class="via-crucis-section-header" style="font-size: 1rem; font-weight: 800; color: var(--gold-light); margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
             <span>✨ ${intro.sectionTitle}</span>
-            <span style="font-size:0.75rem; color:var(--gold-primary);">준비</span>
+            <span style="font-size:0.75rem; color:var(--gold-primary); background:rgba(243,198,105,0.18); padding:2px 8px; border-radius:10px; font-weight:700;">시작 준비</span>
           </div>
-          ${intro.desc ? `<div class="via-crucis-section-desc">${intro.desc}</div>` : ""}
-          <div class="via-crucis-lines-box">
+          ${intro.desc ? `<div class="via-crucis-section-desc" style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">${intro.desc}</div>` : ""}
+          <div class="via-crucis-lines-box" style="display: flex; flex-direction: column; gap: 12px;">
       `;
       intro.lines.forEach(line => {
         html += `
-          <div class="via-crucis-line-row ${line.role}">
-            <span class="via-crucis-role-badge ${line.role}">${line.label}</span>
-            <span class="via-crucis-line-text">${line.text}</span>
+          <div class="via-crucis-line-row ${line.role}" style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.65;">
+            <span class="via-crucis-role-badge ${line.role}" style="display: inline-block; font-size: 0.74rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; text-align: center; min-width: 38px; ${getBadgeStyle(line.role)}">${line.label}</span>
+            <span class="via-crucis-line-text" style="font-size: 0.94rem; color: #F1F5F9; word-break: keep-all; flex: 1;">${line.text}</span>
           </div>
         `;
       });
@@ -8341,38 +8352,38 @@ if (this.dom.btnYeondoBackToIntro) {
     const stations = VIA_CRUCIS_DATA.stations || [];
     stations.forEach(st => {
       html += `
-        <div id="viaStation_${st.num}" class="via-crucis-section-card">
-          <div class="via-crucis-section-header">
+        <div id="viaStation_${st.num}" class="via-crucis-section-card" style="background: rgba(255, 255, 255, 0.035); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 14px; padding: 18px 16px; margin-bottom: 16px; text-align: left;">
+          <div class="via-crucis-section-header" style="font-size: 1rem; font-weight: 800; color: var(--gold-light); margin-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
             <span>✝️ ${st.title}</span>
-            <span style="font-size:0.72rem; color:var(--gold-light); background:rgba(243,198,105,0.15); padding:2px 7px; border-radius:10px;">${st.num} / 14처</span>
+            <span style="font-size:0.74rem; color:var(--gold-light); background:rgba(243,198,105,0.18); padding:2px 8px; border-radius:10px; font-weight:700;">${st.num} / 14처</span>
           </div>
 
           <!-- 공통 화답송 (계응) -->
-          <div style="background: rgba(15, 23, 42, 0.6); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; border: 1px solid rgba(243, 198, 105, 0.2);">
-            <div class="via-crucis-line-row leader" style="margin-bottom: 6px;">
-              <span class="via-crucis-role-badge leader">선창</span>
-              <span class="via-crucis-line-text" style="color: var(--gold-light); font-weight: 700;">☩ 주님께서는 십자가로 온 세상을 구원하셨나이다.</span>
+          <div style="background: rgba(15, 23, 42, 0.7); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; border: 1px solid rgba(243, 198, 105, 0.25); display: flex; flex-direction: column; gap: 8px;">
+            <div class="via-crucis-line-row leader" style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.6;">
+              <span class="via-crucis-role-badge leader" style="display: inline-block; font-size: 0.74rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; text-align: center; min-width: 38px; ${getBadgeStyle('leader')}">선창</span>
+              <span class="via-crucis-line-text" style="color: var(--gold-light); font-weight: 700; font-size: 0.94rem; word-break: keep-all; flex: 1;">☩ 주님께서는 십자가로 온 세상을 구원하셨나이다.</span>
             </div>
-            <div class="via-crucis-line-row respond">
-              <span class="via-crucis-role-badge respond">받음</span>
-              <span class="via-crucis-line-text" style="font-weight: 700;">◎ 예수 그리스도님, 경배하며 찬송하나이다.</span>
+            <div class="via-crucis-line-row respond" style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.6;">
+              <span class="via-crucis-role-badge respond" style="display: inline-block; font-size: 0.74rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; text-align: center; min-width: 38px; ${getBadgeStyle('respond')}">받음</span>
+              <span class="via-crucis-line-text" style="color: #FFFFFF; font-weight: 700; font-size: 0.94rem; word-break: keep-all; flex: 1;">◎ 예수 그리스도님, 경배하며 찬송하나이다.</span>
             </div>
           </div>
 
           <!-- 성경 말씀 -->
           ${st.scripture ? `
-            <div style="font-size: 0.82rem; color: #94A3B8; background: rgba(0,0,0,0.25); border-left: 3px solid var(--gold-primary); padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; line-height: 1.5; font-style: italic;">
+            <div style="font-size: 0.84rem; color: #94A3B8; background: rgba(0,0,0,0.3); border-left: 3px solid var(--gold-primary); padding: 9px 12px; border-radius: 4px; margin-bottom: 12px; line-height: 1.55; font-style: italic; word-break: keep-all;">
               📖 ${st.scripture}
             </div>
           ` : ""}
 
           <!-- 묵상 글 -->
-          <div style="font-size: 0.92rem; color: #F1F5F9; line-height: 1.65; margin-bottom: 14px; word-break: keep-all; background: rgba(255,255,255,0.02); padding: 10px 12px; border-radius: 8px;">
-            🕊️ <strong>묵상:</strong> ${st.meditation}
+          <div style="font-size: 0.94rem; color: #F1F5F9; line-height: 1.68; margin-bottom: 14px; word-break: keep-all; background: rgba(255,255,255,0.025); padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+            🕊️ <strong style="color: var(--gold-light);">묵상:</strong> ${st.meditation}
           </div>
 
           <!-- 이어지는 공통 기도 안내 -->
-          <div style="font-size: 0.78rem; color: var(--gold-light); border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px; text-align: center; opacity: 0.9;">
+          <div style="font-size: 0.8rem; color: var(--gold-light); border-top: 1px dashed rgba(255,255,255,0.12); padding-top: 10px; text-align: center; opacity: 0.92; font-weight: 600;">
             (잠시 묵상한 후, 주님의 기도 · 성모송 · 영광송을 바칩니다)
           </div>
         </div>
@@ -8383,19 +8394,19 @@ if (this.dom.btnYeondoBackToIntro) {
     const outro = VIA_CRUCIS_DATA.outro;
     if (outro) {
       html += `
-        <div id="viaStation_outro" class="via-crucis-section-card" style="border: 1.5px solid rgba(243, 198, 105, 0.45); background: linear-gradient(135deg, rgba(243, 198, 105, 0.1) 0%, rgba(30, 41, 59, 0.8) 100%);">
-          <div class="via-crucis-section-header">
+        <div id="viaStation_outro" class="via-crucis-section-card" style="background: rgba(255, 255, 255, 0.04); border: 1.5px solid rgba(243, 198, 105, 0.45); border-radius: 14px; padding: 18px 16px; margin-bottom: 16px; text-align: left;">
+          <div class="via-crucis-section-header" style="font-size: 1rem; font-weight: 800; color: var(--gold-light); margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
             <span>🌅 ${outro.sectionTitle}</span>
-            <span style="font-size:0.75rem; color:var(--gold-primary);">부활과 마침</span>
+            <span style="font-size:0.75rem; color:var(--gold-primary); background:rgba(243,198,105,0.18); padding:2px 8px; border-radius:10px; font-weight:700;">부활과 마침</span>
           </div>
-          ${outro.desc ? `<div class="via-crucis-section-desc">${outro.desc}</div>` : ""}
-          <div class="via-crucis-lines-box">
+          ${outro.desc ? `<div class="via-crucis-section-desc" style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">${outro.desc}</div>` : ""}
+          <div class="via-crucis-lines-box" style="display: flex; flex-direction: column; gap: 12px;">
       `;
       outro.lines.forEach(line => {
         html += `
-          <div class="via-crucis-line-row ${line.role}">
-            <span class="via-crucis-role-badge ${line.role}">${line.label}</span>
-            <span class="via-crucis-line-text">${line.text}</span>
+          <div class="via-crucis-line-row ${line.role}" style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.65;">
+            <span class="via-crucis-role-badge ${line.role}" style="display: inline-block; font-size: 0.74rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; text-align: center; min-width: 38px; ${getBadgeStyle(line.role)}">${line.label}</span>
+            <span class="via-crucis-line-text" style="font-size: 0.94rem; color: #F1F5F9; word-break: keep-all; flex: 1;">${line.text}</span>
           </div>
         `;
       });
