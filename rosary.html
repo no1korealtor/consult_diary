@@ -682,9 +682,9 @@
     <!-- ==============================================
          VIEW 4: [NEW] 가톨릭 십자가의 길 전용 화면 (Via Crucis View)
          ============================================== -->
-    <section id="viaCrucisView" class="yeondo-view" style="display: none;">
+    <section id="viaCrucisView" class="yeondo-view" style="display: none; flex-direction: column; height: 100%; position: absolute; inset: 0;">
       <!-- 상단 헤더 -->
-      <header class="app-header yeondo-header">
+      <header class="app-header yeondo-header" style="flex-shrink: 0; padding-bottom: 6px;">
         <button id="btnViaCrucisBackToIntro" class="icon-btn home-btn" onclick="if(window.rosaryApp){window.rosaryApp.switchView('intro');}else{directSwitchToIntroFromSubView();}" aria-label="처음 화면으로" title="처음 화면으로">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
@@ -693,58 +693,75 @@
         </button>
 
         <div class="prayer-header-title-box">
-          <span id="viaCrucisHeaderTitle" class="prayer-header-mystery">십자가의 길 (14처 기도)</span>
-          <span class="prayer-header-day" style="color: var(--gold-primary); font-weight: 700;">주님의 수난과 구원 묵상 (약 15분)</span>
+          <span id="viaCrucisHeaderTitle" class="prayer-header-mystery">십자가의 길</span>
+          <span id="viaCrucisHeaderSub" class="prayer-header-day" style="color: var(--gold-primary); font-weight: 700;">시작 기도</span>
         </div>
 
         <div class="header-actions">
-          <select id="viaCrucisJumpSelect" onchange="jumpViaCrucisStation(this.value);" style="background: rgba(15,23,42,0.85); color: #FFF; border: 1px solid rgba(243,198,105,0.4); border-radius: 12px; font-size: 0.76rem; padding: 4px 6px; outline: none; cursor: pointer;">
-            <option value="intro">시작 기도</option>
-            <option value="1">제1처</option>
-            <option value="2">제2처</option>
-            <option value="3">제3처</option>
-            <option value="4">제4처</option>
-            <option value="5">제5처</option>
-            <option value="6">제6처</option>
-            <option value="7">제7처</option>
-            <option value="8">제8처</option>
-            <option value="9">제9처</option>
-            <option value="10">제10처</option>
-            <option value="11">제11처</option>
-            <option value="12">제12처</option>
-            <option value="13">제13처</option>
-            <option value="14">제14처</option>
-            <option value="outro">마침 기도</option>
-          </select>
+          <button type="button" id="btnViaCrucisOpenMenu" onclick="openViaCrucisStationModal();" class="icon-btn" style="width: auto; height: 32px; padding: 0 10px; gap: 4px; border-radius: 12px; font-size: 0.78rem; font-weight: 800; color: #1A1A1A; background: var(--gold-primary); border: 1px solid var(--gold-light); cursor: pointer; box-shadow: 0 2px 8px rgba(243,198,105,0.35);">
+            <span>📍 처 선택</span>
+          </button>
         </div>
       </header>
 
-      <!-- 십자가의 길 본문 스크롤 영역 -->
-      <main id="viaCrucisBodyScroll" class="yeondo-body-scroll">
+      <!-- 상단 14처 가로 슬라이드 인디케이터 바 -->
+      <nav id="viaCrucisStationPillsBar" class="decade-progress-bar" style="overflow-x: auto; flex-shrink: 0; padding: 6px 12px; gap: 6px; background: rgba(15,23,42,0.9); border-bottom: 1px solid rgba(255,255,255,0.08); scrollbar-width: none; -webkit-overflow-scrolling: touch; display: flex;">
+        <!-- JS로 시작, 1~14, 마침 버튼 자동 렌더링 -->
+      </nav>
+
+      <!-- 십자가의 길 현재 단계 카드 본문 스크롤 영역 -->
+      <main id="viaCrucisBodyScroll" class="yeondo-body-scroll" style="flex: 1; overflow-y: auto; padding: 14px 14px calc(var(--safe-bottom) + 80px);">
         <div class="yeondo-card-container">
-          <div class="yeondo-candle-emblem">✝️🕊️</div>
-          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 14px; background: rgba(243, 198, 105, 0.15); border: 1px solid rgba(243, 198, 105, 0.4); margin-bottom: 8px;">
-            <span style="font-size: 0.76rem; font-weight: 800; color: var(--gold-light); letter-spacing: -0.2px;">📖 가톨릭 전통 십자가의 길 14처 기도 (Via Crucis)</span>
-          </div>
-          <h1 class="yeondo-main-title" style="margin-top: 2px;">십자가의 길</h1>
-          <p class="yeondo-sub-desc" style="line-height: 1.5; margin-bottom: 14px;">
-            예수 그리스도께서 인류 구원을 위해 골고타 언덕을 오르시며 겪으신<br>
-            <strong>거룩한 수난과 십자가의 사랑</strong>을 정성껏 묵상하는 전통 기도입니다.
-          </p>
-
-          <!-- 십자가의 길 기도문 본문 컨테이너 -->
-          <div id="viaCrucisContentContainer" class="yeondo-content-container">
-            <!-- 자바스크립트로 14처 전체 정갈하게 렌더링 -->
-          </div>
-
-          <div style="margin-top: 30px; text-align: center;">
-            <button type="button" id="btnFinishViaCrucis" onclick="if(window.rosaryApp){window.rosaryApp.switchView('intro');}else{directSwitchToIntroFromSubView();}" class="action-pill-btn gold" style="width: 100%; height: 46px; font-size: 0.95rem; cursor: pointer;">
-              십자가의 길 기도 마치기
-            </button>
+          <!-- 현재 선택된 처 카드 영역 -->
+          <div id="viaCrucisCurrentCardContainer">
+            <!-- 자바스크립트로 현재 처 카드만 1개 단독 렌더링 -->
           </div>
         </div>
       </main>
+
+      <!-- 하단 액션 컨트롤 바 (이전 처 / 다음 처 이동) -->
+      <footer class="bottom-controls" style="position: absolute; bottom: 0; left: 0; right: 0; z-index: 9999; padding: 10px 14px calc(var(--safe-bottom) + 10px); background: linear-gradient(180deg, rgba(12, 17, 29, 0) 0%, rgba(12, 17, 29, 0.98) 35%, rgba(12, 17, 29, 1) 100%); display: flex; gap: 8px;">
+        <button type="button" id="btnViaCrucisPrev" onclick="navigateViaCrucisStep(-1);" class="nav-bead-btn prev-btn" style="flex: 0 0 95px; height: 50px; font-size: 0.92rem; font-weight: 700; border-radius: 14px; cursor: pointer;">
+          ❮ <span>이전</span>
+        </button>
+        <button type="button" id="btnViaCrucisNext" onclick="navigateViaCrucisStep(1);" class="nav-bead-btn next-btn" style="flex: 1; height: 50px; font-size: 1rem; font-weight: 800; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 16px rgba(243,198,105,0.4);">
+          <span id="btnViaCrucisNextText">다음 처로 ❯</span>
+        </button>
+      </footer>
     </section>
+
+    <!-- [NEW] 십자가의 길 14처 바로가기 바텀시트 모달 -->
+    <div id="viaCrucisStationModal" class="modal-backdrop" style="display: none;">
+      <div class="bottom-sheet" style="max-width: 440px; text-align: left; padding-bottom: max(20px, var(--safe-bottom));">
+        <div class="sheet-handle"></div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem; color: #FFF; font-weight: 800;">십자가의 길 바로가기</h3>
+            <p style="margin: 2px 0 0; font-size: 0.78rem; color: var(--text-muted);">원하시는 처를 터치하시면 해당 묵상으로 즉시 이동합니다</p>
+          </div>
+          <button type="button" onclick="closeViaCrucisStationModal();" style="background: none; border: none; color: var(--text-muted); font-size: 1.3rem; padding: 4px; cursor: pointer;">✕</button>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <button type="button" class="via-modal-jump-btn" onclick="selectViaCrucisStepDirect(0);" style="width: 100%; padding: 10px 14px; border-radius: 10px; background: rgba(243,198,105,0.12); border: 1.2px solid rgba(243,198,105,0.4); color: var(--gold-light); font-size: 0.88rem; font-weight: 800; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+            <span>✨ 시작 기도</span>
+            <span style="font-size: 0.75rem; color: var(--gold-primary);">준비 ❯</span>
+          </button>
+        </div>
+
+        <!-- 1~14처 2열 그리드 -->
+        <div id="viaCrucisModalStationsGrid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; margin-bottom: 10px; max-height: 52vh; overflow-y: auto; padding-right: 2px;">
+          <!-- JS로 1~14처 버튼 자동 렌더링 -->
+        </div>
+
+        <div>
+          <button type="button" class="via-modal-jump-btn" onclick="selectViaCrucisStepDirect(15);" style="width: 100%; padding: 10px 14px; border-radius: 10px; background: rgba(59,130,246,0.12); border: 1.2px solid rgba(59,130,246,0.4); color: #93C5FD; font-size: 0.88rem; font-weight: 800; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between;">
+            <span>🌅 마침 기도</span>
+            <span style="font-size: 0.75rem; color: #93C5FD;">부활과 파견 ❯</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- 6.9 이전 기도 덮어쓰기 방지 확인 모달 (이어하기 보존) -->
     <div id="resumeConfirmModal" class="modal-backdrop">
@@ -4258,7 +4275,8 @@ class RosaryApp {
       hideEl(pv);
       hideEl(yv);
       showEl(vv);
-      this.renderViaCrucisPrayer();
+      this.viaCrucisIndex = 0;
+      this.renderViaCrucisPrayer(0);
       if (this.dom.viaCrucisBodyScroll) {
         this.dom.viaCrucisBodyScroll.scrollTop = 0;
       }
@@ -8299,17 +8317,31 @@ if (this.dom.btnYeondoBackToIntro) {
     this.dom.yeondoContentContainer.innerHTML = html;
   }
 
-  // 십자가의 길 14처 기도문 렌더링
-  renderViaCrucisPrayer() {
-    const container = this.dom.viaCrucisContentContainer || document.getElementById("viaCrucisContentContainer");
-    if (!container) return;
+  // 십자가의 길 14처 기도문 렌더링 (단계별 카드 + 14처 탭 네비게이션)
+  renderViaCrucisPrayer(stepIndex = 0) {
+    if (typeof this.viaCrucisIndex !== "number") {
+      this.viaCrucisIndex = 0;
+    }
+    if (typeof stepIndex === "number") {
+      this.viaCrucisIndex = Math.max(0, Math.min(stepIndex, 15));
+    }
+    const curIdx = this.viaCrucisIndex;
+
+    const container = document.getElementById("viaCrucisCurrentCardContainer");
+    const pillsBar = document.getElementById("viaCrucisStationPillsBar");
+    const headerSub = document.getElementById("viaCrucisHeaderSub");
+    const btnPrev = document.getElementById("btnViaCrucisPrev");
+    const btnNextText = document.getElementById("btnViaCrucisNextText");
+    const modalGrid = document.getElementById("viaCrucisModalStationsGrid");
 
     if (typeof VIA_CRUCIS_DATA === "undefined") {
-      container.innerHTML = "<p style='color:#FFF; padding:20px; text-align:center;'>십자가의 길 기도 데이터를 불러오는 중입니다...</p>";
+      if (container) container.innerHTML = "<p style='color:#FFF; padding:20px; text-align:center;'>십자가의 길 기도 데이터를 불러오는 중입니다...</p>";
       return;
     }
 
-    // 역할별 배지 스타일 헬퍼 (인라인 백업으로 캐시/CSS 로드 지연 시에도 100% 보장)
+    const stations = VIA_CRUCIS_DATA.stations || [];
+
+    // 역할별 배지 스타일
     const getBadgeStyle = (role) => {
       if (role === "leader") {
         return "background: rgba(245, 158, 11, 0.22); color: #FCD34D; border: 1px solid rgba(245, 158, 11, 0.45);";
@@ -8320,103 +8352,181 @@ if (this.dom.btnYeondoBackToIntro) {
       }
     };
 
-    let html = "";
+    // 1. 상단 탭 필 바 (시작, 1~14, 마침) 렌더링
+    if (pillsBar) {
+      let pillsHtml = `
+        <button type="button" onclick="selectViaCrucisStepDirect(0);" class="decade-pill-btn ${curIdx === 0 ? 'active' : ''}" style="flex-shrink:0; padding:5px 12px; border-radius:12px; font-size:0.76rem; font-weight:800; cursor:pointer; ${curIdx === 0 ? 'background:var(--gold-primary); color:#1A1A1A; border:1px solid var(--gold-light);' : 'background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.12);'}">
+          ✨ 시작
+        </button>
+      `;
+      for (let i = 1; i <= 14; i++) {
+        const isAct = curIdx === i;
+        pillsHtml += `
+          <button type="button" onclick="selectViaCrucisStepDirect(${i});" class="decade-pill-btn ${isAct ? 'active' : ''}" style="flex-shrink:0; padding:5px 10px; border-radius:12px; font-size:0.76rem; font-weight:800; cursor:pointer; ${isAct ? 'background:var(--gold-primary); color:#1A1A1A; border:1px solid var(--gold-light);' : 'background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.12);'}">
+            ${i}처
+          </button>
+        `;
+      }
+      pillsHtml += `
+        <button type="button" onclick="selectViaCrucisStepDirect(15);" class="decade-pill-btn ${curIdx === 15 ? 'active' : ''}" style="flex-shrink:0; padding:5px 12px; border-radius:12px; font-size:0.76rem; font-weight:800; cursor:pointer; ${curIdx === 15 ? 'background:var(--gold-primary); color:#1A1A1A; border:1px solid var(--gold-light);' : 'background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.7); border:1px solid rgba(255,255,255,0.12);'}">
+          🌅 마침
+        </button>
+      `;
+      pillsBar.innerHTML = pillsHtml;
 
-    // 1. 시작 기도
-    const intro = VIA_CRUCIS_DATA.intro;
-    if (intro) {
-      html += `
-        <div id="viaStation_intro" class="via-crucis-section-card" style="background: rgba(255, 255, 255, 0.04); border: 1.5px solid rgba(243, 198, 105, 0.45); border-radius: 14px; padding: 18px 16px; margin-bottom: 16px; text-align: left;">
-          <div class="via-crucis-section-header" style="font-size: 1rem; font-weight: 800; color: var(--gold-light); margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-            <span>✨ ${intro.sectionTitle}</span>
-            <span style="font-size:0.75rem; color:var(--gold-primary); background:rgba(243,198,105,0.18); padding:2px 8px; border-radius:10px; font-weight:700;">시작 준비</span>
-          </div>
-          ${intro.desc ? `<div class="via-crucis-section-desc" style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">${intro.desc}</div>` : ""}
-          <div class="via-crucis-lines-box" style="display: flex; flex-direction: column; gap: 12px;">
+      // 활성 탭이 보이도록 가로 스크롤 이동
+      const actBtn = pillsBar.querySelector(".decade-pill-btn.active");
+      if (actBtn && typeof actBtn.scrollIntoView === "function") {
+        actBtn.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      }
+    }
+
+    // 2. 바텀시트 모달 내 1~14처 그리드 렌더링
+    if (modalGrid && (!modalGrid.children || modalGrid.children.length === 0)) {
+      let gHtml = "";
+      stations.forEach(st => {
+        gHtml += `
+          <button type="button" onclick="selectViaCrucisStepDirect(${st.num}); closeViaCrucisStationModal();" style="padding: 10px 8px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #FFF; font-size: 0.8rem; font-weight: 700; text-align: left; cursor: pointer; display: flex; flex-direction: column; gap: 3px;">
+            <span style="color: var(--gold-light); font-size: 0.76rem; font-weight: 800;">제${st.num}처</span>
+            <span style="font-size: 0.72rem; color: rgba(255,255,255,0.78); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${st.title.replace(/^제\d+처:\s*/, '').replace(/을 묵상합시다\./, '')}</span>
+          </button>
+        `;
+      });
+      modalGrid.innerHTML = gHtml;
+    }
+
+    // 3. 현재 단계(0: 시작, 1~14: 각 처, 15: 마침) 본문 카드 렌더링
+    let cardHtml = "";
+
+    if (curIdx === 0) {
+      // [시작 기도]
+      const intro = VIA_CRUCIS_DATA.intro;
+      if (headerSub) headerSub.textContent = "✨ 시작 기도";
+      cardHtml = `
+        <div class="via-crucis-section-card" style="background: rgba(255, 255, 255, 0.04); border: 1.5px solid rgba(243, 198, 105, 0.45); border-radius: 16px; padding: 20px 18px; margin-bottom: 20px; text-align: left; box-shadow: 0 4px 18px rgba(0,0,0,0.35);">
+          <div style="font-size: 0.76rem; color: var(--gold-primary); font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">PRAYER OF PREPARATION</div>
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #FFF; margin: 0 0 10px 0;">✨ ${intro.sectionTitle}</h2>
+          <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">${intro.desc}</p>
+          
+          <div class="via-crucis-lines-box" style="display: flex; flex-direction: column; gap: 14px;">
       `;
       intro.lines.forEach(line => {
-        html += `
+        cardHtml += `
           <div class="via-crucis-line-row ${line.role}" style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.65;">
             <span class="via-crucis-role-badge ${line.role}" style="display: inline-block; font-size: 0.74rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; text-align: center; min-width: 38px; ${getBadgeStyle(line.role)}">${line.label}</span>
-            <span class="via-crucis-line-text" style="font-size: 0.94rem; color: #F1F5F9; word-break: keep-all; flex: 1;">${line.text}</span>
+            <span class="via-crucis-line-text" style="font-size: 0.95rem; color: #F1F5F9; word-break: keep-all; flex: 1;">${line.text}</span>
           </div>
         `;
       });
-      html += `
+      cardHtml += `
           </div>
         </div>
       `;
-    }
+    } else if (curIdx >= 1 && curIdx <= 14) {
+      // [제1처 ~ 제14처]
+      const st = stations[curIdx - 1];
+      if (headerSub) headerSub.textContent = `제${st.num}처 (${st.num}/14)`;
 
-    // 2. 제1처 ~ 제14처
-    const stations = VIA_CRUCIS_DATA.stations || [];
-    stations.forEach(st => {
-      html += `
-        <div id="viaStation_${st.num}" class="via-crucis-section-card" style="background: rgba(255, 255, 255, 0.035); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 14px; padding: 18px 16px; margin-bottom: 16px; text-align: left;">
-          <div class="via-crucis-section-header" style="font-size: 1rem; font-weight: 800; color: var(--gold-light); margin-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-            <span>✝️ ${st.title}</span>
-            <span style="font-size:0.74rem; color:var(--gold-light); background:rgba(243,198,105,0.18); padding:2px 8px; border-radius:10px; font-weight:700;">${st.num} / 14처</span>
+      cardHtml = `
+        <div class="via-crucis-section-card" style="background: rgba(255, 255, 255, 0.035); border: 1.2px solid rgba(243, 198, 105, 0.35); border-radius: 16px; padding: 20px 18px; margin-bottom: 20px; text-align: left; box-shadow: 0 4px 18px rgba(0,0,0,0.35);">
+          <!-- 상단 처 라벨 & 진행 칩 -->
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-size: 0.78rem; font-weight: 800; color: var(--gold-primary); letter-spacing: 0.5px;">STATION ${st.num} OF 14</span>
+            <span style="font-size: 0.72rem; color: #FDE68A; background: rgba(243, 198, 105, 0.2); border: 1px solid rgba(243, 198, 105, 0.4); padding: 2px 8px; border-radius: 10px; font-weight: 800;">제${st.num}처</span>
           </div>
 
-          <!-- 공통 화답송 (계응) -->
-          <div style="background: rgba(15, 23, 42, 0.7); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; border: 1px solid rgba(243, 198, 105, 0.25); display: flex; flex-direction: column; gap: 8px;">
-            <div class="via-crucis-line-row leader" style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.6;">
+          <!-- 처 제목 -->
+          <h2 style="font-size: 1.15rem; font-weight: 800; color: #FFF; line-height: 1.45; margin: 0 0 14px 0; word-break: keep-all;">
+            ✝️ ${st.title}
+          </h2>
+
+          <!-- 공통 화답송 (선창 / 받음) -->
+          <div style="background: rgba(15, 23, 42, 0.75); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; border: 1px solid rgba(243, 198, 105, 0.3); display: flex; flex-direction: column; gap: 9px;">
+            <div style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.55;">
               <span class="via-crucis-role-badge leader" style="display: inline-block; font-size: 0.74rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; text-align: center; min-width: 38px; ${getBadgeStyle('leader')}">선창</span>
-              <span class="via-crucis-line-text" style="color: var(--gold-light); font-weight: 700; font-size: 0.94rem; word-break: keep-all; flex: 1;">☩ 주님께서는 십자가로 온 세상을 구원하셨나이다.</span>
+              <span style="color: var(--gold-light); font-weight: 700; font-size: 0.94rem; word-break: keep-all; flex: 1;">☩ 주님께서는 십자가로 온 세상을 구원하셨나이다.</span>
             </div>
-            <div class="via-crucis-line-row respond" style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.6;">
+            <div style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.55;">
               <span class="via-crucis-role-badge respond" style="display: inline-block; font-size: 0.74rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; text-align: center; min-width: 38px; ${getBadgeStyle('respond')}">받음</span>
-              <span class="via-crucis-line-text" style="color: #FFFFFF; font-weight: 700; font-size: 0.94rem; word-break: keep-all; flex: 1;">◎ 예수 그리스도님, 경배하며 찬송하나이다.</span>
+              <span style="color: #FFFFFF; font-weight: 700; font-size: 0.94rem; word-break: keep-all; flex: 1;">◎ 예수 그리스도님, 경배하며 찬송하나이다.</span>
             </div>
           </div>
 
           <!-- 성경 말씀 -->
           ${st.scripture ? `
-            <div style="font-size: 0.84rem; color: #94A3B8; background: rgba(0,0,0,0.3); border-left: 3px solid var(--gold-primary); padding: 9px 12px; border-radius: 4px; margin-bottom: 12px; line-height: 1.55; font-style: italic; word-break: keep-all;">
+            <div style="font-size: 0.85rem; color: #CBD5E1; background: rgba(0,0,0,0.35); border-left: 3.5px solid var(--gold-primary); padding: 10px 14px; border-radius: 6px; margin-bottom: 14px; line-height: 1.6; font-style: italic; word-break: keep-all;">
               📖 ${st.scripture}
             </div>
           ` : ""}
 
           <!-- 묵상 글 -->
-          <div style="font-size: 0.94rem; color: #F1F5F9; line-height: 1.68; margin-bottom: 14px; word-break: keep-all; background: rgba(255,255,255,0.025); padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.05);">
+          <div style="font-size: 0.95rem; color: #F8FAFC; line-height: 1.7; margin-bottom: 16px; word-break: keep-all; background: rgba(255,255,255,0.03); padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06);">
             🕊️ <strong style="color: var(--gold-light);">묵상:</strong> ${st.meditation}
           </div>
 
           <!-- 이어지는 공통 기도 안내 -->
-          <div style="font-size: 0.8rem; color: var(--gold-light); border-top: 1px dashed rgba(255,255,255,0.12); padding-top: 10px; text-align: center; opacity: 0.92; font-weight: 600;">
-            (잠시 묵상한 후, 주님의 기도 · 성모송 · 영광송을 바칩니다)
+          <div style="font-size: 0.82rem; color: var(--gold-light); background: rgba(243, 198, 105, 0.08); border: 1px dashed rgba(243, 198, 105, 0.35); padding: 10px 12px; border-radius: 10px; text-align: center; font-weight: 700; line-height: 1.45;">
+            🙏 잠시 묵상한 후, 주님의 기도 · 성모송 · 영광송을 바칩니다.
           </div>
         </div>
       `;
-    });
-
-    // 3. 마침 기도
-    const outro = VIA_CRUCIS_DATA.outro;
-    if (outro) {
-      html += `
-        <div id="viaStation_outro" class="via-crucis-section-card" style="background: rgba(255, 255, 255, 0.04); border: 1.5px solid rgba(243, 198, 105, 0.45); border-radius: 14px; padding: 18px 16px; margin-bottom: 16px; text-align: left;">
-          <div class="via-crucis-section-header" style="font-size: 1rem; font-weight: 800; color: var(--gold-light); margin-bottom: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-            <span>🌅 ${outro.sectionTitle}</span>
-            <span style="font-size:0.75rem; color:var(--gold-primary); background:rgba(243,198,105,0.18); padding:2px 8px; border-radius:10px; font-weight:700;">부활과 마침</span>
-          </div>
-          ${outro.desc ? `<div class="via-crucis-section-desc" style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">${outro.desc}</div>` : ""}
-          <div class="via-crucis-lines-box" style="display: flex; flex-direction: column; gap: 12px;">
+    } else {
+      // [마침 기도]
+      const outro = VIA_CRUCIS_DATA.outro;
+      if (headerSub) headerSub.textContent = "🌅 마침 기도";
+      cardHtml = `
+        <div class="via-crucis-section-card" style="background: rgba(255, 255, 255, 0.04); border: 1.5px solid rgba(59, 130, 246, 0.5); border-radius: 16px; padding: 20px 18px; margin-bottom: 20px; text-align: left; box-shadow: 0 4px 18px rgba(0,0,0,0.35);">
+          <div style="font-size: 0.76rem; color: #93C5FD; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 4px;">CONCLUDING PRAYER</div>
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: #FFF; margin: 0 0 10px 0;">🌅 ${outro.sectionTitle}</h2>
+          <p style="font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">${outro.desc}</p>
+          
+          <div class="via-crucis-lines-box" style="display: flex; flex-direction: column; gap: 14px;">
       `;
       outro.lines.forEach(line => {
-        html += `
+        cardHtml += `
           <div class="via-crucis-line-row ${line.role}" style="display: flex; align-items: flex-start; gap: 10px; line-height: 1.65;">
             <span class="via-crucis-role-badge ${line.role}" style="display: inline-block; font-size: 0.74rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; flex-shrink: 0; margin-top: 2px; text-align: center; min-width: 38px; ${getBadgeStyle(line.role)}">${line.label}</span>
-            <span class="via-crucis-line-text" style="font-size: 0.94rem; color: #F1F5F9; word-break: keep-all; flex: 1;">${line.text}</span>
+            <span class="via-crucis-line-text" style="font-size: 0.95rem; color: #F1F5F9; word-break: keep-all; flex: 1;">${line.text}</span>
           </div>
         `;
       });
-      html += `
+      cardHtml += `
+          </div>
+
+          <div style="margin-top: 24px; text-align: center;">
+            <button type="button" onclick="finishViaCrucisPrayer();" class="action-pill-btn gold" style="width: 100%; height: 50px; font-size: 1rem; font-weight: 800; border-radius: 14px; cursor: pointer; box-shadow: 0 4px 16px rgba(243,198,105,0.4);">
+              ✝️ 십자가의 길 기도 은혜롭게 마치기
+            </button>
           </div>
         </div>
       `;
     }
 
-    container.innerHTML = html;
+    if (container) {
+      container.innerHTML = cardHtml;
+    }
+
+    // 4. 하단 이전/다음 버튼 상태 동기화
+    if (btnPrev) {
+      btnPrev.disabled = curIdx === 0;
+      btnPrev.style.opacity = curIdx === 0 ? "0.3" : "1";
+      btnPrev.style.pointerEvents = curIdx === 0 ? "none" : "auto";
+    }
+    if (btnNextText) {
+      if (curIdx === 0) {
+        btnNextText.textContent = "제1처 시작하기 ❯";
+      } else if (curIdx >= 1 && curIdx < 14) {
+        btnNextText.textContent = `제${curIdx + 1}처로 이동 ❯`;
+      } else if (curIdx === 14) {
+        btnNextText.textContent = "마침 기도로 이동 ❯";
+      } else {
+        btnNextText.textContent = "기도 완료 ✝";
+      }
+    }
+
+    // 스크롤 상단 리셋
+    const scrollEl = document.getElementById("viaCrucisBodyScroll");
+    if (scrollEl) scrollEl.scrollTop = 0;
   }
 
   renderCondolenceModal() {
@@ -9523,13 +9633,80 @@ function directSwitchToIntroFromSubView() {
 
 function jumpViaCrucisStation(stationVal) {
   try {
-    var targetId = stationVal === "intro" ? "viaStation_intro" : (stationVal === "outro" ? "viaStation_outro" : "viaStation_" + stationVal);
-    var el = document.getElementById(targetId);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    var idx = stationVal === "intro" ? 0 : (stationVal === "outro" ? 15 : parseInt(stationVal, 10));
+    selectViaCrucisStepDirect(idx);
   } catch(e) {
     console.error("jumpViaCrucisStation error:", e);
+  }
+}
+
+function navigateViaCrucisStep(dir) {
+  try {
+    var cur = (window.rosaryApp && typeof window.rosaryApp.viaCrucisIndex === "number") 
+      ? window.rosaryApp.viaCrucisIndex 
+      : 0;
+    var next = cur + dir;
+    if (next < 0) return;
+    if (next > 15) {
+      finishViaCrucisPrayer();
+      return;
+    }
+    if (window.rosaryApp && typeof window.rosaryApp.renderViaCrucisPrayer === "function") {
+      window.rosaryApp.renderViaCrucisPrayer(next);
+    }
+  } catch(e) {
+    console.error("navigateViaCrucisStep error:", e);
+  }
+}
+
+function selectViaCrucisStepDirect(idx) {
+  try {
+    if (window.rosaryApp && typeof window.rosaryApp.renderViaCrucisPrayer === "function") {
+      window.rosaryApp.renderViaCrucisPrayer(idx);
+    }
+    closeViaCrucisStationModal();
+  } catch(e) {
+    console.error("selectViaCrucisStepDirect error:", e);
+  }
+}
+
+function openViaCrucisStationModal() {
+  try {
+    var m = document.getElementById("viaCrucisStationModal");
+    if (m) {
+      m.classList.add("show");
+      m.style.setProperty("display", "flex", "important");
+      m.style.setProperty("visibility", "visible", "important");
+      m.style.setProperty("opacity", "1", "important");
+    }
+  } catch(e) {
+    console.error("openViaCrucisStationModal error:", e);
+  }
+}
+
+function closeViaCrucisStationModal() {
+  try {
+    var m = document.getElementById("viaCrucisStationModal");
+    if (m) {
+      m.classList.remove("show");
+      m.style.setProperty("display", "none", "important");
+      m.style.setProperty("visibility", "hidden", "important");
+      m.style.setProperty("opacity", "0", "important");
+    }
+  } catch(e) {
+    console.error("closeViaCrucisStationModal error:", e);
+  }
+}
+
+function finishViaCrucisPrayer() {
+  try {
+    if (window.rosaryApp && typeof window.rosaryApp.switchView === "function") {
+      window.rosaryApp.switchView("intro");
+    } else {
+      directSwitchToIntroFromSubView();
+    }
+  } catch(e) {
+    console.error("finishViaCrucisPrayer error:", e);
   }
 }
 
