@@ -182,6 +182,9 @@
           <button id="btnHeaderBgmToggle" type="button" class="icon-btn" onclick="if(window.rosaryApp){window.rosaryApp.toggleBgm();}else{directToggleBgm();}" aria-label="배경음악 토글" title="은은한 성당 배경음악 (BGM)">
             <span id="btnHeaderBgmIcon" style="font-size: 1.05rem;">🎵</span>
           </button>
+          <button id="btnIntroViaCrucisQuick" class="icon-btn via-crucis-quick-header-btn" onclick="if(window.rosaryApp){window.rosaryApp.switchView('viaCrucis');}else{directSwitchToViaCrucis();}" aria-label="십자가의 길 (14처 기도)" title="십자가의 길 (14처 기도 · 사순 및 금요일 묵상)">
+            <span style="font-size: 1.05rem;">✝️</span>
+          </button>
           <button id="btnIntroYeondoQuick" class="icon-btn yeondo-quick-header-btn" onclick="if(window.rosaryApp){window.rosaryApp.switchView('yeondo');}else{var iv=document.getElementById('introView');var yv=document.getElementById('yeondoView');if(iv)iv.style.display='none';if(yv)yv.style.display='flex';}" aria-label="짧은 연도 (약식 위령기도)" title="짧은 연도 (약식 위령기도 · 조문 예절)">
             <span style="font-size: 1.05rem;">🕯️</span>
           </button>
@@ -670,6 +673,73 @@
           <div style="margin-top: 30px; text-align: center;">
             <button type="button" id="btnFinishYeondo" class="action-pill-btn gold" style="width: 100%; height: 46px; font-size: 0.95rem;">
               위령 기도 마치기
+            </button>
+          </div>
+        </div>
+      </main>
+    </section>
+
+    <!-- ==============================================
+         VIEW 4: [NEW] 가톨릭 십자가의 길 전용 화면 (Via Crucis View)
+         ============================================== -->
+    <section id="viaCrucisView" class="yeondo-view" style="display: none;">
+      <!-- 상단 헤더 -->
+      <header class="app-header yeondo-header">
+        <button id="btnViaCrucisBackToIntro" class="icon-btn home-btn" onclick="if(window.rosaryApp){window.rosaryApp.switchView('intro');}else{directSwitchToIntroFromSubView();}" aria-label="처음 화면으로" title="처음 화면으로">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+        </button>
+
+        <div class="prayer-header-title-box">
+          <span id="viaCrucisHeaderTitle" class="prayer-header-mystery">십자가의 길 (14처 기도)</span>
+          <span class="prayer-header-day" style="color: var(--gold-primary); font-weight: 700;">주님의 수난과 구원 묵상 (약 15분)</span>
+        </div>
+
+        <div class="header-actions">
+          <select id="viaCrucisJumpSelect" onchange="jumpViaCrucisStation(this.value);" style="background: rgba(15,23,42,0.85); color: #FFF; border: 1px solid rgba(243,198,105,0.4); border-radius: 12px; font-size: 0.76rem; padding: 4px 6px; outline: none; cursor: pointer;">
+            <option value="intro">시작 기도</option>
+            <option value="1">제1처</option>
+            <option value="2">제2처</option>
+            <option value="3">제3처</option>
+            <option value="4">제4처</option>
+            <option value="5">제5처</option>
+            <option value="6">제6처</option>
+            <option value="7">제7처</option>
+            <option value="8">제8처</option>
+            <option value="9">제9처</option>
+            <option value="10">제10처</option>
+            <option value="11">제11처</option>
+            <option value="12">제12처</option>
+            <option value="13">제13처</option>
+            <option value="14">제14처</option>
+            <option value="outro">마침 기도</option>
+          </select>
+        </div>
+      </header>
+
+      <!-- 십자가의 길 본문 스크롤 영역 -->
+      <main id="viaCrucisBodyScroll" class="yeondo-body-scroll">
+        <div class="yeondo-card-container">
+          <div class="yeondo-candle-emblem">✝️🕊️</div>
+          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 14px; background: rgba(243, 198, 105, 0.15); border: 1px solid rgba(243, 198, 105, 0.4); margin-bottom: 8px;">
+            <span style="font-size: 0.76rem; font-weight: 800; color: var(--gold-light); letter-spacing: -0.2px;">📖 가톨릭 전통 십자가의 길 14처 기도 (Via Crucis)</span>
+          </div>
+          <h1 class="yeondo-main-title" style="margin-top: 2px;">십자가의 길</h1>
+          <p class="yeondo-sub-desc" style="line-height: 1.5; margin-bottom: 14px;">
+            예수 그리스도께서 인류 구원을 위해 골고타 언덕을 오르시며 겪으신<br>
+            <strong>거룩한 수난과 십자가의 사랑</strong>을 정성껏 묵상하는 전통 기도입니다.
+          </p>
+
+          <!-- 십자가의 길 기도문 본문 컨테이너 -->
+          <div id="viaCrucisContentContainer" class="yeondo-content-container">
+            <!-- 자바스크립트로 14처 전체 정갈하게 렌더링 -->
+          </div>
+
+          <div style="margin-top: 30px; text-align: center;">
+            <button type="button" id="btnFinishViaCrucis" onclick="if(window.rosaryApp){window.rosaryApp.switchView('intro');}else{directSwitchToIntroFromSubView();}" class="action-pill-btn gold" style="width: 100%; height: 46px; font-size: 0.95rem; cursor: pointer;">
+              십자가의 길 기도 마치기
             </button>
           </div>
         </div>
@@ -2913,6 +2983,124 @@ const YEONDO_DATA = {
     ]
   }
 };
+
+// 3. 가톨릭 전통 십자가의 길 14처 기도 데이터 (한국천주교주교회의 표준 기도문)
+const VIA_CRUCIS_DATA = {
+  title: "십자가의 길 (Via Crucis)",
+  subtitle: "주님의 수난과 십자가의 거룩한 사랑을 묵상하는 14처 기도",
+  intro: {
+    sectionId: "intro",
+    sectionTitle: "시작 기도",
+    desc: "십자성호를 긋고 정성된 마음으로 주님의 십자가 수난을 묵상할 은혜를 청합니다.",
+    lines: [
+      { role: "all", label: "모두", text: "† 성부와 성자와 성령의 이름으로. 아멘." },
+      { role: "leader", label: "선창", text: "주 예수 그리스도님, 저희를 위하여 십자가의 길을 걸으셨나이다." },
+      { role: "respond", label: "받음", text: "저희도 주님을 따라 십자가를 지고 주님 곁으로 나아가게 하소서." },
+      { role: "all", label: "모두", text: "자비로우신 예수님, 저희가 주님의 거룩하신 수난을 묵상하며 지은 죄를 진심으로 뉘우치고, 주님의 크신 사랑을 깨달아 일상의 고통을 기꺼이 봉헌하며 구원의 길을 걷도록 은총을 베풀어 주소서. 아멘." }
+    ]
+  },
+  stations: [
+    {
+      num: 1,
+      title: "제1처: 예수님께서 사형 선고를 받으심을 묵상합시다.",
+      meditation: "죄 없으신 예수님께서 인류의 죄를 대신하여 빌라도에게 부당한 사형 판결을 받으십니다. 주님께서는 묵묵히 침묵하시며 하느님 아버지의 뜻에 온전히 순명하셨습니다.",
+      scripture: "빌라도는 다시 총독관저로 들어가 예수님을 불러, '당신이 유다인들의 임금이오?' 하고 물었다. 그러자 예수님께서 대답하셨다. '내 나라는 이 세상에 속하지 않는다.' (요한 18,33.36)"
+    },
+    {
+      num: 2,
+      title: "제2처: 예수님께서 십자가 지심을 묵상합시다.",
+      meditation: "무겁고 거친 나무 십자가가 주님의 찢겨진 어깨 위에 지워집니다. 주님께서는 우리의 죄와 불목, 세상의 온갖 무거운 짐을 마다하지 않으시고 끌어안으셨습니다.",
+      scripture: "예수님께서는 몸소 십자가를 지시고 '해골 터'라는 곳으로 나가셨다. 그곳은 히브리 말로 골고타라고 한다. (요한 19,17)"
+    },
+    {
+      num: 3,
+      title: "제3처: 예수님께서 기력이 다하여 첫 번째 넘어지심을 묵상합시다.",
+      meditation: "채찍질로 피 흘리시고 밤새 겪으신 고초로 탈진하신 예수님께서 무거운 십자가 무게에 짓눌려 거친 돌바닥 위에 쓰러지십니다. 그러나 우리를 구원하시려 다시 일어나십니다.",
+      scripture: "그는 우리의 병고를 메고 갔으며 우리의 통증을 짊어졌다. 그가 찔린 것은 우리의 악행 때문이고 그가 으스러진 것은 우리의 죄악 때문이다. (이사 53,4-5)"
+    },
+    {
+      num: 4,
+      title: "제4처: 예수님께서 성모님을 만나심을 묵상합시다.",
+      meditation: "피투성이가 되신 아들과 애간장이 녹는 어머니의 슬픈 눈동자가 마주칩니다. 시메온의 예언대로 성모님의 영혼은 예리한 칼에 찔리는 극심한 고통 속에서도 하느님의 구원 사업에 온전히 동참하십니다.",
+      scripture: "시메온은 그들에게 축복하고 나서 아기 어머니 마리아에게 말하였다. '그리고 당신의 영혼이 칼에 꿰찔리는 가운데, 많은 사람의 마음속 생각이 드러날 것입니다.' (루카 2,34-35)"
+    },
+    {
+      num: 5,
+      title: "제5처: 시몬이 예수님을 도와 십자가 짐을 묵상합시다.",
+      meditation: "키레네 사람 시몬은 억지로 십자가를 졌으나, 이는 주님의 수난에 동참하는 일생일대의 축복이 되었습니다. 주님께서는 지금도 우리가 이웃의 무거운 짐을 나누어 지기를 바라십니다.",
+      scripture: "그들은 지나가는 어떤 사람에게 예수님의 십자가를 지게 하였다. 그는 알렉산드로스와 루포스의 아버지로서 시골에서 오던 키레네 사람 시몬이었다. (마르 15,21)"
+    },
+    {
+      num: 6,
+      title: "제6처: 베로니카, 수건으로 예수님의 얼굴을 닦아 드림을 묵상합시다.",
+      meditation: "군중들의 조롱과 병사들의 위협 속에서도 한 여인이 사랑과 용기로 다가가 피땀에 젖은 주님의 얼굴을 닦아 드립니다. 주님께서는 그 보답으로 여인의 수건에 당신의 거룩한 얼굴 모습을 새겨 주셨습니다.",
+      scripture: "내가 진실로 너희에게 말한다. 너희가 내 형제들인 이 가장 작은 이들 가운데 한 사람에게 해 준 것이 바로 나에게 해 준 것이다. (마태 25,40)"
+    },
+    {
+      num: 7,
+      title: "제7처: 기력이 다하신 예수님께서 두 번째 넘어지심을 묵상합시다.",
+      meditation: "가파른 골고타 언덕길에서 다시 넘어지시는 주님의 고통은 우리의 반복되는 죄와 나약함 때문입니다. 주님께서는 지친 몸을 이끌고 다시 일어나시어 죄에 넘어진 저희를 일으켜 주십니다.",
+      scripture: "나를 거슬러 일어난 자들이 내 기력을 꺾고 내 영혼을 사로잡으려 하나이다. 주님, 당신은 나의 방패, 나의 구원이시옵니다. (시편 71,1-3 참조)"
+    },
+    {
+      num: 8,
+      title: "제8처: 예수님께서 예루살렘 여인들을 위로하심을 묵상합시다.",
+      meditation: "당신 자신이 숨 막히는 고통 속에 계시면서도, 당신을 보고 가슴을 치며 우는 여인들을 향해 '나를 위하여 울지 말고 너희와 너희 자녀들을 위하여 울라'고 당부하시며 진정한 회개를 일깨우십니다.",
+      scripture: "예수님께서는 그 여자들에게 돌아서서 이르셨다. '예루살렘의 딸들아, 나 때문에 울지 말고 너희와 너희 자녀들을 위하여 울어라.' (루카 23,28)"
+    },
+    {
+      num: 9,
+      title: "제9처: 예수님께서 세 번째 넘어지심을 묵상합시다.",
+      meditation: "골고타 정상을 바로 눈앞에 두고 예수님께서는 온몸의 뼈마디가 부서지는 고통 속에 세 번째로 처참하게 넘어지십니다. 절망의 끝에서도 끝까지 포기하지 않으시는 하느님의 사랑을 배웁니다.",
+      scripture: "고생하며 무거운 짐을 진 너희는 모두 나에게 오너라. 내가 너희에게 안식을 주겠다. 나는 마음이 온유하고 겸손하니 내 멍에를 메고 나에게 배워라. (마태 11,28-29)"
+    },
+    {
+      num: 10,
+      title: "제10처: 예수님께서 옷 벗김 당하심을 묵상합시다.",
+      meditation: "형장에 이르러 상처에 들러붙은 옷이 거칠게 벗겨지는 극심한 고통과 군중 앞에서의 수치심을 겪으십니다. 우리의 음란과 탐욕, 세속의 헛된 교만을 씻어주시기 위함이었습니다.",
+      scripture: "군사들은 예수님을 십자가에 못 박고 나서, 그분의 옷을 가져다가 네 몫으로 나누어 저마다 한 몫씩 차지하였다. 속옷도 가져갔는데 속옷은 위에서부터 통으로 짠 것이었다. (요한 19,23)"
+    },
+    {
+      num: 11,
+      title: "제11처: 예수님께서 십자가에 못 박히심을 묵상합시다.",
+      meditation: "거친 쇠못이 주님의 거룩한 양손과 양발을 꿰뚫습니다. 십자가 위에 매달려 피 한 방울까지 쏟으시면서도 주님께서는 당신을 못 박는 이들을 위하여 용서의 기도를 올리십니다.",
+      scripture: "예수님께서는 이렇게 이르셨다. '아버지, 저들을 용서해 주십시오. 저들은 자기들이 무슨 일을 하는지 모릅니다.' (루카 23,34)"
+    },
+    {
+      num: 12,
+      title: "제12처: 예수님께서 십자가 위에서 숨을 거두심을 묵상합시다.",
+      meditation: "(모두 무릎을 꿇거나 고개를 숙이고 잠시 침묵합니다) '다 이루어졌다.' 주님께서는 인류 구원을 위한 아버지의 뜻을 온전히 완성하시고 영혼을 하느님 아버지의 손에 맡기시며 숨을 거두셨습니다.",
+      scripture: "예수님께서 큰 소리로 외치셨다. '아버지, 제 영을 아버지 손에 맡깁니다.' 이 말씀을 하시고 숨을 거두셨다. (루카 23,46)"
+    },
+    {
+      num: 13,
+      title: "제13처: 제자들이 예수님의 시신을 십자가에서 내림을 묵상합시다.",
+      meditation: "생명이 꺼진 아들의 시신을 성모님의 거룩한 품에 안겨드립니다(피에타). 성모님의 말할 수 없는 비통함 속에 하느님 구원의 신비가 조용히 머무릅니다.",
+      scripture: "아리마태아 출신 요셉이 빌라도에게 가서 예수님의 시신을 내어 달라고 청하였다. 빌라도가 허락하자 그가 가서 그분의 시신을 내렸다. (요한 19,38)"
+    },
+    {
+      num: 14,
+      title: "제14처: 예수님께서 무덤에 묻히심을 묵상합시다.",
+      meditation: "예수님의 거룩한 시신이 차가운 바위 무덤에 묻히고 커다란 돌로 입구가 막힙니다. 죽음의 어둠 속에 머무시나, 이는 곧 사망의 권세를 깨뜨리고 영광스러운 부활로 나아가는 희망의 시작입니다.",
+      scripture: "요셉은 시신을 깨끗한 아마포로 싸서, 바위를 파서 만든 자기의 새 무덤에 모셔 두고 무덤 입구에 큰 돌을 굴려 막아 놓고 갔다. (마태 27,59-60)"
+    }
+  ],
+  outro: {
+    sectionId: "outro",
+    sectionTitle: "마침 기도",
+    desc: "십자가의 길을 마치며 부활의 영광과 교황님의 지향을 위하여 정성껏 기도합니다.",
+    lines: [
+      { role: "leader", label: "선창", text: "주님, 저희를 위하여 모진 십자가의 길을 걸으셨나이다." },
+      { role: "respond", label: "받음", text: "저희도 삶의 온갖 십자가를 기꺼이 지고 주님의 영광스러운 부활에 이르게 하소서." },
+      { role: "all", label: "모두", text: "하느님 아버지, 사랑하시는 외아드님의 수난과 죽음으로 저희에게 구원의 길을 열어 주셨으니, 십자가를 묵상한 저희가 주님의 계명을 충실히 지키며 매일의 삶 속에서 사랑과 평화를 실천하게 하소서. 우리 주 그리스도를 통하여 비나이다. 아멘." },
+      { role: "leader", label: "선창", text: "교황님의 지향을 위하여 기도합시다." },
+      { role: "all", label: "모두", text: "하늘에 계신 우리 아버지, 아버지의 이름이 거룩히 빛나시며 아버지의 나라가 오시며 아버지의 뜻이 하늘에서와 같이 땅에서도 이루어지소서. 오늘 저희에게 일용할 양식을 주시고 저희에게 잘못한 이를 저희가 용서하오니 저희 죄를 용서하시고 저희를 유혹에 빠지지 않게 하시고 악에서 구하소서. 아멘." },
+      { role: "all", label: "모두", text: "은총이 가득하신 마리아님, 기뻐하소서! 주님께서 함께 계시니 여인 중에 복되시며 태중의 아들 예수님 또한 복되시나이다. 천주의 성모 마리아님, 이제와 저희 죽을 때에 저희 죄인을 위하여 빌어주소서. 아멘." },
+      { role: "all", label: "모두", text: "영광이 성부와 성자와 성령께 처음과 같이 이제와 항상 영원히. 아멘." },
+      { role: "all", label: "모두", text: "† 성부와 성자와 성령의 이름으로. 아멘." }
+    ]
+  }
+};
 </script>
 
 <script>
@@ -3049,6 +3237,15 @@ class RosaryApp {
       condolenceModal: document.getElementById("condolenceModal"),
       condolenceModalBody: document.getElementById("condolenceModalBody"),
       btnDismissCondolenceModal: document.getElementById("btnDismissCondolenceModal"),
+
+      // 십자가의 길 (Via Crucis) 뷰 DOM
+      viaCrucisView: document.getElementById("viaCrucisView"),
+      viaCrucisBodyScroll: document.getElementById("viaCrucisBodyScroll"),
+      viaCrucisContentContainer: document.getElementById("viaCrucisContentContainer"),
+      btnViaCrucisBackToIntro: document.getElementById("btnViaCrucisBackToIntro"),
+      btnFinishViaCrucis: document.getElementById("btnFinishViaCrucis"),
+      btnIntroViaCrucisQuick: document.getElementById("btnIntroViaCrucisQuick"),
+      viaCrucisJumpSelect: document.getElementById("viaCrucisJumpSelect"),
 
       // 인트로 3. 이어하기 카드
       introResumeCard: document.getElementById("introResumeCard"),
@@ -3989,84 +4186,61 @@ class RosaryApp {
   switchView(viewName) {
     this.clearRoseBloom();
     this.currentView = viewName;
+    const iv = this.dom.introView || document.getElementById("introView");
+    const pv = this.dom.prayerView || document.getElementById("prayerView");
+    const yv = this.dom.yeondoView || document.getElementById("yeondoView");
+    const vv = this.dom.viaCrucisView || document.getElementById("viaCrucisView");
+
+    // 공통 안전 초기화 함수
+    const hideEl = (el) => {
+      if (!el) return;
+      el.style.removeProperty("display");
+      el.style.removeProperty("visibility");
+      el.style.removeProperty("opacity");
+      el.style.removeProperty("z-index");
+      el.style.display = "none";
+    };
+    const showEl = (el) => {
+      if (!el) return;
+      el.style.removeProperty("z-index");
+      el.style.setProperty("display", "flex", "important");
+      el.style.setProperty("visibility", "visible", "important");
+      el.style.setProperty("opacity", "1", "important");
+    };
+
     if (viewName === "prayer") {
-      const iv = this.dom.introView || document.getElementById("introView");
-      const yv = this.dom.yeondoView || document.getElementById("yeondoView");
-      const pv = this.dom.prayerView || document.getElementById("prayerView");
-      if (iv) {
-        iv.style.removeProperty("display");
-        iv.style.removeProperty("visibility");
-        iv.style.removeProperty("opacity");
-        iv.style.removeProperty("z-index");
-        iv.style.display = "none";
-      }
-      if (yv) {
-        yv.style.removeProperty("display");
-        yv.style.removeProperty("visibility");
-        yv.style.removeProperty("z-index");
-        yv.style.display = "none";
-      }
-      if (pv) {
-        pv.style.removeProperty("z-index");
-        pv.style.setProperty("display", "flex", "important");
-        pv.style.setProperty("visibility", "visible", "important");
-        pv.style.setProperty("opacity", "1", "important");
-      }
+      hideEl(iv);
+      hideEl(yv);
+      hideEl(vv);
+      showEl(pv);
       this.updateBeadChain();
       this.updateDecadePillsState();
       if (this.dom.prayerBodyScroll) {
         this.dom.prayerBodyScroll.scrollTop = 0;
       }
     } else if (viewName === "yeondo") {
-      const iv = this.dom.introView || document.getElementById("introView");
-      const pv = this.dom.prayerView || document.getElementById("prayerView");
-      const yv = this.dom.yeondoView || document.getElementById("yeondoView");
-      if (iv) {
-        iv.style.removeProperty("display");
-        iv.style.removeProperty("visibility");
-        iv.style.removeProperty("opacity");
-        iv.style.removeProperty("z-index");
-        iv.style.display = "none";
-      }
-      if (pv) {
-        pv.style.removeProperty("display");
-        pv.style.removeProperty("visibility");
-        pv.style.removeProperty("z-index");
-        pv.style.display = "none";
-      }
-      if (yv) {
-        yv.style.setProperty("display", "flex", "important");
-        yv.style.setProperty("visibility", "visible", "important");
-        yv.style.setProperty("opacity", "1", "important");
-      }
+      hideEl(iv);
+      hideEl(pv);
+      hideEl(vv);
+      showEl(yv);
       this.renderYeondoPrayer();
       if (this.dom.yeondoBodyScroll) {
         this.dom.yeondoBodyScroll.scrollTop = 0;
       }
+    } else if (viewName === "viaCrucis") {
+      hideEl(iv);
+      hideEl(pv);
+      hideEl(yv);
+      showEl(vv);
+      this.renderViaCrucisPrayer();
+      if (this.dom.viaCrucisBodyScroll) {
+        this.dom.viaCrucisBodyScroll.scrollTop = 0;
+      }
     } else {
-      const pv = this.dom.prayerView || document.getElementById("prayerView");
-      const yv = this.dom.yeondoView || document.getElementById("yeondoView");
-      const iv = this.dom.introView || document.getElementById("introView");
-      if (pv) {
-        pv.style.removeProperty("display");
-        pv.style.removeProperty("visibility");
-        pv.style.removeProperty("opacity");
-        pv.style.removeProperty("z-index");
-        pv.style.display = "none";
-      }
-      if (yv) {
-        yv.style.removeProperty("display");
-        yv.style.removeProperty("visibility");
-        yv.style.removeProperty("opacity");
-        yv.style.removeProperty("z-index");
-        yv.style.display = "none";
-      }
-      if (iv) {
-        iv.style.removeProperty("z-index");
-        iv.style.setProperty("display", "flex", "important");
-        iv.style.setProperty("opacity", "1", "important");
-        iv.style.setProperty("visibility", "visible", "important");
-      }
+      hideEl(pv);
+      hideEl(yv);
+      hideEl(vv);
+      showEl(iv);
       try { this.updateIntroView(); } catch(e){ console.error(e); }
       try { this.renderCommunityStats(); } catch(e){ console.error(e); }
     }
@@ -8099,6 +8273,115 @@ if (this.dom.btnYeondoBackToIntro) {
     this.dom.yeondoContentContainer.innerHTML = html;
   }
 
+  // 십자가의 길 14처 기도문 렌더링
+  renderViaCrucisPrayer() {
+    const container = this.dom.viaCrucisContentContainer || document.getElementById("viaCrucisContentContainer");
+    if (!container) return;
+
+    if (typeof VIA_CRUCIS_DATA === "undefined") {
+      container.innerHTML = "<p style='color:#FFF; padding:20px; text-align:center;'>십자가의 길 기도 데이터를 불러오는 중입니다...</p>";
+      return;
+    }
+
+    let html = "";
+
+    // 1. 시작 기도
+    const intro = VIA_CRUCIS_DATA.intro;
+    if (intro) {
+      html += `
+        <div id="viaStation_intro" class="via-crucis-section-card" style="border: 1.5px solid rgba(243, 198, 105, 0.45); background: linear-gradient(135deg, rgba(243, 198, 105, 0.1) 0%, rgba(30, 41, 59, 0.8) 100%);">
+          <div class="via-crucis-section-header">
+            <span>✨ ${intro.sectionTitle}</span>
+            <span style="font-size:0.75rem; color:var(--gold-primary);">준비</span>
+          </div>
+          ${intro.desc ? `<div class="via-crucis-section-desc">${intro.desc}</div>` : ""}
+          <div class="via-crucis-lines-box">
+      `;
+      intro.lines.forEach(line => {
+        html += `
+          <div class="via-crucis-line-row ${line.role}">
+            <span class="via-crucis-role-badge ${line.role}">${line.label}</span>
+            <span class="via-crucis-line-text">${line.text}</span>
+          </div>
+        `;
+      });
+      html += `
+          </div>
+        </div>
+      `;
+    }
+
+    // 2. 제1처 ~ 제14처
+    const stations = VIA_CRUCIS_DATA.stations || [];
+    stations.forEach(st => {
+      html += `
+        <div id="viaStation_${st.num}" class="via-crucis-section-card">
+          <div class="via-crucis-section-header">
+            <span>✝️ ${st.title}</span>
+            <span style="font-size:0.72rem; color:var(--gold-light); background:rgba(243,198,105,0.15); padding:2px 7px; border-radius:10px;">${st.num} / 14처</span>
+          </div>
+
+          <!-- 공통 화답송 (계응) -->
+          <div style="background: rgba(15, 23, 42, 0.6); border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; border: 1px solid rgba(243, 198, 105, 0.2);">
+            <div class="via-crucis-line-row leader" style="margin-bottom: 6px;">
+              <span class="via-crucis-role-badge leader">선창</span>
+              <span class="via-crucis-line-text" style="color: var(--gold-light); font-weight: 700;">☩ 주님께서는 십자가로 온 세상을 구원하셨나이다.</span>
+            </div>
+            <div class="via-crucis-line-row respond">
+              <span class="via-crucis-role-badge respond">받음</span>
+              <span class="via-crucis-line-text" style="font-weight: 700;">◎ 예수 그리스도님, 경배하며 찬송하나이다.</span>
+            </div>
+          </div>
+
+          <!-- 성경 말씀 -->
+          ${st.scripture ? `
+            <div style="font-size: 0.82rem; color: #94A3B8; background: rgba(0,0,0,0.25); border-left: 3px solid var(--gold-primary); padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; line-height: 1.5; font-style: italic;">
+              📖 ${st.scripture}
+            </div>
+          ` : ""}
+
+          <!-- 묵상 글 -->
+          <div style="font-size: 0.92rem; color: #F1F5F9; line-height: 1.65; margin-bottom: 14px; word-break: keep-all; background: rgba(255,255,255,0.02); padding: 10px 12px; border-radius: 8px;">
+            🕊️ <strong>묵상:</strong> ${st.meditation}
+          </div>
+
+          <!-- 이어지는 공통 기도 안내 -->
+          <div style="font-size: 0.78rem; color: var(--gold-light); border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px; text-align: center; opacity: 0.9;">
+            (잠시 묵상한 후, 주님의 기도 · 성모송 · 영광송을 바칩니다)
+          </div>
+        </div>
+      `;
+    });
+
+    // 3. 마침 기도
+    const outro = VIA_CRUCIS_DATA.outro;
+    if (outro) {
+      html += `
+        <div id="viaStation_outro" class="via-crucis-section-card" style="border: 1.5px solid rgba(243, 198, 105, 0.45); background: linear-gradient(135deg, rgba(243, 198, 105, 0.1) 0%, rgba(30, 41, 59, 0.8) 100%);">
+          <div class="via-crucis-section-header">
+            <span>🌅 ${outro.sectionTitle}</span>
+            <span style="font-size:0.75rem; color:var(--gold-primary);">부활과 마침</span>
+          </div>
+          ${outro.desc ? `<div class="via-crucis-section-desc">${outro.desc}</div>` : ""}
+          <div class="via-crucis-lines-box">
+      `;
+      outro.lines.forEach(line => {
+        html += `
+          <div class="via-crucis-line-row ${line.role}">
+            <span class="via-crucis-role-badge ${line.role}">${line.label}</span>
+            <span class="via-crucis-line-text">${line.text}</span>
+          </div>
+        `;
+      });
+      html += `
+          </div>
+        </div>
+      `;
+    }
+
+    container.innerHTML = html;
+  }
+
   renderCondolenceModal() {
     if (!this.dom.condolenceModalBody || typeof YEONDO_DATA === "undefined") return;
     const guide = YEONDO_DATA.condolenceGuide;
@@ -9143,6 +9426,67 @@ function openLiturgicalColorModalDirect() {
       m.style.setProperty("opacity", "1", "important");
     }
   } catch(e) {}
+}
+
+function directSwitchToViaCrucis() {
+  try {
+    if (window.rosaryApp && typeof window.rosaryApp.switchView === "function") {
+      window.rosaryApp.switchView("viaCrucis");
+      return;
+    }
+    var iv = document.getElementById("introView");
+    var pv = document.getElementById("prayerView");
+    var yv = document.getElementById("yeondoView");
+    var vv = document.getElementById("viaCrucisView");
+    if (iv) iv.style.setProperty("display", "none", "important");
+    if (pv) pv.style.setProperty("display", "none", "important");
+    if (yv) yv.style.setProperty("display", "none", "important");
+    if (vv) {
+      vv.style.setProperty("display", "flex", "important");
+      vv.style.setProperty("visibility", "visible", "important");
+      vv.style.setProperty("opacity", "1", "important");
+    }
+    if (window.rosaryApp && typeof window.rosaryApp.renderViaCrucisPrayer === "function") {
+      window.rosaryApp.renderViaCrucisPrayer();
+    }
+  } catch(e) {
+    console.error("directSwitchToViaCrucis error:", e);
+  }
+}
+
+function directSwitchToIntroFromSubView() {
+  try {
+    if (window.rosaryApp && typeof window.rosaryApp.switchView === "function") {
+      window.rosaryApp.switchView("intro");
+      return;
+    }
+    var iv = document.getElementById("introView");
+    var pv = document.getElementById("prayerView");
+    var yv = document.getElementById("yeondoView");
+    var vv = document.getElementById("viaCrucisView");
+    if (pv) pv.style.setProperty("display", "none", "important");
+    if (yv) yv.style.setProperty("display", "none", "important");
+    if (vv) vv.style.setProperty("display", "none", "important");
+    if (iv) {
+      iv.style.setProperty("display", "flex", "important");
+      iv.style.setProperty("visibility", "visible", "important");
+      iv.style.setProperty("opacity", "1", "important");
+    }
+  } catch(e) {
+    console.error("directSwitchToIntroFromSubView error:", e);
+  }
+}
+
+function jumpViaCrucisStation(stationVal) {
+  try {
+    var targetId = stationVal === "intro" ? "viaStation_intro" : (stationVal === "outro" ? "viaStation_outro" : "viaStation_" + stationVal);
+    var el = document.getElementById(targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  } catch(e) {
+    console.error("jumpViaCrucisStation error:", e);
+  }
 }
 
 function directContinuePrayerAction() {
