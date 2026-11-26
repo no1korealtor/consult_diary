@@ -3820,21 +3820,47 @@ class RosaryApp {
     try {
       let raw = localStorage.getItem(this.storageKey);
       if (!raw) {
-        raw = sessionStorage.getItem(this.storageKey);
+        raw = localStorage.getItem(this.storageKey + "_backup");
       }
       if (!raw) {
-        raw = localStorage.getItem(this.storageKey + "_backup");
+        raw = sessionStorage.getItem(this.storageKey);
       }
       if (!raw) return null;
       return JSON.parse(raw);
     } catch (e) {
       try {
-        const raw = sessionStorage.getItem(this.storageKey) || localStorage.getItem(this.storageKey + "_backup");
+        const raw = localStorage.getItem(this.storageKey + "_backup") || sessionStorage.getItem(this.storageKey);
         return raw ? JSON.parse(raw) : null;
       } catch (err) {
         return null;
       }
     }
+  }
+
+  // 저장된 진행 상황이 현재 유효한지(아직 미완료된 기도가 남아있는지) 안전 판별
+  isSavedProgressActive(saved) {
+    if (!saved || typeof saved.stepIndex !== "number" || saved.stepIndex < 0) return false;
+    
+    // 해당 기도의 총 스텝 수 계산
+    let totalSteps = 0;
+    try {
+      if (saved.prayerType === "divine_mercy") {
+        totalSteps = buildDivineMercySteps(saved.lang || this.settings.lang || "ko").length;
+      } else {
+        const mode = saved.prayerMode || "physical";
+        const mKey = saved.mysteryKey || this.todayMysteryKey || "joyful";
+        const incFatima = typeof saved.includeFatima === "boolean" ? saved.includeFatima : (this.settings.includeFatima !== false);
+        totalSteps = buildRosarySteps(mKey, incFatima, saved.lang || this.settings.lang || "ko", mode).length;
+      }
+    } catch (e) {
+      totalSteps = saved.prayerMode === "physical" ? 22 : 68;
+    }
+
+    // 마지막 완료 알(또는 그 이상)에 도달했으면 종료된 기도이므로 이어하기 비대상
+    if (saved.stepIndex >= totalSteps - 1) {
+      return false;
+    }
+    return true;
   }
 
   saveProgress() {
@@ -4253,7 +4279,7 @@ class RosaryApp {
       return;
     }
     const saved = this.loadSavedProgress();
-    const hasActiveProgress = saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0 && saved.stepIndex < (this.steps ? this.steps.length : 68);
+    const hasActiveProgress = this.isSavedProgressActive(saved);
 
     if (hasActiveProgress) {
       // 이어할 기록이 있다면 덮어쓰기 방지 확인 모달 띄우기
@@ -4354,8 +4380,8 @@ class RosaryApp {
         modeBox.style.display = isDm ? "none" : "block";
       }
 
-      // 현재 선택된 기도 모드 (사용자의 현재 앱 설정 우선, 없으면 저장되었던 모드)
-      const curMode = this.settings.prayerMode || (saved && saved.prayerMode) || "physical";
+      // 현재 선택된 기도 모드 (저장되어 있던 모드 우선 보존, 없으면 현재 앱 설정)
+      const curMode = (saved && saved.prayerMode) || this.settings.prayerMode || "physical";
       this.resumeSelectedMode = curMode;
 
       if (btnPhysical && btnDigital) {
@@ -9371,7 +9397,14 @@ function directStartPrayerAction() {
       } catch(e) {}
     }
 
-    if (saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0) {
+    var hasActiveProgress = false;
+    if (window.rosaryApp && typeof window.rosaryApp.isSavedProgressActive === "function") {
+      hasActiveProgress = window.rosaryApp.isSavedProgressActive(saved);
+    } else if (saved && typeof saved.stepIndex === "number" && saved.stepIndex >= 0) {
+      hasActiveProgress = true;
+    }
+
+    if (hasActiveProgress) {
       if (window.rosaryApp && typeof window.rosaryApp.showResumeConfirmModal === "function") {
         window.rosaryApp.showResumeConfirmModal(saved);
         return;
