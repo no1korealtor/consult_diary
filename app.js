@@ -2270,24 +2270,59 @@ async function insertStudyLog(subject, content, detail) {
         }
 
         // 오답 텍스트 추출 및 모달/클립보드 복사
-        function getWrongQuizText() {
+        let currentWrongQuizFilter = 'new'; // 'new' (이전 복습 이후 신규 오답) 또는 'all' (전체 누적 오답)
+
+        function getLastWrongCheckedTime(child) {
+            const key = `study_wrong_last_checked_${child || getTargetChild()}`;
+            return localStorage.getItem(key);
+        }
+
+        function setLastWrongCheckedTime(child) {
+            const key = `study_wrong_last_checked_${child || getTargetChild()}`;
+            const nowIso = new Date().toISOString();
+            localStorage.setItem(key, nowIso);
+            return nowIso;
+        }
+
+        function getWrongQuizText(filterMode = currentWrongQuizFilter) {
+            const targetChild = getTargetChild();
+            const lastCheckedIso = getLastWrongCheckedTime(targetChild);
+
             const parsedLogs = recentQuizLogs.map(l => {
                 let d = {};
                 try { d = JSON.parse(l.detail); } catch(e) { d = { isCorrect: false }; }
                 return { ...l, parsed: d };
             });
 
-            const wrongItems = parsedLogs.filter(item => !item.parsed.isCorrect);
-            if (wrongItems.length === 0) {
-                return null;
+            const allWrongItems = parsedLogs.filter(item => !item.parsed.isCorrect);
+            if (allWrongItems.length === 0) {
+                return { text: null, totalCount: 0, newCount: 0, filteredItems: [] };
             }
 
-            const targetChild = getTargetChild();
-            let text = `📝 [${targetChild}의 오답노트 모음] (총 ${wrongItems.length}문제)\n`;
-            text += `기록 일시: ${new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' })}\n`;
+            // 신규 오답 필터링 (lastCheckedIso 이후의 항목)
+            let newWrongItems = allWrongItems;
+            if (lastCheckedIso) {
+                const lastTime = new Date(lastCheckedIso).getTime();
+                newWrongItems = allWrongItems.filter(item => new Date(item.created_at).getTime() > lastTime);
+            }
+
+            const targetItems = (filterMode === 'new' && lastCheckedIso) ? newWrongItems : allWrongItems;
+
+            if (targetItems.length === 0) {
+                return { text: '', totalCount: allWrongItems.length, newCount: newWrongItems.length, filteredItems: [] };
+            }
+
+            const filterLabel = (filterMode === 'new' && lastCheckedIso) ? `[새로 틀린 문제만 (${targetItems.length}개)]` : `[전체 오답 누적 (${targetItems.length}개)]`;
+            let text = `📝 [${targetChild}의 오답노트 모음] ${filterLabel}\n`;
+            text += `기록 일시: ${new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' })}\n`;
+            if (lastCheckedIso) {
+                const prevD = new Date(lastCheckedIso);
+                const prevStr = `${prevD.getMonth() + 1}월 ${prevD.getDate()}일 ${prevD.getHours().toString().padStart(2, '0')}:${prevD.getMinutes().toString().padStart(2, '0')}`;
+                text += `이전 확인 일시: ${prevStr}\n`;
+            }
             text += `--------------------------------------------------\n\n`;
 
-            wrongItems.forEach((item, idx) => {
+            targetItems.forEach((item, idx) => {
                 const p = item.parsed;
                 const d = new Date(item.created_at);
                 const timeStr = `${d.getMonth() + 1}월 ${d.getDate()}일 ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
@@ -2304,37 +2339,121 @@ async function insertStudyLog(subject, content, detail) {
             text += `--------------------------------------------------\n`;
             text += `Tip: ${targetChild}와 복습할 때 정답을 바로 알려주기보다는 왜 헷갈렸는지 힌트를 주며 대화해 보세요! 💖\n`;
 
-            return text;
+            return {
+                text: text,
+                totalCount: allWrongItems.length,
+                newCount: newWrongItems.length,
+                filteredItems: targetItems
+            };
         }
 
         function openWrongQuizModal() {
-            const text = getWrongQuizText();
-            if (!text) {
-                alert(`🎉 최근 푼 문제 중 틀린 문제가 없습니다! ${getTargetChild()}이가 아주 잘하고 있어요! 👏`);
+            const targetChild = getTargetChild();
+            const lastCheckedIso = getLastWrongCheckedTime(targetChild);
+            
+            // 기본 모드 결정: 이전에 확인한 기록이 있고 신규 오답이 있으면 'new', 신규 오답이 없거나 이전 기록이 없으면 'all'
+            const preview = getWrongQuizText('new');
+            if (preview.totalCount === 0) {
+                alert(`🎉 최근 푼 문제 중 틀린 문제가 없습니다! ${targetChild}이가 아주 잘하고 있어요! 👏`);
                 return;
+            }
+
+            if (lastCheckedIso && preview.newCount === 0) {
+                currentWrongQuizFilter = 'all';
+            } else if (lastCheckedIso) {
+                currentWrongQuizFilter = 'new';
+            } else {
+                currentWrongQuizFilter = 'all';
+            }
+
+            renderWrongQuizModalContent();
+        }
+
+        function renderWrongQuizModalContent() {
+            const targetChild = getTargetChild();
+            const lastCheckedIso = getLastWrongCheckedTime(targetChild);
+            const { text, totalCount, newCount } = getWrongQuizText(currentWrongQuizFilter);
+
+            let lastCheckedStr = '확인 기록 없음';
+            if (lastCheckedIso) {
+                const prevD = new Date(lastCheckedIso);
+                lastCheckedStr = `${prevD.getMonth() + 1}월 ${prevD.getDate()}일 ${prevD.getHours().toString().padStart(2, '0')}:${prevD.getMinutes().toString().padStart(2, '0')}`;
+            }
+
+            // 기존 모달이 이미 열려있다면 내용만 갱신
+            const existingModal = document.getElementById('wrong-quiz-modal');
+            if (existingModal) {
+                existingModal.remove();
             }
 
             const modalHtml = `
                 <div class="child-detail-modal" id="wrong-quiz-modal" onclick="if(event.target === this) closeWrongQuizModal()">
-                    <div class="child-modal-body" style="max-width: 540px; width: 92%;">
+                    <div class="child-modal-body" style="max-width: 550px; width: 92%; box-sizing: border-box;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                             <div style="font-family:'Jua', sans-serif; font-size:18px; color:#1e293b; display:flex; align-items:center; gap:6px;">
-                                <span>📋 ${getTargetChild()} 오답노트 모아보기</span>
+                                <span>📋 ${targetChild} 오답노트 관리</span>
                             </div>
                             <button type="button" onclick="closeWrongQuizModal()" style="background:none; border:none; font-size:20px; color:#94a3b8; cursor:pointer;">✕</button>
                         </div>
-                        <div style="font-size:12px; color:#64748b; margin-bottom:10px; text-align:left;">
-                            틀린 문제만 모아서 텍스트로 정리했습니다. 복사해서 카톡이나 메모장에 붙여넣어 활용하세요!
+                        
+                        <!-- 이전 확인 이력 안내 -->
+                        <div style="background:#f1f5f9; border-radius:10px; padding:10px 12px; margin-bottom:12px; font-size:12px; color:#475569; display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <span>🕒 최근 복습/확인: <strong>${lastCheckedStr}</strong></span>
+                            </div>
+                            <span style="background:#e2e8f0; padding:2px 8px; border-radius:12px; font-weight:bold; color:#334155;">
+                                ${lastCheckedIso ? `새 오답 ${newCount}개 / 누적 ${totalCount}개` : `총 ${totalCount}개 오답`}
+                            </span>
                         </div>
-                        <textarea id="wrong-quiz-textarea" readonly style="width:100%; height:260px; padding:12px; border-radius:12px; border:1.5px solid #cbd5e1; font-size:13px; font-family:monospace; line-height:1.5; resize:none; background:#f8fafc; color:#1e293b; box-sizing:border-box;">${escapeHtml(text)}</textarea>
-                        <div style="display:flex; gap:10px; margin-top:14px;">
-                            <button type="button" onclick="copyWrongQuizText()" style="flex:1; background:linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color:white; border:none; padding:10px 14px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:14px; box-shadow:0 3px 10px rgba(79, 70, 229, 0.25);">📋 전체 텍스트 복사</button>
-                            <button type="button" onclick="closeWrongQuizModal()" style="background:#e2e8f0; color:#475569; border:none; padding:10px 16px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:14px;">닫기</button>
+
+                        <!-- 필터 선택 탭 (이전 확인 제외 vs 전체 포함) -->
+                        <div style="display:flex; background:#e2e8f0; border-radius:10px; padding:3px; margin-bottom:12px; gap:4px;">
+                            <button type="button" onclick="switchWrongQuizFilter('new')" style="flex:1; border:none; border-radius:8px; padding:7px 10px; font-size:13px; font-family:'Jua', sans-serif; cursor:pointer; transition:all 0.2s; ${currentWrongQuizFilter === 'new' ? 'background:#4f46e5; color:white; font-weight:bold; box-shadow:0 2px 4px rgba(79,70,229,0.3);' : 'background:transparent; color:#64748b;'}">
+                                🌟 새로 틀린 것만 (${newCount}개)
+                            </button>
+                            <button type="button" onclick="switchWrongQuizFilter('all')" style="flex:1; border:none; border-radius:8px; padding:7px 10px; font-size:13px; font-family:'Jua', sans-serif; cursor:pointer; transition:all 0.2s; ${currentWrongQuizFilter === 'all' ? 'background:#4f46e5; color:white; font-weight:bold; box-shadow:0 2px 4px rgba(79,70,229,0.3);' : 'background:transparent; color:#64748b;'}">
+                                📚 전체 오답 모두 (${totalCount}개)
+                            </button>
+                        </div>
+
+                        <div style="font-size:12px; color:#64748b; margin-bottom:8px; text-align:left;">
+                            ${currentWrongQuizFilter === 'new' && lastCheckedIso 
+                                ? '✨ 직전 복습 이후 새로 틀린 문제만 추출했습니다.' 
+                                : '📖 최근 풀이 기록 중 누적된 모든 오답 목록입니다.'}
+                        </div>
+
+                        <textarea id="wrong-quiz-textarea" readonly style="width:100%; height:230px; padding:12px; border-radius:12px; border:1.5px solid #cbd5e1; font-size:13px; font-family:monospace; line-height:1.5; resize:none; background:#f8fafc; color:#1e293b; box-sizing:border-box;">${text ? escapeHtml(text) : '(해당 조건의 오답이 없습니다. 모두 완벽히 이해했어요! 🎉)'}</textarea>
+
+                        <!-- 액션 버튼 영역 -->
+                        <div style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+                            <div style="display:flex; gap:8px;">
+                                <button type="button" onclick="copyWrongQuizText()" style="flex:1; background:linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color:white; border:none; padding:10px 14px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:14px; box-shadow:0 3px 10px rgba(79, 70, 229, 0.25);">
+                                    📋 텍스트 복사하기
+                                </button>
+                                <button type="button" onclick="markWrongQuizAsChecked()" style="flex:1.1; background:linear-gradient(135deg, #10b981 0%, #059669 100%); color:white; border:none; padding:10px 14px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:14px; box-shadow:0 3px 10px rgba(16, 185, 129, 0.25);">
+                                    ✅ 오늘 복습 완료 기록
+                                </button>
+                            </div>
+                            <button type="button" onclick="closeWrongQuizModal()" style="width:100%; background:#e2e8f0; color:#475569; border:none; padding:8px 16px; border-radius:12px; font-weight:bold; font-family:'Jua', sans-serif; cursor:pointer; font-size:13px;">
+                                닫기
+                            </button>
                         </div>
                     </div>
                 </div>
             `;
             document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        function switchWrongQuizFilter(mode) {
+            currentWrongQuizFilter = mode;
+            renderWrongQuizModalContent();
+        }
+
+        function markWrongQuizAsChecked() {
+            const targetChild = getTargetChild();
+            setLastWrongCheckedTime(targetChild);
+            alert(`✅ ${targetChild}의 오답 복습 완료 시간이 기록되었습니다!\n다음번에는 지금 시점 이후의 '새로 틀린 문제'만 따로 모아보실 수 있습니다.`);
+            renderWrongQuizModalContent();
         }
 
         function closeWrongQuizModal() {
@@ -2344,21 +2463,32 @@ async function insertStudyLog(subject, content, detail) {
 
         function copyWrongQuizText() {
             const textarea = document.getElementById('wrong-quiz-textarea');
-            if (!textarea) return;
+            if (!textarea || !textarea.value.trim() || textarea.value.includes('(해당 조건의 오답이 없습니다')) {
+                alert("복사할 오답 내용이 없습니다.");
+                return;
+            }
             textarea.select();
             textarea.setSelectionRange(0, 99999);
             try {
                 if (navigator.clipboard && navigator.clipboard.writeText) {
                     navigator.clipboard.writeText(textarea.value).then(() => {
-                        alert("✅ 오답노트가 클립보드에 복사되었습니다! 카톡이나 메모장에 붙여넣으세요.");
+                        handleCopySuccess();
                     });
                 } else {
                     document.execCommand('copy');
-                    alert("✅ 오답노트가 클립보드에 복사되었습니다!");
+                    handleCopySuccess();
                 }
             } catch(e) {
                 document.execCommand('copy');
-                alert("✅ 오답노트가 복사되었습니다!");
+                handleCopySuccess();
+            }
+        }
+
+        function handleCopySuccess() {
+            const targetChild = getTargetChild();
+            if (confirm("✅ 오답노트가 클립보드에 복사되었습니다!\n\n💡 복사한 이 시점을 [복습 완료 시각]으로 기록해 둘까요?\n(확인을 누르면 다음번에는 이후의 새 오답만 골라볼 수 있습니다)")) {
+                setLastWrongCheckedTime(targetChild);
+                renderWrongQuizModalContent();
             }
         }
 
