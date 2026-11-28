@@ -2715,4 +2715,21 @@
 .exam-option-btn span{display:inline-flex;flex:0 0 25px;height:25px;align-items:center;justify-content:center;border-radius:50%;background:#f1f5f9;color:#64748b;font-size:12px}.exam-option-btn.selected{border-color:#8b5cf6;background:#f5f3ff}.exam-option-btn.correct{border-color:#16a34a;background:#f0fdf4;color:#166534}.exam-option-btn.wrong{border-color:#ef4444;background:#fef2f2;color:#b91c1c}
 .exam-check-btn,.exam-next-btn{width:100%;margin-top:16px;padding:13px;border-radius:14px;background:#7c3aed;color:#fff;box-shadow:none}.exam-check-btn:disabled{opacity:.45;cursor:not-allowed}
 .exam-feedback{margin-top:16px;border-radius:16px;padding:14px;font-size:14px;line-height:1.6}.exam-feedback.correct{background:#f0fdf4;border:1px solid #86efac;color:#166534}.exam-feedback.wrong{background:#fff7ed;border:1px solid #fdba74;color:#9a3412}.exam-feedback p{margin:7px 0}.exam-next-btn{background:#059669}.exam-note{margin:16px 0 0;color:#94a3b8;font-size:11px;text-align:center}
-@media(max-width:600px){.main-mode-nav{gap:4px}.main-mode-btn{padding:10px 5px;gap:4px;font-size:11px}.main-mode-btn span{font-size:15px}.exam-quiz-card{padding:20px 14px;border-radius:22px}.exam-question{font-size:18px}.exam-option-btn{font-size:14px;padding:12px 10px}}
+
+/* 🔁 오늘의 복습 (통합 망각곡선 복습 모듈) */
+.review-quiz-card{width:100%;max-width:480px;margin:0 auto 30px;box-sizing:border-box;background:rgba(255,255,255,.98);border:2px solid #fed7aa;border-radius:28px;padding:24px 20px;box-shadow:0 12px 30px rgba(234,88,12,.12)}
+.review-heading{font:26px 'Jua',sans-serif;color:#ea580c;text-align:center}
+.review-subtitle{margin:7px 0 16px;text-align:center;color:#64748b;font-size:13px}
+.review-stat-banner{display:flex;justify-content:space-around;background:#fff7ed;border-radius:16px;padding:12px 8px;margin-bottom:16px;border:1px solid #ffedd5;text-align:center}
+.review-stat-item .val{font-size:18px;font-weight:bold;color:#c2410c;font-family:'Jua',sans-serif}
+.review-stat-item .lbl{font-size:11px;color:#7c2d12}
+.review-filters{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.review-filter-btn{flex:0 0 auto;padding:7px 12px;border-radius:20px;background:#f8fafc;color:#64748b;border:1px solid #e2e8f0;box-shadow:none;font-size:12px;font-weight:bold;cursor:pointer}
+.review-filter-btn.active{background:#ea580c;color:white;border-color:#ea580c;box-shadow:0 2px 6px rgba(234,88,12,0.3)}
+.review-tag-origin{display:inline-block;padding:4px 9px;border-radius:12px;background:#ffedd5;color:#9a3412;font-size:11px;font-weight:bold;margin-right:6px}
+.review-tag-streak{display:inline-block;padding:4px 9px;border-radius:12px;background:#dcfce7;color:#166534;font-size:11px;font-weight:bold}
+.review-empty-box{background:#f8fafc;border:2px dashed #cbd5e1;border-radius:20px;padding:36px 20px;text-align:center;color:#64748b}
+.review-empty-box .icon{font-size:42px;margin-bottom:10px}
+.review-empty-box h3{font-family:'Jua',sans-serif;color:#1e293b;font-size:20px;margin-bottom:8px}
+
+@media(max-width:600px){.main-mode-nav{gap:4px}.main-mode-btn{padding:10px 5px;gap:4px;font-size:11px}.main-mode-btn span{font-size:15px}.exam-quiz-card,.review-quiz-card{padding:20px 14px;border-radius:22px}.exam-question{font-size:18px}.exam-option-btn{font-size:14px;padding:12px 10px}}

@@ -377,6 +377,7 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
             const btnStudy = document.getElementById('nav-btn-study');
             const btnLife = document.getElementById('nav-btn-life');
             const btnExam = document.getElementById('nav-btn-exam');
+            const btnReview = document.getElementById('nav-btn-review');
             const mainModeNav = document.querySelector('.main-mode-nav');
             const statsBar = document.getElementById('stats-bar');
             const cardWrapper = document.getElementById('card-wrapper');
@@ -402,22 +403,20 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
                 }
                 return;
             } else if (userNickname === '희진') {
-                // 희진(학생) 계정: 퀴즈만 풀고 생활코칭/가정사생활 탭 및 기말고사 탭 숨김
-                if (mainModeNav) mainModeNav.style.display = 'none';
-                if (statsBar) statsBar.style.display = '';
-                if (cardWrapper) cardWrapper.style.display = '';
-                if (lastUpdated) lastUpdated.style.display = '';
-                if (historyContainer) historyContainer.style.display = '';
-                if (habitContainer) habitContainer.style.display = 'none';
-                return;
+                // 희진(학생) 계정: 상식 및 오늘의 복습 제공, 생활코칭 및 기말고사 탭 숨김
+                if (mainModeNav) mainModeNav.style.display = '';
+                if (btnLife) btnLife.style.display = 'none';
+                if (btnExam) btnExam.style.display = 'none';
             } else {
                 if (mainModeNav) mainModeNav.style.display = '';
+                if (btnLife) btnLife.style.display = '';
             }
 
             if (tab === 'study') {
                 if (btnStudy) btnStudy.classList.add('active');
                 if (btnLife) btnLife.classList.remove('active');
                 if (btnExam) btnExam.classList.remove('active');
+                if (btnReview) btnReview.classList.remove('active');
                 if (statsBar) statsBar.style.display = '';
                 if (cardWrapper) cardWrapper.style.display = '';
                 if (lastUpdated) lastUpdated.style.display = '';
@@ -428,6 +427,18 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
                 if (btnStudy) btnStudy.classList.remove('active');
                 if (btnLife) btnLife.classList.remove('active');
                 if (btnExam) btnExam.classList.add('active');
+                if (btnReview) btnReview.classList.remove('active');
+                if (statsBar) statsBar.style.display = 'none';
+                if (cardWrapper) cardWrapper.style.display = '';
+                if (lastUpdated) lastUpdated.style.display = 'none';
+                if (historyContainer) historyContainer.style.display = 'none';
+                if (habitContainer) habitContainer.style.display = 'none';
+                renderCard();
+            } else if (tab === 'review') {
+                if (btnStudy) btnStudy.classList.remove('active');
+                if (btnLife) btnLife.classList.remove('active');
+                if (btnExam) btnExam.classList.remove('active');
+                if (btnReview) btnReview.classList.add('active');
                 if (statsBar) statsBar.style.display = 'none';
                 if (cardWrapper) cardWrapper.style.display = '';
                 if (lastUpdated) lastUpdated.style.display = 'none';
@@ -438,6 +449,7 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
                 if (btnStudy) btnStudy.classList.remove('active');
                 if (btnLife) btnLife.classList.add('active');
                 if (btnExam) btnExam.classList.remove('active');
+                if (btnReview) btnReview.classList.remove('active');
                 if (statsBar) statsBar.style.display = 'none';
                 if (cardWrapper) cardWrapper.style.display = 'none';
                 if (lastUpdated) lastUpdated.style.display = 'none';
@@ -447,6 +459,7 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
                     habitContainer.classList.remove('hidden');
                 }
             }
+        }
         }
 
         function updateHeader(dateStr) {
@@ -593,12 +606,206 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
                 return;
             }
 
-            // 기말고사 대비는 기존 상식 퀴즈/적립 시스템과 분리
+            // 기말고사 대비 및 오늘의 복습 분기
             if (currentMainTab === 'exam') { renderExamQuiz(cardContainer); return; }
+            if (currentMainTab === 'review') { renderReviewQuiz(cardContainer); return; }
             renderCommonKnowledgeQuiz(cardContainer);
         }
 
-        // [Refactored] EXAM_QUIZ_POOL은 quiz-data.js로 분리되어 전역 로드됩니다.
+        // ===================================================
+        // 🔁 오늘의 복습 렌더링 로직 (Universal Review Module)
+        // ===================================================
+        function renderReviewQuiz(container) {
+            const summary = typeof UniversalReviewManager !== 'undefined'
+                ? UniversalReviewManager.getReviewSummary(userNickname)
+                : { dueCount: 0, totalWrongItems: 0, masteredCount: 0, subjectStats: {} };
+
+            // 복습 대상 문제 추출 (현재 선택된 과목 필터 반영)
+            const dueQuestions = typeof UniversalReviewManager !== 'undefined'
+                ? UniversalReviewManager.getDueItems({ user: userNickname, subject: currentReviewSubject })
+                : [];
+
+            // 과목 필터 칩 목록 생성
+            const availableSubjects = ['전체', ...Object.keys(summary.subjectStats || {})];
+            const filterChipsHtml = availableSubjects.map(sub => {
+                const count = (sub === '전체') ? summary.dueCount : (summary.subjectStats[sub]?.due || 0);
+                const isActive = (currentReviewSubject === sub);
+                return `<button type="button" class="review-filter-btn ${isActive ? 'active' : ''}" onclick="setReviewSubject('${escapeHtml(sub)}')">${escapeHtml(sub)} (${count})</button>`;
+            }).join('');
+
+            // 오늘 복습할 문제가 없는 경우
+            if (dueQuestions.length === 0) {
+                container.innerHTML = `
+                    <section class="review-quiz-card">
+                        <div class="review-heading">🔁 오늘의 복습</div>
+                        <p class="review-subtitle">에빙하우스 망각곡선 기반 맞춤 복습</p>
+                        
+                        <div class="review-stat-banner">
+                            <div class="review-stat-item">
+                                <div class="val">${summary.dueCount}개</div>
+                                <div class="lbl">오늘 복습 대기</div>
+                            </div>
+                            <div class="review-stat-item">
+                                <div class="val">${summary.masteredCount}개</div>
+                                <div class="lbl">완벽 숙달 (졸업) 🎓</div>
+                            </div>
+                            <div class="review-stat-item">
+                                <div class="val">${summary.totalWrongItems}개</div>
+                                <div class="lbl">누적 관리 오답</div>
+                            </div>
+                        </div>
+
+                        <div class="review-filters">${filterChipsHtml}</div>
+
+                        <div class="review-empty-box">
+                            <div class="icon">🎉</div>
+                            <h3>오늘 복습할 문제가 없어요!</h3>
+                            <p style="font-size:13px; line-height:1.6; margin:0;">
+                                ${currentReviewSubject === '전체' 
+                                    ? '틀렸던 모든 문제를 복습했거나 아직 복습 주기가 되지 않았어요.<br>새로운 상식 퀴즈나 기말고사 문제를 풀어보세요! ✨' 
+                                    : `[${currentReviewSubject}] 과목의 오늘 복습 분량을 모두 완료했습니다! 👏`}
+                            </p>
+                        </div>
+                    </section>
+                `;
+                return;
+            }
+
+            if (currentReviewIndex >= dueQuestions.length) currentReviewIndex = 0;
+            const quiz = dueQuestions[currentReviewIndex];
+
+            const optionsHtml = (quiz.options || []).map((opt, idx) => {
+                let cls = 'exam-option-btn';
+                if (isReviewAnswerSubmitted && idx === quiz.answer) cls += ' correct';
+                else if (isReviewAnswerSubmitted && idx === selectedReviewOption) cls += ' wrong';
+                else if (!isReviewAnswerSubmitted && idx === selectedReviewOption) cls += ' selected';
+                return `<button type="button" class="${cls}" onclick="selectReviewOption(${idx})" ${isReviewAnswerSubmitted ? 'disabled' : ''}><span>${idx+1}</span>${escapeHtml(opt)}</button>`;
+            }).join('');
+
+            const feedback = isReviewAnswerSubmitted ? `
+                <div class="exam-feedback ${selectedReviewOption === quiz.answer ? 'correct' : 'wrong'}">
+                    <strong>${selectedReviewOption === quiz.answer ? '정답입니다! 복습 주기가 늘어났어요! 👏' : '앗, 틀렸어요. 개념을 다시 짚어보세요!'}</strong>
+                    <p>정답: ${escapeHtml(quiz.options[quiz.answer])}</p>
+                    <p>${escapeHtml(quiz.explanation || '')}</p>
+                    <button type="button" class="exam-next-btn" onclick="nextReviewQuiz()">다음 복습 문제 ▶</button>
+                </div>
+            ` : `
+                <button type="button" class="exam-check-btn" onclick="submitReviewAnswer()" ${selectedReviewOption === null ? 'disabled' : ''}>
+                    정답 확인하기
+                </button>
+            `;
+
+            container.innerHTML = `
+                <section class="review-quiz-card">
+                    <div class="review-heading">🔁 오늘의 복습</div>
+                    <p class="review-subtitle">오답 기억 및 에빙하우스 망각곡선 반복 학습</p>
+
+                    <div class="review-stat-banner">
+                        <div class="review-stat-item">
+                            <div class="val">${summary.dueCount}개</div>
+                            <div class="lbl">오늘 남은 복습</div>
+                        </div>
+                        <div class="review-stat-item">
+                            <div class="val">${summary.masteredCount}개</div>
+                            <div class="lbl">완벽 숙달 🎉</div>
+                        </div>
+                        <div class="review-stat-item">
+                            <div class="val">${summary.totalWrongItems}개</div>
+                            <div class="lbl">누적 관리 오답</div>
+                        </div>
+                    </div>
+
+                    <div class="review-filters">${filterChipsHtml}</div>
+
+                    <div class="exam-meta">
+                        <div>
+                            <span class="review-tag-origin">${quiz.quizType === 'COMMON' ? '상식' : '시험'} · ${escapeHtml(quiz.subject)}</span>
+                            <span class="review-tag-streak">연속 정답: ${quiz.streak || 0}회 / 오답: ${quiz.wrongCount}회</span>
+                        </div>
+                        <span>${currentReviewIndex + 1} / ${dueQuestions.length}</span>
+                    </div>
+
+                    <div class="exam-question">${escapeHtml(quiz.question)}</div>
+                    <div class="exam-options">${optionsHtml}</div>
+                    ${feedback}
+                    <p class="exam-note">※ 복습 문제 풀이는 정답을 맞혀도 포인트가 중복 지급되지 않고 오답 숙달도만 갱신됩니다.</p>
+                </section>
+            `;
+        }
+
+        function setReviewSubject(sub) {
+            currentReviewSubject = sub;
+            currentReviewIndex = 0;
+            selectedReviewOption = null;
+            isReviewAnswerSubmitted = false;
+            renderCard();
+        }
+
+        function selectReviewOption(idx) {
+            if (isReviewAnswerSubmitted) return;
+            selectedReviewOption = idx;
+            renderCard();
+        }
+
+        async function submitReviewAnswer() {
+            if (selectedReviewOption === null || isReviewAnswerSubmitted) return;
+            const dueQuestions = typeof UniversalReviewManager !== 'undefined'
+                ? UniversalReviewManager.getDueItems({ user: userNickname, subject: currentReviewSubject })
+                : [];
+            const quiz = dueQuestions[currentReviewIndex];
+            if (!quiz) return;
+
+            isReviewAnswerSubmitted = true;
+            const isCorrect = (selectedReviewOption === quiz.answer);
+
+            // UniversalReviewManager에 복습 결과 갱신
+            if (typeof UniversalReviewManager !== 'undefined') {
+                UniversalReviewManager.recordAttempt({
+                    ...quiz,
+                    chosen: quiz.options[selectedReviewOption],
+                    isCorrect: isCorrect,
+                    user: userNickname || '아람'
+                });
+            }
+
+            // Supabase study_logs에 복습 풀이 로그 기록
+            try {
+                const detail = JSON.stringify({
+                    questionId: quiz.id,
+                    quizType: quiz.quizType,
+                    subject: quiz.subject,
+                    question: quiz.question,
+                    chosen: quiz.options[selectedReviewOption],
+                    answer: quiz.options[quiz.answer],
+                    isCorrect: isCorrect,
+                    explanation: quiz.explanation,
+                    user: userNickname || '아람',
+                    isReviewSession: true
+                });
+                await supabaseClient.from('study_logs').insert([{
+                    subject: 'REVIEW_QUIZ',
+                    content: `[복습/${quiz.subject}] ${quiz.question.substring(0, 50)}`,
+                    detail: detail,
+                    creator: userNickname || '아람'
+                }]);
+            } catch (e) {
+                console.error("submitReviewAnswer log error:", e);
+            }
+
+            renderCard();
+        }
+
+        function nextReviewQuiz() {
+            const dueQuestions = typeof UniversalReviewManager !== 'undefined'
+                ? UniversalReviewManager.getDueItems({ user: userNickname, subject: currentReviewSubject })
+                : [];
+            if (currentReviewIndex >= dueQuestions.length) {
+                currentReviewIndex = 0;
+            }
+            selectedReviewOption = null;
+            isReviewAnswerSubmitted = false;
+            renderCard();
+        }
 
         function getExamQuestions() {
             return currentExamSubject === '전체'
@@ -647,6 +854,24 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
             if (!quiz) return;
             isExamAnswerSubmitted = true;
             const isCorrect = selectedExamOption === quiz.answer;
+
+            // 🧠 UniversalReviewManager에 시험 퀴즈 오답/정답 상태 기록 (망각곡선 복습 큐에 등록)
+            if (typeof UniversalReviewManager !== 'undefined') {
+                UniversalReviewManager.recordAttempt({
+                    id: quiz.id || `EXAM_${quiz.subject}_${currentExamIndex}`,
+                    quizType: 'EXAM',
+                    subject: quiz.subject,
+                    unit: quiz.unit,
+                    category: quiz.category,
+                    question: quiz.question,
+                    options: quiz.options,
+                    answer: quiz.answer,
+                    explanation: quiz.explanation,
+                    chosen: quiz.options[selectedExamOption],
+                    isCorrect: isCorrect,
+                    user: userNickname || '아람'
+                });
+            }
             try {
                 const detail = JSON.stringify({
                     category: quiz.category,
@@ -798,6 +1023,23 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
 
             // 풀이 기록을 Supabase study_logs에 실시간 저장 (아빠 리포트 및 오답노트용)
             logQuizAnswerToDb(quiz, selectedQuizOption, isCorrect);
+
+            // 🧠 UniversalReviewManager에 오답/정답 상태 기록 (망각곡선 복습 큐에 등록)
+            if (typeof UniversalReviewManager !== 'undefined') {
+                UniversalReviewManager.recordAttempt({
+                    id: quiz.id || `COMMON_${currentQuizIndex % COMMON_QUIZ_POOL.length}`,
+                    quizType: 'COMMON',
+                    subject: '상식',
+                    category: quiz.category,
+                    question: quiz.question,
+                    options: quiz.options,
+                    answer: quiz.answer,
+                    explanation: quiz.explanation,
+                    chosen: quiz.options[selectedQuizOption],
+                    isCorrect: isCorrect,
+                    user: userNickname || '아람'
+                });
+            }
 
             if (isCorrect) {
                 const currentTodayAnswered = quizBankState.todayAnswered || 0;
@@ -1315,7 +1557,11 @@ async function insertStudyLog(subject, content, detail) {
             quizRewardTitle: '🏪 편의점 2,000원 상품권 (또는 현금 2,000원)',
             quizRewardDesc: '상식 퀴즈 20문제 정답(2,000원 적립) 달성 축하 보상! 🪙'
         };
-        let currentMainTab = 'study'; // 'study' | 'exam' | 'life'
+        let currentMainTab = 'study'; // 'study' | 'exam' | 'review' | 'life'
+        let currentReviewSubject = '전체';
+        let currentReviewIndex = 0;
+        let selectedReviewOption = null;
+        let isReviewAnswerSubmitted = false;
         let currentExamSubject = '전체';
         let currentExamIndex = 0;
         let selectedExamOption = null;
