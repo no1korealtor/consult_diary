@@ -368,6 +368,11 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
         }
 
         function switchMainTab(tab) {
+            // 아람이 외 계정(희진, 아빠, 희진부모 등)은 기말고사 탭 접근 불가
+            if (tab === 'exam' && userNickname !== '아람') {
+                tab = 'study';
+            }
+
             currentMainTab = tab;
             const btnStudy = document.getElementById('nav-btn-study');
             const btnLife = document.getElementById('nav-btn-life');
@@ -378,6 +383,11 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
             const lastUpdated = document.getElementById('last-updated');
             const habitContainer = document.getElementById('habit-container');
             const historyContainer = document.getElementById('history-container');
+
+            // 기말고사 대비 탭 버튼은 '아람' 계정에서만 노출 (희진이와 학교/시험 범위가 다름)
+            if (btnExam) {
+                btnExam.style.display = (userNickname === '아람') ? '' : 'none';
+            }
 
             // 아빠 및 희진부모 계정일 때는 상단 모드 전환 탭을 숨기고 코칭/리포트 화면만 표시
             if (userNickname === '아빠' || userNickname === '희진부모') {
@@ -392,7 +402,7 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
                 }
                 return;
             } else if (userNickname === '희진') {
-                // 희진(학생) 계정: 퀴즈만 풀고 생활코칭/가정사생활 탭 완전 숨김
+                // 희진(학생) 계정: 퀴즈만 풀고 생활코칭/가정사생활 탭 및 기말고사 탭 숨김
                 if (mainModeNav) mainModeNav.style.display = 'none';
                 if (statsBar) statsBar.style.display = '';
                 if (cardWrapper) cardWrapper.style.display = '';
