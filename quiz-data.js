@@ -288,3 +288,7 @@
             }
         ];
 
+if (typeof window !== 'undefined') {
+    window.EXAM_QUIZ_POOL = EXAM_QUIZ_POOL;
+    window.COMMON_QUIZ_POOL = COMMON_QUIZ_POOL;
+}
