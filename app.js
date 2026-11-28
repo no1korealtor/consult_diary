@@ -460,7 +460,6 @@ const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
                 }
             }
         }
-        }
 
         function updateHeader(dateStr) {
             let habitNavBtn = '';
