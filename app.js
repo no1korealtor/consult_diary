@@ -1,4 +1,4 @@
-﻿const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
+const supabaseUrl = 'https://clzrbyplzjdrrscctcsl.supabase.co'
         const supabaseKey = 'sb_publishable_SqGXeBJseIB_4hjHB6GZ8g_rF_tv11k'
 
         const supabaseClient = window.supabase.createClient(
@@ -371,6 +371,7 @@
             currentMainTab = tab;
             const btnStudy = document.getElementById('nav-btn-study');
             const btnLife = document.getElementById('nav-btn-life');
+            const btnExam = document.getElementById('nav-btn-exam');
             const mainModeNav = document.querySelector('.main-mode-nav');
             const statsBar = document.getElementById('stats-bar');
             const cardWrapper = document.getElementById('card-wrapper');
@@ -406,14 +407,27 @@
             if (tab === 'study') {
                 if (btnStudy) btnStudy.classList.add('active');
                 if (btnLife) btnLife.classList.remove('active');
+                if (btnExam) btnExam.classList.remove('active');
                 if (statsBar) statsBar.style.display = '';
                 if (cardWrapper) cardWrapper.style.display = '';
                 if (lastUpdated) lastUpdated.style.display = '';
                 if (historyContainer) historyContainer.style.display = '';
                 if (habitContainer) habitContainer.style.display = 'none';
+                renderCard();
+            } else if (tab === 'exam') {
+                if (btnStudy) btnStudy.classList.remove('active');
+                if (btnLife) btnLife.classList.remove('active');
+                if (btnExam) btnExam.classList.add('active');
+                if (statsBar) statsBar.style.display = 'none';
+                if (cardWrapper) cardWrapper.style.display = '';
+                if (lastUpdated) lastUpdated.style.display = 'none';
+                if (historyContainer) historyContainer.style.display = 'none';
+                if (habitContainer) habitContainer.style.display = 'none';
+                renderCard();
             } else {
                 if (btnStudy) btnStudy.classList.remove('active');
                 if (btnLife) btnLife.classList.add('active');
+                if (btnExam) btnExam.classList.remove('active');
                 if (statsBar) statsBar.style.display = 'none';
                 if (cardWrapper) cardWrapper.style.display = 'none';
                 if (lastUpdated) lastUpdated.style.display = 'none';
@@ -569,9 +583,135 @@
                 return;
             }
 
-            // 상식 퀴즈 100원 저금통 모드 렌더링
+            // 기말고사 대비는 기존 상식 퀴즈/적립 시스템과 분리
+            if (currentMainTab === 'exam') { renderExamQuiz(cardContainer); return; }
             renderCommonKnowledgeQuiz(cardContainer);
         }
+
+        // ===================================================
+        // 📚 기말고사 대비 퀴즈 (기존 워크북 내용만 사용)
+        // 일반상식 퀴즈의 포인트/인덱스/기록과 완전히 분리
+        // ===================================================
+        const EXAM_QUIZ_POOL = [
+            // 역사 워크북: 냉전 체제와 제3 세계
+            { subject:'역사', unit:'냉전과 제3 세계', category:'개념 이해', question:'냉전에 대한 설명으로 가장 알맞은 것은?', options:['미국과 소련이 직접 전면전을 계속한 상태','미국과 소련이 여러 분야에서 대립한 상태','모든 국가가 하나의 정치 체제를 선택한 상태','식민지 국가 사이에서만 일어난 전쟁'], answer:1, explanation:'냉전은 미국과 소련이 직접 전면전을 벌이기보다 군사·정치·경제·선전 등 여러 분야에서 대립한 상태입니다.' },
+            { subject:'역사', unit:'냉전과 제3 세계', category:'핵심 개념', question:'역사 워크북에서 미국을 중심으로 한 진영의 특징으로 설명한 것은?', options:['시장 경제와 자유 민주주의를 강조','공산당 중심의 사회주의 체제를 강조','어느 진영에도 속하지 않음','식민 지배의 재확대'], answer:0, explanation:'워크북은 미국 중심의 자본주의 진영이 시장 경제와 자유 민주주의를 강조했다고 정리합니다.' },
+            { subject:'역사', unit:'냉전과 제3 세계', category:'핵심 개념', question:'제3 세계의 형성과 가장 관련 깊은 흐름은?', options:['고대 제국의 등장','유럽 봉건제의 성립','아시아·아프리카 신생 독립국의 등장','산업 혁명 이전의 농업 사회'], answer:2, explanation:'제2차 세계 대전 이후 아시아와 아프리카에서 식민지였던 지역들이 독립하면서 신생 독립국이 늘어났습니다.' },
+            { subject:'역사', unit:'냉전과 제3 세계', category:'개념 구분', question:'비동맹 움직임의 취지로 알맞은 것은?', options:['미국 진영에 모두 가입하기','소련 진영에 모두 가입하기','강대국 대립 속에서 독자적 입장을 추구하기','식민 지배를 다시 확대하기'], answer:2, explanation:'비동맹은 미국과 소련 어느 진영에도 공식적으로 가담하지 않고 독립과 자주성을 지키려는 움직임입니다.' },
+            { subject:'역사', unit:'냉전과 제3 세계', category:'원인과 결과', question:'제2차 세계 대전 이후 미국과 소련의 대립이 심해지면서 나타난 국제 질서는?', options:['세계가 두 진영으로 나뉘는 냉전 체제','모든 국가의 통일','국제 교류의 완전한 중단','고대 제국 중심의 질서'], answer:0, explanation:'전후 미국과 소련의 이념·체제 경쟁으로 세계가 두 진영으로 나뉘고 국제적 긴장이 높아졌습니다.' },
+            // 역사 워크북: 민주주의와 인권
+            { subject:'역사', unit:'민주주의와 인권', category:'개념 구분', question:'인권의 뜻으로 가장 알맞은 것은?', options:['국가가 허락한 사람만 누리는 권리','사람이라면 누구나 인간답게 살기 위해 누려야 할 기본적 권리','선거에 참여할 권리만을 뜻함','특정 국가의 국민에게만 주어지는 권리'], answer:1, explanation:'워크북은 인권을 사람이라면 누구나 인간답게 살기 위해 누려야 할 기본적 권리라고 설명합니다.' },
+            { subject:'역사', unit:'민주주의와 인권', category:'개념 구분', question:'민주주의는 무엇에 관한 정치 원리인가?', options:['국민이 정치에 참여하고 권력 행사를 통제하는 원리','상품과 자본이 국경을 넘는 현상','인간의 신체적 특징','국가 간 군사 동맹만을 만드는 원리'], answer:0, explanation:'민주주의는 국민의 정치 참여와 권력 행사의 통제를 중요하게 여기는 정치 원리입니다.' },
+            { subject:'역사', unit:'민주주의와 인권', category:'관계 이해', question:'민주주의와 인권의 관계를 바르게 설명한 것은?', options:['민주주의는 인권과 관계가 없다','인권은 일부 국민에게만 적용된다','민주주의는 시민의 권리와 참여를 중요하게 여긴다','인권은 국가가 필요할 때만 보장한다'], answer:2, explanation:'민주주의는 시민의 정치 참여와 권리를 중시하며 인권 보장과 밀접하게 연결됩니다.' },
+            // 역사 워크북: 세계화
+            { subject:'역사', unit:'세계화', category:'원인과 결과', question:'세계화를 촉진한 대표적인 기술 변화는?', options:['교통·통신 기술의 발달','지역 간 교류의 완전한 중단','정보 이동의 금지','농업 생산의 감소만'], answer:0, explanation:'교통과 통신 기술이 발달하면서 상품·자본·사람·정보·문화가 국경을 넘어 빠르게 이동하게 되었습니다.' },
+            { subject:'역사', unit:'세계화', category:'영향 이해', question:'세계화의 영향으로 보기 어려운 것은?', options:['상품과 자본의 국제 이동 확대','문화 교류의 확대','한 지역의 경제 위기가 다른 지역에 영향을 줄 가능성','국가 간 교류가 완전히 사라짐'], answer:3, explanation:'세계화는 국가 간 교류와 상호 의존을 확대하는 현상이지 교류를 없애는 현상이 아닙니다.' },
+            { subject:'역사', unit:'세계화', category:'장단점', question:'워크북에서 세계화의 문제점으로 제시한 것은?', options:['정보 접근이 쉬워짐','문화 경험이 다양해짐','경제적 격차와 정보 격차','국제 협력 가능성'], answer:2, explanation:'세계화는 여러 기회를 주지만 경제적 격차, 정보 격차, 허위 정보, 개인정보 문제 등을 낳을 수 있습니다.' },
+            // 과학 DAY 2: 동물과 에너지 - 영양소와 소화
+            { subject:'과학', unit:'영양소와 소화', category:'영양소', question:'밥, 국수, 빵, 고구마에 많이 들어 있고 주요 에너지원으로 쓰이는 영양소는?', options:['탄수화물','단백질','지방','무기염류'], answer:0, explanation:'워크북에서 탄수화물은 주요 에너지원으로 쓰이는 영양소로 정리되어 있습니다.' },
+            { subject:'과학', unit:'영양소와 소화', category:'영양소', question:'살코기, 생선, 달걀, 두부에 많이 들어 있고 몸을 구성하는 영양소는?', options:['비타민','단백질','무기염류','물'], answer:1, explanation:'단백질은 몸을 구성하며 에너지원으로도 쓰입니다.' },
+            { subject:'과학', unit:'영양소와 소화', category:'영양소', question:'1 g당 약 9 kcal의 에너지를 내는 영양소는?', options:['탄수화물','단백질','지방','비타민'], answer:2, explanation:'워크북은 지방이 1 g당 약 9 kcal의 에너지를 낸다고 정리합니다.' },
+            { subject:'과학', unit:'영양소와 소화', category:'검출 반응', question:'녹말을 검출할 때 사용하는 용액과 양성 반응의 색은?', options:['베네딕트 용액 - 황적색','아이오딘-아이오딘화 칼륨 용액 - 청람색','뷰렛 용액 - 보라색','수단 Ⅲ 용액 - 선홍색'], answer:1, explanation:'녹말은 아이오딘-아이오딘화 칼륨 용액으로 검출하며 양성 반응은 청람색입니다.' },
+            { subject:'과학', unit:'영양소와 소화', category:'검출 반응', question:'포도당 등 환원당을 검출하는 방법으로 알맞은 것은?', options:['아이오딘 용액을 넣고 청람색 확인','베네딕트 용액을 넣고 가열하여 황적색 확인','뷰렛 용액을 넣고 보라색 확인','수단 Ⅲ 용액을 넣고 선홍색 확인'], answer:1, explanation:'환원당은 베네딕트 용액을 넣고 가열합니다. 양성 반응은 양에 따라 색이 변하며 워크북에서는 황적색으로 정리했습니다.' },
+            { subject:'과학', unit:'영양소와 소화', category:'검출 반응', question:'단백질을 검출하는 시약과 양성 반응의 색은?', options:['아이오딘 용액 - 청람색','베네딕트 용액 - 황적색','뷰렛 용액 - 보라색','수단 Ⅲ 용액 - 선홍색'], answer:2, explanation:'단백질은 뷰렛 용액으로 검출하며 양성 반응은 보라색입니다.' },
+            { subject:'과학', unit:'영양소와 소화', category:'검출 반응', question:'지방을 검출하는 시약은?', options:['수단 Ⅲ 용액','뷰렛 용액','아이오딘 용액','베네딕트 용액'], answer:0, explanation:'워크북의 검출 반응 표에서 지방은 수단 Ⅲ 용액, 양성 반응은 선홍색입니다.' },
+            { subject:'과학', unit:'영양소와 소화', category:'소화와 흡수', question:'소화의 뜻으로 가장 알맞은 것은?', options:['영양소가 혈액으로 이동하는 과정','큰 영양소를 흡수할 수 있는 작은 물질로 분해하는 과정','음식물이 몸 밖으로 나가는 과정','산소가 폐포에서 혈액으로 이동하는 과정'], answer:1, explanation:'소화는 음식물 속 큰 영양소를 흡수할 수 있는 작은 물질로 분해하는 과정입니다.' },
+            { subject:'과학', unit:'영양소와 소화', category:'소화와 흡수', question:'소화가 대부분 완성되고 영양소가 주로 흡수되는 기관은?', options:['위','큰창자','작은창자','식도'], answer:2, explanation:'워크북은 작은창자에서 소화가 대부분 완성되고 영양소가 주로 흡수된다고 정리합니다.' },
+            { subject:'과학', unit:'영양소와 소화', category:'소화와 흡수', question:'작은창자 안쪽에 주름과 융털이 많은 까닭은?', options:['음식물을 씹기 위해','영양소가 흡수되는 표면적을 넓히기 위해','산소를 만들기 위해','혈액을 응고시키기 위해'], answer:1, explanation:'작은창자 안쪽의 주름과 융털은 흡수 표면적을 넓혀 영양소 흡수에 유리합니다.' },
+            // 과학 DAY 3: 순환계와 호흡계
+            { subject:'과학', unit:'순환계와 호흡계', category:'심장과 혈관', question:'심방과 심실의 기능을 바르게 연결한 것은?', options:['심방은 혈액을 내보내고 심실은 받아들인다','심방은 혈액을 받아들이고 심실은 내보낸다','둘 다 혈액을 여과한다','둘 다 기체 교환을 한다'], answer:1, explanation:'워크북 핵심 정리: 심방은 혈액을 받아들이고, 심실은 심장에서 혈액을 내보냅니다.' },
+            { subject:'과학', unit:'순환계와 호흡계', category:'심장과 혈관', question:'혈액이 거꾸로 흐르는 것을 막는 구조는?', options:['폐포','판막','융털','횡격막'], answer:1, explanation:'판막은 혈액이 거꾸로 흐르는 것을 막아 한 방향으로 흐르도록 돕습니다.' },
+            { subject:'과학', unit:'순환계와 호흡계', category:'심장과 혈관', question:'심장에서 나가는 혈액이 흐르는 혈관은?', options:['정맥','모세혈관','동맥','폐포'], answer:2, explanation:'동맥은 심장에서 나가는 혈액이 흐르는 혈관입니다.' },
+            { subject:'과학', unit:'순환계와 호흡계', category:'혈액의 구성', question:'헤모글로빈을 이용해 산소를 운반하는 혈액 성분은?', options:['혈장','적혈구','백혈구','혈소판'], answer:1, explanation:'적혈구에는 헤모글로빈이 있어 산소를 운반합니다.' },
+            { subject:'과학', unit:'순환계와 호흡계', category:'혈액의 구성', question:'혈액 응고에 관여하여 출혈을 막는 성분은?', options:['적혈구','백혈구','혈소판','혈장'], answer:2, explanation:'혈소판은 혈액 응고에 관여하여 출혈을 막습니다.' },
+            { subject:'과학', unit:'순환계와 호흡계', category:'혈액의 순환', question:'폐순환의 경로로 알맞은 것은?', options:['좌심실 → 대동맥 → 온몸 → 대정맥 → 우심방','우심실 → 폐동맥 → 폐 모세혈관 → 폐정맥 → 좌심방','우심방 → 대동맥 → 폐 → 좌심실','좌심방 → 폐동맥 → 온몸 → 우심실'], answer:1, explanation:'폐순환은 우심실에서 폐동맥을 거쳐 폐 모세혈관, 폐정맥을 지나 좌심방으로 돌아옵니다.' },
+            { subject:'과학', unit:'순환계와 호흡계', category:'혈액의 순환', question:'온몸 순환의 경로로 알맞은 것은?', options:['좌심실 → 대동맥 → 온몸 모세혈관 → 대정맥 → 우심방','우심실 → 폐동맥 → 폐 → 좌심방','좌심방 → 폐정맥 → 폐 → 우심실','우심방 → 폐동맥 → 온몸 → 좌심실'], answer:0, explanation:'온몸 순환은 좌심실에서 대동맥을 거쳐 온몸 모세혈관, 대정맥을 지나 우심방으로 돌아옵니다.' },
+            { subject:'과학', unit:'순환계와 호흡계', category:'호흡계', question:'폐에서 기체 교환이 일어나는 작은 공기주머니는?', options:['기관','기관지','폐포','횡격막'], answer:2, explanation:'폐포는 주변 모세혈관과 산소·이산화 탄소를 교환하는 작은 공기주머니입니다.' },
+            { subject:'과학', unit:'순환계와 호흡계', category:'호흡계', question:'폐포에서 혈액으로 이동하는 기체는?', options:['이산화 탄소','산소','질소만','수증기만'], answer:1, explanation:'워크북 정리: 폐포에서 산소는 혈액으로 이동하고, 이산화 탄소는 혈액에서 폐포로 이동합니다.' },
+            { subject:'과학', unit:'순환계와 호흡계', category:'호흡계', question:'들숨 때 일어나는 변화로 워크북 내용에 맞는 것은?', options:['횡격막이 올라가고 가슴안 부피가 작아진다','횡격막이 내려가고 가슴안 부피가 커진다','횡격막은 움직이지 않는다','폐포가 사라진다'], answer:1, explanation:'들숨 때 횡격막이 내려가면서 가슴안 부피가 커집니다.' }
+        ];
+
+        function getExamQuestions() {
+            return currentExamSubject === '전체'
+                ? EXAM_QUIZ_POOL
+                : EXAM_QUIZ_POOL.filter(q => q.subject === currentExamSubject);
+        }
+
+        function renderExamQuiz(container) {
+            const subjects = ['전체', '과학', '역사'];
+            const questions = getExamQuestions();
+            if (currentExamIndex >= questions.length) currentExamIndex = 0;
+            const quiz = questions[currentExamIndex];
+            if (!quiz) {
+                container.innerHTML = '<div class="exam-quiz-card">아직 등록된 문제가 없습니다.</div>';
+                return;
+            }
+            const subjectButtons = subjects.map(sub => `<button type="button" class="exam-filter-btn ${currentExamSubject === sub ? 'active' : ''}" onclick="setExamSubject('${sub}')">${sub}</button>`).join('');
+            const optionsHtml = quiz.options.map((opt, idx) => {
+                let cls = 'exam-option-btn';
+                if (isExamAnswerSubmitted && idx === quiz.answer) cls += ' correct';
+                else if (isExamAnswerSubmitted && idx === selectedExamOption) cls += ' wrong';
+                else if (!isExamAnswerSubmitted && idx === selectedExamOption) cls += ' selected';
+                return `<button type="button" class="${cls}" onclick="selectExamOption(${idx})" ${isExamAnswerSubmitted ? 'disabled' : ''}><span>${idx+1}</span>${escapeHtml(opt)}</button>`;
+            }).join('');
+            const feedback = isExamAnswerSubmitted ? `<div class="exam-feedback ${selectedExamOption === quiz.answer ? 'correct' : 'wrong'}"><strong>${selectedExamOption === quiz.answer ? '정답이에요! 🎉' : '아쉬워요. 정답을 확인해 봐요.'}</strong><p>정답: ${escapeHtml(quiz.options[quiz.answer])}</p><p>${escapeHtml(quiz.explanation)}</p><button type="button" class="exam-next-btn" onclick="nextExamQuiz()">다음 문제 ▶</button></div>` : `<button type="button" class="exam-check-btn" onclick="submitExamAnswer()" ${selectedExamOption === null ? 'disabled' : ''}>정답 확인하기</button>`;
+            container.innerHTML = `<section class="exam-quiz-card"><div class="exam-heading">📚 기말고사 대비</div><p class="exam-subtitle">기존 과학·역사 워크북 내용으로 만든 복습 퀴즈</p><div class="exam-filters">${subjectButtons}</div><div class="exam-meta"><span>${quiz.subject} · ${escapeHtml(quiz.unit)}</span><span>${currentExamIndex + 1} / ${questions.length}</span></div><div class="exam-category">${escapeHtml(quiz.category)}</div><div class="exam-question">${escapeHtml(quiz.question)}</div><div class="exam-options">${optionsHtml}</div>${feedback}<p class="exam-note">※ 기말고사 퀴즈는 일반상식 퀴즈의 50원 적립과 별도로 기록됩니다.</p></section>`;
+        }
+
+        function setExamSubject(subject) {
+            currentExamSubject = subject;
+            currentExamIndex = 0;
+            selectedExamOption = null;
+            isExamAnswerSubmitted = false;
+            renderCard();
+        }
+
+        function selectExamOption(idx) {
+            if (isExamAnswerSubmitted) return;
+            selectedExamOption = idx;
+            renderCard();
+        }
+
+        async function submitExamAnswer() {
+            if (selectedExamOption === null || isExamAnswerSubmitted) return;
+            const quiz = getExamQuestions()[currentExamIndex];
+            if (!quiz) return;
+            isExamAnswerSubmitted = true;
+            const isCorrect = selectedExamOption === quiz.answer;
+            try {
+                const detail = JSON.stringify({
+                    category: quiz.category,
+                    subject: quiz.subject,
+                    unit: quiz.unit,
+                    question: quiz.question,
+                    chosen: quiz.options[selectedExamOption],
+                    answer: quiz.options[quiz.answer],
+                    isCorrect,
+                    explanation: quiz.explanation,
+                    user: userNickname || '아람',
+                    source: '기말고사 대비 워크북'
+                });
+                const { error } = await supabaseClient.from('study_logs').insert([{
+                    subject: 'EXAM_QUIZ',
+                    content: `[${quiz.subject}/${quiz.unit}] ${quiz.question.substring(0, 50)}`,
+                    detail,
+                    creator: userNickname || '아람'
+                }]);
+                if (error) console.error('시험 퀴즈 기록 저장 실패:', error);
+            } catch (e) {
+                console.error('시험 퀴즈 기록 저장 오류:', e);
+            }
+            renderCard();
+        }
+
+        function nextExamQuiz() {
+            const questions = getExamQuestions();
+            currentExamIndex = (currentExamIndex + 1) % questions.length;
+            selectedExamOption = null;
+            isExamAnswerSubmitted = false;
+            renderCard();
+        }
+
 
         // ===================================================
         // 🧠 중학생 맞춤 상식 퀴즈 & 50원 저금통 뷰 로직
@@ -1206,7 +1346,11 @@ async function insertStudyLog(subject, content, detail) {
             quizRewardTitle: '🏪 편의점 2,000원 상품권 (또는 현금 2,000원)',
             quizRewardDesc: '상식 퀴즈 20문제 정답(2,000원 적립) 달성 축하 보상! 🪙'
         };
-        let currentMainTab = 'study'; // 'study' | 'life'
+        let currentMainTab = 'study'; // 'study' | 'exam' | 'life'
+        let currentExamSubject = '전체';
+        let currentExamIndex = 0;
+        let selectedExamOption = null;
+        let isExamAnswerSubmitted = false;
 
         // ===================================================
         // 상식 퀴즈 100원 저금통 시스템 State
